@@ -37,14 +37,18 @@
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
+                    console.log("Logged in user UID:", user.uid);  // Debug: show UID in console
                     // Check if the logged-in user is the admin
                     if (user.uid === adminUID) {
+                        console.log("Admin login detected");  // Debug: admin branch
                         window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
                     } else {
+                        console.log("Non-admin login detected");  // Debug: non-admin branch
                         window.location.href = "index.html";  // Redirect non-admin users to the blog page
                     }
                 })
                 .catch((error) => {
+                    console.error("Error during login:", error);
                     document.getElementById("error-message").textContent = error.message;
                 });
         });
