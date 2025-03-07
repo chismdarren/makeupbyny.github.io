@@ -16,8 +16,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication
-const auth = getAuth();
+// Initialize Firebase Authentication using the app instance (recommended)
+const auth = getAuth(app);
 
 console.log("Firebase Initialized Successfully!");
 
@@ -51,3 +51,6 @@ signUpForm.addEventListener('submit', function(event) {
             alert("Error: " + errorMessage);  // Display error message to user
         });
 });
+
+// Export auth so that other modules can import it
+export { auth };
