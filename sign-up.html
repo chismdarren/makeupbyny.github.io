@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create an Account</title>
+    <!-- Link to external CSS file (style.css) for styling -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header section with title and navigation links -->
+    <header>
+        <h1>Create an Account</h1>
+        <nav>
+            <!-- Links to navigate to homepage and login page -->
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <!-- Main content section where the sign-up form is placed -->
+    <main>
+        <h2>Sign Up</h2>
+        <!-- Sign-up form where users enter their email and password -->
+        <form id="signUpForm">
+            <!-- Input field for email address -->
+            <input type="email" id="email" placeholder="Email" required />
+            <!-- Input field for password -->
+            <input type="password" id="password" placeholder="Password" required />
+            <!-- Submit button for creating an account -->
+            <button type="submit">Create Account</button>
+        </form>
+    </main>
+
+    <!-- Footer section with a copyright notice -->
+    <footer>
+        <p>&copy; 2025 Makeup by NY</p>
+    </footer>
+
+    <!-- Import Firebase core and authentication libraries -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"></script>
+
+    <!-- Link to the Firebase configuration and logic file -->
+    <script src="firebase.js"></script>
+</body>
+</html>
