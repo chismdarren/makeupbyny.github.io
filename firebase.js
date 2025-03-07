@@ -16,41 +16,43 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication using the app instance (recommended)
+// Initialize Firebase Authentication using the app instance
 const auth = getAuth(app);
 
 console.log("Firebase Initialized Successfully!");
 
-// Get reference to the sign-up form and input fields
+// Check if the sign-up form exists before attaching the event listener
 const signUpForm = document.getElementById('signUpForm');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
+if (signUpForm) {
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
 
-// Add event listener to the sign-up form
-signUpForm.addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent form submission to avoid page reload
+  // Add event listener to the sign-up form
+  signUpForm.addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission to avoid page reload
 
-    // Get the email and password entered by the user
-    const email = emailInput.value;
-    const password = passwordInput.value;
+      // Get the email and password entered by the user
+      const email = emailInput.value;
+      const password = passwordInput.value;
 
-    // Create a new user with email and password using Firebase Authentication
-    createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            // If user creation is successful, the following code will run
-            const user = userCredential.user;
-            alert("Account created successfully!");
-            // Optionally redirect the user to the login page after successful sign-up
-            window.location.href = 'login.html';  // Redirect to login page
-        })
-        .catch((error) => {
-            // If there's an error, such as weak password or email already in use
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.error(errorCode, errorMessage);
-            alert("Error: " + errorMessage);  // Display error message to user
-        });
-});
+      // Create a new user with email and password using Firebase Authentication
+      createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+              // If user creation is successful, the following code will run
+              const user = userCredential.user;
+              alert("Account created successfully!");
+              // Optionally redirect the user to the login page after successful sign-up
+              window.location.href = 'login.html';  // Redirect to login page
+          })
+          .catch((error) => {
+              // If there's an error, such as weak password or email already in use
+              const errorCode = error.code;
+              const errorMessage = error.message;
+              console.error(errorCode, errorMessage);
+              alert("Error: " + errorMessage);  // Display error message to user
+          });
+  });
+}
 
 // Export auth so that other modules can import it
 export { auth };
