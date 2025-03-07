@@ -18,7 +18,7 @@
             <button type="submit">Login</button>
             <p id="error-message" style="color: red;"></p>
         </form>
-        <!-- Add the following line right after the form to link to the sign-up page -->
+        <!-- Link to navigate to the sign-up page -->
         <p>Don't have an account? <a href="sign-up.html">Create an Account</a></p>
     </main>
 
@@ -26,14 +26,23 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { auth } from "./firebase.js";
 
+        // Your admin UID
+        const adminUID = "xgbXFIbBVpNR27WFHwZmMOFHPxe2";
+
         document.getElementById("login-form").addEventListener("submit", (e) => {
             e.preventDefault();
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
             signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    window.location.href = "editor.html";  // Redirect to create post page
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    // Check if the logged-in user is the admin
+                    if (user.uid === adminUID) {
+                        window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
+                    } else {
+                        window.location.href = "editor.html";  // Redirect to regular user page
+                    }
                 })
                 .catch((error) => {
                     document.getElementById("error-message").textContent = error.message;
