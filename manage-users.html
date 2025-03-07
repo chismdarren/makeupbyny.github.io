@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Users</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Manage Users</h1>
+    <!-- Navigation for admin options -->
+    <nav>
+      <a href="admin-dashboard.html">Dashboard</a>
+      <a href="editor.html">Create/Edit Posts</a>
+    </nav>
+  </header>
+  <main>
+    <ul id="user-list">
+      <!-- User accounts will be listed here -->
+    </ul>
+  </main>
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+
+  <!-- Firebase Firestore script to load user data -->
+  <script type="module">
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    const db = getFirestore();
+
+    const userList = document.getElementById("user-list");
+
+    async function loadUsers() {
+      try {
+        // Fetch all documents from the "users" collection
+        const querySnapshot = await getDocs(collection(db, "users"));
+        querySnapshot.forEach((doc) => {
+          const li = document.createElement("li");
+          // Display email and UID of each user
+          li.textContent = `Email: ${doc.data().email} | UID: ${doc.id}`;
+          userList.appendChild(li);
+        });
+      } catch (error) {
+        console.error("Error loading users:", error);
+        const errorMsg = document.createElement("p");
+        errorMsg.textContent = "Error loading users.";
+        userList.appendChild(errorMsg);
+      }
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
