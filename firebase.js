@@ -21,14 +21,16 @@ const auth = getAuth(app);
 
 console.log("Firebase Initialized Successfully!");
 
-// Check if the sign-up form exists before attaching the event listener
-const signUpForm = document.getElementById('signUpForm');
-if (signUpForm) {
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
+// Wait for the DOM to fully load
+document.addEventListener("DOMContentLoaded", function() {
+  // Get reference to the sign-up form and input fields
+  const signUpForm = document.getElementById('signUpForm');
+  if (signUpForm) {
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
 
-  // Add event listener to the sign-up form
-  signUpForm.addEventListener('submit', function(event) {
+    // Add event listener to the sign-up form
+    signUpForm.addEventListener('submit', function(event) {
       event.preventDefault(); // Prevent form submission to avoid page reload
 
       // Get the email and password entered by the user
@@ -41,18 +43,17 @@ if (signUpForm) {
               // If user creation is successful, the following code will run
               const user = userCredential.user;
               alert("Account created successfully!");
-              // Optionally redirect the user to the login page after successful sign-up
-              window.location.href = 'login.html';  // Redirect to login page
+              // Redirect to login page after successful sign-up
+              window.location.href = 'login.html';
           })
           .catch((error) => {
               // If there's an error, such as weak password or email already in use
-              const errorCode = error.code;
-              const errorMessage = error.message;
-              console.error(errorCode, errorMessage);
-              alert("Error: " + errorMessage);  // Display error message to user
+              console.error(error.code, error.message);
+              alert("Error: " + error.message);
           });
-  });
-}
+    });
+  }
+});
 
 // Export auth so that other modules can import it
 export { auth };
