@@ -2,44 +2,56 @@
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { auth } from "./firebase.js";
 
+// Import Firestore functions
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// Initialize Firestore
+const db = getFirestore();
+
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
-  // Select login/logout and create post elements (if they exist on this page)
+  // Authentication state handling
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
   const createPostLink = document.getElementById("create-post-link");
 
-  // Only run the auth state code if these elements exist
   if (loginLink && logoutBtn && createPostLink) {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loginLink.style.display = "none";      // Hide login link
-        logoutBtn.style.display = "block";       // Show logout button
-        createPostLink.style.display = "inline"; // Show "Create a Post" link
+        loginLink.style.display = "none";
+        logoutBtn.style.display = "block";
+        createPostLink.style.display = "inline";
       } else {
-        loginLink.style.display = "block";       // Show login link
-        logoutBtn.style.display = "none";        // Hide logout button
-        createPostLink.style.display = "none";     // Hide "Create a Post" link
+        loginLink.style.display = "block";
+        logoutBtn.style.display = "none";
+        createPostLink.style.display = "none";
       }
     });
   }
 
-  // Attach logout functionality if the logout button exists
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       signOut(auth).then(() => {
-        window.location.href = "index.html"; // Redirect to homepage after sign-out
+        window.location.href = "index.html";
       });
     });
   }
 
-  // Attach the post form submission handler (if the post form exists)
+  // Handle post form submission (for creating a new post)
   const postForm = document.getElementById("postForm");
-  // Get the container where new posts will be appended
+  // Optional container for immediate post display (if used)
   const postsContainer = document.getElementById("postsContainer");
 
   if (postForm) {
-    postForm.addEventListener("submit", function (event) {
+    postForm.addEventListener("submit", async function (event) {
       event.preventDefault();
       let title = document.getElementById("title").value;
       let content = document.getElementById("content").value;
@@ -47,19 +59,54 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Form submitted");
       console.log("Title:", title);
       console.log("Content:", content);
-      alert(`Post submitted: ${title}`);
 
-      // Create a new element to display the post
-      const postElement = document.createElement("div");
-      postElement.innerHTML = `<h3>${title}</h3><p>${content}</p>`;
+      // Save the post to Firestore
+      try {
+        await addDoc(collection(db, "posts"), {
+          title: title,
+          content: content,
+          createdAt: serverTimestamp()
+        });
+        alert(`Post submitted: ${title}`);
+      } catch (error) {
+        console.error("Error adding post:", error);
+        alert("Error submitting post.");
+      }
 
-      // Append the new post element to the container if it exists
+      // Optionally, append the new post element to the postsContainer if it exists
       if (postsContainer) {
+        const postElement = document.createElement("div");
+        postElement.innerHTML = `<h3>${title}</h3><p>${content}</p>`;
         postsContainer.appendChild(postElement);
       }
       
-      // Optionally, clear the form fields after submission
+      // Clear the form fields after submission
       postForm.reset();
     });
+  }
+
+  // If a container with ID "postsList" exists, fetch and display posts with edit links
+  const postsListContainer = document.getElementById("postsList");
+  if (postsListContainer) {
+    (async () => {
+      try {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const postData = doc.data();
+          const postElement = document.createElement("div");
+          postElement.innerHTML = `
+            <h3>${postData.title}</h3>
+            <p>${postData.content.substring(0, 100)}...</p>
+            <a href="edit-post.html?postId=${doc.id}">Edit Post</a>
+            <hr>
+          `;
+          postsListContainer.appendChild(postElement);
+        });
+      } catch (error) {
+        console.error("Error fetching posts for editor:", error);
+        postsListContainer.innerHTML = "<p>Error loading posts.</p>";
+      }
+    })();
   }
 });

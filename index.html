@@ -1,37 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Makeup Blog - Homepage</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makeup Blog - Homepage</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Welcome to Makeup by NY</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a id="create-post-link" href="editor.html" style="display: none;">Create a Post</a>
-            <a id="login-link" href="login.html">Login</a>
-            <button id="logout-btn" style="display: none;">Logout</button>
-        </nav>        
-    </header>
+  <header>
+    <h1>Welcome to Makeup by NY</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a id="create-post-link" href="editor.html" style="display: none;">Create a Post</a>
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
 
-    <div class="container">
-        <main>
-            <h2>Latest Posts</h2>
-            <p>Check out the latest makeup tips and tutorials!</p>
-        </main>
+  <div class="container">
+    <main>
+      <h2>Latest Posts</h2>
+      <!-- Container where posts will be loaded -->
+      <div id="blogPosts"></div>
+    </main>
 
-        <aside class="sidebar">
-            <img src="your-photo.jpg" alt="Your Name" class="profile-pic">
-            <h2>About Me</h2>
-            <p>Hey, I'm [Your Name]! I love makeup and beauty. Follow my journey!</p>
-        </aside>
-    </div>
+    <aside class="sidebar">
+      <img src="your-photo.jpg" alt="Your Name" class="profile-pic">
+      <h2>About Me</h2>
+      <p>Hey, I'm [Your Name]! I love makeup and beauty. Follow my journey!</p>
+    </aside>
+  </div>
 
-    <footer>
-        <p>&copy; 2025 Makeup by NY</p>
-    </footer>
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
 
-    <scrip
+  <!-- Script to fetch and display posts from Firestore -->
+  <script type="module">
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    const db = getFirestore();
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const blogPostsContainer = document.getElementById("blogPosts");
+      try {
+        // Query posts ordered by creation time (latest first)
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const postData = doc.data();
+          // Create a clickable element for each post
+          const postElement = document.createElement("div");
+          postElement.innerHTML = `
+            <a href="post.html?postId=${doc.id}" style="text-decoration: none; color: inherit;">
+              <h3>${postData.title}</h3>
+              <p>${postData.content}</p>
+            </a>
+            <hr>
+          `;
+          blogPostsContainer.appendChild(postElement);
+        });
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        blogPostsContainer.innerHTML = "<p>Error loading posts.</p>";
+      }
+    });
+  </script>
+</body>
+</html>
