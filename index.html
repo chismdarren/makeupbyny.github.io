@@ -25,6 +25,7 @@
     </main>
 
     <aside class="sidebar">
+      <!-- Update the image path if necessary -->
       <img src="your-photo.jpg" alt="Your Name" class="profile-pic">
       <h2>About Me</h2>
       <p>Hey, I'm [Your Name]! I love makeup and beauty. Follow my journey!</p>
@@ -35,11 +36,17 @@
     <p>&copy; 2025 Makeup by NY</p>
   </footer>
 
-  <!-- Script to fetch and display posts from Firestore -->
+  <!-- Load firebase.js first to initialize Firebase -->
+  <script type="module" src="firebase.js"></script>
+
+  <!-- Then load your Firestore fetch code -->
   <script type="module">
+    // Import Firestore functions
     import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    // Now getFirestore() will use the default Firebase app created in firebase.js
     const db = getFirestore();
 
+    // Wait until the DOM is fully loaded
     document.addEventListener("DOMContentLoaded", async () => {
       const blogPostsContainer = document.getElementById("blogPosts");
       try {
