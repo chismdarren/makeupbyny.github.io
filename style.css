@@ -1,122 +1,121 @@
 /* Basic styles for the blog */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f9f9f9;
-  }
-  
-  /* Header */
-  header {
-    background-color: #333;
-    color: white;
-    padding: 20px 10px;
-    text-align: center;
-    position: relative;
-  }
-  
-  header h1 {
-    margin: 0;
-    font-size: 2em;
-  }
-  
-  nav {
-    margin-top: 10px;
-  }
-  
-  nav a,
-  nav button {
-    margin: 0 10px;
-    color: white;
-    text-decoration: none;
-    font-size: 1em;
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-  
-  /* Main content container */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+}
+
+/* Header */
+header {
+  background-color: #333;
+  color: white;
+  padding: 20px 10px;
+  text-align: center;
+  position: relative;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2em;
+}
+
+nav {
+  margin-top: 10px;
+}
+
+nav a,
+nav button {
+  margin: 0 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 1em;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Main content container */
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+/* Posts section */
+.posts {
+  flex: 3;
+  padding: 20px;
+}
+
+/* Vertical list layout for posts on the homepage */
+#blogPosts {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#blogPosts div {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  transition: transform 0.3s;
+}
+
+#blogPosts div:hover {
+  transform: translateY(-5px);
+}
+
+/* Sidebar - About Me */
+.about-me {
+  flex: 1;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 300px;
+}
+
+.about-me img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+  object-fit: cover;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #333;
+  color: white;
+}
+
+/* Form styling */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form input[type="text"],
+form textarea {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .content {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 20px;
-  }
-  
-  /* Posts section */
-  .posts {
-    flex: 3;
-    padding: 20px;
-  }
-  
-  /* Grid layout for posts on the homepage */
-  #blogPosts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-  }
-  
-  #blogPosts div {
-    background-color: #fff;
-    padding: 15px;
-    border: 1px solid #ddd;
-    transition: transform 0.3s;
-  }
-  
-  #blogPosts div:hover {
-    transform: translateY(-5px);
-  }
-  
-  /* Sidebar - About Me */
-  .about-me {
-    flex: 1;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    max-width: 300px;
-  }
-  
-  .about-me img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin-bottom: 15px;
-    object-fit: cover;
-  }
-  
-  /* Footer */
-  footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #333;
-    color: white;
-  }
-  
-  /* Form styling */
-  form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  form input[type="text"],
-  form textarea {
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .content {
       flex-direction: column;
-    }
-    
-    .about-me {
+  }
+  
+  .about-me {
       max-width: 100%;
       margin-top: 20px;
-    }
   }
-  
+}
