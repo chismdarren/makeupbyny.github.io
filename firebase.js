@@ -1,19 +1,20 @@
-// Import Firebase SDK
+// Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBeCYpS1JV5gJWD8qWsnVKenwgbDrIt_h8",
   authDomain: "makeupbyny-1.firebaseapp.com",
   projectId: "makeupbyny-1",
-  storageBucket: "makeupbyny-1.appspot.com",
+  // Updated storageBucket to match the bucket with proper CORS configuration:
+  storageBucket: "makeupbyny-1.firebasestorage.app",
   messagingSenderId: "327675302548",
   appId: "1:327675302548:web:581f25c2c6aebaab629a81",
   measurementId: "G-P8F85KTSFP"
 };
 
-// Initialize Firebase
+// Initialize Firebase with the provided configuration
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Authentication using the app instance
@@ -21,33 +22,32 @@ const auth = getAuth(app);
 
 console.log("Firebase Initialized Successfully!");
 
-// Wait for the DOM to fully load
+// Wait for the DOM to fully load before attaching event listeners
 document.addEventListener("DOMContentLoaded", function() {
-  // Get reference to the sign-up form and input fields
+  // Get reference to the sign-up form (if present) and its input fields
   const signUpForm = document.getElementById('signUpForm');
   if (signUpForm) {
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
 
-    // Add event listener to the sign-up form
+    // Attach an event listener to handle sign-up form submission
     signUpForm.addEventListener('submit', function(event) {
-      event.preventDefault(); // Prevent form submission to avoid page reload
+      event.preventDefault(); // Prevent page reload on form submission
 
-      // Get the email and password entered by the user
+      // Retrieve email and password from input fields
       const email = emailInput.value;
       const password = passwordInput.value;
 
-      // Create a new user with email and password using Firebase Authentication
+      // Create a new user with Firebase Authentication using the provided email and password
       createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
-              // If user creation is successful, the following code will run
+              // On successful account creation, alert the user and redirect to the login page
               const user = userCredential.user;
               alert("Account created successfully!");
-              // Redirect to login page after successful sign-up
               window.location.href = 'login.html';
           })
           .catch((error) => {
-              // If there's an error, such as weak password or email already in use
+              // Log errors and alert the user if account creation fails
               console.error(error.code, error.message);
               alert("Error: " + error.message);
           });
@@ -55,5 +55,5 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-// Export auth so that other modules can import it
+// Export auth so that other modules (like your script.js) can import it
 export { auth };
