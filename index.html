@@ -59,11 +59,16 @@
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
           const postData = doc.data();
+          // Check for imageUrl; if available, include an <img> tag.
+          const imageHtml = postData.imageUrl 
+            ? `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`
+            : "";
           // Create a clickable element for each post
           const postElement = document.createElement("div");
           postElement.innerHTML = `
             <a href="post.html?postId=${doc.id}" style="text-decoration: none; color: inherit;">
               <h3>${postData.title}</h3>
+              ${imageHtml}
               <p>${postData.content}</p>
             </a>
             <hr>
