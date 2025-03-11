@@ -6,8 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create a Post</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Inline styles for demo purposes; ideally, these should be moved to style.css -->
+  <!-- Inline styles for demo purposes; ideally, move these to style.css -->
   <style>
+    /* Navigation bar styling for the editor page */
+    .nav-bar {
+      background-color: #333;
+      padding: 10px;
+      text-align: center;
+    }
+    .nav-bar a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+    }
     /* Spacing for form groups */
     .form-group { margin-bottom: 1em; }
     /* Flex container for side-by-side layout of the form and live preview */
@@ -21,6 +33,12 @@
   </style>
 </head>
 <body>
+  <!-- Navigation Bar: Allows you to go to Home or refresh Create Post page -->
+  <div class="nav-bar">
+    <a href="index.html">Home</a>
+    <a href="editor.html">Create Post</a>
+  </div>
+
   <!-- Header section -->
   <header>
     <h1>Create a New Post</h1>
