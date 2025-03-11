@@ -13,8 +13,17 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Initialize Firestore
+// Import Firebase Storage functions for image uploads
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+
+// Initialize Firestore and Storage
 const db = getFirestore();
+const storage = getStorage();
 
 // Hardcoded admin UID (update if needed)
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
@@ -48,24 +57,46 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== Post Creation Handling =====
+  // ===== Post Creation Handling (with Image Upload) =====
   const postForm = document.getElementById("postForm");
-  const postsContainer = document.getElementById("postsContainer"); // Optional immediate display container
+  // Optional container for immediate post display (if used)
+  const postsContainer = document.getElementById("postsContainer");
 
   if (postForm) {
     postForm.addEventListener("submit", async function (event) {
       event.preventDefault();
-      let title = document.getElementById("title").value;
-      let content = document.getElementById("content").value;
-      
+      // Retrieve form values
+      const title = document.getElementById("title").value;
+      const content = document.getElementById("content").value;
+      // Get the image file (if any) from the file input with id "image"
+      const imageInput = document.getElementById("image");
+      const imageFile = imageInput ? imageInput.files[0] : null;
+      let imageUrl = "";
+
       console.log("Form submitted");
       console.log("Title:", title);
       console.log("Content:", content);
 
+      // If an image is selected, upload it to Firebase Storage and get the download URL
+      if (imageFile) {
+        const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
+        try {
+          await uploadBytes(imageRef, imageFile);
+          imageUrl = await getDownloadURL(imageRef);
+          console.log("Image URL:", imageUrl);
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          alert("Error uploading image. Please try again.");
+          return; // Stop submission if image upload fails
+        }
+      }
+
+      // Save the post to Firestore including the image URL (if available)
       try {
         await addDoc(collection(db, "posts"), {
           title: title,
           content: content,
+          imageUrl: imageUrl, // Will be an empty string if no image was uploaded
           createdAt: serverTimestamp()
         });
         alert(`Post submitted: ${title}`);
@@ -74,12 +105,14 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Error submitting post.");
       }
 
+      // Optionally, append the new post element to postsContainer (if it exists)
       if (postsContainer) {
         const postElement = document.createElement("div");
         postElement.innerHTML = `<h3>${title}</h3><p>${content}</p>`;
         postsContainer.appendChild(postElement);
       }
       
+      // Clear the form fields after submission
       postForm.reset();
     });
   }
