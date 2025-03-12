@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <!-- Inline styles for demo purposes; ideally, move these to style.css -->
   <style>
-    /* Header styling */
+    /* Header styling (matches homepage) */
     header {
       background-color: #333;
       color: white;
@@ -20,18 +20,17 @@
       margin: 0;
       font-size: 2em;
     }
-    /* Admin Navigation Menu styling, now placed within the header */
-    .admin-nav {
-      background-color: #444;
-      padding: 10px;
-      text-align: center;
+    nav {
       margin-top: 10px;
     }
-    .admin-nav a {
+    nav a, nav button {
+      margin: 0 10px;
       color: white;
       text-decoration: none;
-      margin: 0 15px;
-      font-weight: bold;
+      font-size: 1em;
+      background: none;
+      border: none;
+      cursor: pointer;
     }
     /* Spacing for form groups */
     .form-group { margin-bottom: 1em; }
@@ -41,7 +40,6 @@
     .flex-item { flex: 1; }
     /* Styles for the live preview area */
     .preview { border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
-    /* Ensure preview image fits the container and is hidden by default */
     .preview img { max-width: 100%; display: none; }
     /* Manage Posts Section styling */
     .post-wrapper {
@@ -53,9 +51,7 @@
       background-color: #fff;
       margin-bottom: 10px;
     }
-    .post-content {
-      flex: 3;
-    }
+    .post-content { flex: 3; }
     .post-actions {
       flex: 1;
       display: flex;
@@ -70,15 +66,16 @@
   </style>
 </head>
 <body>
-  <!-- Header section with embedded admin navigation menu -->
+  <!-- Header Section with navigation matching the homepage -->
   <header>
-    <h1>Create a New Post</h1>
-    <!-- Admin Navigation Menu placed directly under the header title -->
-    <div class="admin-nav">
+    <h1>Welcome to Makeup by NY</h1>
+    <nav>
       <a href="index.html">Home</a>
-      <a href="admin-dashboard.html">Admin Dashboard</a>
-      <a href="manage-users.html">Manage Users</a>
-    </div>
+      <!-- Create Post link is hidden, as on the homepage -->
+      <a id="create-post-link" href="editor.html" style="display: none;">Create a Post</a>
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
   </header>
   
   <!-- Main content area -->
