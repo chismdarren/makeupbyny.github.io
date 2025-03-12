@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <!-- Header Section -->
   <header>
     <h1>Welcome to Makeup by NY</h1>
@@ -22,8 +23,10 @@
     </nav>
   </header>
 
+
   <!-- Main Content Area -->
   <div class="content">
+
     <!-- Posts Section -->
     <main class="posts">
       <h2>Latest Posts</h2>
@@ -31,20 +34,27 @@
       <div id="blogPosts"></div>
     </main>
 
+
     <!-- About Me Sidebar -->
     <aside class="about-me">
-      <img src="ny red hair.jpg" alt="Ny Red Hair" class="profile-pic">
-      <h2>About Me</h2>
+      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
+
       <p>
-        Hello and welcome to my Makeup and Beauty Blog! I’m Ny, an aspiring makeup artist who’s absolutely head-over-heels for all things beauty. Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+        Hello and welcome to my Makeup and Beauty Blog! I’m Ny, an aspiring makeup artist who’s absolutely head-over-heels for all things beauty.
+      </p>
+      <p>
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
     </aside>
+
   </div>
+
 
   <!-- Footer Section -->
   <footer>
     <p>&copy; 2025 Makeup by NY</p>
   </footer>
+
 
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
@@ -56,8 +66,8 @@
     // Import authentication functions and auth instance from firebase.js
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { auth } from "./firebase.js";
-    const db = getFirestore();
 
+    const db = getFirestore();
     // Admin UID - update if needed
     const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
@@ -65,22 +75,20 @@
     document.addEventListener("DOMContentLoaded", () => {
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          // Hide login, show logout
           document.getElementById("login-link").style.display = "none";
           document.getElementById("logout-btn").style.display = "inline";
-          // If user is admin, show admin links
+
           if (user.uid === adminUID) {
             document.getElementById("adminDashboard").style.display = "inline";
             document.getElementById("createPost").style.display = "inline";
             document.getElementById("manageUsers").style.display = "inline";
           } else {
-            // Hide admin links if not admin
             document.getElementById("adminDashboard").style.display = "none";
             document.getElementById("createPost").style.display = "none";
             document.getElementById("manageUsers").style.display = "none";
           }
+
         } else {
-          // Not logged in: show login and hide logout and admin links
           document.getElementById("login-link").style.display = "inline";
           document.getElementById("logout-btn").style.display = "none";
           document.getElementById("adminDashboard").style.display = "none";
@@ -89,14 +97,14 @@
         }
       });
 
-      // Logout button functionality
+
       document.getElementById("logout-btn").addEventListener("click", () => {
         auth.signOut().then(() => {
           window.location.href = "index.html";
         });
       });
 
-      // Fetch and display posts in the blogPosts container
+
       const blogPostsContainer = document.getElementById("blogPosts");
       (async () => {
         try {
@@ -107,6 +115,7 @@
             const imageHtml = postData.imageUrl 
               ? `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`
               : "";
+
             const postElement = document.createElement("div");
             postElement.innerHTML = `
               <a href="post.html?postId=${doc.id}" style="text-decoration: none; color: inherit;">
@@ -125,5 +134,6 @@
       })();
     });
   </script>
+
 </body>
 </html>
