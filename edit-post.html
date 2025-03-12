@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Responsive meta tag for mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Post</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header section -->
+  <header>
+    <h1>Edit Post</h1>
+  </header>
+  <!-- Main content area containing the edit form -->
+  <main>
+    <!-- Edit post form -->
+    <form id="editPostForm">
+      <!-- Input for editing the title -->
+      <label for="editTitle">Title:</label>
+      <input type="text" id="editTitle" name="editTitle" required>
+      
+      <!-- Textarea for editing the content -->
+      <label for="editContent">Content:</label>
+      <textarea id="editContent" name="editContent" required></textarea>
+      
+      <!-- Button to submit the form and save changes -->
+      <button type="submit">Save Changes</button>
+    </form>
+  </main>
+  <!-- Footer section -->
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+  
+  <!-- Inline script loaded as an ES module -->
+  <script type="module">
+    // Import necessary Firestore functions from Firebase SDK
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    
+    // Initialize Firestore
+    const db = getFirestore();
+    
+    // Wait until the DOM is fully loaded
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Retrieve URL parameters to get the postId
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get("postId");
+      
+      // If a postId is provided, fetch the post data from Firestore
+      if (postId) {
+        const postDocRef = doc(db, "posts", postId);   // Reference to the specific post document
+        const postSnapshot = await getDoc(postDocRef);    // Fetch the document
+      
+        // Check if the document exists
+        if (postSnapshot.exists()) {
+          const postData = postSnapshot.data();  // Retrieve the data from the document
+          
+          // Populate the form fields with the existing post data
+          document.getElementById("editTitle").value = postData.title;
+          document.getElementById("editContent").value = postData.content;
+        } else {
+          console.error("No such post!");  // Log error if post is not found
+        }
+      } else {
+        console.error("No postId found in the URL."); // Log error if postId parameter is missing
+      }
+      
+      // Get a reference to the edit post form
+      const editPostForm = document.getElementById("editPostForm");
+      
+      // If the edit form exists, attach an event listener for form submission
+      if (editPostForm) {
+        editPostForm.addEventListener("submit", async (e) => {
+          e.preventDefault();  // Prevent the default form submission behavior
+          
+          // Get updated title and content from the form fields
+          const newTitle = document.getElementById("editTitle").value;
+          const newContent = document.getElementById("editContent").value;
+          
+          try {
+            // Update the post in Firestore with the new title and content
+            await updateDoc(doc(db, "posts", postId), {
+              title: newTitle,
+              content: newContent
+            });
+            // Notify the user of success and redirect to the editor page
+            alert("Post updated successfully!");
+            window.location.href = "editor.html"; // Redirect back to the editor page
+          } catch (error) {
+            // Log and alert any errors during the update process
+            console.error("Error updating post:", error);
+            alert("Error updating post");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Login to Makeup by NY</h1>
+  </header>
+
+  <main>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required autocomplete="email">
+      <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+      <button type="submit">Login</button>
+      <p id="error-message" style="color: red;"></p>
+    </form>
+    <!-- Link to navigate to the sign-up page -->
+    <p>Don't have an account? <a href="sign-up.html">Create an Account</a></p>
+  </main>
+
+  <script type="module">
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { auth } from "./firebase.js";
+
+    // Updated admin UID
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
+    console.log("Login script loaded");  // Debug log to confirm script load
+
+    document.getElementById("login-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log("Logged in user UID:", user.uid);  // Debug: show UID in console
+          // Check if the logged-in user is the admin
+          if (user.uid === adminUID) {
+            console.log("Admin login detected");  // Debug: admin branch
+            alert("Admin login detected. Redirecting to admin dashboard.");
+            window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
+          } else {
+            console.log("Non-admin login detected");  // Debug: non-admin branch
+            alert("Non-admin login detected. Redirecting to blog page.");
+            window.location.href = "index.html";  // Redirect non-admin users to the blog page
+          }
+        })
+        .catch((error) => {
+          console.error("Error during login:", error);
+          document.getElementById("error-message").textContent = error.message;
+        });
+    });
+  </script>
+</body>
+</html>

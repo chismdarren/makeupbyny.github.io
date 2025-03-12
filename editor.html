@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Ensures the page scales properly on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create a Post</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Inline styles for demo purposes; ideally, move these to style.css -->
+  <style>
+    /* Navigation bar styling for the editor page */
+    .nav-bar {
+      background-color: #333;
+      padding: 10px;
+      text-align: center;
+    }
+    .nav-bar a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+    }
+    /* Spacing for form groups */
+    .form-group { margin-bottom: 1em; }
+    /* Flex container for side-by-side layout of the form and live preview */
+    .flex-container { display: flex; gap: 2em; }
+    /* Flex items take equal space */
+    .flex-item { flex: 1; }
+    /* Styles for the live preview area */
+    .preview { border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
+    /* Ensure preview image fits the container and is hidden by default */
+    .preview img { max-width: 100%; display: none; }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar: Allows you to go to Home or refresh Create Post page -->
+  <div class="nav-bar">
+    <a href="index.html">Home</a>
+    <a href="editor.html">Create Post</a>
+  </div>
+
+  <!-- Header section -->
+  <header>
+    <h1>Create a New Post</h1>
+  </header>
+  
+  <!-- Main content area -->
+  <main>
+    <div class="flex-container">
+      <!-- Form Section -->
+      <div class="flex-item">
+        <!-- Post Creation Form -->
+        <form id="postForm">
+          <!-- Post Title Input Field -->
+          <div class="form-group">
+            <label for="title">Post Title:</label>
+            <input type="text" id="title" name="title" required>
+          </div>
+          <!-- Post Content Input Field -->
+          <div class="form-group">
+            <label for="content">Post Content:</label>
+            <textarea id="content" name="content" rows="8" required></textarea>
+          </div>
+          <!-- Image Upload Input Field -->
+          <div class="form-group">
+            <label for="image">Upload Image:</label>
+            <input type="file" id="image" name="image" accept="image/*">
+          </div>
+          <!-- Tags Input Field -->
+          <div class="form-group">
+            <label for="tags">Tags (comma separated):</label>
+            <input type="text" id="tags" name="tags">
+          </div>
+          <!-- Post Status Radio Buttons -->
+          <div class="form-group">
+            <label>Post Status:</label>
+            <label><input type="radio" name="status" value="draft" checked> Draft</label>
+            <label><input type="radio" name="status" value="published"> Publish</label>
+          </div>
+          <!-- Submit Button -->
+          <button type="submit">Create Post</button>
+        </form>
+      </div>
+      
+      <!-- Live Preview Section -->
+      <div class="flex-item">
+        <h2>Live Preview</h2>
+        <div class="preview" id="previewArea">
+          <!-- Preview of the Post Title -->
+          <h3 id="previewTitle">Post Title Preview</h3>
+          <!-- Preview of the Post Content -->
+          <p id="previewContent">Post content preview will appear here...</p>
+          <!-- Preview of the Uploaded Image (hidden by default) -->
+          <img id="previewImage" src="" alt="Post image preview">
+          <!-- Preview of the Tags -->
+          <p id="previewTags"></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Optional: Container to list posts with edit links (for admin view) -->
+    <div id="postsList"></div>
+  </main>
+  
+  <!-- Footer section -->
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+  
+  <!-- Load the JavaScript file as an ES module -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>

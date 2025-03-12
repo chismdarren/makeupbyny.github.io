@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makeup Blog - Homepage</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header Section -->
+  <header>
+    <h1>Welcome to Makeup by NY</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a id="create-post-link" href="editor.html" style="display: none;">Create a Post</a>
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="content">
+    <!-- Posts Section -->
+    <main class="posts">
+      <h2>Latest Posts</h2>
+      <!-- Container where posts will be loaded -->
+      <div id="blogPosts"></div>
+    </main>
+
+    <!-- About Me Sidebar -->
+    <aside class="about-me">
+      <img src="your-photo.jpg" alt="Your Name" class="profile-pic">
+      <h2>About Me</h2>
+      <p>Hey, I'm [Your Name]! I love makeup and beauty. Follow my journey!</p>
+    </aside>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+
+  <!-- Load firebase.js first to initialize Firebase -->
+  <script type="module" src="firebase.js"></script>
+
+  <!-- Then load your Firestore fetch code -->
+  <script type="module">
+    // Import Firestore functions from Firebase
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    // Now getFirestore() will use the default Firebase app created in firebase.js
+    const db = getFirestore();
+
+    // Wait until the DOM is fully loaded
+    document.addEventListener("DOMContentLoaded", async () => {
+      const blogPostsContainer = document.getElementById("blogPosts");
+      try {
+        // Query posts ordered by creation time (latest first)
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const postData = doc.data();
+          // Check for imageUrl; if available, include an <img> tag.
+          const imageHtml = postData.imageUrl 
+            ? `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`
+            : "";
+          // Create a clickable element for each post
+          const postElement = document.createElement("div");
+          postElement.innerHTML = `
+            <a href="post.html?postId=${doc.id}" style="text-decoration: none; color: inherit;">
+              <h3>${postData.title}</h3>
+              ${imageHtml}
+              <p>${postData.content}</p>
+            </a>
+            <hr>
+          `;
+          blogPostsContainer.appendChild(postElement);
+        });
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        blogPostsContainer.innerHTML = "<p>Error loading posts.</p>";
+      }
+    });
+  </script>
+</body>
+</html>
