@@ -8,13 +8,14 @@
   <link rel="stylesheet" href="style.css">
   <!-- Inline styles for demo purposes; ideally, move these to style.css -->
   <style>
-    /* Navigation bar styling for the editor page */
-    .nav-bar {
-      background-color: #333;
+    /* Admin Navigation Menu styling */
+    .admin-nav {
+      background-color: #444;
       padding: 10px;
       text-align: center;
+      margin-bottom: 20px;
     }
-    .nav-bar a {
+    .admin-nav a {
       color: white;
       text-decoration: none;
       margin: 0 15px;
@@ -30,13 +31,41 @@
     .preview { border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
     /* Ensure preview image fits the container and is hidden by default */
     .preview img { max-width: 100%; display: none; }
+    /* Manage Posts Section styling */
+    .post-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      margin-bottom: 10px;
+    }
+    .post-content {
+      flex: 3;
+    }
+    .post-actions {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: flex-end;
+    }
+    .post-actions button {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <!-- Navigation Bar: Allows you to go to Home or refresh Create Post page -->
-  <div class="nav-bar">
+  <!-- Admin Navigation Menu (Below header title) -->
+  <div class="admin-nav">
+    <!-- Home: Takes you to the homepage (where posts are visible) -->
     <a href="index.html">Home</a>
-    <a href="editor.html">Create Post</a>
+    <!-- Admin Dashboard: For overall admin functions -->
+    <a href="admin-dashboard.html">Admin Dashboard</a>
+    <!-- Manage Users: To manage user accounts -->
+    <a href="manage-users.html">Manage Users</a>
   </div>
 
   <!-- Header section -->
@@ -98,7 +127,8 @@
       </div>
     </div>
     
-    <!-- Optional: Container to list posts with edit links (for admin view) -->
+    <!-- Manage Posts Section: Lists posts with Edit, Delete, and Archive buttons (for admin view) -->
+    <h2>Manage Posts</h2>
     <div id="postsList"></div>
   </main>
   

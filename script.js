@@ -2,7 +2,7 @@
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { auth } from "./firebase.js";
 
-// Import Firestore functions including query functions
+// Import Firestore functions including query and document update/delete functions
 import {
   getFirestore,
   collection,
@@ -10,7 +10,10 @@ import {
   serverTimestamp,
   query,
   orderBy,
-  getDocs
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Import Firebase Storage functions for image uploads
@@ -30,6 +33,7 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
+
   // ===== Authentication State Handling =====
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
@@ -59,8 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== Post Creation Handling (with Image Upload) =====
   const postForm = document.getElementById("postForm");
-  // Optional container for immediate post display (if used)
-  const postsContainer = document.getElementById("postsContainer");
+  const postsContainer = document.getElementById("postsContainer"); // Optional immediate display container
 
   if (postForm) {
     postForm.addEventListener("submit", async function (event) {
@@ -68,7 +71,14 @@ document.addEventListener("DOMContentLoaded", () => {
       // Retrieve form values
       const title = document.getElementById("title").value;
       const content = document.getElementById("content").value;
-      // Get the image file (if any) from the file input with id "image"
+      const tags = document.getElementById("tags").value; // Optional
+      const statusElems = document.getElementsByName("status");
+      let status = "draft"; // default
+      statusElems.forEach((elem) => {
+        if (elem.checked) status = elem.value;
+      });
+
+      // Get the image file (if any)
       const imageInput = document.getElementById("image");
       const imageFile = imageInput ? imageInput.files[0] : null;
       let imageUrl = "";
@@ -96,28 +106,28 @@ document.addEventListener("DOMContentLoaded", () => {
         await addDoc(collection(db, "posts"), {
           title: title,
           content: content,
-          imageUrl: imageUrl, // Will be an empty string if no image was uploaded
+          tags: tags,
+          status: status,
+          imageUrl: imageUrl, // Will be empty if no image was uploaded
           createdAt: serverTimestamp()
         });
         alert(`Post submitted: ${title}`);
       } catch (error) {
         console.error("Error adding post:", error);
-        alert("Error submitting post.");
+        alert("Error submitting post. Please try again.");
       }
 
-      // Optionally, append the new post element to postsContainer (if it exists)
       if (postsContainer) {
         const postElement = document.createElement("div");
         postElement.innerHTML = `<h3>${title}</h3><p>${content}</p>`;
         postsContainer.appendChild(postElement);
       }
       
-      // Clear the form fields after submission
       postForm.reset();
     });
   }
 
-  // ===== Editor Page: Listing Posts with Edit Links (Admin Only) =====
+  // ===== Manage Posts Section: Listing Posts with Edit, Delete, and Archive Buttons (Admin Only) =====
   // This section will only execute if the logged-in user is the admin.
   onAuthStateChanged(auth, async (user) => {
     if (user && user.uid === adminUID) {
@@ -126,22 +136,78 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
           const querySnapshot = await getDocs(q);
-          querySnapshot.forEach((doc) => {
-            const postData = doc.data();
-            const postElement = document.createElement("div");
-            postElement.innerHTML = `
-              <h3>${postData.title}</h3>
-              <p>${postData.content.substring(0, 100)}...</p>
-              <a href="edit-post.html?postId=${doc.id}">Edit Post</a>
-              <hr>
+          querySnapshot.forEach((docSnapshot) => {
+            const postData = docSnapshot.data();
+            // Create a wrapper div for each post that includes content and action buttons
+            const postWrapper = document.createElement("div");
+            postWrapper.classList.add("post-wrapper");
+            // Post content section
+            let imageHtml = "";
+            if (postData.imageUrl) {
+              imageHtml = `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`;
+            }
+            postWrapper.innerHTML = `
+              <div class="post-content">
+                <h3>${postData.title}</h3>
+                ${imageHtml}
+                <p>${postData.content.substring(0, 100)}...</p>
+              </div>
+              <div class="post-actions">
+                <button class="editBtn" data-id="${docSnapshot.id}">Edit</button>
+                <button class="deleteBtn" data-id="${docSnapshot.id}">Delete</button>
+                <button class="archiveBtn" data-id="${docSnapshot.id}">Archive</button>
+              </div>
             `;
-            postsListContainer.appendChild(postElement);
+            postsListContainer.appendChild(postWrapper);
           });
         } catch (error) {
-          console.error("Error fetching posts for editor:", error);
+          console.error("Error fetching posts for admin:", error);
           postsListContainer.innerHTML = "<p>Error loading posts.</p>";
         }
       }
     }
   });
+
+  // Delegate event listeners for Edit, Delete, and Archive actions in the Manage Posts section
+  const postsListContainer = document.getElementById("postsList");
+  if (postsListContainer) {
+    postsListContainer.addEventListener("click", async (e) => {
+      const target = e.target;
+      // Handle Delete Action
+      if (target.classList.contains("deleteBtn")) {
+        const postId = target.getAttribute("data-id");
+        if (confirm("Are you sure you want to delete this post?")) {
+          try {
+            await deleteDoc(doc(db, "posts", postId));
+            alert("Post deleted successfully!");
+            // Remove the post from the UI
+            target.closest(".post-wrapper").remove();
+          } catch (error) {
+            console.error("Error deleting post:", error);
+            alert("Error deleting post.");
+          }
+        }
+      }
+      // Handle Archive Action
+      else if (target.classList.contains("archiveBtn")) {
+        const postId = target.getAttribute("data-id");
+        if (confirm("Are you sure you want to archive this post?")) {
+          try {
+            await updateDoc(doc(db, "posts", postId), { archived: true });
+            alert("Post archived successfully!");
+            // Optionally, remove the post from the UI
+            target.closest(".post-wrapper").remove();
+          } catch (error) {
+            console.error("Error archiving post:", error);
+            alert("Error archiving post.");
+          }
+        }
+      }
+      // Handle Edit Action
+      else if (target.classList.contains("editBtn")) {
+        const postId = target.getAttribute("data-id");
+        window.location.href = `edit-post.html?postId=${postId}`;
+      }
+    });
+  }
 });
