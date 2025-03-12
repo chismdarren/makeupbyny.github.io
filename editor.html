@@ -8,12 +8,24 @@
   <link rel="stylesheet" href="style.css">
   <!-- Inline styles for demo purposes; ideally, move these to style.css -->
   <style>
-    /* Admin Navigation Menu styling */
+    /* Header styling */
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px 10px;
+      text-align: center;
+      position: relative;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2em;
+    }
+    /* Admin Navigation Menu styling, now placed within the header */
     .admin-nav {
       background-color: #444;
       padding: 10px;
       text-align: center;
-      margin-bottom: 20px;
+      margin-top: 10px;
     }
     .admin-nav a {
       color: white;
@@ -58,19 +70,15 @@
   </style>
 </head>
 <body>
-  <!-- Admin Navigation Menu (Below header title) -->
-  <div class="admin-nav">
-    <!-- Home: Takes you to the homepage (where posts are visible) -->
-    <a href="index.html">Home</a>
-    <!-- Admin Dashboard: For overall admin functions -->
-    <a href="admin-dashboard.html">Admin Dashboard</a>
-    <!-- Manage Users: To manage user accounts -->
-    <a href="manage-users.html">Manage Users</a>
-  </div>
-
-  <!-- Header section -->
+  <!-- Header section with embedded admin navigation menu -->
   <header>
     <h1>Create a New Post</h1>
+    <!-- Admin Navigation Menu placed directly under the header title -->
+    <div class="admin-nav">
+      <a href="index.html">Home</a>
+      <a href="admin-dashboard.html">Admin Dashboard</a>
+      <a href="manage-users.html">Manage Users</a>
+    </div>
   </header>
   
   <!-- Main content area -->
