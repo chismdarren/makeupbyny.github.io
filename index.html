@@ -10,11 +10,15 @@
   <!-- Header Section -->
   <header>
     <h1>Welcome to Makeup by NY</h1>
-    <nav>
+    <nav id="mainNav">
       <a href="index.html">Home</a>
-      <a id="create-post-link" href="editor.html" style="display: none;">Create a Post</a>
+      <!-- Admin-only links (initially hidden) -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <a id="createPost" href="editor.html" style="display:none;">Create Post</a>
+      <a id="manageUsers" href="manage-users.html" style="display:none;">Manage Users</a>
+      <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
-      <button id="logout-btn" style="display: none;">Logout</button>
+      <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
 
@@ -43,42 +47,80 @@
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
 
-  <!-- Then load your Firestore fetch code -->
+  <!-- Then load your Firestore fetch and admin navigation toggling code -->
   <script type="module">
-    // Import Firestore functions from Firebase
+    // Import Firestore functions for fetching posts
     import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    // Now getFirestore() will use the default Firebase app created in firebase.js
+    // Import authentication functions and auth instance from firebase.js
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { auth } from "./firebase.js";
     const db = getFirestore();
 
-    // Wait until the DOM is fully loaded
-    document.addEventListener("DOMContentLoaded", async () => {
-      const blogPostsContainer = document.getElementById("blogPosts");
-      try {
-        // Query posts ordered by creation time (latest first)
-        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {
-          const postData = doc.data();
-          // Check for imageUrl; if available, include an <img> tag.
-          const imageHtml = postData.imageUrl 
-            ? `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`
-            : "";
-          // Create a clickable element for each post
-          const postElement = document.createElement("div");
-          postElement.innerHTML = `
-            <a href="post.html?postId=${doc.id}" style="text-decoration: none; color: inherit;">
-              <h3>${postData.title}</h3>
-              ${imageHtml}
-              <p>${postData.content}</p>
-            </a>
-            <hr>
-          `;
-          blogPostsContainer.appendChild(postElement);
+    // Admin UID - update if needed
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
+    // Toggle navigation based on user authentication state
+    document.addEventListener("DOMContentLoaded", () => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // Hide login, show logout
+          document.getElementById("login-link").style.display = "none";
+          document.getElementById("logout-btn").style.display = "inline";
+          // If user is admin, show admin links
+          if (user.uid === adminUID) {
+            document.getElementById("adminDashboard").style.display = "inline";
+            document.getElementById("createPost").style.display = "inline";
+            document.getElementById("manageUsers").style.display = "inline";
+          } else {
+            // Hide admin links if not admin
+            document.getElementById("adminDashboard").style.display = "none";
+            document.getElementById("createPost").style.display = "none";
+            document.getElementById("manageUsers").style.display = "none";
+          }
+        } else {
+          // Not logged in: show login and hide logout and admin links
+          document.getElementById("login-link").style.display = "inline";
+          document.getElementById("logout-btn").style.display = "none";
+          document.getElementById("adminDashboard").style.display = "none";
+          document.getElementById("createPost").style.display = "none";
+          document.getElementById("manageUsers").style.display = "none";
+        }
+      });
+
+      // Logout button functionality
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        auth.signOut().then(() => {
+          window.location.href = "index.html";
         });
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        blogPostsContainer.innerHTML = "<p>Error loading posts.</p>";
-      }
+      });
+
+      // Fetch and display posts in the blogPosts container
+      const blogPostsContainer = document.getElementById("blogPosts");
+      (async () => {
+        try {
+          const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+          const querySnapshot = await getDocs(q);
+          querySnapshot.forEach((doc) => {
+            const postData = doc.data();
+            const imageHtml = postData.imageUrl 
+              ? `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`
+              : "";
+            const postElement = document.createElement("div");
+            postElement.innerHTML = `
+              <a href="post.html?postId=${doc.id}" style="text-decoration: none; color: inherit;">
+                <h3>${postData.title}</h3>
+                ${imageHtml}
+                <p>${postData.content}</p>
+              </a>
+              <hr>
+            `;
+            blogPostsContainer.appendChild(postElement);
+          });
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+          blogPostsContainer.innerHTML = "<p>Error loading posts.</p>";
+        }
+      })();
     });
   </script>
 </body>

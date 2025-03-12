@@ -35,17 +35,22 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 document.addEventListener("DOMContentLoaded", () => {
 
   // ===== Authentication State Handling =====
+  // Get elements from the DOM. Notice the correction for the create post link:
+  // It now correctly references "createPost" (matching your index.html) instead of "create-post-link"
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
-  const createPostLink = document.getElementById("create-post-link");
+  const createPostLink = document.getElementById("createPost"); // Updated element ID
 
+  // Listen for changes in authentication state
   if (loginLink && logoutBtn && createPostLink) {
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        // User is logged in: hide login link, show logout and create post link
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
         createPostLink.style.display = "inline";
       } else {
+        // User is not logged in: show login link, hide logout and create post link
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
         createPostLink.style.display = "none";
@@ -53,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Logout functionality: sign out user and redirect to index.html
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       signOut(auth).then(() => {
@@ -62,23 +68,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===== Post Creation Handling (with Image Upload) =====
+  // Retrieve the post creation form and optional posts container for immediate display
   const postForm = document.getElementById("postForm");
-  const postsContainer = document.getElementById("postsContainer"); // Optional immediate display container
+  const postsContainer = document.getElementById("postsContainer");
 
+  // If the post form exists, add a submit event listener to handle new posts
   if (postForm) {
     postForm.addEventListener("submit", async function (event) {
       event.preventDefault();
-      // Retrieve form values
+      // Retrieve form values for title, content, and tags
       const title = document.getElementById("title").value;
       const content = document.getElementById("content").value;
       const tags = document.getElementById("tags").value; // Optional
       const statusElems = document.getElementsByName("status");
-      let status = "draft"; // default
+      let status = "draft"; // Default status
       statusElems.forEach((elem) => {
         if (elem.checked) status = elem.value;
       });
 
-      // Get the image file (if any)
+      // Retrieve the image file (if any) from the input field
       const imageInput = document.getElementById("image");
       const imageFile = imageInput ? imageInput.files[0] : null;
       let imageUrl = "";
@@ -89,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // If an image is selected, upload it to Firebase Storage and get the download URL
       if (imageFile) {
+        // Using template literals to create a unique path for the image
         const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
         try {
           await uploadBytes(imageRef, imageFile);
@@ -117,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Error submitting post. Please try again.");
       }
 
+      // Optionally, add the new post to the UI immediately
       if (postsContainer) {
         const postElement = document.createElement("div");
         postElement.innerHTML = `<h3>${title}</h3><p>${content}</p>`;
@@ -128,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===== Manage Posts Section: Listing Posts with Edit, Delete, and Archive Buttons (Admin Only) =====
-  // This section will only execute if the logged-in user is the admin.
+  // This section only runs for the admin user
   onAuthStateChanged(auth, async (user) => {
     if (user && user.uid === adminUID) {
       const postsListContainer = document.getElementById("postsList");
@@ -141,11 +151,12 @@ document.addEventListener("DOMContentLoaded", () => {
             // Create a wrapper div for each post that includes content and action buttons
             const postWrapper = document.createElement("div");
             postWrapper.classList.add("post-wrapper");
-            // Post content section
+            // Build image HTML if an image URL exists
             let imageHtml = "";
             if (postData.imageUrl) {
               imageHtml = `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`;
             }
+            // Construct inner HTML for the post with Edit, Delete, and Archive buttons
             postWrapper.innerHTML = `
               <div class="post-content">
                 <h3>${postData.title}</h3>
@@ -168,7 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Delegate event listeners for Edit, Delete, and Archive actions in the Manage Posts section
+  // ===== Delegate Event Listeners for Post Actions (Edit, Delete, Archive) =====
+  // Listen for clicks on the posts list container and handle button actions accordingly
   const postsListContainer = document.getElementById("postsList");
   if (postsListContainer) {
     postsListContainer.addEventListener("click", async (e) => {
@@ -180,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             await deleteDoc(doc(db, "posts", postId));
             alert("Post deleted successfully!");
-            // Remove the post from the UI
+            // Remove the post element from the UI
             target.closest(".post-wrapper").remove();
           } catch (error) {
             console.error("Error deleting post:", error);
@@ -195,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             await updateDoc(doc(db, "posts", postId), { archived: true });
             alert("Post archived successfully!");
-            // Optionally, remove the post from the UI
+            // Optionally, remove the post element from the UI
             target.closest(".post-wrapper").remove();
           } catch (error) {
             console.error("Error archiving post:", error);
@@ -203,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       }
-      // Handle Edit Action
+      // Handle Edit Action: Redirect to the edit-post page with the appropriate postId
       else if (target.classList.contains("editBtn")) {
         const postId = target.getAttribute("data-id");
         window.location.href = `edit-post.html?postId=${postId}`;
