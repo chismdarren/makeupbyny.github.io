@@ -70,16 +70,18 @@ nav button {
   background-color: transparent; /* Remove background color */
   border-radius: 8px; /* Less rounded */
   box-shadow: none; /* Remove shadow */
-  text-align: left; /* Align text like the reference */
+  text-align: center; /* Center text */
   max-width: 400px; /* Slightly wider */
 }
 
-/* Profile Picture - Softer Rounded Rectangle */
+/* Profile Picture - Centered Above Paragraph */
 .about-me img {
   width: 180px; /* Increase size */
   height: auto; /* Maintain aspect ratio */
   border-radius: 20px; /* Softer, rounded corners */
   object-fit: cover;
+  display: block;
+  margin: 0 auto 15px; /* Center the image */
 }
 
 /* Footer */
