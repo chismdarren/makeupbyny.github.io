@@ -57,32 +57,28 @@ nav button {
 }
 
 #blogPosts div {
-  background-color: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
-  transition: transform 0.3s;
+  background: none; /* Remove background */
+  border: none; /* Remove border */
+  padding: 0; /* Reduce padding */
+  transition: none; /* Remove hover animation */
 }
 
-#blogPosts div:hover {
-  transform: translateY(-5px);
-}
-
-/* Sidebar - About Me */
+/* About Me Sidebar - Softer Look */
 .about-me {
   flex: 1;
   padding: 20px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  max-width: 300px;
+  background-color: transparent; /* Remove background color */
+  border-radius: 8px; /* Less rounded */
+  box-shadow: none; /* Remove shadow */
+  text-align: left; /* Align text like the reference */
+  max-width: 400px; /* Slightly wider */
 }
 
+/* Profile Picture - Softer Rounded Rectangle */
 .about-me img {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  margin-bottom: 15px;
+  width: 180px; /* Increase size */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 20px; /* Softer, rounded corners */
   object-fit: cover;
 }
 
