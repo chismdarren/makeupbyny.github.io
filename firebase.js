@@ -1,14 +1,14 @@
 // Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBeCYpS1JV5gJWD8qWsnVKenwgbDrIt_h8",
   authDomain: "makeupbyny-1.firebaseapp.com",
   projectId: "makeupbyny-1",
-  // Updated storageBucket to match the bucket with proper CORS configuration:
-  storageBucket: "makeupbyny-1.firebasestorage.app",
+  storageBucket: "makeupbyny-1.appspot.com",
   messagingSenderId: "327675302548",
   appId: "1:327675302548:web:581f25c2c6aebaab629a81",
   measurementId: "G-P8F85KTSFP"
@@ -17,8 +17,9 @@ const firebaseConfig = {
 // Initialize Firebase with the provided configuration
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication using the app instance
+// Initialize Firebase Authentication and Firestore
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 console.log("Firebase Initialized Successfully!");
 
@@ -55,5 +56,5 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-// Export auth so that other modules (like your script.js) can import it
-export { auth };
+// Export auth and db so that other modules (like script.js) can import them
+export { auth, db };
