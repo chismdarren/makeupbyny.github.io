@@ -1,79 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Post</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <header>
-        <h1 id="postTitle">Loading...</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="login.html">Login</a>
-        </nav>
-    </header>
-    
-    <main>
-        <article>
-            <h2 id="postHeading">Post Content</h2>
-            <img id="postImage" style="max-width: 100%; display: none;" alt="Post Image">
-            <p id="postContent">Fetching post...</p>
-        </article>
+  <header>
+    <h1 id="postTitle">Loading...</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
 
-        <section>
-            <h3>Comments</h3>
-            <form id="commentForm">
-                <label for="comment">Leave a comment:</label>
-                <textarea id="comment" name="comment"></textarea>
-                <button type="submit">Submit Comment</button>
-            </form>
-        </section>
-    </main>
+  <main>
+    <article>
+      <h2 id="postHeading">Post Content</h2>
+      <img id="postImage" style="max-width: 100%; display: none;" alt="Post Image" />
+      <p id="postContent">Fetching post...</p>
+    </article>
 
-    <footer>
-        <p>&copy; 2025 Makeup by NY</p>
-    </footer>
+    <!-- Comments Section -->
+    <section>
+      <h3>Comments</h3>
+      <!-- Existing comments will be appended here -->
+      <div id="commentsContainer"></div>
 
-    <script type="module">
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { db } from "./firebase.js";
-    
-        document.addEventListener("DOMContentLoaded", async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get("postId");
-    
-            if (!postId) {
-                document.body.innerHTML = "<h2>Error: No post ID found.</h2>";
-                return;
-            }
-    
-            try {
-                const postRef = doc(db, "posts", postId);
-                const postSnap = await getDoc(postRef);
-    
-                if (!postSnap.exists()) {
-                    document.body.innerHTML = "<h2>Error: Post not found.</h2>";
-                    return;
-                }
-    
-                const postData = postSnap.data();
-                
-                document.getElementById("postTitle").innerText = postData.title;
-                document.getElementById("postHeading").innerText = postData.title;
-                document.getElementById("postContent").innerText = postData.content;
-    
-                if (postData.imageUrl) {
-                    const imgElement = document.getElementById("postImage");
-                    imgElement.src = postData.imageUrl;
-                    imgElement.style.display = "block";
-                }
-            } catch (error) {
-                console.error("Error fetching post:", error);
-                document.body.innerHTML = "<h2>Error loading post.</h2>";
-            }
+      <h2>Leave a Reply</h2>
+      <p>Your email address will not be published. Required fields are marked *</p>
+
+      <form id="commentForm">
+        <label for="commentText">Comment*</label><br />
+        <textarea id="commentText" name="commentText" required></textarea>
+        <br /><br />
+
+        <label for="name">Name*</label><br />
+        <input id="name" name="name" type="text" required />
+        <br /><br />
+
+        <label for="email">Email*</label><br />
+        <input id="email" name="email" type="email" required />
+        <br /><br />
+
+        <button type="submit">Post Comment</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+
+  <!-- Main script block -->
+  <script type="module">
+    import {
+      doc,
+      getDoc,
+      collection,
+      addDoc,
+      getDocs,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    import { db } from "./firebase.js";
+
+    // 1. On DOM load, fetch and display the post (if postId is found in the URL).
+    document.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const postId = urlParams.get("postId");
+
+      if (!postId) {
+        document.body.innerHTML = "<h2>Error: No post ID found.</h2>";
+        return;
+      }
+
+      try {
+        // Fetch the post from Firestore.
+        const postRef = doc(db, "posts", postId);
+        const postSnap = await getDoc(postRef);
+
+        if (!postSnap.exists()) {
+          document.body.innerHTML = "<h2>Error: Post not found.</h2>";
+          return;
+        }
+
+        const postData = postSnap.data();
+
+        // Populate the DOM with the post's details.
+        document.getElementById("postTitle").innerText = postData.title;
+        document.getElementById("postHeading").innerText = postData.title;
+        document.getElementById("postContent").innerText = postData.content;
+
+        // If there's an image, display it.
+        if (postData.imageUrl) {
+          const imgElement = document.getElementById("postImage");
+          imgElement.src = postData.imageUrl;
+          imgElement.style.display = "block";
+        }
+
+        // Once the post is loaded, also fetch & display any existing comments.
+        await fetchAndDisplayComments(postId);
+
+      } catch (error) {
+        console.error("Error fetching post:", error);
+        document.body.innerHTML = "<h2>Error loading post.</h2>";
+      }
+
+      // 2. Handle the comment form submission.
+      const commentForm = document.getElementById("commentForm");
+      if (commentForm) {
+        commentForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          // Gather comment data from the form.
+          const commentText = document.getElementById("commentText").value;
+          const commenterName = document.getElementById("name").value;
+          const commenterEmail = document.getElementById("email").value;
+
+          // Basic check for a valid postId.
+          if (!postId) {
+            alert("Cannot post a comment without a valid Post ID!");
+            return;
+          }
+
+          try {
+            // Reference to subcollection: posts/{postId}/comments
+            const commentsRef = collection(doc(db, "posts", postId), "comments");
+
+            // Add the comment data, including a timestamp for ordering.
+            await addDoc(commentsRef, {
+              text: commentText,
+              name: commenterName,
+              email: commenterEmail,
+              createdAt: serverTimestamp(),
+            });
+
+            alert("Comment submitted!");
+            commentForm.reset();
+
+            // Re-fetch comments so the user sees their new comment immediately.
+            await fetchAndDisplayComments(postId);
+
+          } catch (error) {
+            console.error("Error submitting comment:", error);
+            alert("Error submitting comment. Please try again.");
+          }
         });
-    </script>
+      }
+    });
+
+    // 3. Fetch and display comments in chronological order (newest first).
+    async function fetchAndDisplayComments(postId) {
+      const commentsContainer = document.getElementById("commentsContainer");
+      if (!commentsContainer) return;
+
+      // Clear existing comments from the container.
+      commentsContainer.innerHTML = "";
+
+      try {
+        // Subcollection reference: posts/{postId}/comments
+        const commentsRef = collection(doc(db, "posts", postId), "comments");
+        const q = query(commentsRef, orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach((commentDoc) => {
+          const commentData = commentDoc.data();
+
+          // Create a simple DOM structure for each comment
+          const commentElement = document.createElement("div");
+          commentElement.style.marginBottom = "1em";
+          commentElement.innerHTML = `
+            <p><strong>${commentData.name}</strong> says:</p>
+            <p>${commentData.text}</p>
+            <hr />
+          `;
+
+          commentsContainer.appendChild(commentElement);
+        });
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+        commentsContainer.innerHTML = "<p>Error loading comments.</p>";
+      }
+    }
+  </script>
 </body>
 </html>
