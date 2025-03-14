@@ -14,7 +14,7 @@ import {
   deleteDoc,
   updateDoc,
   doc
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+} from "https://www.gstatic.bn com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Import Firebase Storage functions for image uploads
 import {
