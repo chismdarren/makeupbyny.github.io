@@ -25,28 +25,27 @@
 
 
   <!-- Main Content Area -->
-  <div class="content">
+  <div class="container">
+    <div class="content">
+      <!-- Posts Section -->
+      <main class="posts">
+        <h2>Latest Posts</h2>
+        <!-- Container where posts will be loaded -->
+        <div id="blogPosts"></div>
+      </main>
 
-    <!-- Posts Section -->
-    <main class="posts">
-      <h2>Latest Posts</h2>
-      <!-- Container where posts will be loaded -->
-      <div id="blogPosts"></div>
-    </main>
+      <!-- About Me Sidebar -->
+      <aside class="about-me">
+        <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-
-    <!-- About Me Sidebar -->
-    <aside class="about-me">
-      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
-
-      <p>
-        Hello and welcome to my Makeup and Beauty Blog! I’m Ny, an aspiring makeup artist who’s absolutely head-over-heels for all things beauty.
-      </p>
-      <p>
-        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
-      </p>
-    </aside>
-
+        <p>
+          Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+        </p>
+        <p>
+          Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+        </p>
+      </aside>
+    </div>
   </div>
 
 
@@ -110,23 +109,37 @@
         try {
           const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
           const querySnapshot = await getDocs(q);
+          
+          // Get all posts first
+          const posts = [];
           querySnapshot.forEach((doc) => {
-            const postData = doc.data();
-            const imageHtml = postData.imageUrl 
-              ? `<img src="${postData.imageUrl}" alt="${postData.title} image" style="max-width:100%; height:auto;">`
+            posts.push({ id: doc.id, ...doc.data() });
+          });
+
+          // For each post, get its comments count
+          for (const post of posts) {
+            const commentsQuery = query(collection(db, `posts/${post.id}/comments`));
+            const commentsSnapshot = await getDocs(commentsQuery);
+            const commentCount = commentsSnapshot.size;
+
+            const imageHtml = post.imageUrl 
+              ? `<img src="${post.imageUrl}" alt="${post.title} image" style="max-width:100%; height:auto;">`
               : "";
 
             const postElement = document.createElement("div");
             postElement.innerHTML = `
-              <a href="post.html?postId=${doc.id}" style="text-decoration: none; color: inherit;">
-                <h3>${postData.title}</h3>
+              <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
+                <h3>${post.title}</h3>
                 ${imageHtml}
-                <p>${postData.content}</p>
+                <p>${post.content}</p>
+                <div class="comment-count" style="color: #666; font-size: 0.9em;">
+                  ${commentCount} comment${commentCount !== 1 ? 's' : ''}
+                </div>
               </a>
               <hr>
             `;
             blogPostsContainer.appendChild(postElement);
-          });
+          }
         } catch (error) {
           console.error("Error fetching posts:", error);
           blogPostsContainer.innerHTML = "<p>Error loading posts.</p>";

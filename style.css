@@ -6,6 +6,13 @@ body {
   background-color: #f9f9f9;
 }
 
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
 /* Header */
 header {
   background-color: #333;
@@ -40,13 +47,14 @@ nav button {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 20px;
+  padding: 20px 0;
 }
 
 /* Posts section */
 .posts {
   flex: 3;
   padding: 20px;
+  margin-right: 20px; /* Adjust the value as needed */
 }
 
 /* Vertical list layout for posts on the homepage */
