@@ -11,6 +11,9 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Header */
@@ -20,6 +23,9 @@ header {
   padding: 20px 10px;
   text-align: center;
   position: relative;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 header h1 {
@@ -48,14 +54,19 @@ nav button {
   align-items: flex-start;
   gap: 20px;
   padding: 20px 0;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  justify-content: center;
 }
 
 /* Posts section */
 .posts {
-  flex: 3;
+  flex: 2;
   padding: 20px;
   margin-right: 0;
   position: relative;
+  max-width: 500px;
 }
 
 .posts::after {
@@ -90,7 +101,7 @@ nav button {
   border-radius: 8px;
   box-shadow: none;
   text-align: center;
-  max-width: 300px; /* Reduced from 400px to bring it closer */
+  max-width: 250px;
 }
 
 /* Profile Picture - Centered Above Paragraph */
