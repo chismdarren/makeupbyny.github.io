@@ -45,8 +45,8 @@ nav button {
 /* Main content container */
 .content {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  gap: 20px;
   padding: 20px 0;
 }
 
@@ -54,7 +54,18 @@ nav button {
 .posts {
   flex: 3;
   padding: 20px;
-  margin-right: 20px; /* Adjust the value as needed */
+  margin-right: 0;
+  position: relative;
+}
+
+.posts::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -10px;
+  width: 1px;
+  height: 100%;
+  background: #ccc;
 }
 
 /* Vertical list layout for posts on the homepage */
@@ -75,11 +86,11 @@ nav button {
 .about-me {
   flex: 1;
   padding: 20px;
-  background-color: transparent; /* Remove background color */
-  border-radius: 8px; /* Less rounded */
-  box-shadow: none; /* Remove shadow */
-  text-align: center; /* Center text */
-  max-width: 400px; /* Slightly wider */
+  background-color: transparent;
+  border-radius: 8px;
+  box-shadow: none;
+  text-align: center;
+  max-width: 300px; /* Reduced from 400px to bring it closer */
 }
 
 /* Profile Picture - Centered Above Paragraph */
