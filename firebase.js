@@ -1,7 +1,7 @@
 // Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -42,10 +42,19 @@ document.addEventListener("DOMContentLoaded", function() {
       // Create a new user with Firebase Authentication using the provided email and password
       createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
-              // On successful account creation, alert the user and redirect to the login page
+              // On successful account creation, create a user document in Firestore
               const user = userCredential.user;
-              alert("Account created successfully!");
-              window.location.href = 'login.html';
+              const userRef = doc(db, "users", user.uid);
+              setDoc(userRef, {
+                  email: email,
+                  createdAt: serverTimestamp()
+              }).then(() => {
+                  alert("Account created successfully!");
+                  window.location.href = 'login.html';
+              }).catch((error) => {
+                  console.error("Error creating user document:", error);
+                  alert("Account created but there was an error saving additional information.");
+              });
           })
           .catch((error) => {
               // Log errors and alert the user if account creation fails
