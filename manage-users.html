@@ -57,6 +57,11 @@
       border-bottom: 1px solid #eee;
       padding: 10px 0;
     }
+    .error-message {
+      color: red;
+      text-align: center;
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
@@ -69,9 +74,11 @@
     </nav>
   </header>
   <main>
-    <ul id="user-list">
-      <!-- User accounts will be listed here -->
-    </ul>
+    <div id="content">
+      <ul id="user-list">
+        <!-- User accounts will be listed here -->
+      </ul>
+    </div>
   </main>
 
   <!-- Modal for user details -->
@@ -93,6 +100,7 @@
   <script type="module">
     // Import db from your firebase.js file, which initializes your app
     import { db } from "./firebase.js";
+    import { auth } from "./firebase.js";
     // Then import Firestore functions
     import { 
       collection, 
@@ -101,14 +109,41 @@
       updateDoc, 
       deleteDoc, 
       query, 
-      where 
+      where,
+      getDoc
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const userList = document.getElementById("user-list");
     const modal = document.getElementById("userModal");
     const modalContent = document.getElementById("modalContent");
     const closeBtn = document.getElementsByClassName("close")[0];
+    const content = document.getElementById("content");
     let currentUserId = null;
+
+    // Admin UID
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
+    // Check authentication and admin status
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        // Not logged in, redirect to login page
+        window.location.href = "login.html";
+        return;
+      }
+
+      if (user.uid !== adminUID) {
+        // Not admin, show error and redirect
+        content.innerHTML = '<div class="error-message">Access denied. Admin privileges required.</div>';
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 2000);
+        return;
+      }
+
+      // User is admin, load the users
+      await loadUsers();
+    });
 
     // Close modal when clicking the X
     closeBtn.onclick = function() {
@@ -181,6 +216,13 @@
     async function loadUsers() {
       try {
         const querySnapshot = await getDocs(collection(db, "users"));
+        userList.innerHTML = ""; // Clear existing list
+        
+        if (querySnapshot.empty) {
+          userList.innerHTML = '<li class="user-item">No users found.</li>';
+          return;
+        }
+
         querySnapshot.forEach((doc) => {
           const li = document.createElement("li");
           const userData = doc.data();
@@ -201,9 +243,7 @@
         });
       } catch (error) {
         console.error("Error loading users:", error);
-        const errorMsg = document.createElement("p");
-        errorMsg.textContent = "Error loading users.";
-        userList.appendChild(errorMsg);
+        userList.innerHTML = '<li class="user-item">Error loading users.</li>';
       }
     }
 
@@ -215,8 +255,7 @@
         await updateDoc(userRef, { isAdmin });
         alert(`User ${isAdmin ? 'promoted to admin' : 'removed from admin role'}`);
         modal.style.display = "none";
-        userList.innerHTML = ""; // Clear the list
-        loadUsers(); // Reload the list
+        await loadUsers(); // Reload the list
       } catch (error) {
         console.error("Error updating user role:", error);
         alert("Error updating user role");
@@ -229,16 +268,13 @@
           await deleteDoc(userRef);
           alert("User deleted successfully");
           modal.style.display = "none";
-          userList.innerHTML = ""; // Clear the list
-          loadUsers(); // Reload the list
+          await loadUsers(); // Reload the list
         } catch (error) {
           console.error("Error deleting user:", error);
           alert("Error deleting user");
         }
       }
     };
-
-    loadUsers();
   </script>
 </body>
 </html>
