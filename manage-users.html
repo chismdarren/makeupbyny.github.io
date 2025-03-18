@@ -126,14 +126,15 @@
 
     // Check authentication and admin status
     onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed. Current user:", user ? user.uid : "No user");
       if (!user) {
-        // Not logged in, redirect to login page
+        console.log("No user logged in, redirecting to login page");
         window.location.href = "login.html";
         return;
       }
 
       if (user.uid !== adminUID) {
-        // Not admin, show error and redirect
+        console.log("User is not admin, redirecting to home page");
         content.innerHTML = '<div class="error-message">Access denied. Admin privileges required.</div>';
         setTimeout(() => {
           window.location.href = "index.html";
@@ -141,6 +142,7 @@
         return;
       }
 
+      console.log("User is admin, loading users...");
       // User is admin, load the users
       await loadUsers();
     });
@@ -215,19 +217,24 @@
 
     async function loadUsers() {
       try {
+        console.log("Starting to load users...");
         const querySnapshot = await getDocs(collection(db, "users"));
+        console.log("Query snapshot received:", querySnapshot.size, "documents found");
         userList.innerHTML = ""; // Clear existing list
         
         if (querySnapshot.empty) {
+          console.log("No users found in the collection");
           userList.innerHTML = '<li class="user-item">No users found.</li>';
           return;
         }
 
         querySnapshot.forEach((doc) => {
-          const li = document.createElement("li");
+          console.log("Processing user document:", doc.id);
           const userData = doc.data();
+          console.log("User data:", userData);
           const createdAt = userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleString() : 'Unknown';
           
+          const li = document.createElement("li");
           li.className = "user-item";
           li.innerHTML = `
             <div class="user-info">
