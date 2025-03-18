@@ -26,8 +26,10 @@
 
   <!-- Firebase Firestore script to load user data -->
   <script type="module">
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    const db = getFirestore();
+    // Import db from your firebase.js file, which initializes your app
+    import { db } from "./firebase.js";
+    // Then import Firestore functions
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const userList = document.getElementById("user-list");
 

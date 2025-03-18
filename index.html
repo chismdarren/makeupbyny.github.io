@@ -81,36 +81,41 @@
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
 
-  <!-- Then load your Firestore fetch and admin navigation toggling code -->
+  <!-- Main JavaScript for handling posts, authentication, and UI -->
   <script type="module">
-    // Import Firestore functions for fetching posts
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    // Import authentication functions and auth instance from firebase.js
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { auth } from "./firebase.js";
+    // Import necessary Firebase modules
+    import { db } from "./firebase.js";  // Import Firestore database instance
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";  // Firestore functions
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  // Auth state observer
+    import { auth } from "./firebase.js";  // Auth instance
 
-    const db = getFirestore();
-    // Admin UID - update if needed
+    // Define admin user ID for special privileges
     const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
-    // Toggle navigation based on user authentication state
+    // Initialize the page when DOM is loaded
     document.addEventListener("DOMContentLoaded", () => {
+      // Monitor user authentication state
       onAuthStateChanged(auth, (user) => {
+        // If user is logged in
         if (user) {
+          // Hide login button, show logout button
           document.getElementById("login-link").style.display = "none";
           document.getElementById("logout-btn").style.display = "inline";
 
+          // Check if user is admin
           if (user.uid === adminUID) {
+            // Show admin-only navigation items
             document.getElementById("adminDashboard").style.display = "inline";
             document.getElementById("createPost").style.display = "inline";
             document.getElementById("manageUsers").style.display = "inline";
           } else {
+            // Hide admin-only navigation items for regular users
             document.getElementById("adminDashboard").style.display = "none";
             document.getElementById("createPost").style.display = "none";
             document.getElementById("manageUsers").style.display = "none";
           }
-
         } else {
+          // If user is not logged in, show login button and hide admin features
           document.getElementById("login-link").style.display = "inline";
           document.getElementById("logout-btn").style.display = "none";
           document.getElementById("adminDashboard").style.display = "none";
@@ -119,37 +124,42 @@
         }
       });
 
-
+      // Handle logout button click
       document.getElementById("logout-btn").addEventListener("click", () => {
         auth.signOut().then(() => {
           window.location.href = "index.html";
         });
       });
 
-
+      // Get container for blog posts
       const blogPostsContainer = document.getElementById("blogPosts");
+      
+      // Async function to fetch and display posts
       (async () => {
         try {
+          // Query posts collection, ordered by creation date (newest first)
           const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
           const querySnapshot = await getDocs(q);
           
-          // Get all posts first
+          // Store all posts in an array
           const posts = [];
           querySnapshot.forEach((doc) => {
             posts.push({ id: doc.id, ...doc.data() });
           });
 
-          // Populate recent posts list (first 5 posts)
+          // Populate the recent posts sidebar (first 5 posts)
           const recentPostsList = document.getElementById("recentPostsList");
           posts.slice(0, 5).forEach(post => {
             const recentPostElement = document.createElement("a");
             recentPostElement.href = `post.html?postId=${post.id}`;
             recentPostElement.className = "recent-post-item";
             
+            // Create thumbnail image or placeholder
             const imageHtml = post.imageUrl 
               ? `<img src="${post.imageUrl}" alt="${post.title}">`
               : `<div style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;"></div>`;
             
+            // Set up recent post item HTML
             recentPostElement.innerHTML = `
               ${imageHtml}
               <div class="post-title">${post.title}</div>
@@ -158,16 +168,19 @@
             recentPostsList.appendChild(recentPostElement);
           });
 
-          // For each post, get its comments count
+          // Display all posts in the main content area
           for (const post of posts) {
+            // Get comment count for each post
             const commentsQuery = query(collection(db, `posts/${post.id}/comments`));
             const commentsSnapshot = await getDocs(commentsQuery);
             const commentCount = commentsSnapshot.size;
 
+            // Create post image HTML if available
             const imageHtml = post.imageUrl 
               ? `<img src="${post.imageUrl}" alt="${post.title} image" style="max-width:100%; height:auto;">`
               : "";
 
+            // Create and append post element
             const postElement = document.createElement("div");
             postElement.innerHTML = `
               <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
@@ -183,6 +196,7 @@
             blogPostsContainer.appendChild(postElement);
           }
         } catch (error) {
+          // Handle any errors during post loading
           console.error("Error fetching posts:", error);
           blogPostsContainer.innerHTML = "<p>Error loading posts.</p>";
         }
