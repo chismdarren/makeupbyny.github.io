@@ -45,6 +45,11 @@
       <p>
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" placeholder="Search posts..." id="searchInput">
+      </div>
     </aside>
 
   </div>
@@ -131,11 +136,11 @@
             postElement.innerHTML = `
               <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
                 <h3>${post.title}</h3>
+                <div class="post-meta" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                  ${new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} by Ny - ${commentCount} comment${commentCount !== 1 ? 's' : ''}
+                </div>
                 ${imageHtml}
                 <p>${post.content}</p>
-                <div class="comment-count" style="color: #666; font-size: 0.9em;">
-                  ${commentCount} comment${commentCount !== 1 ? 's' : ''}
-                </div>
               </a>
               <hr>
             `;
