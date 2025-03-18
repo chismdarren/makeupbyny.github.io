@@ -50,6 +50,23 @@
       <div class="search-container">
         <input type="text" placeholder="Search posts..." id="searchInput">
       </div>
+
+      <!-- Recent Posts -->
+      <div class="recent-posts">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
+        <div id="recentPostsList"></div>
+      </div>
+
+      <!-- Social Media Links -->
+      <div class="social-links">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="social-icons">
+          <a href="#" class="social-icon">Instagram</a>
+          <a href="#" class="social-icon">Facebook</a>
+          <a href="#" class="social-icon">Twitter</a>
+          <a href="#" class="social-icon">YouTube</a>
+        </div>
+      </div>
     </aside>
 
   </div>
@@ -120,6 +137,25 @@
           const posts = [];
           querySnapshot.forEach((doc) => {
             posts.push({ id: doc.id, ...doc.data() });
+          });
+
+          // Populate recent posts list (first 5 posts)
+          const recentPostsList = document.getElementById("recentPostsList");
+          posts.slice(0, 5).forEach(post => {
+            const recentPostElement = document.createElement("a");
+            recentPostElement.href = `post.html?postId=${post.id}`;
+            recentPostElement.className = "recent-post-item";
+            
+            const imageHtml = post.imageUrl 
+              ? `<img src="${post.imageUrl}" alt="${post.title}">`
+              : `<div style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;"></div>`;
+            
+            recentPostElement.innerHTML = `
+              ${imageHtml}
+              <div class="post-title">${post.title}</div>
+            `;
+            
+            recentPostsList.appendChild(recentPostElement);
           });
 
           // For each post, get its comments count
