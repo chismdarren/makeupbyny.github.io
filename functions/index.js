@@ -1,36 +1,26 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const cors = require("cors");
 
 // Initialize Firebase Admin SDK
 admin.initializeApp();
 
-// Configure CORS with more specific options
-const corsHandler = cors({
-  origin: "https://chismdarren.github.io",
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  maxAge: 86400 // 24 hours
-});
-
 // Cloud Function to list all Firebase Authentication users with CORS enabled
 exports.listAllAuthUsers = functions.https.onRequest(async (req, res) => {
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Origin', 'https://chismdarren.github.io');
-    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.set('Access-Control-Max-Age', '86400');
-    res.status(204).send('');
+  if (req.method === "OPTIONS") {
+    res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+    res.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.set("Access-Control-Max-Age", "86400");
+    res.status(204).send("");
     return;
   }
 
   // Set CORS headers for the actual request
-  res.set('Access-Control-Allow-Origin', 'https://chismdarren.github.io');
-  res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.set('Access-Control-Allow-Credentials', 'true');
+  res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+  res.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.set("Access-Control-Allow-Credentials", "true");
 
   try {
     // Fetch up to 1000 users at a time
@@ -47,6 +37,6 @@ exports.listAllAuthUsers = functions.https.onRequest(async (req, res) => {
     return res.status(200).json(users);
   } catch (error) {
     console.error("Error listing users:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({error: error.message});
   }
 });
