@@ -21,6 +21,6 @@ exports.listAllAuthUsers = functions.https.onRequest(async (req, res) => {
     return res.status(200).json(users);
   } catch (error) {
     console.error("Error listing users:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({error: error.message});
   }
 });
