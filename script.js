@@ -1,6 +1,6 @@
-// Import Firebase Authentication functions and auth from firebase.js
+// Import Firebase Authentication functions and auth from firebase-config.js
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth } from "./firebase.js";
+import { auth } from "./firebase-config.js";
 
 // Import Firestore functions including query and document update/delete functions
 import {

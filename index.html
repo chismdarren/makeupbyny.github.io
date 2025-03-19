@@ -84,10 +84,10 @@
   <!-- Main JavaScript for handling posts, authentication, and UI -->
   <script type="module">
     // Import necessary Firebase modules
-    import { db } from "./firebase.js";  // Import Firestore database instance
+    import { db } from "./firebase-config.js";  // Import Firestore database instance
     import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";  // Firestore functions
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  // Auth state observer
-    import { auth } from "./firebase.js";  // Auth instance
+    import { auth } from "./firebase-config.js";  // Auth instance
 
     // Define admin user ID for special privileges
     const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
