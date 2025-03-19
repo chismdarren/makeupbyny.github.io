@@ -1,7 +1,8 @@
 // Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -67,3 +68,29 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // Export auth and db so that other modules (like script.js) can import them
 export { auth, db };
+
+// Function to create user document in Firestore
+export async function createUserDocument(user) {
+  try {
+    const userRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        email: user.email,
+        createdAt: serverTimestamp(),
+        isAdmin: user.uid === "yuoaYY14sINHaqtNK5EAz4nl8cc2"
+      });
+      console.log("User document created for:", user.email);
+    }
+  } catch (error) {
+    console.error("Error creating user document:", error);
+  }
+}
+
+// Listen for auth state changes to create user documents
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    createUserDocument(user);
+  }
+});
