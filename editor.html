@@ -103,6 +103,23 @@
     .autosave-status.show {
       display: block;
     }
+    /* Add these styles to your existing styles */
+    .content-editor {
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 200px;
+      overflow-y: auto;
+      background: white;
+      margin-bottom: 10px;
+    }
+    .content-editor:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    .content-editor img {
+      max-width: 100%;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
@@ -158,7 +175,7 @@
           <!-- Post Content Input Field -->
           <div class="form-group">
             <label for="content">Post Content:</label>
-            <textarea id="content" name="content" rows="8" required></textarea>
+            <div id="content" class="content-editor" contenteditable="true" required></div>
           </div>
           
           <!-- Image Upload Input Field -->
@@ -237,41 +254,32 @@
       const insertImageBtn = document.getElementById('insertImageBtn');
       const imageUpload = document.getElementById('imageUpload');
 
-      function wrapText(startTag, endTag) {
-        const start = contentInput.selectionStart;
-        const end = contentInput.selectionEnd;
-        const text = contentInput.value;
-        const selectedText = text.substring(start, end);
-        const newText = text.substring(0, start) + startTag + selectedText + endTag + text.substring(end);
-        contentInput.value = newText;
-        contentInput.focus();
-      }
-
-      function applyFontStyle(element, property, value) {
-        const start = element.selectionStart;
-        const end = element.selectionEnd;
-        const text = element.value;
-        const selectedText = text.substring(start, end);
-        const newText = text.substring(0, start) + 
-          `<span style="${property}: ${value}">${selectedText}</span>` + 
-          text.substring(end);
-        element.value = newText;
-        element.focus();
-      }
-
       // Format buttons
-      boldBtn.addEventListener('click', () => wrapText('<strong>', '</strong>'));
-      italicBtn.addEventListener('click', () => wrapText('<em>', '</em>'));
-      underlineBtn.addEventListener('click', () => wrapText('<u>', '</u>'));
+      boldBtn.addEventListener('click', () => {
+        document.execCommand('bold', false, null);
+        contentInput.focus();
+      });
+      
+      italicBtn.addEventListener('click', () => {
+        document.execCommand('italic', false, null);
+        contentInput.focus();
+      });
+      
+      underlineBtn.addEventListener('click', () => {
+        document.execCommand('underline', false, null);
+        contentInput.focus();
+      });
       
       // Font family
       fontFamilySelect.addEventListener('change', () => {
-        applyFontStyle(contentInput, 'font-family', fontFamilySelect.value);
+        document.execCommand('fontName', false, fontFamilySelect.value);
+        contentInput.focus();
       });
       
       // Font size
       fontSizeSelect.addEventListener('change', () => {
-        applyFontStyle(contentInput, 'font-size', `${fontSizeSelect.value}px`);
+        document.execCommand('fontSize', false, fontSizeSelect.value);
+        contentInput.focus();
       });
 
       // Title formatting
@@ -281,15 +289,15 @@
 
       // Function to insert image at cursor position
       function insertImage(imageUrl) {
-        const start = contentInput.selectionStart;
-        const end = contentInput.selectionEnd;
-        const text = contentInput.value;
-        const selectedText = text.substring(start, end);
-        const newText = text.substring(0, start) + 
-          `<img src="${imageUrl}" alt="Post image" style="max-width: 100%; margin: 10px 0;">` + 
-          selectedText + 
-          text.substring(end);
-        contentInput.value = newText;
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = "Post image";
+        img.style.maxWidth = "100%";
+        img.style.margin = "10px 0";
+        
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        range.insertNode(img);
         contentInput.focus();
       }
 
@@ -328,7 +336,7 @@
       function saveDraft() {
         const draft = {
           title: titleInput.value,
-          content: contentInput.value,
+          content: contentInput.innerHTML,
           tags: tagsInput.value,
           status: Array.from(statusInputs).find(input => input.checked).value,
           lastSaved: new Date().toISOString()
@@ -344,7 +352,7 @@
         if (draft) {
           const parsedDraft = JSON.parse(draft);
           titleInput.value = parsedDraft.title;
-          contentInput.value = parsedDraft.content;
+          contentInput.innerHTML = parsedDraft.content;
           tagsInput.value = parsedDraft.tags;
           Array.from(statusInputs).find(input => input.value === parsedDraft.status).checked = true;
           
@@ -379,7 +387,7 @@
       const previewContent = document.getElementById('previewContent');
       
       contentInput.addEventListener('input', () => {
-        previewContent.innerHTML = contentInput.value;
+        previewContent.innerHTML = contentInput.innerHTML;
       });
     }
 
@@ -458,31 +466,23 @@
         e.preventDefault();
         
         const title = document.getElementById('title').value;
-        const content = document.getElementById('content').value;
+        const content = document.getElementById('content').innerHTML;
         const tags = document.getElementById('tags').value;
         const status = document.querySelector('input[name="status"]:checked').value;
-        const imageFile = document.getElementById('image').files[0];
         
         try {
-          let imageUrl = '';
-          if (imageFile) {
-            const storageRef = ref(storage, `posts/${Date.now()}_${imageFile.name}`);
-            await uploadBytes(storageRef, imageFile);
-            imageUrl = await getDownloadURL(storageRef);
-          }
-          
           await addDoc(collection(db, "posts"), {
             title,
             content,
             tags,
             status,
-            imageUrl,
             createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString()
           });
           
           // Clear form and local storage
           postForm.reset();
+          document.getElementById('content').innerHTML = '';
           localStorage.removeItem('postDraft');
           
           // Reload posts list
