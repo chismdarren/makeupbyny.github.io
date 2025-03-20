@@ -151,6 +151,8 @@
               <option value="20">20px</option>
               <option value="24">24px</option>
             </select>
+            <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+            <button type="button" id="insertImageBtn" title="Insert Image">📷</button>
           </div>
           
           <!-- Post Content Input Field -->
@@ -232,6 +234,8 @@
       const underlineBtn = document.getElementById('underlineBtn');
       const fontFamilySelect = document.getElementById('fontFamily');
       const fontSizeSelect = document.getElementById('fontSize');
+      const insertImageBtn = document.getElementById('insertImageBtn');
+      const imageUpload = document.getElementById('imageUpload');
 
       function wrapText(startTag, endTag) {
         const start = contentInput.selectionStart;
@@ -273,6 +277,42 @@
       // Title formatting
       titleInput.addEventListener('input', () => {
         document.getElementById('previewTitle').textContent = titleInput.value;
+      });
+
+      // Function to insert image at cursor position
+      function insertImage(imageUrl) {
+        const start = contentInput.selectionStart;
+        const end = contentInput.selectionEnd;
+        const text = contentInput.value;
+        const selectedText = text.substring(start, end);
+        const newText = text.substring(0, start) + 
+          `<img src="${imageUrl}" alt="Post image" style="max-width: 100%; margin: 10px 0;">` + 
+          selectedText + 
+          text.substring(end);
+        contentInput.value = newText;
+        contentInput.focus();
+      }
+
+      // Handle image upload and insertion
+      insertImageBtn.addEventListener('click', () => {
+        imageUpload.click();
+      });
+
+      imageUpload.addEventListener('change', async (e) => {
+        const files = e.target.files;
+        if (files.length > 0) {
+          for (let file of files) {
+            try {
+              const storageRef = ref(storage, `posts/${Date.now()}_${file.name}`);
+              await uploadBytes(storageRef, file);
+              const imageUrl = await getDownloadURL(storageRef);
+              insertImage(imageUrl);
+            } catch (error) {
+              console.error("Error uploading image:", error);
+              alert("Error uploading image. Please try again.");
+            }
+          }
+        }
       });
     }
 
