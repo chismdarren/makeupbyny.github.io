@@ -370,11 +370,19 @@
           const postElement = document.createElement('div');
           postElement.className = 'post-wrapper';
           
+          // Create content preview (first 100 characters)
+          const contentPreview = post.content.length > 100 
+            ? post.content.substring(0, 100) + '...' 
+            : post.content;
+          
           postElement.innerHTML = `
             <div class="post-content">
               <h3>${post.title}</h3>
+              ${post.imageUrl ? `<img src="${post.imageUrl}" alt="${post.title}" style="max-width: 200px; margin: 10px 0;">` : ''}
+              <p>${contentPreview}</p>
               <p>Status: ${post.status || 'draft'}</p>
               <p>Last modified: ${new Date(post.lastModified || post.createdAt).toLocaleString()}</p>
+              ${post.tags ? `<p>Tags: ${post.tags}</p>` : ''}
             </div>
             <div class="post-actions">
               <button onclick="window.location.href='edit-post.html?postId=${doc.id}'">Edit</button>
