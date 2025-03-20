@@ -5,14 +5,29 @@ const cors = require("cors");
 // Initialize Firebase Admin SDK
 admin.initializeApp();
 
-// Enable CORS for all domains (for testing) or specify your GitHub Pages URL
-const corsHandler = cors({ origin: true });
+// Enable CORS with credentials support
+const corsHandler = cors({
+  origin: "https://chismdarren.github.io",
+  methods: "GET, OPTIONS",
+  allowedHeaders: "Content-Type",
+  credentials: true, // ✅ Allow credentials
+});
 
-// Cloud Function to list all Firebase Authentication users with CORS enabled
+// Cloud Function to list all Firebase Authentication users
 exports.listAllAuthUsers = functions.https.onRequest((req, res) => {
   return corsHandler(req, res, async () => {
     try {
-      // Fetch up to 1000 users at a time
+      // Handle preflight request (OPTIONS request)
+      if (req.method === "OPTIONS") {
+        res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+        res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.set("Access-Control-Allow-Headers", "Content-Type");
+        res.set("Access-Control-Allow-Credentials", "true");
+        res.status(204).send(""); // ✅ Send empty response for preflight request
+        return;
+      }
+
+      // Fetch up to 1000 users
       const listUsersResult = await admin.auth().listUsers(1000);
 
       // Format the response
@@ -23,10 +38,11 @@ exports.listAllAuthUsers = functions.https.onRequest((req, res) => {
         disabled: userRecord.disabled,
       }));
 
-      // **Manually set CORS headers**
+      // ✅ Set proper CORS headers on the response
       res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
       res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
       res.set("Access-Control-Allow-Headers", "Content-Type");
+      res.set("Access-Control-Allow-Credentials", "true");
 
       return res.status(200).json(users);
     } catch (error) {
