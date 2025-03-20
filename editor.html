@@ -213,6 +213,144 @@
   </footer>
   
   <!-- Load the JavaScript file as an ES module -->
-  <script type="module" src="script.js"></script>
+  <script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+    import { auth } from "./firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    // Initialize Firebase Storage
+    const storage = getStorage();
+
+    // Text formatting functionality
+    function setupTextFormatting() {
+      const contentInput = document.getElementById('content');
+      const titleInput = document.getElementById('title');
+      const boldBtn = document.getElementById('boldBtn');
+      const italicBtn = document.getElementById('italicBtn');
+      const underlineBtn = document.getElementById('underlineBtn');
+      const fontFamilySelect = document.getElementById('fontFamily');
+      const fontSizeSelect = document.getElementById('fontSize');
+
+      function wrapText(startTag, endTag) {
+        const start = contentInput.selectionStart;
+        const end = contentInput.selectionEnd;
+        const text = contentInput.value;
+        const selectedText = text.substring(start, end);
+        const newText = text.substring(0, start) + startTag + selectedText + endTag + text.substring(end);
+        contentInput.value = newText;
+        contentInput.focus();
+      }
+
+      function applyFontStyle(element, property, value) {
+        const start = element.selectionStart;
+        const end = element.selectionEnd;
+        const text = element.value;
+        const selectedText = text.substring(start, end);
+        const newText = text.substring(0, start) + 
+          `<span style="${property}: ${value}">${selectedText}</span>` + 
+          text.substring(end);
+        element.value = newText;
+        element.focus();
+      }
+
+      // Format buttons
+      boldBtn.addEventListener('click', () => wrapText('<strong>', '</strong>'));
+      italicBtn.addEventListener('click', () => wrapText('<em>', '</em>'));
+      underlineBtn.addEventListener('click', () => wrapText('<u>', '</u>'));
+      
+      // Font family
+      fontFamilySelect.addEventListener('change', () => {
+        applyFontStyle(contentInput, 'font-family', fontFamilySelect.value);
+      });
+      
+      // Font size
+      fontSizeSelect.addEventListener('change', () => {
+        applyFontStyle(contentInput, 'font-size', `${fontSizeSelect.value}px`);
+      });
+
+      // Title formatting
+      titleInput.addEventListener('input', () => {
+        document.getElementById('previewTitle').textContent = titleInput.value;
+      });
+    }
+
+    // Autosave functionality
+    function setupAutosave() {
+      const form = document.getElementById('postForm');
+      const titleInput = document.getElementById('title');
+      const contentInput = document.getElementById('content');
+      const tagsInput = document.getElementById('tags');
+      const statusInputs = document.getElementsByName('status');
+      const autosaveStatus = document.getElementById('autosaveStatus');
+
+      function saveDraft() {
+        const draft = {
+          title: titleInput.value,
+          content: contentInput.value,
+          tags: tagsInput.value,
+          status: Array.from(statusInputs).find(input => input.checked).value,
+          lastSaved: new Date().toISOString()
+        };
+
+        localStorage.setItem('postDraft', JSON.stringify(draft));
+        autosaveStatus.classList.add('show');
+        setTimeout(() => autosaveStatus.classList.remove('show'), 2000);
+      }
+
+      function loadDraft() {
+        const draft = localStorage.getItem('postDraft');
+        if (draft) {
+          const parsedDraft = JSON.parse(draft);
+          titleInput.value = parsedDraft.title;
+          contentInput.value = parsedDraft.content;
+          tagsInput.value = parsedDraft.tags;
+          Array.from(statusInputs).find(input => input.value === parsedDraft.status).checked = true;
+          
+          // Update preview
+          document.getElementById('previewTitle').textContent = parsedDraft.title;
+          document.getElementById('previewContent').innerHTML = parsedDraft.content;
+        }
+      }
+
+      // Load draft on page load
+      loadDraft();
+
+      // Setup autosave on input changes
+      [titleInput, contentInput, tagsInput].forEach(input => {
+        input.addEventListener('input', () => {
+          clearTimeout(autosaveTimeout);
+          autosaveTimeout = setTimeout(saveDraft, AUTOSAVE_DELAY);
+        });
+      });
+
+      statusInputs.forEach(input => {
+        input.addEventListener('change', () => {
+          clearTimeout(autosaveTimeout);
+          autosaveTimeout = setTimeout(saveDraft, AUTOSAVE_DELAY);
+        });
+      });
+    }
+
+    // Live preview functionality
+    function setupLivePreview() {
+      const contentInput = document.getElementById('content');
+      const previewContent = document.getElementById('previewContent');
+      
+      contentInput.addEventListener('input', () => {
+        previewContent.innerHTML = contentInput.value;
+      });
+    }
+
+    // Initialize functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      setupTextFormatting();
+      setupAutosave();
+      setupLivePreview();
+      
+      // Rest of your existing initialization code...
+    });
+  </script>
 </body>
 </html>
