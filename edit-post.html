@@ -42,6 +42,43 @@
       margin-top: 1em;
       background: white;
     }
+    .post-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .post-card h3 {
+      margin: 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+    }
+    .post-image-container {
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      background: #f8f9fa;
+    }
+    .post-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .post-content {
+      padding: 15px;
+    }
+    .post-meta {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 0.9em;
+    }
+    .post-meta p {
+      margin: 5px 0;
+    }
     /* Text formatting toolbar */
     .format-toolbar {
       display: flex;
@@ -166,9 +203,19 @@
       <div class="flex-item">
         <h2>Live Preview</h2>
         <div class="preview" id="previewArea">
-          <h3 id="previewTitle">Post Title Preview</h3>
-          <p id="previewContent">Post content preview will appear here...</p>
-          <p id="previewTags"></p>
+          <div class="post-card">
+            <h3 id="previewTitle">Post Title Preview</h3>
+            <div class="post-image-container">
+              <img id="previewImage" src="" alt="Post image preview">
+            </div>
+            <div class="post-content">
+              <p id="previewContent">Post content preview will appear here...</p>
+              <div class="post-meta">
+                <p id="previewTags"></p>
+                <p id="previewDate"></p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -249,13 +296,19 @@
       const previewContent = document.getElementById('previewContent');
       const tagsInput = document.getElementById('editTags');
       const previewTags = document.getElementById('previewTags');
+      const titleInput = document.getElementById('editTitle');
+      const previewTitle = document.getElementById('previewTitle');
       
       contentInput.addEventListener('input', () => {
         previewContent.innerHTML = contentInput.value;
       });
 
       tagsInput.addEventListener('input', () => {
-        previewTags.textContent = `Tags: ${tagsInput.value}`;
+        previewTags.textContent = tagsInput.value ? `Tags: ${tagsInput.value}` : '';
+      });
+
+      titleInput.addEventListener('input', () => {
+        previewTitle.textContent = titleInput.value;
       });
     }
 
@@ -289,7 +342,15 @@
             // Update preview
             document.getElementById("previewTitle").textContent = postData.title;
             document.getElementById("previewContent").innerHTML = postData.content;
-            document.getElementById("previewTags").textContent = `Tags: ${postData.tags || ''}`;
+            document.getElementById("previewTags").textContent = postData.tags ? `Tags: ${postData.tags}` : '';
+            document.getElementById("previewDate").textContent = new Date(postData.lastModified || postData.createdAt).toLocaleDateString();
+            
+            // Show existing image if present
+            if (postData.imageUrl) {
+              const previewImage = document.getElementById("previewImage");
+              previewImage.src = postData.imageUrl;
+              previewImage.style.display = "block";
+            }
           }
         } catch (error) {
           console.error("Error fetching post:", error);
@@ -339,6 +400,23 @@
               console.error("Error deleting post:", error);
               alert("Error deleting post");
             }
+          }
+        });
+      }
+
+      // Handle image upload preview
+      const imageInput = document.getElementById("editImage");
+      if (imageInput) {
+        imageInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const previewImage = document.getElementById("previewImage");
+              previewImage.src = e.target.result;
+              previewImage.style.display = "block";
+            };
+            reader.readAsDataURL(file);
           }
         });
       }
