@@ -188,4 +188,30 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Live update for post title
+  document.getElementById("title").addEventListener("input", function() {
+    document.getElementById("previewTitle").textContent = this.value || "Post Title Preview";
+  });
+
+  // Live update for post content (if using Quill.js)
+  const quill = new Quill("#editor", { theme: "snow" });
+
+  quill.on("text-change", function() {
+    document.getElementById("previewContent").innerHTML = quill.root.innerHTML || "Post content preview will appear here...";
+  });
+
+  // Live update for image preview
+  document.getElementById("image").addEventListener("change", function(event) {
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById("previewImage").src = e.target.result;
+        document.getElementById("previewImage").style.display = "block"; // Show the image preview
+      };
+      reader.readAsDataURL(file);
+    }
+  });
 });
