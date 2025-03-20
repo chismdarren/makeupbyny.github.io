@@ -423,13 +423,6 @@
             document.getElementById("previewContent").innerHTML = postData.content;
             document.getElementById("previewTags").textContent = postData.tags ? `Tags: ${postData.tags}` : '';
             document.getElementById("previewDate").textContent = new Date(postData.postDate || postData.lastModified || postData.createdAt).toLocaleDateString();
-            
-            // Show existing image if present
-            if (postData.imageUrl) {
-              const previewImage = document.getElementById("previewImage");
-              previewImage.src = postData.imageUrl;
-              previewImage.style.display = "block";
-            }
           }
         } catch (error) {
           console.error("Error fetching post:", error);
@@ -481,23 +474,6 @@
               console.error("Error deleting post:", error);
               alert("Error deleting post");
             }
-          }
-        });
-      }
-
-      // Handle image upload preview
-      const imageInput = document.getElementById("editImage");
-      if (imageInput) {
-        imageInput.addEventListener("change", (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const previewImage = document.getElementById("previewImage");
-              previewImage.src = e.target.result;
-              previewImage.style.display = "block";
-            };
-            reader.readAsDataURL(file);
           }
         });
       }
