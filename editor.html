@@ -265,13 +265,13 @@
   
   <!-- Load the JavaScript file as an ES module -->
   <script type="module">
-    import { db } from "./firebase-config.js";
-    import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
     import { auth } from "./firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // Initialize Firebase Storage
+    // Initialize Firestore and Storage
+    const db = getFirestore();
     const storage = getStorage();
 
     // Text formatting functionality

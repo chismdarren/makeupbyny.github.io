@@ -271,11 +271,13 @@
   <script type="module">
     // Import necessary Firestore functions from Firebase SDK
     import { getFirestore, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
     import { auth } from "./firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     
-    // Initialize Firestore
+    // Initialize Firestore and Storage
     const db = getFirestore();
+    const storage = getStorage();
     
     let currentPostId = null;
 
@@ -423,6 +425,16 @@
             document.getElementById("previewContent").innerHTML = postData.content;
             document.getElementById("previewTags").textContent = postData.tags ? `Tags: ${postData.tags}` : '';
             document.getElementById("previewDate").textContent = new Date(postData.postDate || postData.lastModified || postData.createdAt).toLocaleDateString();
+
+            // Ensure images in content are properly displayed
+            const contentDiv = document.getElementById("editContent");
+            const previewContent = document.getElementById("previewContent");
+            const images = contentDiv.getElementsByTagName("img");
+            for (let img of images) {
+              img.style.maxWidth = "100%";
+              img.style.margin = "10px 0";
+              img.style.borderRadius = "4px";
+            }
           }
         } catch (error) {
           console.error("Error fetching post:", error);
