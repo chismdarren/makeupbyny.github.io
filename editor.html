@@ -421,32 +421,57 @@
       const previewTags = document.getElementById('previewTags');
       const dateInput = document.getElementById('postDate');
       const previewDate = document.getElementById('previewDate');
+      const imageInput = document.getElementById('image');
+      const previewImage = document.getElementById('previewImage');
       
-      contentInput.addEventListener('input', () => {
-        previewContent.innerHTML = contentInput.innerHTML;
-      });
+      // Only set up event listeners if elements exist
+      if (titleInput && previewTitle) {
+        titleInput.addEventListener('input', () => {
+          previewTitle.textContent = titleInput.value || "Post Title Preview";
+        });
+      }
 
-      titleInput.addEventListener('input', () => {
-        previewTitle.textContent = titleInput.value;
-      });
+      if (contentInput && previewContent) {
+        contentInput.addEventListener('input', () => {
+          previewContent.innerHTML = contentInput.innerHTML || "Post content preview will appear here...";
+        });
+      }
 
-      tagsInput.addEventListener('input', () => {
-        previewTags.textContent = tagsInput.value ? `Tags: ${tagsInput.value}` : '';
-      });
+      if (tagsInput && previewTags) {
+        tagsInput.addEventListener('input', () => {
+          previewTags.textContent = tagsInput.value ? `Tags: ${tagsInput.value}` : '';
+        });
+      }
 
-      dateInput.addEventListener('change', () => {
-        const selectedDate = new Date(dateInput.value);
-        previewDate.textContent = selectedDate.toLocaleDateString();
-      });
+      if (dateInput && previewDate) {
+        dateInput.addEventListener('change', () => {
+          const selectedDate = new Date(dateInput.value);
+          previewDate.textContent = selectedDate.toLocaleDateString();
+        });
 
-      // Set default date to today
-      const today = new Date().toISOString().split('T')[0];
-      dateInput.value = today;
-      previewDate.textContent = new Date().toLocaleDateString();
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+        previewDate.textContent = new Date().toLocaleDateString();
+      }
+
+      if (imageInput && previewImage) {
+        imageInput.addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              previewImage.src = e.target.result;
+              previewImage.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
     }
 
     // Initialize functionality
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       setupTextFormatting();
       setupAutosave();
       setupLivePreview();
