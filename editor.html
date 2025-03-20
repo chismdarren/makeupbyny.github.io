@@ -63,6 +63,46 @@
       padding: 5px 10px;
       cursor: pointer;
     }
+    /* Text formatting toolbar styles */
+    .format-toolbar {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+      padding: 5px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .format-toolbar button {
+      padding: 5px 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .format-toolbar button:hover {
+      background: #e9e9e9;
+    }
+    .format-toolbar select {
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    
+    /* Autosave indicator */
+    .autosave-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      border-radius: 4px;
+      display: none;
+    }
+    .autosave-status.show {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -90,27 +130,54 @@
             <label for="title">Post Title:</label>
             <input type="text" id="title" name="title" required>
           </div>
+          
+          <!-- Text Formatting Toolbar -->
+          <div class="format-toolbar">
+            <button type="button" id="boldBtn" title="Bold"><strong>B</strong></button>
+            <button type="button" id="italicBtn" title="Italic"><em>I</em></button>
+            <button type="button" id="underlineBtn" title="Underline"><u>U</u></button>
+            <select id="fontFamily">
+              <option value="Arial">Arial</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Helvetica">Helvetica</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Verdana">Verdana</option>
+            </select>
+            <select id="fontSize">
+              <option value="12">12px</option>
+              <option value="14">14px</option>
+              <option value="16" selected>16px</option>
+              <option value="18">18px</option>
+              <option value="20">20px</option>
+              <option value="24">24px</option>
+            </select>
+          </div>
+          
           <!-- Post Content Input Field -->
           <div class="form-group">
             <label for="content">Post Content:</label>
             <textarea id="content" name="content" rows="8" required></textarea>
           </div>
+          
           <!-- Image Upload Input Field -->
           <div class="form-group">
             <label for="image">Upload Image:</label>
             <input type="file" id="image" name="image" accept="image/*">
           </div>
+          
           <!-- Tags Input Field -->
           <div class="form-group">
             <label for="tags">Tags (comma separated):</label>
             <input type="text" id="tags" name="tags">
           </div>
+          
           <!-- Post Status Radio Buttons -->
           <div class="form-group">
             <label>Post Status:</label>
             <label><input type="radio" name="status" value="draft" checked> Draft</label>
             <label><input type="radio" name="status" value="published"> Publish</label>
           </div>
+          
           <!-- Submit Button -->
           <button type="submit">Create Post</button>
         </form>
@@ -136,6 +203,9 @@
     <h2>Manage Posts</h2>
     <div id="postsList"></div>
   </main>
+  
+  <!-- Autosave Status Indicator -->
+  <div id="autosaveStatus" class="autosave-status">Autosaving...</div>
   
   <!-- Footer section -->
   <footer>
