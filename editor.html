@@ -2,21 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Ensures the page scales properly on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create a Post</title>
   <link rel="stylesheet" href="style.css">
-
-  <!-- Quill.js Rich Text Editor -->
-  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-
+  <!-- Inline styles for demo purposes; ideally, move these to style.css -->
   <style>
-    /* Header styling */
+    /* Header styling (matches homepage) */
     header {
       background-color: #333;
       color: white;
       padding: 20px 10px;
       text-align: center;
+      position: relative;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2em;
+    }
+    nav {
+      margin-top: 10px;
     }
     nav a, nav button {
       margin: 0 10px;
@@ -27,147 +32,117 @@
       border: none;
       cursor: pointer;
     }
-    /* Layout adjustments */
+    /* Spacing for form groups */
     .form-group { margin-bottom: 1em; }
+    /* Flex container for side-by-side layout of the form and live preview */
     .flex-container { display: flex; gap: 2em; }
+    /* Flex items take equal space */
     .flex-item { flex: 1; }
-    /* Post preview */
+    /* Styles for the live preview area */
     .preview { border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
     .preview img { max-width: 100%; display: none; }
-    /* Buttons */
-    button {
-      background-color: #ff4081;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      border: none;
-      transition: 0.3s;
+    /* Manage Posts Section styling */
+    .post-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      margin-bottom: 10px;
     }
-    button:hover {
-      background-color: #d81b60;
+    .post-content { flex: 3; }
+    .post-actions {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: flex-end;
+    }
+    .post-actions button {
+      padding: 5px 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-
+  <!-- Header Section with navigation matching the homepage -->
   <header>
     <h1>Welcome to Makeup by NY</h1>
     <nav>
       <a href="index.html">Home</a>
+      <!-- Create Post link is hidden, as on the homepage -->
       <a id="create-post-link" href="editor.html" style="display: none;">Create a Post</a>
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display: none;">Logout</button>
     </nav>
   </header>
-
+  
+  <!-- Main content area -->
   <main>
     <div class="flex-container">
       <!-- Form Section -->
       <div class="flex-item">
+        <!-- Post Creation Form -->
         <form id="postForm">
+          <!-- Post Title Input Field -->
           <div class="form-group">
-            <label for="title">Post Title: <span id="titleCounter">50</span> characters left</label>
-            <input type="text" id="title" name="title" maxlength="50" required>
+            <label for="title">Post Title:</label>
+            <input type="text" id="title" name="title" required>
           </div>
-
-          <!-- Rich Text Editor -->
+          <!-- Post Content Input Field -->
           <div class="form-group">
-            <label for="editor">Post Content:</label>
-            <div id="editor"></div>
+            <label for="content">Post Content:</label>
+            <textarea id="content" name="content" rows="8" required></textarea>
           </div>
-
-          <!-- Image Upload with Preview -->
+          <!-- Image Upload Input Field -->
           <div class="form-group">
             <label for="image">Upload Image:</label>
             <input type="file" id="image" name="image" accept="image/*">
-            <img id="previewImage" style="max-width: 100%; display: none;">
           </div>
-
-          <!-- Tags Input -->
+          <!-- Tags Input Field -->
           <div class="form-group">
             <label for="tags">Tags (comma separated):</label>
             <input type="text" id="tags" name="tags">
           </div>
-
-          <!-- Post Scheduling -->
-          <div class="form-group">
-            <label for="scheduleDate">Schedule Post:</label>
-            <input type="datetime-local" id="scheduleDate">
-          </div>
-
-          <!-- Post Status -->
+          <!-- Post Status Radio Buttons -->
           <div class="form-group">
             <label>Post Status:</label>
             <label><input type="radio" name="status" value="draft" checked> Draft</label>
             <label><input type="radio" name="status" value="published"> Publish</label>
           </div>
-
+          <!-- Submit Button -->
           <button type="submit">Create Post</button>
         </form>
       </div>
-
-      <!-- Live Preview -->
+      
+      <!-- Live Preview Section -->
       <div class="flex-item">
         <h2>Live Preview</h2>
         <div class="preview" id="previewArea">
+          <!-- Preview of the Post Title -->
           <h3 id="previewTitle">Post Title Preview</h3>
+          <!-- Preview of the Post Content -->
           <p id="previewContent">Post content preview will appear here...</p>
+          <!-- Preview of the Uploaded Image (hidden by default) -->
           <img id="previewImage" src="" alt="Post image preview">
+          <!-- Preview of the Tags -->
           <p id="previewTags"></p>
         </div>
       </div>
     </div>
-
+    
+    <!-- Manage Posts Section: Lists posts with Edit, Delete, and Archive buttons (for admin view) -->
     <h2>Manage Posts</h2>
     <div id="postsList"></div>
   </main>
-
+  
+  <!-- Footer section -->
   <footer>
     <p>&copy; 2025 Makeup by NY</p>
   </footer>
-
-  <script type="module">
-    import { auth } from "./firebase.js";
-
-    // Initialize Quill.js
-    const quill = new Quill("#editor", {
-      theme: "snow"
-    });
-
-    // Auto-Save Drafts
-    function saveDraft() {
-      localStorage.setItem("draftTitle", document.getElementById("title").value);
-      localStorage.setItem("draftContent", quill.root.innerHTML);
-    }
-    setInterval(saveDraft, 5000);
-
-    window.addEventListener("load", () => {
-      document.getElementById("title").value = localStorage.getItem("draftTitle") || "";
-      quill.root.innerHTML = localStorage.getItem("draftContent") || "";
-    });
-
-    // Image Preview
-    document.getElementById("image").addEventListener("change", function(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById("previewImage").src = e.target.result;
-          document.getElementById("previewImage").style.display = "block";
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Title Character Counter
-    document.getElementById("title").addEventListener("input", function() {
-      const maxLength = 50;
-      const currentLength = this.value.length;
-      document.getElementById("titleCounter").innerText = maxLength - currentLength;
-    });
-
-  </script>
-
+  
+  <!-- Load the JavaScript file as an ES module -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
