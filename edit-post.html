@@ -41,6 +41,30 @@
       padding: 1em; 
       margin-top: 1em;
       background: white;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .preview img { 
+      max-width: 100%; 
+      height: auto;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .preview h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 1.5em;
+    }
+    .preview p {
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+    .preview-meta {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 0.9em;
     }
     .post-card {
       border: 1px solid #ddd;
@@ -210,6 +234,12 @@
             <label><input type="radio" name="editStatus" value="published"> Publish</label>
           </div>
 
+          <!-- Post Date Input -->
+          <div class="form-group">
+            <label for="editPostDate">Post Date:</label>
+            <input type="date" id="editPostDate" name="editPostDate" required>
+          </div>
+
           <div class="action-buttons">
             <button type="submit" class="save-btn">Save Changes</button>
             <button type="button" class="cancel-btn" onclick="window.location.href='editor.html'">Cancel</button>
@@ -222,18 +252,11 @@
       <div class="flex-item">
         <h2>Live Preview</h2>
         <div class="preview" id="previewArea">
-          <div class="post-card">
-            <h3 id="previewTitle">Post Title Preview</h3>
-            <div class="post-image-container">
-              <img id="previewImage" src="" alt="Post image preview">
-            </div>
-            <div class="post-content">
-              <p id="previewContent">Post content preview will appear here...</p>
-              <div class="post-meta">
-                <p id="previewTags"></p>
-                <p id="previewDate"></p>
-              </div>
-            </div>
+          <h3 id="previewTitle">Post Title Preview</h3>
+          <div id="previewContent">Post content preview will appear here...</div>
+          <div class="preview-meta">
+            <p id="previewTags"></p>
+            <p id="previewDate"></p>
           </div>
         </div>
       </div>
@@ -346,6 +369,8 @@
       const previewTags = document.getElementById('previewTags');
       const titleInput = document.getElementById('editTitle');
       const previewTitle = document.getElementById('previewTitle');
+      const dateInput = document.getElementById('editPostDate');
+      const previewDate = document.getElementById('previewDate');
       
       contentInput.addEventListener('input', () => {
         previewContent.innerHTML = contentInput.innerHTML;
@@ -357,6 +382,11 @@
 
       titleInput.addEventListener('input', () => {
         previewTitle.textContent = titleInput.value;
+      });
+
+      dateInput.addEventListener('change', () => {
+        const selectedDate = new Date(dateInput.value);
+        previewDate.textContent = selectedDate.toLocaleDateString();
       });
     }
 
@@ -382,6 +412,7 @@
             document.getElementById("editTitle").value = postData.title;
             document.getElementById("editContent").innerHTML = postData.content;
             document.getElementById("editTags").value = postData.tags || '';
+            document.getElementById("editPostDate").value = postData.postDate || new Date().toISOString().split('T')[0];
             
             // Set status radio button
             const statusRadio = document.querySelector(`input[name="editStatus"][value="${postData.status || 'draft'}"]`);
@@ -391,7 +422,7 @@
             document.getElementById("previewTitle").textContent = postData.title;
             document.getElementById("previewContent").innerHTML = postData.content;
             document.getElementById("previewTags").textContent = postData.tags ? `Tags: ${postData.tags}` : '';
-            document.getElementById("previewDate").textContent = new Date(postData.lastModified || postData.createdAt).toLocaleDateString();
+            document.getElementById("previewDate").textContent = new Date(postData.postDate || postData.lastModified || postData.createdAt).toLocaleDateString();
             
             // Show existing image if present
             if (postData.imageUrl) {
@@ -416,6 +447,7 @@
           const newContent = document.getElementById("editContent").innerHTML;
           const newTags = document.getElementById("editTags").value;
           const newStatus = document.querySelector('input[name="editStatus"]:checked').value;
+          const newDate = document.getElementById("editPostDate").value;
           
           try {
             await updateDoc(doc(db, "posts", currentPostId), {
@@ -423,6 +455,7 @@
               content: newContent,
               tags: newTags,
               status: newStatus,
+              postDate: newDate,
               lastModified: new Date().toISOString()
             });
             

@@ -39,8 +39,36 @@
     /* Flex items take equal space */
     .flex-item { flex: 1; }
     /* Styles for the live preview area */
-    .preview { border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
-    .preview img { max-width: 100%; display: none; }
+    .preview { 
+      border: 1px solid #ccc; 
+      padding: 1em; 
+      margin-top: 1em;
+      background: white;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .preview img { 
+      max-width: 100%; 
+      height: auto;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .preview h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 1.5em;
+    }
+    .preview p {
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+    .preview-meta {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 0.9em;
+    }
     /* Manage Posts Section styling */
     .post-wrapper {
       display: flex;
@@ -196,6 +224,12 @@
             <label><input type="radio" name="status" value="draft" checked> Draft</label>
             <label><input type="radio" name="status" value="published"> Publish</label>
           </div>
+
+          <!-- Post Date Input -->
+          <div class="form-group">
+            <label for="postDate">Post Date:</label>
+            <input type="date" id="postDate" name="postDate" required>
+          </div>
           
           <!-- Submit Button -->
           <button type="submit">Create Post</button>
@@ -206,14 +240,12 @@
       <div class="flex-item">
         <h2>Live Preview</h2>
         <div class="preview" id="previewArea">
-          <!-- Preview of the Post Title -->
           <h3 id="previewTitle">Post Title Preview</h3>
-          <!-- Preview of the Post Content -->
-          <p id="previewContent">Post content preview will appear here...</p>
-          <!-- Preview of the Uploaded Image (hidden by default) -->
-          <img id="previewImage" src="" alt="Post image preview">
-          <!-- Preview of the Tags -->
-          <p id="previewTags"></p>
+          <div id="previewContent">Post content preview will appear here...</div>
+          <div class="preview-meta">
+            <p id="previewTags"></p>
+            <p id="previewDate"></p>
+          </div>
         </div>
       </div>
     </div>
@@ -385,10 +417,34 @@
     function setupLivePreview() {
       const contentInput = document.getElementById('content');
       const previewContent = document.getElementById('previewContent');
+      const titleInput = document.getElementById('title');
+      const previewTitle = document.getElementById('previewTitle');
+      const tagsInput = document.getElementById('tags');
+      const previewTags = document.getElementById('previewTags');
+      const dateInput = document.getElementById('postDate');
+      const previewDate = document.getElementById('previewDate');
       
       contentInput.addEventListener('input', () => {
         previewContent.innerHTML = contentInput.innerHTML;
       });
+
+      titleInput.addEventListener('input', () => {
+        previewTitle.textContent = titleInput.value;
+      });
+
+      tagsInput.addEventListener('input', () => {
+        previewTags.textContent = tagsInput.value ? `Tags: ${tagsInput.value}` : '';
+      });
+
+      dateInput.addEventListener('change', () => {
+        const selectedDate = new Date(dateInput.value);
+        previewDate.textContent = selectedDate.toLocaleDateString();
+      });
+
+      // Set default date to today
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.value = today;
+      previewDate.textContent = new Date().toLocaleDateString();
     }
 
     // Initialize functionality
@@ -469,6 +525,7 @@
         const content = document.getElementById('content').innerHTML;
         const tags = document.getElementById('tags').value;
         const status = document.querySelector('input[name="status"]:checked').value;
+        const postDate = document.getElementById('postDate').value;
         
         try {
           await addDoc(collection(db, "posts"), {
@@ -476,6 +533,7 @@
             content,
             tags,
             status,
+            postDate,
             createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString()
           });
