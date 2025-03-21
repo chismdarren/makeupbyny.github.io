@@ -447,6 +447,12 @@ document.addEventListener("DOMContentLoaded", () => {
     postForm.addEventListener("submit", async function(event) {
       event.preventDefault();
 
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please log in to create a post');
+        return;
+      }
+
       const title = document.getElementById("title").value;
       const content = contentEditor.innerHTML;
       const tags = document.getElementById("tags").value;
@@ -478,6 +484,7 @@ document.addEventListener("DOMContentLoaded", () => {
           tags,
           status,
           imageUrl,
+          userId: user.uid,
           createdAt: serverTimestamp()
         });
 
@@ -489,6 +496,9 @@ document.addEventListener("DOMContentLoaded", () => {
           previewContent.innerHTML = "Post content preview will appear here...";
         }
         updateCharacterCount();
+        
+        // Reload posts list after creating a new post
+        loadUserPosts();
       } catch (error) {
         console.error("Error adding post:", error);
         alert("Error submitting post. Please try again.");
@@ -501,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle authentication state
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
-  const createPostLink = document.getElementById("createPost");
+  const createPostLink = document.getElementById("create-post-link");
 
   if (loginLink && logoutBtn && createPostLink) {
     onAuthStateChanged(auth, (user) => {
@@ -511,10 +521,17 @@ document.addEventListener("DOMContentLoaded", () => {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
         createPostLink.style.display = "inline";
+        // Load posts when user is logged in
+        loadUserPosts();
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
         createPostLink.style.display = "none";
+        // Clear posts list when user logs out
+        const postsList = document.getElementById('postsList');
+        if (postsList) {
+          postsList.innerHTML = '<p>Please log in to view your posts.</p>';
+        }
       }
     });
   }
@@ -570,21 +587,29 @@ async function loadUserPosts() {
       return;
     }
 
-    // Clear existing posts
-    postsList.innerHTML = '';
+    // Show loading state
+    postsList.innerHTML = '<p>Loading posts...</p>';
 
     // Get posts from Firestore
     const postsRef = collection(db, 'posts');
-    const q = query(postsRef, orderBy('createdAt', 'desc'));
+    console.log('Querying Firestore for posts...');
+    const q = query(postsRef, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
+    console.log('Query completed. Number of posts found:', querySnapshot.size);
 
     if (querySnapshot.empty) {
+      console.log('No posts found for user:', user.uid);
       postsList.innerHTML = '<p>No posts found. Create your first post!</p>';
       return;
     }
 
+    // Clear existing posts
+    postsList.innerHTML = '';
+
+    // Add each post to the list
     querySnapshot.forEach((doc) => {
       const post = doc.data();
+      console.log('Processing post:', doc.id, post);
       const postCard = createPostCard(doc.id, post);
       postsList.appendChild(postCard);
     });
