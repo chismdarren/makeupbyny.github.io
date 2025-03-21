@@ -593,7 +593,8 @@ async function loadUserPosts() {
     // Get posts from Firestore
     const postsRef = collection(db, 'posts');
     console.log('Querying Firestore for posts...');
-    const q = query(postsRef, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    // Temporarily remove the orderBy clause until the index is created
+    const q = query(postsRef, where('userId', '==', user.uid));
     const querySnapshot = await getDocs(q);
     console.log('Query completed. Number of posts found:', querySnapshot.size);
 
@@ -606,11 +607,23 @@ async function loadUserPosts() {
     // Clear existing posts
     postsList.innerHTML = '';
 
-    // Add each post to the list
+    // Convert to array and sort in memory
+    const posts = [];
     querySnapshot.forEach((doc) => {
-      const post = doc.data();
-      console.log('Processing post:', doc.id, post);
-      const postCard = createPostCard(doc.id, post);
+      posts.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Sort posts by createdAt in descending order
+    posts.sort((a, b) => {
+      const dateA = a.createdAt ? a.createdAt.seconds : 0;
+      const dateB = b.createdAt ? b.createdAt.seconds : 0;
+      return dateB - dateA;
+    });
+
+    // Add each post to the list
+    posts.forEach((post) => {
+      console.log('Processing post:', post.id, post);
+      const postCard = createPostCard(post.id, post);
       postsList.appendChild(postCard);
     });
   } catch (error) {
