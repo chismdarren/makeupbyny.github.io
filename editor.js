@@ -563,6 +563,7 @@ async function loadUserPosts() {
       return;
     }
 
+    console.log('Loading posts for user:', user.uid);
     const postsList = document.getElementById('postsList');
     if (!postsList) {
       console.error('Posts list element not found');
@@ -574,7 +575,7 @@ async function loadUserPosts() {
 
     // Get posts from Firestore
     const postsRef = collection(db, 'posts');
-    const q = query(postsRef, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    const q = query(postsRef, orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -600,9 +601,10 @@ async function loadUserPosts() {
 function createPostCard(postId, post) {
   const card = document.createElement('div');
   card.className = 'post-card';
+  card.setAttribute('data-post-id', postId);
 
   // Format date
-  const postDate = post.postDate ? new Date(post.postDate.seconds * 1000) : new Date();
+  const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
   const formattedDate = postDate.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
