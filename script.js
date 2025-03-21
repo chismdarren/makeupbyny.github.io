@@ -202,16 +202,70 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Live update for image preview
-  document.getElementById("image").addEventListener("change", function(event) {
-    const file = event.target.files[0];
+  const imageInput = document.getElementById("image");
+  const contentEditor = document.getElementById("content");
+  
+  if (imageInput) {
+    imageInput.addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          // Update the preview content with the image
+          const previewContent = document.getElementById("previewContent");
+          if (previewContent) {
+            previewContent.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; height: auto;"><br>` + previewContent.innerHTML;
+          }
+          
+          // If we have a content editor, also insert the image there
+          if (contentEditor) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            contentEditor.appendChild(img);
+            contentEditor.appendChild(document.createElement('br'));
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
 
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById("previewImage").src = e.target.result;
-        document.getElementById("previewImage").style.display = "block"; // Show the image preview
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+  // Handle image upload button click
+  const insertImageBtn = document.getElementById("insertImageBtn");
+  const imageUploadInput = document.getElementById("imageUpload");
+  
+  if (insertImageBtn && imageUploadInput) {
+    insertImageBtn.addEventListener("click", () => {
+      imageUploadInput.click();
+    });
+    
+    imageUploadInput.addEventListener("change", function(event) {
+      const files = event.target.files;
+      if (files) {
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            // Insert image into content editor
+            if (contentEditor) {
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.style.maxWidth = '100%';
+              img.style.height = 'auto';
+              contentEditor.appendChild(img);
+              contentEditor.appendChild(document.createElement('br'));
+            }
+            
+            // Update preview
+            const previewContent = document.getElementById("previewContent");
+            if (previewContent) {
+              previewContent.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; height: auto;"><br>` + previewContent.innerHTML;
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+  }
 });
