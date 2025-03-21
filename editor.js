@@ -660,7 +660,7 @@ function createPostCard(postId, post) {
       <span class="status-badge status-${post.status || 'draft'}">${post.status || 'Draft'}</span>
     </div>
     <div class="post-actions">
-      <button class="edit-btn" onclick="window.location.href='edit-post.html?id=${postId}'">Edit</button>
+      <button class="edit-btn" onclick="window.location.href='edit-post.html?postId=${postId}'">Edit</button>
       <button class="delete-btn" onclick="deletePost('${postId}')">Delete</button>
     </div>
   `;
