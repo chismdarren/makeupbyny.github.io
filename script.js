@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
 
       const title = document.getElementById("title").value;
-      const content = document.getElementById("content").value;
+      const content = document.getElementById("content").innerHTML;
       const tags = document.getElementById("tags").value;
       const status = document.querySelector('input[name="status"]:checked').value;
       const imageInput = document.getElementById("image");
@@ -194,16 +194,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("previewTitle").textContent = this.value || "Post Title Preview";
   });
 
-  // Live update for post content (if using Quill.js)
-  const quill = new Quill("#editor", { theme: "snow" });
-
-  quill.on("text-change", function() {
-    document.getElementById("previewContent").innerHTML = quill.root.innerHTML || "Post content preview will appear here...";
-  });
+  // Live update for post content
+  const contentEditor = document.getElementById("content");
+  if (contentEditor) {
+    contentEditor.addEventListener("input", function() {
+      const previewContent = document.getElementById("previewContent");
+      if (previewContent) {
+        previewContent.innerHTML = this.innerHTML || "Post content preview will appear here...";
+      }
+    });
+  }
 
   // Live update for image preview
   const imageInput = document.getElementById("image");
-  const contentEditor = document.getElementById("content");
   
   if (imageInput) {
     imageInput.addEventListener("change", function(event) {
