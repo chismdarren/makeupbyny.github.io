@@ -22,7 +22,8 @@ import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
+  uploadBytesResumable
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
 // Initialize Firestore and Storage
@@ -192,9 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
           // Draw and compress
           ctx.drawImage(img, 0, 0, width, height);
           canvas.toBlob(function(blob) {
-            // Upload to Firebase Storage
+            // Upload to Firebase Storage using uploadBytesResumable
             const imageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-            const uploadTask = uploadBytes(imageRef, blob);
+            const uploadTask = uploadBytesResumable(imageRef, blob);
             
             uploadTask.on('state_changed',
               (snapshot) => {
@@ -207,12 +208,17 @@ document.addEventListener("DOMContentLoaded", () => {
               },
               (error) => {
                 console.error('Upload error:', error);
+                // Remove temporary preview on error
+                const tempElement = document.querySelector(`#temp-${tempId}`);
+                if (tempElement) {
+                  tempElement.remove();
+                }
                 reject(error);
               },
               async () => {
                 try {
                   // Get download URL
-                  const downloadURL = await getDownloadURL(imageRef);
+                  const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                   
                   // Replace temporary preview with final image
                   const finalImgHtml = `<img src="${downloadURL}" alt="Preview" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" title="Click to edit image" data-image-id="${tempId}">`;
@@ -238,11 +244,21 @@ document.addEventListener("DOMContentLoaded", () => {
                   resolve(downloadURL);
                 } catch (error) {
                   console.error('Error getting download URL:', error);
+                  // Remove temporary preview on error
+                  const tempElement = document.querySelector(`#temp-${tempId}`);
+                  if (tempElement) {
+                    tempElement.remove();
+                  }
                   reject(error);
                 }
               }
             );
           }, 'image/jpeg', 0.8); // Compress to JPEG with 80% quality
+        };
+        img.onerror = () => {
+          hideLoading(contentEditor);
+          hideLoading(previewContent);
+          reject(new Error('Error loading image'));
         };
         img.src = e.target.result;
       };
