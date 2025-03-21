@@ -214,20 +214,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
+          const imageUrl = e.target.result;
+          const imgHtml = `<img src="${imageUrl}" alt="Preview" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px;">`;
+          
           // Update the preview content with the image
           const previewContent = document.getElementById("previewContent");
           if (previewContent) {
-            previewContent.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; height: auto;"><br>` + previewContent.innerHTML;
+            previewContent.innerHTML = imgHtml + previewContent.innerHTML;
           }
           
           // If we have a content editor, also insert the image there
           if (contentEditor) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.maxWidth = '100%';
-            img.style.height = 'auto';
-            contentEditor.appendChild(img);
-            contentEditor.appendChild(document.createElement('br'));
+            contentEditor.innerHTML = imgHtml + contentEditor.innerHTML;
           }
         };
         reader.readAsDataURL(file);
@@ -250,20 +248,18 @@ document.addEventListener("DOMContentLoaded", () => {
         Array.from(files).forEach(file => {
           const reader = new FileReader();
           reader.onload = function(e) {
+            const imageUrl = e.target.result;
+            const imgHtml = `<img src="${imageUrl}" alt="Preview" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px;">`;
+            
             // Insert image into content editor
             if (contentEditor) {
-              const img = document.createElement('img');
-              img.src = e.target.result;
-              img.style.maxWidth = '100%';
-              img.style.height = 'auto';
-              contentEditor.appendChild(img);
-              contentEditor.appendChild(document.createElement('br'));
+              contentEditor.innerHTML = imgHtml + contentEditor.innerHTML;
             }
             
             // Update preview
             const previewContent = document.getElementById("previewContent");
             if (previewContent) {
-              previewContent.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; height: auto;"><br>` + previewContent.innerHTML;
+              previewContent.innerHTML = imgHtml + previewContent.innerHTML;
             }
           };
           reader.readAsDataURL(file);

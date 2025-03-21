@@ -328,16 +328,16 @@
 
       // Function to insert image at cursor position
       function insertImage(imageUrl) {
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        img.alt = "Post image";
-        img.style.maxWidth = "100%";
-        img.style.margin = "10px 0";
+        const imgHtml = `<img src="${imageUrl}" alt="Post image" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px;">`;
         
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        range.insertNode(img);
-        contentInput.focus();
+        const contentInput = document.getElementById('editContent');
+        const previewContent = document.getElementById('previewContent');
+        
+        // Insert into content editor
+        contentInput.innerHTML = imgHtml + contentInput.innerHTML;
+        
+        // Update preview
+        previewContent.innerHTML = imgHtml + previewContent.innerHTML;
       }
 
       // Handle image upload and insertion
