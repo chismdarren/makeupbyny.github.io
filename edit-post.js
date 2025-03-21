@@ -372,42 +372,65 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadPostData() {
     if (!currentPostId) {
       console.error("No post ID provided");
+      alert("No post ID provided. Redirecting to home page...");
+      window.location.href = "index.html";
       return;
     }
 
     try {
       showLoading(editPostForm);
+      console.log("Loading post data for ID:", currentPostId);
+      
       const postDocRef = doc(db, "posts", currentPostId);
       const postSnapshot = await getDoc(postDocRef);
       
       if (postSnapshot.exists()) {
         const postData = postSnapshot.data();
+        console.log("Post data loaded:", postData);
         
         // Populate form fields
-        document.getElementById("title").value = postData.title;
-        contentEditor.innerHTML = postData.content;
-        document.getElementById("tags").value = postData.tags || '';
-        document.getElementById("postDate").value = postData.postDate || new Date().toISOString().split('T')[0];
+        const titleInput = document.getElementById("title");
+        const tagsInput = document.getElementById("tags");
+        const dateInput = document.getElementById("postDate");
+        const statusInputs = document.querySelectorAll('input[name="status"]');
+        
+        if (titleInput) titleInput.value = postData.title || '';
+        if (contentEditor) contentEditor.innerHTML = postData.content || '';
+        if (tagsInput) tagsInput.value = postData.tags || '';
+        if (dateInput) dateInput.value = postData.postDate || new Date().toISOString().split('T')[0];
         
         // Set status radio button
-        const statusRadio = document.querySelector(`input[name="status"][value="${postData.status || 'draft'}"]`);
-        if (statusRadio) statusRadio.checked = true;
+        if (statusInputs) {
+          const status = postData.status || 'draft';
+          statusInputs.forEach(input => {
+            input.checked = input.value === status;
+          });
+        }
         
         // Update preview
-        document.getElementById("previewTitle").textContent = postData.title;
-        document.getElementById("previewContent").innerHTML = postData.content;
-        document.getElementById("previewTags").textContent = postData.tags ? `Tags: ${postData.tags}` : '';
-        document.getElementById("previewDate").textContent = new Date(postData.postDate || postData.lastModified || postData.createdAt).toLocaleDateString();
+        const previewTitle = document.getElementById("previewTitle");
+        const previewContent = document.getElementById("previewContent");
+        const previewTags = document.getElementById("previewTags");
+        const previewDate = document.getElementById("previewDate");
+        
+        if (previewTitle) previewTitle.textContent = postData.title || "Post Title Preview";
+        if (previewContent) previewContent.innerHTML = postData.content || "Post content preview will appear here...";
+        if (previewTags) previewTags.textContent = postData.tags ? `Tags: ${postData.tags}` : '';
+        if (previewDate) {
+          const date = postData.postDate || postData.lastModified || postData.createdAt;
+          previewDate.textContent = date ? new Date(date).toLocaleDateString() : '';
+        }
         
         updateCharacterCount();
+        console.log("Post data loaded successfully");
       } else {
-        console.error("Post not found");
-        alert("Post not found");
+        console.error("Post not found for ID:", currentPostId);
+        alert("Post not found. Redirecting to home page...");
         window.location.href = "index.html";
       }
     } catch (error) {
       console.error("Error loading post:", error);
-      alert("Error loading post data");
+      alert("Error loading post data. Please try again or contact support if the problem persists.");
     } finally {
       hideLoading(editPostForm);
     }
@@ -476,7 +499,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (user) {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
-        loadPostData();
+        // Only load post data if we have a post ID
+        if (currentPostId) {
+          loadPostData();
+        } else {
+          console.error("No post ID provided in URL");
+          alert("No post ID provided. Redirecting to home page...");
+          window.location.href = "index.html";
+        }
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";

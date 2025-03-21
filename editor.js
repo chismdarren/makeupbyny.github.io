@@ -13,7 +13,8 @@ import {
   getDocs,
   deleteDoc,
   updateDoc,
-  doc
+  doc,
+  where
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Import Firebase Storage functions
@@ -548,4 +549,109 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   `;
   document.head.appendChild(style);
-}); 
+
+  // Load user's posts
+  loadUserPosts();
+});
+
+// Function to load and display user's posts
+async function loadUserPosts() {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.log('No user logged in');
+      return;
+    }
+
+    const postsList = document.getElementById('postsList');
+    if (!postsList) {
+      console.error('Posts list element not found');
+      return;
+    }
+
+    // Clear existing posts
+    postsList.innerHTML = '';
+
+    // Get posts from Firestore
+    const postsRef = collection(db, 'posts');
+    const q = query(postsRef, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      postsList.innerHTML = '<p>No posts found. Create your first post!</p>';
+      return;
+    }
+
+    querySnapshot.forEach((doc) => {
+      const post = doc.data();
+      const postCard = createPostCard(doc.id, post);
+      postsList.appendChild(postCard);
+    });
+  } catch (error) {
+    console.error('Error loading posts:', error);
+    const postsList = document.getElementById('postsList');
+    if (postsList) {
+      postsList.innerHTML = '<p>Error loading posts. Please try again later.</p>';
+    }
+  }
+}
+
+// Function to create a post card element
+function createPostCard(postId, post) {
+  const card = document.createElement('div');
+  card.className = 'post-card';
+
+  // Format date
+  const postDate = post.postDate ? new Date(post.postDate.seconds * 1000) : new Date();
+  const formattedDate = postDate.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Create card content
+  card.innerHTML = `
+    <h3>${post.title || 'Untitled Post'}</h3>
+    <div class="post-content">
+      ${post.content || 'No content'}
+    </div>
+    <div class="post-meta">
+      <span>${formattedDate}</span>
+      <span class="status-badge status-${post.status || 'draft'}">${post.status || 'Draft'}</span>
+    </div>
+    <div class="post-actions">
+      <button class="edit-btn" onclick="window.location.href='edit-post.html?id=${postId}'">Edit</button>
+      <button class="delete-btn" onclick="deletePost('${postId}')">Delete</button>
+    </div>
+  `;
+
+  return card;
+}
+
+// Function to delete a post
+async function deletePost(postId) {
+  if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('No user logged in');
+    }
+
+    // Delete post from Firestore
+    await deleteDoc(doc(db, 'posts', postId));
+    
+    // Remove post card from DOM
+    const postCard = document.querySelector(`[data-post-id="${postId}"]`);
+    if (postCard) {
+      postCard.remove();
+    }
+
+    alert('Post deleted successfully!');
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    alert('Error deleting post. Please try again later.');
+  }
+} 

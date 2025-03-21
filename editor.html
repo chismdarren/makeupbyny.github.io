@@ -148,6 +148,104 @@
       max-width: 100%;
       margin: 10px 0;
     }
+
+    /* Posts List Section Styles */
+    .posts-list-section {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f8f9fa;
+    }
+
+    .posts-list-section h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 1.5em;
+    }
+
+    .posts-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .post-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .post-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .post-card h3 {
+      margin: 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+      font-size: 1.2em;
+      color: #333;
+    }
+
+    .post-card .post-content {
+      padding: 15px;
+    }
+
+    .post-card .post-meta {
+      padding: 10px 15px;
+      background: #f8f9fa;
+      border-top: 1px solid #ddd;
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    .post-card .post-actions {
+      padding: 10px 15px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      border-top: 1px solid #ddd;
+    }
+
+    .post-card .post-actions button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .post-card .edit-btn {
+      background: #007bff;
+      color: white;
+    }
+
+    .post-card .delete-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .post-card .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      margin-left: 10px;
+    }
+
+    .post-card .status-draft {
+      background: #ffc107;
+      color: #000;
+    }
+
+    .post-card .status-published {
+      background: #28a745;
+      color: white;
+    }
   </style>
 </head>
 <body>
