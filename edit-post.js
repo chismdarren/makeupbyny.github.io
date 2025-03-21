@@ -395,7 +395,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const statusInputs = document.querySelectorAll('input[name="status"]');
         
         if (titleInput) titleInput.value = postData.title || '';
-        if (contentEditor) contentEditor.innerHTML = postData.content || '';
+        if (contentEditor) {
+          contentEditor.innerHTML = postData.content || '';
+          // Add image if it exists
+          if (postData.imageUrl) {
+            contentEditor.innerHTML += `<img src="${postData.imageUrl}" alt="Post image" style="max-width:100%; margin-top:10px;">`;
+          }
+        }
         if (tagsInput) tagsInput.value = postData.tags || '';
         if (dateInput) dateInput.value = postData.postDate || new Date().toISOString().split('T')[0];
         
@@ -414,7 +420,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const previewDate = document.getElementById("previewDate");
         
         if (previewTitle) previewTitle.textContent = postData.title || "Post Title Preview";
-        if (previewContent) previewContent.innerHTML = postData.content || "Post content preview will appear here...";
+        if (previewContent) {
+          previewContent.innerHTML = postData.content || "Post content preview will appear here...";
+          // Add image to preview if it exists
+          if (postData.imageUrl) {
+            previewContent.innerHTML += `<img src="${postData.imageUrl}" alt="Post image" style="max-width:100%; margin-top:10px;">`;
+          }
+        }
         if (previewTags) previewTags.textContent = postData.tags ? `Tags: ${postData.tags}` : '';
         if (previewDate) {
           const date = postData.postDate || postData.lastModified || postData.createdAt;
