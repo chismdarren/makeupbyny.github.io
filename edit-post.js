@@ -5,15 +5,11 @@ import { auth } from "./firebase-config.js";
 // Import Firestore functions
 import {
   getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp,
-  query,
-  orderBy,
-  getDocs,
-  deleteDoc,
+  doc,
+  getDoc,
   updateDoc,
-  doc
+  deleteDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Import Firebase Storage functions
@@ -36,12 +32,16 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
   // Initialize elements
-  const postForm = document.getElementById("postForm");
+  const editPostForm = document.getElementById("editPostForm");
   const contentEditor = document.getElementById("content");
-  const imageInput = document.getElementById("image");
   const insertImageBtn = document.getElementById("insertImageBtn");
   const imageUploadInput = document.getElementById("imageUpload");
   const previewContent = document.getElementById("previewContent");
+  const deletePostBtn = document.getElementById("deletePostBtn");
+
+  // Get post ID from URL
+  const params = new URLSearchParams(window.location.search);
+  const currentPostId = params.get("postId");
 
   // Add loading indicator
   function showLoading(element) {
@@ -65,20 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const charCountElement = document.getElementById('charCount');
     if (charCountElement) {
       charCountElement.textContent = `Character count: ${charCount}`;
-    }
-  }
-
-  // Handle image removal
-  function setupImageRemoval() {
-    if (contentEditor) {
-      contentEditor.addEventListener('click', function(e) {
-        if (e.target.tagName === 'IMG') {
-          if (confirm('Remove this image?')) {
-            e.target.remove();
-            updatePreview();
-          }
-        }
-      });
     }
   }
 
@@ -321,21 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return Promise.all(Array.from(files).map(file => handleImageUpload(file)));
   }
 
-  // Handle main image input
-  if (imageInput) {
-    imageInput.addEventListener("change", async function(event) {
-      const files = event.target.files;
-      if (files.length > 0) {
-        try {
-          await handleMultipleImages(files);
-        } catch (error) {
-          console.error("Error handling images:", error);
-          alert(error.message || "Error processing images. Please try again.");
-        }
-      }
-    });
-  }
-
   // Handle image upload button
   if (insertImageBtn && imageUploadInput) {
     insertImageBtn.addEventListener("click", () => {
@@ -360,7 +331,6 @@ document.addEventListener("DOMContentLoaded", () => {
     contentEditor.addEventListener("input", function() {
       updatePreview();
       updateCharacterCount();
-      saveDraft();
     });
   }
 
@@ -396,103 +366,101 @@ document.addEventListener("DOMContentLoaded", () => {
         previewDate.textContent = selectedDate.toLocaleDateString();
       }
     });
+  }
 
-    // Set default date to today
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
-    const previewDate = document.getElementById("previewDate");
-    if (previewDate) {
-      previewDate.textContent = new Date().toLocaleDateString();
+  // Load post data
+  async function loadPostData() {
+    if (!currentPostId) {
+      console.error("No post ID provided");
+      return;
     }
-  }
 
-  // Save draft functionality
-  function saveDraft() {
-    const draft = {
-      title: document.getElementById("title").value,
-      content: contentEditor.innerHTML,
-      tags: document.getElementById("tags").value,
-      status: document.querySelector('input[name="status"]:checked').value,
-      date: document.getElementById("postDate").value,
-      lastSaved: new Date().toISOString()
-    };
-    localStorage.setItem('postDraft', JSON.stringify(draft));
-  }
-
-  // Load draft functionality
-  function loadDraft() {
-    const draft = localStorage.getItem('postDraft');
-    if (draft) {
-      const parsedDraft = JSON.parse(draft);
-      document.getElementById("title").value = parsedDraft.title;
-      contentEditor.innerHTML = parsedDraft.content;
-      document.getElementById("tags").value = parsedDraft.tags;
-      document.querySelector(`input[name="status"][value="${parsedDraft.status}"]`).checked = true;
-      document.getElementById("postDate").value = parsedDraft.date;
+    try {
+      showLoading(editPostForm);
+      const postDocRef = doc(db, "posts", currentPostId);
+      const postSnapshot = await getDoc(postDocRef);
       
-      updatePreview();
-      updateCharacterCount();
+      if (postSnapshot.exists()) {
+        const postData = postSnapshot.data();
+        
+        // Populate form fields
+        document.getElementById("title").value = postData.title;
+        contentEditor.innerHTML = postData.content;
+        document.getElementById("tags").value = postData.tags || '';
+        document.getElementById("postDate").value = postData.postDate || new Date().toISOString().split('T')[0];
+        
+        // Set status radio button
+        const statusRadio = document.querySelector(`input[name="status"][value="${postData.status || 'draft'}"]`);
+        if (statusRadio) statusRadio.checked = true;
+        
+        // Update preview
+        document.getElementById("previewTitle").textContent = postData.title;
+        document.getElementById("previewContent").innerHTML = postData.content;
+        document.getElementById("previewTags").textContent = postData.tags ? `Tags: ${postData.tags}` : '';
+        document.getElementById("previewDate").textContent = new Date(postData.postDate || postData.lastModified || postData.createdAt).toLocaleDateString();
+        
+        updateCharacterCount();
+      } else {
+        console.error("Post not found");
+        alert("Post not found");
+        window.location.href = "index.html";
+      }
+    } catch (error) {
+      console.error("Error loading post:", error);
+      alert("Error loading post data");
+    } finally {
+      hideLoading(editPostForm);
     }
   }
-
-  // Initialize
-  setupTextFormatting();
-  setupImageEditing();
-  loadDraft();
-  updateCharacterCount();
 
   // Handle form submission
-  if (postForm) {
-    postForm.addEventListener("submit", async function(event) {
+  if (editPostForm) {
+    editPostForm.addEventListener("submit", async function(event) {
       event.preventDefault();
 
       const title = document.getElementById("title").value;
       const content = contentEditor.innerHTML;
       const tags = document.getElementById("tags").value;
       const status = document.querySelector('input[name="status"]:checked').value;
-      const imageFile = imageInput ? imageInput.files[0] : null;
-      let imageUrl = "";
-
-      console.log("Creating post:", { title, content, tags, status });
-
-      if (imageFile) {
-        const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
-        try {
-          showLoading(postForm);
-          await uploadBytes(imageRef, imageFile);
-          imageUrl = await getDownloadURL(imageRef);
-          console.log("Image uploaded:", imageUrl);
-        } catch (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          alert("Error uploading image. Please try again.");
-          hideLoading(postForm);
-          return;
-        }
-      }
+      const postDate = document.getElementById("postDate").value;
 
       try {
-        await addDoc(collection(db, "posts"), {
+        showLoading(editPostForm);
+        await updateDoc(doc(db, "posts", currentPostId), {
           title,
           content,
           tags,
           status,
-          imageUrl,
-          createdAt: serverTimestamp()
+          postDate,
+          lastModified: serverTimestamp()
         });
 
-        alert(`Post created successfully: ${title}`);
-        postForm.reset();
-        contentEditor.innerHTML = "";
-        localStorage.removeItem('postDraft');
-        if (previewContent) {
-          previewContent.innerHTML = "Post content preview will appear here...";
-        }
-        updateCharacterCount();
+        alert("Post updated successfully!");
+        window.location.href = "index.html";
       } catch (error) {
-        console.error("Error adding post:", error);
-        alert("Error submitting post. Please try again.");
+        console.error("Error updating post:", error);
+        alert("Error updating post. Please try again.");
       } finally {
-        hideLoading(postForm);
+        hideLoading(editPostForm);
+      }
+    });
+  }
+
+  // Handle delete button
+  if (deletePostBtn) {
+    deletePostBtn.addEventListener("click", async () => {
+      if (confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+        try {
+          showLoading(editPostForm);
+          await deleteDoc(doc(db, "posts", currentPostId));
+          alert("Post deleted successfully!");
+          window.location.href = "index.html";
+        } catch (error) {
+          console.error("Error deleting post:", error);
+          alert("Error deleting post. Please try again.");
+        } finally {
+          hideLoading(editPostForm);
+        }
       }
     });
   }
@@ -500,20 +468,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle authentication state
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
-  const createPostLink = document.getElementById("createPost");
 
-  if (loginLink && logoutBtn && createPostLink) {
+  if (loginLink && logoutBtn) {
     onAuthStateChanged(auth, (user) => {
       console.log("Auth state changed. Current user:", user ? user.uid : "No user");
 
       if (user) {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
-        createPostLink.style.display = "inline";
+        loadPostData();
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
-        createPostLink.style.display = "none";
+        window.location.href = "login.html";
       }
     });
   }
@@ -528,24 +495,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Add CSS for image upload state
-  const style = document.createElement('style');
-  style.textContent = `
-    .image-uploading {
-      position: relative;
-      margin: 10px 0;
-    }
-    .upload-progress {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      z-index: 1;
-    }
-  `;
-  document.head.appendChild(style);
+  // Initialize
+  setupTextFormatting();
+  setupImageEditing();
+  updateCharacterCount();
 }); 
