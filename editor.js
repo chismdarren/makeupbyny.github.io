@@ -482,9 +482,31 @@ document.addEventListener("DOMContentLoaded", () => {
         const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
         try {
           showLoading(postForm);
-          await uploadBytes(imageRef, imageFile);
-          imageUrl = await getDownloadURL(imageRef);
-          console.log("Image uploaded:", imageUrl);
+          const uploadTask = uploadBytesResumable(imageRef, imageFile);
+          
+          // Wait for upload to complete
+          await new Promise((resolve, reject) => {
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                // Update progress
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload progress:', progress + '%');
+              },
+              (error) => {
+                console.error("Error uploading image:", error);
+                reject(error);
+              },
+              async () => {
+                try {
+                  imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                  console.log("Image uploaded:", imageUrl);
+                  resolve();
+                } catch (error) {
+                  reject(error);
+                }
+              }
+            );
+          });
         } catch (uploadError) {
           console.error("Error uploading image:", uploadError);
           alert("Error uploading image. Please try again.");
