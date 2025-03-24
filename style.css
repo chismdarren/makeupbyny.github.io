@@ -159,7 +159,7 @@ nav button:hover {
 .about-me img {
   width: 200px;
   height: 200px;
-  border-radius: 50%;
+  border-radius: 8px;
   object-fit: cover;
   display: block;
   margin: 0 auto 20px;
