@@ -1,6 +1,6 @@
 // Import Firebase Authentication functions and auth from firebase-config.js
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth } from "./firebase-config.js";
+import { auth, app } from "./firebase-config.js";
 
 // Import Firestore functions
 import {
@@ -28,7 +28,7 @@ import {
 
 // Initialize Firestore and Storage
 const db = getFirestore();
-const storage = getStorage();
+const storage = getStorage(app, "https://makeupbyny-1.firebasestorage.app");
 
 // Hardcoded admin UID
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
