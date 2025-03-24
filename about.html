@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Me - Makeup by NY</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Additional styles specific to the about page */
+    .about-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .about-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      padding: 30px;
+      margin-bottom: 30px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .about-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .about-section h2 {
+      color: #333;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .about-section p {
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .about-card {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .about-card.fade-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .about-card h3 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .about-card p {
+      color: #666;
+      font-size: 0.95em;
+    }
+
+    .about-image {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      border-radius: 8px;
+      margin: 20px auto;
+      display: block;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .about-image.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    @media (max-width: 768px) {
+      .about-content {
+        padding: 20px 15px;
+      }
+      
+      .about-section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <header>
+    <h1>Welcome to Makeup by NY</h1>
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <!-- Admin-only links (initially hidden) -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <a id="createPost" href="editor.html" style="display:none;">Create Post</a>
+      <a id="manageUsers" href="manage-users.html" style="display:none;">Manage Users</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display:none;">Logout</button>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="about-content">
+    <!-- About Me Section -->
+    <section class="about-section">
+      <h2>About Me</h2>
+      <img src="nyredhair.jpg" alt="Ny Red Hair" class="about-image">
+      <p>
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty. My journey in the world of makeup began with a simple curiosity and has evolved into a passionate pursuit of helping others discover their natural beauty.
+      </p>
+      <p>
+        Through this blog, I share my experiences, tips, and tricks that I've learned along the way. Whether you're a makeup novice or a seasoned pro, there's something here for everyone. I believe that makeup should be fun, accessible, and most importantly, a way to express yourself.
+      </p>
+    </section>
+
+    <!-- My Mission Section -->
+    <section class="about-section">
+      <h2>My Mission</h2>
+      <p>
+        My mission is to empower everyone to feel confident and beautiful in their own skin. I believe that makeup is not about hiding who you are, but rather enhancing your natural beauty and expressing your unique style.
+      </p>
+      <div class="about-grid">
+        <div class="about-card">
+          <h3>Education</h3>
+          <p>I'm constantly learning and staying up-to-date with the latest beauty trends and techniques through professional courses and workshops.</p>
+        </div>
+        <div class="about-card">
+          <h3>Experience</h3>
+          <p>With years of personal experience and countless hours of practice, I've developed a deep understanding of makeup application and product selection.</p>
+        </div>
+        <div class="about-card">
+          <h3>Community</h3>
+          <p>I'm passionate about building a supportive community where everyone can share their beauty journey and learn from each other.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="about-section">
+      <h2>Get in Touch</h2>
+      <p>
+        I love connecting with my readers! Whether you have questions about specific products, want to share your own beauty tips, or just want to say hello, feel free to reach out.
+      </p>
+      <div class="social-links">
+        <div class="social-icons">
+          <a href="#" class="social-icon">Instagram</a>
+          <a href="#" class="social-icon">Facebook</a>
+          <a href="#" class="social-icon">Twitter</a>
+          <a href="#" class="social-icon">YouTube</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+
+  <!-- Load firebase.js first to initialize Firebase -->
+  <script type="module" src="firebase.js"></script>
+
+  <!-- Load about.js for page-specific functionality -->
+  <script type="module" src="about.js"></script>
+</body>
+</html> 
