@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Makeup by NY</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Makeup by NY</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html" class="active">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li id="login-link"><a href="login.html">Login</a></li>
+                <li id="logout-btn" style="display: none;"><a href="#" id="logout-link">Logout</a></li>
+                <li id="create-post-link" style="display: none;"><a href="editor.html">Create Post</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="main-content">
+                <section class="about-section">
+                    <h1>About Me</h1>
+                    <div class="about-content">
+                        <img src="images/profile.jpg" alt="Makeup Artist Profile" class="profile-image">
+                        <div class="about-text">
+                            <p>Welcome to Makeup by NY! I'm passionate about helping people look and feel their best through the art of makeup.</p>
+                            <p>With years of experience in the beauty industry, I specialize in:</p>
+                            <ul>
+                                <li>Bridal Makeup</li>
+                                <li>Special Events</li>
+                                <li>Editorial Shoots</li>
+                                <li>Makeup Lessons</li>
+                            </ul>
+                            <p>My approach to makeup is all about enhancing your natural beauty while helping you express your unique style. Whether you're preparing for your wedding, a special event, or just want to learn new techniques, I'm here to help!</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="services-section">
+                    <h2>Services</h2>
+                    <div class="services-grid">
+                        <div class="service-card">
+                            <h3>Bridal Makeup</h3>
+                            <p>Look stunning on your special day with professional bridal makeup services.</p>
+                        </div>
+                        <div class="service-card">
+                            <h3>Special Events</h3>
+                            <p>Perfect makeup for any occasion, from parties to corporate events.</p>
+                        </div>
+                        <div class="service-card">
+                            <h3>Editorial Shoots</h3>
+                            <p>Creative makeup looks for photo shoots and fashion events.</p>
+                        </div>
+                        <div class="service-card">
+                            <h3>Makeup Lessons</h3>
+                            <p>Learn professional techniques in one-on-one or group sessions.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="sidebar">
+                <div class="recent-posts">
+                    <h2>Recent Posts</h2>
+                    <div id="recentPostsList">
+                        <!-- Recent posts will be loaded here -->
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: contact@makeupbyny.com</p>
+                <p>Phone: (555) 123-4567</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Me</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link">Instagram</a>
+                    <a href="#" class="social-link">Facebook</a>
+                    <a href="#" class="social-link">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Makeup by NY. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="about.js"></script>
+</body>
+</html> 
