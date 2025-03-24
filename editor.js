@@ -28,7 +28,7 @@ import {
 
 // Initialize Firestore and Storage
 const db = getFirestore();
-const storage = getStorage(app, "https://makeupbyny-1.firebasestorage.app");
+const storage = getStorage(app, "makeupbyny-1.firebasestorage.app");
 
 // Hardcoded admin UID
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
