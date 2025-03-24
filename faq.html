@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ - Makeup by NY</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Additional styles specific to the FAQ page */
+    .faq-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .faq-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .faq-section h2 {
+      color: #333;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .faq-item {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 20px;
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+    }
+
+    .faq-question {
+      color: #333;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faq-question:hover {
+      color: #666;
+    }
+
+    .faq-answer {
+      color: #444;
+      line-height: 1.6;
+      display: none;
+      padding: 10px 0;
+    }
+
+    .faq-answer.show {
+      display: block;
+    }
+
+    .faq-toggle {
+      font-size: 1.5em;
+      color: #666;
+      transition: transform 0.3s ease;
+    }
+
+    .faq-toggle.active {
+      transform: rotate(180deg);
+    }
+
+    @media (max-width: 768px) {
+      .faq-content {
+        padding: 20px 15px;
+      }
+      
+      .faq-section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <header>
+    <h1>Welcome to Makeup by NY</h1>
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <!-- Admin-only links (initially hidden) -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <a id="createPost" href="editor.html" style="display:none;">Create Post</a>
+      <a id="manageUsers" href="manage-users.html" style="display:none;">Manage Users</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display:none;">Logout</button>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="content">
+    <!-- Main FAQ Content -->
+    <main class="posts">
+      <!-- About Page Navigation -->
+      <div class="about-nav">
+        <ul>
+          <li><a href="about.html">Welcome</a></li>
+          <li><a href="disclaimer.html">Disclaimer</a></li>
+          <li><a href="faq.html" class="active">FAQ</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="advertise.html">Advertise</a></li>
+        </ul>
+      </div>
+
+      <div class="faq-content">
+        <section class="faq-section">
+          <h2>Frequently Asked Questions</h2>
+          
+          <div class="faq-item">
+            <div class="faq-question">
+              How often do you post new content?
+              <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+              I typically post new content 2-3 times per week. This includes product reviews, tutorials, and beauty tips. You can subscribe to my newsletter or follow me on social media to stay updated with new posts.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              Do you accept product reviews?
+              <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+              Yes, I do accept product reviews! However, I maintain full editorial control and only review products that I genuinely believe in. All reviews are honest and based on my personal experience. If you're interested in sending products for review, please contact me through the contact form.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              How can I contact you?
+              <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+              You can reach me through various channels:
+              <ul>
+                <li>Email: contact@makeupbyny.com</li>
+                <li>Social Media: Follow me on Instagram, Facebook, or Twitter</li>
+                <li>Contact Form: Use the contact form on the website</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              Do you offer makeup tutorials?
+              <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+              Yes! I regularly post makeup tutorials on my blog and YouTube channel. These tutorials range from everyday looks to special occasion makeup. You can find all tutorials in the "Tutorials" section of the blog.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              Can I use your photos on my website?
+              <span class="faq-toggle">▼</span>
+            </div>
+            <div class="faq-answer">
+              All photos on this website are protected by copyright. If you'd like to use any of my photos, please contact me for permission. When granted, proper attribution and a link back to my website are required.
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- About Me Sidebar -->
+    <aside class="about-me">
+      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
+
+      <p>
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+      </p>
+      <p>
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+      </p>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" placeholder="Search posts..." id="searchInput">
+      </div>
+
+      <!-- Recent Posts -->
+      <div class="recent-posts">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
+        <div id="recentPostsList"></div>
+      </div>
+
+      <!-- Social Media Links -->
+      <div class="social-links">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="social-icons">
+          <a href="#" class="social-icon">Instagram</a>
+          <a href="#" class="social-icon">Facebook</a>
+          <a href="#" class="social-icon">Twitter</a>
+          <a href="#" class="social-icon">YouTube</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+
+  <!-- Load firebase.js first to initialize Firebase -->
+  <script type="module" src="firebase.js"></script>
+
+  <!-- Load faq.js for page-specific functionality -->
+  <script type="module" src="faq.js"></script>
+</body>
+</html> 

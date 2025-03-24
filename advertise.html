@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advertise - Makeup by NY</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Additional styles specific to the advertise page */
+    .advertise-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .advertise-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .advertise-section h2 {
+      color: #333;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .advertise-section h3 {
+      color: #444;
+      font-size: 1.4em;
+      margin: 25px 0 15px;
+    }
+
+    .advertise-section p {
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .advertise-section ul {
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      padding-left: 20px;
+    }
+
+    .advertise-section li {
+      margin-bottom: 10px;
+    }
+
+    .contact-form {
+      margin-top: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+
+    .form-group textarea {
+      height: 150px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      background: #333;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: #444;
+    }
+
+    @media (max-width: 768px) {
+      .advertise-content {
+        padding: 20px 15px;
+      }
+      
+      .advertise-section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <header>
+    <h1>Welcome to Makeup by NY</h1>
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <!-- Admin-only links (initially hidden) -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <a id="createPost" href="editor.html" style="display:none;">Create Post</a>
+      <a id="manageUsers" href="manage-users.html" style="display:none;">Manage Users</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display:none;">Logout</button>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="content">
+    <!-- Main Advertise Content -->
+    <main class="posts">
+      <!-- About Page Navigation -->
+      <div class="about-nav">
+        <ul>
+          <li><a href="about.html">Welcome</a></li>
+          <li><a href="disclaimer.html">Disclaimer</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="advertise.html" class="active">Advertise</a></li>
+        </ul>
+      </div>
+
+      <div class="advertise-content">
+        <section class="advertise-section">
+          <h2>Advertise on Makeup by NY</h2>
+          <p>
+            Thank you for your interest in advertising on Makeup by NY! We offer various advertising opportunities to help you reach our engaged audience of beauty enthusiasts.
+          </p>
+
+          <h3>Our Audience</h3>
+          <p>
+            Makeup by NY reaches thousands of beauty enthusiasts who are passionate about makeup, skincare, and beauty trends. Our readers are actively seeking product recommendations, tutorials, and beauty tips.
+          </p>
+
+          <h3>Advertising Options</h3>
+          <ul>
+            <li>Sponsored Posts</li>
+            <li>Product Reviews</li>
+            <li>Sidebar Advertising</li>
+            <li>Newsletter Sponsorship</li>
+            <li>Social Media Promotion</li>
+          </ul>
+
+          <h3>Why Advertise With Us?</h3>
+          <ul>
+            <li>Engaged and active audience</li>
+            <li>High-quality content and professional presentation</li>
+            <li>Personalized approach to each partnership</li>
+            <li>Transparent reporting and analytics</li>
+            <li>Long-term relationship building</li>
+          </ul>
+
+          <h3>Contact Us</h3>
+          <p>
+            To learn more about our advertising opportunities and rates, please fill out the form below or email us at advertise@makeupbyny.com.
+          </p>
+
+          <div class="contact-form">
+            <form id="advertiseForm">
+              <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+              </div>
+              <div class="form-group">
+                <label for="company">Company Name</label>
+                <input type="text" id="company" name="company" required>
+              </div>
+              <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" required></textarea>
+              </div>
+              <button type="submit" class="submit-btn">Send Message</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- About Me Sidebar -->
+    <aside class="about-me">
+      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
+
+      <p>
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+      </p>
+      <p>
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+      </p>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" placeholder="Search posts..." id="searchInput">
+      </div>
+
+      <!-- Recent Posts -->
+      <div class="recent-posts">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
+        <div id="recentPostsList"></div>
+      </div>
+
+      <!-- Social Media Links -->
+      <div class="social-links">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="social-icons">
+          <a href="#" class="social-icon">Instagram</a>
+          <a href="#" class="social-icon">Facebook</a>
+          <a href="#" class="social-icon">Twitter</a>
+          <a href="#" class="social-icon">YouTube</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+
+  <!-- Load firebase.js first to initialize Firebase -->
+  <script type="module" src="firebase.js"></script>
+
+  <!-- Load advertise.js for page-specific functionality -->
+  <script type="module" src="advertise.js"></script>
+</body>
+</html> 

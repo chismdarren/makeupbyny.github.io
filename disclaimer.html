@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disclaimer - Makeup by NY</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Additional styles specific to the disclaimer page */
+    .disclaimer-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .disclaimer-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .disclaimer-section h2 {
+      color: #333;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .disclaimer-section p {
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .disclaimer-section ul {
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      padding-left: 20px;
+    }
+
+    .disclaimer-section li {
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .disclaimer-content {
+        padding: 20px 15px;
+      }
+      
+      .disclaimer-section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <header>
+    <h1>Welcome to Makeup by NY</h1>
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <!-- Admin-only links (initially hidden) -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <a id="createPost" href="editor.html" style="display:none;">Create Post</a>
+      <a id="manageUsers" href="manage-users.html" style="display:none;">Manage Users</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display:none;">Logout</button>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="content">
+    <!-- Main Disclaimer Content -->
+    <main class="posts">
+      <!-- About Page Navigation -->
+      <div class="about-nav">
+        <ul>
+          <li><a href="about.html">Welcome</a></li>
+          <li><a href="disclaimer.html" class="active">Disclaimer</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="advertise.html">Advertise</a></li>
+        </ul>
+      </div>
+
+      <div class="disclaimer-content">
+        <section class="disclaimer-section">
+          <h2>Disclaimer</h2>
+          <p>
+            The information provided on Makeup by NY is for general informational purposes only. While we strive to keep the information up to date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the website or the information, products, services, or related graphics contained on the website for any purpose.
+          </p>
+
+          <h3>Product Reviews and Recommendations</h3>
+          <p>
+            Any product reviews, recommendations, or opinions expressed on this blog are based on personal experience and research. We are not affiliated with any of the brands or companies mentioned unless explicitly stated. Some posts may contain affiliate links, which means we may receive a small commission if you make a purchase through these links.
+          </p>
+
+          <h3>Medical and Health Information</h3>
+          <p>
+            The beauty and skincare advice provided on this blog is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
+          </p>
+
+          <h3>External Links</h3>
+          <p>
+            Our website may contain links to external websites that are not provided or maintained by or in any way affiliated with Makeup by NY. Please note that we do not guarantee the accuracy, relevance, timeliness, or completeness of any information on these external websites.
+          </p>
+
+          <h3>Changes to This Disclaimer</h3>
+          <p>
+            We reserve the right to update or change our disclaimer at any time. Any changes will be posted on this page with an updated revision date.
+          </p>
+
+          <p>
+            Last updated: March 2024
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <!-- About Me Sidebar -->
+    <aside class="about-me">
+      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
+
+      <p>
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+      </p>
+      <p>
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+      </p>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" placeholder="Search posts..." id="searchInput">
+      </div>
+
+      <!-- Recent Posts -->
+      <div class="recent-posts">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
+        <div id="recentPostsList"></div>
+      </div>
+
+      <!-- Social Media Links -->
+      <div class="social-links">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="social-icons">
+          <a href="#" class="social-icon">Instagram</a>
+          <a href="#" class="social-icon">Facebook</a>
+          <a href="#" class="social-icon">Twitter</a>
+          <a href="#" class="social-icon">YouTube</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
+
+  <!-- Load firebase.js first to initialize Firebase -->
+  <script type="module" src="firebase.js"></script>
+
+  <!-- Load disclaimer.js for page-specific functionality -->
+  <script type="module" src="disclaimer.js"></script>
+</body>
+</html> 
