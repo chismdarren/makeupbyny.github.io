@@ -75,43 +75,46 @@
 
     /* Add these styles to match the welcome page */
     .about-nav {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      padding: 15px;
-      margin-bottom: 30px;
+      background: white !important;
+      border-radius: 8px !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+      padding: 15px !important;
+      margin-bottom: 30px !important;
+      width: 100% !important;
     }
 
     .about-nav ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
+      list-style: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 15px !important;
+      width: 100% !important;
     }
 
     .about-nav li {
-      margin: 0;
+      margin: 0 !important;
     }
 
     .about-nav a {
-      color: #333;
-      text-decoration: none;
-      padding: 8px 15px;
-      border-radius: 20px;
-      transition: all 0.3s ease;
-      font-size: 0.95em;
+      color: #333 !important;
+      text-decoration: none !important;
+      padding: 8px 15px !important;
+      border-radius: 20px !important;
+      transition: all 0.3s ease !important;
+      font-size: 0.95em !important;
+      display: inline-block !important;
     }
 
     .about-nav a:hover {
-      background: #f5f5f5;
-      color: #666;
+      background: #f5f5f5 !important;
+      color: #666 !important;
     }
 
     .about-nav a.active {
-      background: #333;
-      color: white;
+      background: #333 !important;
+      color: white !important;
     }
 
     @media (max-width: 768px) {
@@ -124,13 +127,14 @@
       }
 
       .about-nav ul {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: column !important;
+        gap: 10px !important;
       }
       
       .about-nav a {
-        display: block;
-        text-align: center;
+        display: block !important;
+        text-align: center !important;
+        width: 100% !important;
       }
     }
   </style>
