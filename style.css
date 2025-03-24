@@ -349,3 +349,24 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* Admin Edit Buttons */
+.admin-edit-btn {
+    margin-bottom: 1rem;
+    text-align: right;
+}
+
+.admin-edit-btn button {
+    background-color: #ff69b4;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.admin-edit-btn button:hover {
+    background-color: #ff1493;
+}

@@ -27,9 +27,12 @@
             <div class="main-content">
                 <section class="about-section">
                     <h1>About Me</h1>
+                    <div id="edit-about-btn" style="display: none;" class="admin-edit-btn">
+                        <button onclick="editAbout()">Edit About Page</button>
+                    </div>
                     <div class="about-content">
-                        <img src="images/profile.jpg" alt="Makeup Artist Profile" class="profile-image">
-                        <div class="about-text">
+                        <img src="images/profile.jpg" alt="Makeup Artist Profile" class="profile-image" id="profile-image">
+                        <div class="about-text" id="about-text">
                             <p>Welcome to Makeup by NY! I'm passionate about helping people look and feel their best through the art of makeup.</p>
                             <p>With years of experience in the beauty industry, I specialize in:</p>
                             <ul>
@@ -45,7 +48,10 @@
 
                 <section class="services-section">
                     <h2>Services</h2>
-                    <div class="services-grid">
+                    <div id="edit-services-btn" style="display: none;" class="admin-edit-btn">
+                        <button onclick="editServices()">Edit Services</button>
+                    </div>
+                    <div class="services-grid" id="services-grid">
                         <div class="service-card">
                             <h3>Bridal Makeup</h3>
                             <p>Look stunning on your special day with professional bridal makeup services.</p>

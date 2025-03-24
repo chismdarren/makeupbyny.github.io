@@ -9,7 +9,11 @@ import {
   query,
   orderBy,
   limit,
-  getDocs
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Initialize Firestore
@@ -23,6 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
   const createPostLink = document.getElementById("create-post-link");
+  const editAboutBtn = document.getElementById("edit-about-btn");
+  const editServicesBtn = document.getElementById("edit-services-btn");
 
   if (loginLink && logoutBtn && createPostLink) {
     onAuthStateChanged(auth, (user) => {
@@ -32,10 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
         createPostLink.style.display = "inline";
+        if (editAboutBtn) editAboutBtn.style.display = "block";
+        if (editServicesBtn) editServicesBtn.style.display = "block";
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
         createPostLink.style.display = "none";
+        if (editAboutBtn) editAboutBtn.style.display = "none";
+        if (editServicesBtn) editServicesBtn.style.display = "none";
       }
     });
   }
@@ -52,7 +62,120 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load recent posts
   loadRecentPosts();
+  // Load about page content
+  loadAboutContent();
 });
+
+// Function to load about page content
+async function loadAboutContent() {
+  try {
+    const aboutDoc = await getDoc(doc(db, 'content', 'about'));
+    if (aboutDoc.exists()) {
+      const data = aboutDoc.data();
+      updateAboutContent(data);
+    }
+  } catch (error) {
+    console.error('Error loading about content:', error);
+  }
+}
+
+// Function to update about content in the DOM
+function updateAboutContent(data) {
+  const aboutText = document.getElementById('about-text');
+  const profileImage = document.getElementById('profile-image');
+  const servicesGrid = document.getElementById('services-grid');
+
+  if (aboutText && data.aboutText) {
+    aboutText.innerHTML = data.aboutText;
+  }
+
+  if (profileImage && data.profileImage) {
+    profileImage.src = data.profileImage;
+    profileImage.alt = data.profileImageAlt || 'Makeup Artist Profile';
+  }
+
+  if (servicesGrid && data.services) {
+    servicesGrid.innerHTML = data.services.map(service => `
+      <div class="service-card">
+        <h3>${service.title}</h3>
+        <p>${service.description}</p>
+      </div>
+    `).join('');
+  }
+}
+
+// Function to edit about content
+async function editAbout() {
+  const aboutText = document.getElementById('about-text');
+  const profileImage = document.getElementById('profile-image');
+  
+  if (!aboutText || !profileImage) return;
+
+  const newAboutText = prompt('Enter new about text (HTML allowed):', aboutText.innerHTML);
+  if (newAboutText === null) return;
+
+  const newProfileImage = prompt('Enter new profile image URL:', profileImage.src);
+  if (newProfileImage === null) return;
+
+  try {
+    await updateDoc(doc(db, 'content', 'about'), {
+      aboutText: newAboutText,
+      profileImage: newProfileImage,
+      profileImageAlt: 'Makeup Artist Profile',
+      lastUpdated: new Date()
+    });
+
+    // Update the DOM
+    aboutText.innerHTML = newAboutText;
+    profileImage.src = newProfileImage;
+    alert('About content updated successfully!');
+  } catch (error) {
+    console.error('Error updating about content:', error);
+    alert('Error updating about content. Please try again.');
+  }
+}
+
+// Function to edit services
+async function editServices() {
+  const servicesGrid = document.getElementById('services-grid');
+  if (!servicesGrid) return;
+
+  const services = Array.from(servicesGrid.children).map(card => ({
+    title: card.querySelector('h3').textContent,
+    description: card.querySelector('p').textContent
+  }));
+
+  const newServices = [];
+  for (let i = 0; i < 4; i++) {
+    const title = prompt(`Enter title for service ${i + 1}:`, services[i]?.title || '');
+    if (title === null) return;
+
+    const description = prompt(`Enter description for service ${i + 1}:`, services[i]?.description || '');
+    if (description === null) return;
+
+    newServices.push({ title, description });
+  }
+
+  try {
+    await updateDoc(doc(db, 'content', 'about'), {
+      services: newServices,
+      lastUpdated: new Date()
+    });
+
+    // Update the DOM
+    servicesGrid.innerHTML = newServices.map(service => `
+      <div class="service-card">
+        <h3>${service.title}</h3>
+        <p>${service.description}</p>
+      </div>
+    `).join('');
+
+    alert('Services updated successfully!');
+  } catch (error) {
+    console.error('Error updating services:', error);
+    alert('Error updating services. Please try again.');
+  }
+}
 
 // Function to load and display recent posts
 async function loadRecentPosts() {
