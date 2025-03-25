@@ -5,6 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .content {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      gap: 20px;
+    }
+    
+    .login-section {
+      flex: 2;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .login-section form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .login-section input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .login-section button {
+      width: 100%;
+      padding: 12px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .login-section button:hover {
+      background: #444;
+    }
+
+    .login-section p {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -16,16 +66,44 @@
     </nav>
   </header>
 
-  <main>
-    <form id="login-form">
-      <input type="email" id="email" placeholder="Email" required autocomplete="email">
-      <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
-      <button type="submit">Login</button>
-      <p id="error-message" style="color: red;"></p>
-    </form>
-    <!-- Link to navigate to the sign-up page -->
-    <p>Don't have an account? <a href="sign-up.html">Create an Account</a></p>
-  </main>
+  <div class="content">
+    <main class="login-section">
+      <form id="login-form">
+        <input type="email" id="email" placeholder="Email" required autocomplete="email">
+        <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+        <button type="submit">Login</button>
+        <p id="error-message" style="color: red;"></p>
+      </form>
+      <!-- Link to navigate to the sign-up page -->
+      <p>Don't have an account? <a href="sign-up.html">Create an Account</a></p>
+    </main>
+
+    <!-- About Me Sidebar -->
+    <aside class="about-me">
+      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
+      <p>
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+      </p>
+      <p>
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+      </p>
+
+      <!-- Social Media Links -->
+      <div class="social-links">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="social-icons">
+          <a href="#" class="social-icon">Instagram</a>
+          <a href="#" class="social-icon">Facebook</a>
+          <a href="#" class="social-icon">Twitter</a>
+          <a href="#" class="social-icon">YouTube</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
 
   <script type="module">
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
