@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Disclaimer - Makeup by NY</title>
+  <title>Contact - Makeup by NY</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Additional styles specific to the disclaimer page */
-    .about-content {
+    /* Additional styles specific to the contact page */
+    .contact-content {
       max-width: 800px;
       margin: 0 auto;
       padding: 30px 20px;
     }
 
-    .about-section {
+    .contact-section {
       background: white;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -21,7 +21,7 @@
       margin-bottom: 30px;
     }
 
-    .about-section h2 {
+    .contact-section h2 {
       color: #333;
       font-size: 1.8em;
       margin-bottom: 20px;
@@ -29,21 +29,62 @@
       padding-bottom: 10px;
     }
 
-    .about-section p {
-      color: #444;
-      line-height: 1.6;
-      margin-bottom: 15px;
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .about-section ul {
-      color: #444;
-      line-height: 1.6;
-      margin-bottom: 15px;
-      padding-left: 20px;
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .about-section li {
+    .form-group label {
+      color: #333;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+
+    .form-group textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: #444;
+    }
+
+    .contact-info {
+      margin-top: 30px;
+    }
+
+    .contact-info p {
       margin-bottom: 10px;
+      color: #444;
+    }
+
+    .contact-info strong {
+      color: #333;
     }
 
     /* Add these styles to match the welcome page */
@@ -53,7 +94,8 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       padding: 10px;
       margin-bottom: 20px;
-      width: 100%;
+      width: 720px;
+      height: 55.03px;
     }
 
     .about-nav ul {
@@ -64,6 +106,7 @@
       flex-wrap: wrap;
       gap: 10px;
       width: 100%;
+      height: 100%;
     }
 
     .about-nav li {
@@ -91,14 +134,18 @@
     }
 
     @media (max-width: 768px) {
-      .about-content {
+      .contact-content {
         padding: 20px 15px;
       }
       
-      .about-section {
+      .contact-section {
         padding: 20px;
       }
 
+      .about-nav {
+        width: 100%;
+      }
+      
       .about-nav ul {
         flex-direction: column;
         gap: 10px;
@@ -131,49 +178,59 @@
 
   <!-- Main Content Area -->
   <div class="content">
-    <!-- Main Disclaimer Content -->
+    <!-- Main Contact Content -->
     <main class="posts">
       <!-- About Page Navigation -->
       <div class="about-nav">
         <ul>
           <li><a href="about.html">Welcome</a></li>
-          <li><a href="disclaimer.html" class="active">Disclaimer</a></li>
+          <li><a href="disclaimer.html">Disclaimer</a></li>
           <li><a href="faq.html">FAQ</a></li>
           <li><a href="privacy-policy.html">Privacy Policy</a></li>
-          <li><a href="contact.html">Contact</a></li>
+          <li><a href="contact.html" class="active">Contact</a></li>
         </ul>
       </div>
 
-      <div class="about-content">
-        <section class="about-section">
-          <h2>Disclaimer</h2>
-          <p>
-            The information provided on Makeup by NY is for general informational purposes only. While we strive to keep the information up to date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the website or the information, products, services, or related graphics contained on the website for any purpose.
-          </p>
+      <div class="contact-content">
+        <section class="contact-section">
+          <h2>Contact Me</h2>
+          <p>Have a question or want to get in touch? Fill out the form below and I'll get back to you as soon as possible!</p>
+          
+          <form class="contact-form" id="contactForm">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="subject">Subject</label>
+              <input type="text" id="subject" name="subject" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" required></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">Send Message</button>
+          </form>
 
-          <h3>Product Reviews and Recommendations</h3>
-          <p>
-            Any product reviews, recommendations, or opinions expressed on this blog are based on personal experience and research. We are not affiliated with any of the brands or companies mentioned unless explicitly stated. Some posts may contain affiliate links, which means we may receive a small commission if you make a purchase through these links.
-          </p>
-
-          <h3>Medical and Health Information</h3>
-          <p>
-            The beauty and skincare advice provided on this blog is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
-          </p>
-
-          <h3>External Links</h3>
-          <p>
-            Our website may contain links to external websites that are not provided or maintained by or in any way affiliated with Makeup by NY. Please note that we do not guarantee the accuracy, relevance, timeliness, or completeness of any information on these external websites.
-          </p>
-
-          <h3>Changes to This Disclaimer</h3>
-          <p>
-            We reserve the right to update or change our disclaimer at any time. Any changes will be posted on this page with an updated revision date.
-          </p>
-
-          <p>
-            Last updated: March 2024
-          </p>
+          <div class="contact-info">
+            <h3>Other Ways to Connect</h3>
+            <p><strong>Email:</strong> contact@makeupbyny.com</p>
+            <p><strong>Social Media:</strong></p>
+            <div class="social-icons">
+              <a href="#" class="social-icon">Instagram</a>
+              <a href="#" class="social-icon">Facebook</a>
+              <a href="#" class="social-icon">Twitter</a>
+              <a href="#" class="social-icon">YouTube</a>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -221,7 +278,7 @@
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
 
-  <!-- Load disclaimer.js for page-specific functionality -->
-  <script type="module" src="disclaimer.js"></script>
+  <!-- Load contact.js for page-specific functionality -->
+  <script type="module" src="contact.js"></script>
 </body>
 </html> 
