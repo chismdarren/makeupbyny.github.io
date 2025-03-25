@@ -14,10 +14,8 @@
     <nav id="mainNav">
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
-      <!-- Admin-only links (initially hidden) -->
+      <!-- Admin-only link (initially hidden) -->
       <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
-      <a id="createPost" href="editor.html" style="display:none;">Create Post</a>
-      <a id="manageUsers" href="manage-users.html" style="display:none;">Manage Users</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
@@ -99,23 +97,17 @@
 
           // Check if user is admin
           if (user.uid === adminUID) {
-            // Show admin-only navigation items
+            // Show only admin dashboard link
             document.getElementById("adminDashboard").style.display = "inline";
-            document.getElementById("createPost").style.display = "inline";
-            document.getElementById("manageUsers").style.display = "inline";
           } else {
-            // Hide admin-only navigation items for regular users
+            // Hide admin dashboard link for regular users
             document.getElementById("adminDashboard").style.display = "none";
-            document.getElementById("createPost").style.display = "none";
-            document.getElementById("manageUsers").style.display = "none";
           }
         } else {
           // If user is not logged in, show login button and hide admin features
           document.getElementById("login-link").style.display = "inline";
           document.getElementById("logout-btn").style.display = "none";
           document.getElementById("adminDashboard").style.display = "none";
-          document.getElementById("createPost").style.display = "none";
-          document.getElementById("manageUsers").style.display = "none";
         }
       });
 
