@@ -18,17 +18,8 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Check authentication state
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      // Redirect to login if not authenticated
-      window.location.href = 'login.html';
-      return;
-    }
-    
-    // Load contact messages
-    loadContactMessages();
-  });
+  // Load contact messages immediately
+  loadContactMessages();
 });
 
 // Load and display contact messages
