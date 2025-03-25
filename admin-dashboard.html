@@ -5,6 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .messages-section {
+            margin: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .message-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .message-card.new {
+            border-left: 4px solid #4CAF50;
+        }
+        .message-card.read {
+            border-left: 4px solid #2196F3;
+        }
+        .message-card.replied {
+            border-left: 4px solid #9C27B0;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .message-header h3 {
+            margin: 0;
+            color: #333;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .message-content {
+            margin-bottom: 15px;
+        }
+        .message-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .status-select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .delete-btn {
+            padding: 5px 10px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -15,14 +78,22 @@
                 <li><a href="manage-users.html">Manage Users</a></li>
                 <li><a href="editor.html">Create/Edit Posts</a></li>
                 <li><a href="about.html">About</a></li>
+                <li><button id="logout-btn">Logout</button></li>
             </ul>
         </nav>
     </header>
     <main>
-        <p>Welcome, Admin! Use the menu above to manage users or create/edit posts.</p>
+        <div class="messages-section">
+            <h2>Contact Messages</h2>
+            <div id="messagesContainer">
+                <!-- Messages will be loaded here dynamically -->
+            </div>
+        </div>
     </main>
     <footer>
         <p>&copy; 2025 Makeup by NY</p>
     </footer>
+
+    <script type="module" src="admin-dashboard.js"></script>
 </body>
 </html>
