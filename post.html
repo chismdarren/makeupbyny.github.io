@@ -295,7 +295,7 @@
         // Populate the DOM with the post's details.
         document.getElementById("postTitle").innerText = postData.title;
         document.getElementById("postHeading").innerText = postData.title;
-        document.getElementById("postContent").innerText = postData.content;
+        document.getElementById("postContent").innerHTML = postData.content;
 
         // If there's an image, display it.
         if (postData.imageUrl) {
