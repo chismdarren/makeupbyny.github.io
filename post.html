@@ -5,6 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Post</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .content {
+      display: flex;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    main {
+      flex: 1;
+      max-width: 800px;
+    }
+
+    .about-me {
+      width: 300px;
+      flex-shrink: 0;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .profile-pic {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      margin-bottom: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-container {
+      margin: 20px 0;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .recent-posts {
+      margin: 20px 0;
+    }
+
+    .recent-post-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .recent-post-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .post-title {
+      font-size: 0.9em;
+      line-height: 1.4;
+    }
+
+    .social-links {
+      margin-top: 20px;
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .social-icon {
+      padding: 8px 15px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      text-decoration: none;
+      color: #333;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+      
+      .about-me {
+        width: 100%;
+        margin-top: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -16,39 +115,75 @@
     </nav>
   </header>
 
-  <main>
-    <article>
-      <h2 id="postHeading">Post Content</h2>
-      <img id="postImage" style="max-width: 100%; display: none;" alt="Post Image" />
-      <p id="postContent">Fetching post...</p>
-    </article>
+  <div class="content">
+    <main>
+      <article>
+        <h2 id="postHeading">Post Content</h2>
+        <img id="postImage" style="max-width: 100%; display: none;" alt="Post Image" />
+        <p id="postContent">Fetching post...</p>
+      </article>
 
-    <!-- Comments Section -->
-    <section>
-      <h3>Comments</h3>
-      <!-- Existing comments will be appended here -->
-      <div id="commentsContainer"></div>
+      <!-- Comments Section -->
+      <section>
+        <h3>Comments</h3>
+        <!-- Existing comments will be appended here -->
+        <div id="commentsContainer"></div>
 
-      <h2>Leave a Reply</h2>
-      <p>Your email address will not be published. Required fields are marked *</p>
+        <h2>Leave a Reply</h2>
+        <p>Your email address will not be published. Required fields are marked *</p>
 
-      <form id="commentForm">
-        <label for="commentText">Comment*</label><br />
-        <textarea id="commentText" name="commentText" required></textarea>
-        <br /><br />
+        <form id="commentForm">
+          <label for="commentText">Comment*</label><br />
+          <textarea id="commentText" name="commentText" required></textarea>
+          <br /><br />
 
-        <label for="name">Name*</label><br />
-        <input id="name" name="name" type="text" required />
-        <br /><br />
+          <label for="name">Name*</label><br />
+          <input id="name" name="name" type="text" required />
+          <br /><br />
 
-        <label for="email">Email*</label><br />
-        <input id="email" name="email" type="email" required />
-        <br /><br />
+          <label for="email">Email*</label><br />
+          <input id="email" name="email" type="email" required />
+          <br /><br />
 
-        <button type="submit">Post Comment</button>
-      </form>
-    </section>
-  </main>
+          <button type="submit">Post Comment</button>
+        </form>
+      </section>
+    </main>
+
+    <!-- About Me Sidebar -->
+    <aside class="about-me">
+      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
+
+      <p>
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+      </p>
+      <p>
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+      </p>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" placeholder="Search posts..." id="searchInput">
+      </div>
+
+      <!-- Recent Posts -->
+      <div class="recent-posts">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
+        <div id="recentPostsList"></div>
+      </div>
+
+      <!-- Social Media Links -->
+      <div class="social-links">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="social-icons">
+          <a href="#" class="social-icon">Instagram</a>
+          <a href="#" class="social-icon">Facebook</a>
+          <a href="#" class="social-icon">Twitter</a>
+          <a href="#" class="social-icon">YouTube</a>
+        </div>
+      </div>
+    </aside>
+  </div>
 
   <footer>
     <p>&copy; 2025 Makeup by NY</p>
@@ -105,6 +240,9 @@
 
         // Once the post is loaded, also fetch & display any existing comments.
         await fetchAndDisplayComments(postId);
+
+        // Load recent posts in the sidebar
+        await loadRecentPosts();
 
       } catch (error) {
         console.error("Error fetching post:", error);
@@ -185,6 +323,43 @@
       } catch (error) {
         console.error("Error fetching comments:", error);
         commentsContainer.innerHTML = "<p>Error loading comments.</p>";
+      }
+    }
+
+    // 4. Load recent posts in the sidebar
+    async function loadRecentPosts() {
+      const recentPostsList = document.getElementById("recentPostsList");
+      if (!recentPostsList) return;
+
+      try {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        // Clear existing posts
+        recentPostsList.innerHTML = "";
+        
+        // Add the first 5 posts
+        querySnapshot.docs.slice(0, 5).forEach(doc => {
+          const post = doc.data();
+          const recentPostElement = document.createElement("a");
+          recentPostElement.href = `post.html?postId=${doc.id}`;
+          recentPostElement.className = "recent-post-item";
+          
+          // Create thumbnail image or placeholder
+          const imageHtml = post.imageUrl 
+            ? `<img src="${post.imageUrl}" alt="${post.title}">`
+            : `<div style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;"></div>`;
+          
+          recentPostElement.innerHTML = `
+            ${imageHtml}
+            <div class="post-title">${post.title}</div>
+          `;
+          
+          recentPostsList.appendChild(recentPostElement);
+        });
+      } catch (error) {
+        console.error("Error loading recent posts:", error);
+        recentPostsList.innerHTML = "<p>Error loading recent posts.</p>";
       }
     }
   </script>
