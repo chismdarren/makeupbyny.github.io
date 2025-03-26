@@ -219,6 +219,16 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+    
+    /* Styles for the preview sidebar */
+    .preview-sidebar {
+      width: 300px;
+      flex-shrink: 0;
+    }
+    
+    .preview-sidebar .preview-container {
+      margin-top: 0;
+    }
 
     .profile-pic {
       width: 150px;
@@ -291,6 +301,11 @@
       }
       
       .about-me {
+        width: 100%;
+        margin-top: 20px;
+      }
+      
+      .preview-sidebar {
         width: 100%;
         margin-top: 20px;
       }
@@ -380,7 +395,10 @@
           <button type="submit">Publish Post</button>
         </form>
       </div>
+    </main>
 
+    <!-- Live Preview (moved from main content to sidebar position) -->
+    <aside class="preview-sidebar">
       <div class="preview-container">
         <div class="preview-header">
           <h2>Live Preview</h2>
@@ -398,40 +416,6 @@
             <span class="preview-author">By Ny</span>
           </div>
           <div class="preview-body"></div>
-        </div>
-      </div>
-    </main>
-
-    <!-- About Me Sidebar -->
-    <aside class="about-me">
-      <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
-
-      <p>
-        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
-      </p>
-      <p>
-        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
-      </p>
-
-      <!-- Search Bar -->
-      <div class="search-container">
-        <input type="text" placeholder="Search posts..." id="searchInput">
-      </div>
-
-      <!-- Recent Posts -->
-      <div class="recent-posts">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
-        <div id="recentPostsList"></div>
-      </div>
-
-      <!-- Social Media Links -->
-      <div class="social-links">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
-        <div class="social-icons">
-          <a href="#" class="social-icon">Instagram</a>
-          <a href="#" class="social-icon">Facebook</a>
-          <a href="#" class="social-icon">Twitter</a>
-          <a href="#" class="social-icon">YouTube</a>
         </div>
       </div>
     </aside>
