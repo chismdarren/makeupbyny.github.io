@@ -780,7 +780,10 @@ const editor = SUNEDITOR.create('content', {
     ['align', 'horizontalRule', 'list', 'table'],
     ['link', 'image', 'video', 'fullScreen'],
   ],
-  height: '400px',
+  height: '600px',
+  width: '100%',
+  minHeight: '400px',
+  maxHeight: '800px',
   callbacks: {
     onChange: function(contents) {
       updatePreview(contents);
