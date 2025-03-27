@@ -166,7 +166,7 @@
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
       <!-- Admin-only link (initially hidden) -->
-      <!-- <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a> -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
@@ -313,6 +313,9 @@
   <script type="module">
     import { onAuthStateChanged } from 'firebase/auth';
     import { auth } from './firebase';
+    
+    // Define admin user ID for special privileges
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
     onAuthStateChanged(auth, (user) => {
       // If user is logged in

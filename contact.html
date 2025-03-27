@@ -281,5 +281,37 @@
 
   <!-- Load contact.js for page-specific functionality -->
   <script type="module" src="contact.js"></script>
+
+  <!-- Monitor user authentication state -->
+  <script type="module">
+    import { onAuthStateChanged } from 'firebase/auth';
+    import { auth } from './firebase';
+    
+    // Define admin user ID for special privileges
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
+    onAuthStateChanged(auth, (user) => {
+      // If user is logged in
+      if (user) {
+        // Hide login button, show logout button
+        document.getElementById("login-link").style.display = "none";
+        document.getElementById("logout-btn").style.display = "inline";
+
+        // Check if user is admin
+        if (user.uid === adminUID) {
+          // Show only admin dashboard link
+          document.getElementById("adminDashboard").style.display = "inline";
+        } else {
+          // Hide admin dashboard link for regular users
+          document.getElementById("adminDashboard").style.display = "none";
+        }
+      } else {
+        // If user is not logged in, show login button and hide admin features
+        document.getElementById("login-link").style.display = "inline";
+        document.getElementById("logout-btn").style.display = "none";
+        document.getElementById("adminDashboard").style.display = "none";
+      }
+    });
+  </script>
 </body>
 </html> 
