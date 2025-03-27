@@ -24,7 +24,12 @@ header {
   padding: 20px;
   text-align: center;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header img {
+  max-height: 150px;
+  width: auto;
+  margin-bottom: 15px;
 }
 
 header h1 {
