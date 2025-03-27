@@ -17,23 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Check if user is admin
       if (user.uid === adminUID) {
-        // Show admin-only navigation items
+        // Show admin dashboard link
         document.getElementById("adminDashboard").style.display = "inline";
-        document.getElementById("createPost").style.display = "inline";
-        document.getElementById("manageUsers").style.display = "inline";
       } else {
-        // Hide admin-only navigation items for regular users
+        // Hide admin dashboard link for regular users
         document.getElementById("adminDashboard").style.display = "none";
-        document.getElementById("createPost").style.display = "none";
-        document.getElementById("manageUsers").style.display = "none";
       }
     } else {
       // If user is not logged in, show login button and hide admin features
       document.getElementById("login-link").style.display = "inline";
       document.getElementById("logout-btn").style.display = "none";
       document.getElementById("adminDashboard").style.display = "none";
-      document.getElementById("createPost").style.display = "none";
-      document.getElementById("manageUsers").style.display = "none";
     }
   });
 

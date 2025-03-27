@@ -1,42 +1,34 @@
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { auth, db } from "./firebase-config.js";
 
-// Define admin user ID
-const ADMIN_USER_ID = "your-admin-user-id";
+// Define admin user ID - correct ID from other pages
+const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Get DOM elements
-const mainNav = document.getElementById("mainNav");
 const adminDashboard = document.getElementById("adminDashboard");
-const createPost = document.getElementById("createPost");
-const manageUsers = document.getElementById("manageUsers");
 const loginLink = document.getElementById("login-link");
 const logoutBtn = document.getElementById("logout-btn");
 const recentPostsList = document.getElementById("recentPostsList");
-
-// Initialize Firebase Auth and Firestore
-const auth = getAuth();
-const db = getFirestore();
 
 // Handle authentication state changes
 onAuthStateChanged(auth, (user) => {
   if (user) {
     // User is signed in
     loginLink.style.display = "none";
-    logoutBtn.style.display = "block";
+    logoutBtn.style.display = "inline";
 
     // Check if user is admin
-    if (user.uid === ADMIN_USER_ID) {
-      adminDashboard.style.display = "block";
-      createPost.style.display = "block";
-      manageUsers.style.display = "block";
+    if (user.uid === adminUID) {
+      adminDashboard.style.display = "inline";
+    } else {
+      adminDashboard.style.display = "none";
     }
   } else {
     // User is signed out
-    loginLink.style.display = "block";
+    loginLink.style.display = "inline";
     logoutBtn.style.display = "none";
     adminDashboard.style.display = "none";
-    createPost.style.display = "none";
-    manageUsers.style.display = "none";
   }
 });
 
@@ -60,12 +52,20 @@ async function loadRecentPosts() {
     
     querySnapshot.forEach((doc) => {
       const post = doc.data();
-      const postElement = document.createElement("div");
-      postElement.className = "recent-post";
+      const postElement = document.createElement("a");
+      postElement.href = `post.html?postId=${doc.id}`;
+      postElement.className = "recent-post-item";
+      
+      // Create thumbnail image or placeholder
+      const imageHtml = post.imageUrl 
+        ? `<img src="${post.imageUrl}" alt="${post.title}">`
+        : `<div style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;"></div>`;
+      
       postElement.innerHTML = `
-        <a href="post.html?id=${doc.id}">${post.title}</a>
-        <span class="post-date">${new Date(post.createdAt.toDate()).toLocaleDateString()}</span>
+        ${imageHtml}
+        <div class="post-title">${post.title}</div>
       `;
+      
       recentPostsList.appendChild(postElement);
     });
   } catch (error) {
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Toggle answer visibility
       answer.classList.toggle("show");
-      toggle.classList.toggle("active");
+      toggle.textContent = answer.classList.contains("show") ? "▲" : "▼";
     });
   });
 }); 
