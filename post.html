@@ -283,8 +283,14 @@
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
-      <!-- Admin-only link (initially hidden) -->
-      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <!-- Admin-only dropdown (initially hidden) -->
+      <div class="admin-dropdown">
+        <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+        <div class="admin-dropdown-content">
+          <a href="editor.html">Create Post</a>
+          <a href="manage-users.html">Manage Users</a>
+        </div>
+      </div>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
