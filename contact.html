@@ -170,7 +170,7 @@
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
       <!-- Admin-only link (initially hidden) -->
-      <!-- <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a> -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
@@ -284,8 +284,8 @@
 
   <!-- Monitor user authentication state -->
   <script type="module">
-    import { onAuthStateChanged } from 'firebase/auth';
-    import { auth } from './firebase';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+    import { auth } from './firebase-config.js';
     
     // Define admin user ID for special privileges
     const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";

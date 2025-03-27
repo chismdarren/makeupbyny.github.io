@@ -279,11 +279,15 @@
     <a href="index.html">
       <img src="logologo2.png" alt="Makeup by NY Logo" style="max-height: 100px; width: auto;">
     </a>
-    <nav>
+    <nav id="mainNav">
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
-      <a href="login.html">Login</a>
+      <!-- Admin-only link (initially hidden) -->
+      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
 
@@ -373,8 +377,39 @@
       orderBy,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { db, auth } from "./firebase-config.js";
 
-    import { db } from "./firebase-config.js";
+    // Define admin user ID
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
+    // Check authentication state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        document.getElementById("login-link").style.display = "none";
+        document.getElementById("logout-btn").style.display = "inline";
+        
+        // Check if user is admin
+        if (user.uid === adminUID) {
+          document.getElementById("adminDashboard").style.display = "inline";
+        } else {
+          document.getElementById("adminDashboard").style.display = "none";
+        }
+      } else {
+        // User is signed out
+        document.getElementById("login-link").style.display = "inline";
+        document.getElementById("logout-btn").style.display = "none";
+        document.getElementById("adminDashboard").style.display = "none";
+      }
+    });
+
+    // Handle logout
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      auth.signOut().then(() => {
+        window.location.href = "index.html";
+      });
+    });
 
     // 1. On DOM load, fetch and display the post (if postId is found in the URL).
     document.addEventListener("DOMContentLoaded", async () => {
