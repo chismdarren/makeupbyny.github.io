@@ -774,7 +774,7 @@ const editor = SUNEDITOR.create('content', {
     ['undo', 'redo'],
     ['font', 'fontSize', 'formatBlock'],
     ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
-    ['removeFormat', 'blockquote', 'code'],
+    ['removeFormat', 'blockquote', 'codeView'],
     ['fontColor', 'hiliteColor'],
     ['indent', 'outdent'],
     ['align', 'horizontalRule', 'list', 'table'],
