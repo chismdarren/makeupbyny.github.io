@@ -276,10 +276,13 @@
 </head>
 <body>
   <header>
-    <img src="logologo.jpg" alt="Makeup by NY Logo" style="max-height: 100px; width: auto;">
+    <a href="index.html">
+      <img src="logologo2.png" alt="Makeup by NY Logo" style="max-height: 100px; width: auto;">
+    </a>
     <nav>
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
       <a href="login.html">Login</a>
     </nav>
   </header>
@@ -396,7 +399,7 @@
         const postData = postSnap.data();
 
         // Populate the DOM with the post's details.
-        document.getElementById("postTitle").innerText = postData.title;
+        document.title = postData.title + " - Makeup by NY";
         document.getElementById("postHeading").innerText = postData.title;
         document.getElementById("postContent").innerHTML = postData.content;
 
