@@ -71,7 +71,9 @@
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="admin-dashboard.html">Admin Dashboard</a>
-      <button id="logout-btn">Logout</button>
+      <a href="editor.html">Create Post</a>
+      <a href="manage-users.html">Users</a>
+      <button id="logoutBtn">Logout</button>
     </nav>
   </header>
   <main>
@@ -101,7 +103,7 @@
   <script type="module">
     // Import auth and db from firebase-config.js
     import { auth, db } from "./firebase-config.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { 
       collection, 
       getDocs, 
@@ -306,6 +308,17 @@
         }
       }
     };
+
+    // Handle logout
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        signOut(auth).then(() => {
+          console.log("User signed out.");
+          window.location.href = "index.html";
+        });
+      });
+    }
   </script>
 </body>
 </html>
