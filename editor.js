@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maxHeight: '800px',
       callbacks: {
         onChange: function(contents) {
-          // Update preview content
+          // Update preview content directly with the HTML content from SunEditor
           updatePreview(contents);
           
           // For autosave
@@ -97,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showAutosaveStatus();
           autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
         },
+        // Ensure preview updates after image insertion
         onImageUpload: async function(files, info, uploadHandler) {
           try {
             const file = files[0];
@@ -104,10 +105,17 @@ document.addEventListener("DOMContentLoaded", () => {
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
             uploadHandler(url);
+            // No need to call updatePreview here as onChange will be triggered
           } catch (error) {
             console.error('Error uploading image:', error);
             alert('Error uploading image. Please try again.');
           }
+        },
+        // Add an onload callback to ensure the editor is ready
+        onLoad: function() {
+          console.log("SunEditor loaded");
+          // Initial preview update
+          setTimeout(() => updatePreview(this.getContents()), 500);
         }
       }
     });
@@ -985,20 +993,40 @@ if (imageUpload) {
     if (!file) return;
 
     try {
+      // Show loading indicator
+      if (imagePreview) {
+        imagePreview.innerHTML = '<div class="loading-indicator">Uploading image...</div>';
+      }
+      
       const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
-      imageUrlInput.value = url;
-      imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
       
-      // Trigger autosave after successful image upload
-      updatePreview(editor.getContents());
-      clearTimeout(autosaveTimeout);
-      showAutosaveStatus();
-      autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+      // Update the image URL input and preview
+      if (imageUrlInput) {
+        imageUrlInput.value = url;
+      }
+      
+      if (imagePreview) {
+        imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
+      }
+      
+      // Trigger autosave and update preview
+      if (editor) {
+        // Make sure we're updating with the current content
+        const currentContent = editor.getContents();
+        updatePreview(currentContent);
+        
+        clearTimeout(autosaveTimeout);
+        showAutosaveStatus();
+        autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+      }
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Error uploading image. Please try again.');
+      if (imagePreview) {
+        imagePreview.innerHTML = '<div class="error-message">Upload failed. Please try again.</div>';
+      }
     }
   });
 }
@@ -1007,17 +1035,22 @@ if (imageUpload) {
 if (imageUrlInput) {
   imageUrlInput.addEventListener('input', (e) => {
     const url = e.target.value;
-    if (url) {
+    if (url && imagePreview) {
       imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
-    } else {
+    } else if (imagePreview) {
       imagePreview.innerHTML = '';
     }
     
-    // Trigger autosave after image URL changes
-    updatePreview(editor.getContents());
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+    // Trigger autosave and update preview
+    if (editor) {
+      // Make sure we're updating with the current content
+      const currentContent = editor.getContents();
+      updatePreview(currentContent);
+      
+      clearTimeout(autosaveTimeout);
+      showAutosaveStatus();
+      autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+    }
   });
 }
 
@@ -1042,9 +1075,10 @@ function updatePreview(contents) {
   const preview = document.getElementById('preview');
   if (!preview) return;
 
-  // Get the editor contents
-  const content = contents || (editor ? editor.getContents() : '');
-  const title = document.getElementById('title') ? document.getElementById('title').value : '';
+  // Get the editor contents - ensure we're getting the actual content from SunEditor
+  const content = contents !== undefined ? contents : (editor && editor.getContents ? editor.getContents() : '');
+  const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+  const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
   const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
   
   // Update preview elements
@@ -1053,32 +1087,39 @@ function updatePreview(contents) {
   const dateElement = preview.querySelector('.preview-date');
   const imageContainer = preview.querySelector('.preview-featured-image-container');
   
-  if (titleElement) titleElement.textContent = title || 'Post Title';
-  if (bodyElement) bodyElement.innerHTML = content || 'Post content preview will appear here...';
-  if (dateElement) dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  if (titleElement) {
+    titleElement.innerHTML = titleContent || 'Post Title';
+    if (titleFont) {
+      titleElement.style.fontFamily = titleFont;
+    }
+  }
+  
+  if (bodyElement) {
+    bodyElement.innerHTML = content || 'Post content preview will appear here...';
+  }
+  
+  if (dateElement) {
+    dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
   
   // Update featured image
   if (imageContainer) {
     if (featuredImage) {
-      imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title}" class="preview-featured-image">`;
+      imageContainer.innerHTML = `<img src="${featuredImage}" alt="${titleContent}" class="preview-featured-image">`;
     } else {
       imageContainer.innerHTML = '';
     }
   }
 }
 
-// Update preview when title changes
-document.getElementById('title').addEventListener('input', () => {
-  updatePreview(editor.getContents());
+// Initialize preview when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (editor) {
+      updatePreview(editor.getContents());
+    }
+  }, 1000); // Give the editor time to initialize
 });
-
-// Update preview when image changes
-imageUrlInput.addEventListener('input', () => {
-  updatePreview(editor.getContents());
-});
-
-// Initialize preview with empty content
-updatePreview('');
 
 // Autosave functionality
 const autosaveStatus = document.getElementById('autosaveStatus');
