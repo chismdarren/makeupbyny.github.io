@@ -45,16 +45,20 @@ const AUTOSAVE_DELAY = 2000; // 2 seconds
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
-  // Initialize Title Editor
+  // Initialize Title SunEditor
   if (document.getElementById('titleEditor')) {
     titleEditor = SUNEDITOR.create('titleEditor', {
       buttonList: [
-        ['undo', 'redo'],
         ['font', 'fontSize'],
-        ['bold', 'underline', 'italic'],
+        ['bold', 'underline', 'italic', 'strike'],
         ['fontColor', 'hiliteColor'],
         ['align'],
       ],
+      placeholder: 'Enter title here...',
+      width: '100%',
+      minHeight: '50px',
+      maxHeight: '100px',
+      fontSize: [14, 16, 18, 20, 22, 24, 26, 28, 36, 48],
       font: [
         'Arial',
         'Calibri',
@@ -79,38 +83,24 @@ document.addEventListener("DOMContentLoaded", () => {
         'Alex Brush',
         'Pinyon Script'
       ],
-      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
-      height: '60px',
-      width: '100%',
-      minHeight: '60px',
-      maxHeight: '120px',
-      placeholder: 'Enter post title...',
-      defaultTag: 'h1',
-      formats: ['h1'],
-      linkProtocol: 'https://',
-      addTagsWhitelist: 'h1, span',
-      pasteTagsWhitelist: 'h1, span',
-      attributesWhitelist: {
-        all: 'style'
-      },
+      defaultStyle: 'font-size: 24px;',
       mode: 'inline',
-      toolbarContainer: '#titleEditor',
-      showPathLabel: false,
       resizingBar: false,
-      charCounter: false,
-      fullPage: false,
-      cssClass: {
-        toolbar: 'title-editor-toolbar',
-        editor: 'title-editor'
-      },
+      showPathLabel: false,
+      toolbarContainer: '#titleEditor',
+      // Use callbacks to update the hidden input with the title value
       callbacks: {
         onChange: function(contents) {
-          // Update hidden field with title content
-          if (document.getElementById('title')) {
-            document.getElementById('title').value = contents;
+          // Strip HTML tags for the actual title value in the hidden input
+          const plainText = contents.replace(/<[^>]*>/g, '');
+          document.getElementById('title').value = plainText;
+          
+          // Update the preview title including the formatting
+          const titleElement = document.querySelector('.preview-title');
+          if (titleElement) {
+            titleElement.innerHTML = contents || 'Post Title';
           }
-          // Update preview
-          updatePreview();
+          
           // For autosave
           clearTimeout(autosaveTimeout);
           showAutosaveStatus();
@@ -120,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Initialize Content Editor
+  // Initialize SunEditor for main content
   if (document.getElementById('content')) {
     editor = SUNEDITOR.create('content', {
       buttonList: [
@@ -165,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maxHeight: '800px',
       callbacks: {
         onChange: function(contents) {
-          updatePreview();
+          updatePreview(contents);
           // For autosave
           clearTimeout(autosaveTimeout);
           showAutosaveStatus();
@@ -237,13 +227,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Update preview
-  function updatePreview() {
+  function updatePreview(contents) {
     const preview = document.getElementById('preview');
     if (!preview) return;
 
     // Get the editor contents
-    const content = editor ? editor.getContents() : '';
-    const title = titleEditor ? titleEditor.getContents() : (document.getElementById('title') ? document.getElementById('title').value : '');
+    const content = contents || (editor ? editor.getContents() : '');
+    const title = titleEditor ? titleEditor.getContents() : document.getElementById('title').value;
     const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
     
     // Update preview elements
@@ -259,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update featured image
     if (imageContainer) {
       if (featuredImage) {
-        imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title}" class="preview-featured-image">`;
+        imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title.replace(/<[^>]*>/g, '')}" class="preview-featured-image">`;
       } else {
         imageContainer.innerHTML = '';
       }
@@ -995,10 +985,12 @@ async function autosave() {
   try {
     // Get content from editors
     const content = editor ? editor.getContents() : '';
-    const title = titleEditor ? titleEditor.getContents() : (document.getElementById('title') ? document.getElementById('title').value : '');
+    const titleHTML = titleEditor ? titleEditor.getContents() : '';
+    const titleText = titleHTML.replace(/<[^>]*>/g, '');
     
     // Save to localStorage
-    localStorage.setItem('draft_title', title);
+    localStorage.setItem('draft_title_html', titleHTML);
+    localStorage.setItem('draft_title', titleText);
     localStorage.setItem('draft_content', content);
     localStorage.setItem('draft_timestamp', Date.now());
     
@@ -1011,7 +1003,7 @@ async function autosave() {
     console.log('Autosaved draft');
     
     // Update preview
-    updatePreview();
+    updatePreview(content);
   } catch (error) {
     console.error('Autosave error:', error);
   }
@@ -1019,29 +1011,20 @@ async function autosave() {
 
 // Load draft if exists
 const savedDraft = localStorage.getItem('postDraft');
-if (savedDraft && (editor || titleEditor)) {
+if (savedDraft && editor) {
   try {
     const draft = JSON.parse(savedDraft);
-    
-    // Set title content if title editor exists
-    if (titleEditor && draft.title) {
-      titleEditor.setContents(draft.title || '');
-    } else if (document.getElementById('title')) {
+    if (document.getElementById('title')) {
       document.getElementById('title').value = draft.title || '';
     }
-    
-    // Set main content if editor exists
-    if (editor && draft.content) {
+    if (editor && editor.setContents) {
       editor.setContents(draft.content || '');
     }
-    
-    // Set image URL if it exists
     if (document.getElementById('image')) {
       document.getElementById('image').value = draft.imageUrl || '';
-      
-      if (draft.imageUrl && document.getElementById('imagePreview')) {
-        document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
-      }
+    }
+    if (draft.imageUrl && document.getElementById('imagePreview')) {
+      document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
     }
   } catch (error) {
     console.error('Error loading draft:', error);
@@ -1072,7 +1055,7 @@ if (document.getElementById('postForm')) {
   document.getElementById('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const title = titleEditor ? titleEditor.getContents() : (document.getElementById('title') ? document.getElementById('title').value : '');
+    const title = document.getElementById('title') ? document.getElementById('title').value : '';
     const content = editor && editor.getContents ? editor.getContents() : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
 
