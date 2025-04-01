@@ -112,10 +112,10 @@
     }
     
     #titleEditor .sun-editor .se-wrapper {
-      min-height: 30px !important;
+      min-height: 32px !important;
+      max-height: 32px !important;
+      height: 32px !important;
       overflow: hidden !important;
-      height: auto !important;
-      max-height: 60px !important;
     }
     
     #titleEditor .sun-editor .se-container {
@@ -126,32 +126,45 @@
     #titleEditor .sun-editor .se-wrapper-inner {
       font-size: 24px !important;
       font-weight: bold !important;
-      padding: 5px 10px !important;
-      min-height: 30px !important;
+      padding: 3px 10px !important;
+      min-height: 32px !important;
+      max-height: 32px !important;
+      height: 32px !important;
       overflow: hidden !important;
-      height: auto !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    
+    /* Ensure editable area has correct height */
+    #titleEditor .sun-editor .se-wrapper-inner * {
+      max-height: 32px !important;
+      overflow: hidden !important;
     }
     
     /* Hide scrollbar in title editor - for all browsers */
-    #titleEditor .sun-editor .se-wrapper::-webkit-scrollbar {
+    #titleEditor .sun-editor .se-wrapper::-webkit-scrollbar,
+    #titleEditor .sun-editor .se-wrapper *::-webkit-scrollbar {
       width: 0 !important;
       height: 0 !important;
       display: none !important;
     }
     
-    #titleEditor .sun-editor .se-wrapper {
+    #titleEditor .sun-editor .se-wrapper,
+    #titleEditor .sun-editor .se-wrapper * {
       -ms-overflow-style: none !important;  /* IE and Edge */
       scrollbar-width: none !important;  /* Firefox */
     }
     
     /* Hide vertical scrollbar specifically */
-    #titleEditor .sun-editor .se-wrapper-inner::-webkit-scrollbar {
+    #titleEditor .sun-editor .se-wrapper-inner::-webkit-scrollbar,
+    #titleEditor .sun-editor .se-wrapper-inner *::-webkit-scrollbar {
       width: 0 !important;
       height: 0 !important;
       display: none !important;
     }
     
-    #titleEditor .sun-editor .se-wrapper-inner {
+    #titleEditor .sun-editor .se-wrapper-inner,
+    #titleEditor .sun-editor .se-wrapper-inner * {
       -ms-overflow-style: none !important;
       scrollbar-width: none !important;
     }
@@ -587,6 +600,47 @@
   
   <!-- Load SunEditor script -->
   <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
+  
+  <!-- Extra script to handle title editor height -->
+  <script>
+    // Function to fix title editor height issues
+    function fixTitleEditor() {
+      setTimeout(() => {
+        const titleEditorWrapper = document.querySelector('#titleEditor .se-wrapper');
+        const titleEditorInner = document.querySelector('#titleEditor .se-wrapper-inner');
+        const editorElements = document.querySelectorAll('#titleEditor .se-wrapper *');
+        
+        if (titleEditorWrapper) {
+          titleEditorWrapper.style.height = '32px';
+          titleEditorWrapper.style.maxHeight = '32px';
+          titleEditorWrapper.style.overflow = 'hidden';
+        }
+        
+        if (titleEditorInner) {
+          titleEditorInner.style.height = '32px';
+          titleEditorInner.style.maxHeight = '32px';
+          titleEditorInner.style.overflow = 'hidden';
+          titleEditorInner.style.display = 'flex';
+          titleEditorInner.style.alignItems = 'center';
+        }
+        
+        editorElements.forEach(el => {
+          el.style.maxHeight = '32px';
+          el.style.overflow = 'hidden';
+        });
+      }, 500);
+    }
+    
+    // Run on page load
+    window.addEventListener('load', fixTitleEditor);
+    
+    // Also run when anything changes in the DOM
+    const observer = new MutationObserver(fixTitleEditor);
+    observer.observe(document.documentElement, { 
+      childList: true, 
+      subtree: true 
+    });
+  </script>
   
   <!-- Main JavaScript for the editor -->
   <script type="module" src="editor.js"></script>

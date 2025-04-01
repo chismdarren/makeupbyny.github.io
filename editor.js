@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       buttonList: [
         ['undo', 'redo'],
         ['font', 'fontSize', 'formatBlock'],
-        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'removeFormat'],
+        ['bold', 'underline', 'italic', 'strike', 'superscript', 'removeFormat'],
         ['fontColor', 'hiliteColor', 'align']
       ],
       font: [
@@ -149,10 +149,10 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
       fontSize: [14, 16, 18, 20, 24, 28, 36, 48, 72],
       defaultStyle: 'font-size: 24px;',
-      height: 'auto',
+      height: '32px',
       width: '100%',
-      minHeight: '30px',
-      maxHeight: '40px',
+      minHeight: '32px',
+      maxHeight: '32px',
       singleLine: true,
       charCounter: false,
       resizingBar: false,
@@ -177,6 +177,15 @@ document.addEventListener("DOMContentLoaded", () => {
           if (wrapper) {
             wrapper.style.overflow = 'hidden';
             wrapper.style.whiteSpace = 'nowrap';
+            wrapper.style.height = '32px';
+            wrapper.style.maxHeight = '32px';
+            
+            // Find and disable scrollbars in all child elements
+            const innerElements = wrapper.querySelectorAll('*');
+            innerElements.forEach(el => {
+              el.style.overflow = 'hidden';
+              el.style.maxHeight = '32px';
+            });
           }
         },
         onChange: function(contents) {
