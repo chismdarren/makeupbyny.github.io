@@ -940,54 +940,71 @@ async function autosave() {
 
 // Load draft if exists
 const savedDraft = localStorage.getItem('postDraft');
-if (savedDraft) {
-  const draft = JSON.parse(savedDraft);
-  document.getElementById('title').value = draft.title || '';
-  editor.setContents(draft.content || '');
-  document.getElementById('image').value = draft.imageUrl || '';
-  if (draft.imageUrl) {
-    document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+if (savedDraft && editor) {
+  try {
+    const draft = JSON.parse(savedDraft);
+    if (document.getElementById('title')) {
+      document.getElementById('title').value = draft.title || '';
+    }
+    if (editor && editor.setContents) {
+      editor.setContents(draft.content || '');
+    }
+    if (document.getElementById('image')) {
+      document.getElementById('image').value = draft.imageUrl || '';
+    }
+    if (draft.imageUrl && document.getElementById('imagePreview')) {
+      document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+    }
+  } catch (error) {
+    console.error('Error loading draft:', error);
   }
 }
 
 // Setup autosave listeners
-document.getElementById('title').addEventListener('input', () => {
-  clearTimeout(autosaveTimeout);
-  showAutosaveStatus();
-  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-});
+if (document.getElementById('title')) {
+  document.getElementById('title').addEventListener('input', () => {
+    clearTimeout(autosaveTimeout);
+    showAutosaveStatus();
+    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+  });
+}
 
-editor.onChange = function(contents) {
-  updatePreview(contents);
-  clearTimeout(autosaveTimeout);
-  showAutosaveStatus();
-  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-};
+// Add onChange handler to editor if it exists
+if (editor && typeof editor.onChange === 'function') {
+  editor.onChange = function(contents) {
+    updatePreview(contents);
+    clearTimeout(autosaveTimeout);
+    showAutosaveStatus();
+    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+  };
+}
 
 // Handle form submission
-document.getElementById('postForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+if (document.getElementById('postForm')) {
+  document.getElementById('postForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('title') ? document.getElementById('title').value : '';
+    const content = editor && editor.getContents ? editor.getContents() : '';
+    const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
 
-  const title = document.getElementById('title').value;
-  const content = editor.getContents();
-  const imageUrl = document.getElementById('image').value;
+    try {
+      await addDoc(collection(db, "posts"), {
+        title,
+        content,
+        imageUrl,
+        createdAt: new Date(),
+      });
 
-  try {
-    await addDoc(collection(db, "posts"), {
-      title,
-      content,
-      imageUrl,
-      createdAt: new Date(),
-    });
-
-    localStorage.removeItem('postDraft'); // Clear draft after successful submission
-    alert('Post published successfully!');
-    window.location.href = 'admin-dashboard.html';
-  } catch (error) {
-    console.error('Error publishing post:', error);
-    alert('Error publishing post. Please try again.');
-  }
-});
+      localStorage.removeItem('postDraft'); // Clear draft after successful submission
+      alert('Post published successfully!');
+      window.location.href = 'admin-dashboard.html';
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      alert('Error publishing post. Please try again.');
+    }
+  });
+}
 
 // Load recent posts
 async function loadRecentPosts() {
