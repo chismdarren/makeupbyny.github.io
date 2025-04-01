@@ -132,8 +132,10 @@
       height: auto !important;
     }
     
-    /* Hide scrollbar in title editor */
+    /* Hide scrollbar in title editor - for all browsers */
     #titleEditor .sun-editor .se-wrapper::-webkit-scrollbar {
+      width: 0 !important;
+      height: 0 !important;
       display: none !important;
     }
     
@@ -142,6 +144,19 @@
       scrollbar-width: none !important;  /* Firefox */
     }
     
+    /* Hide vertical scrollbar specifically */
+    #titleEditor .sun-editor .se-wrapper-inner::-webkit-scrollbar {
+      width: 0 !important;
+      height: 0 !important;
+      display: none !important;
+    }
+    
+    #titleEditor .sun-editor .se-wrapper-inner {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+    
+    /* Disable resize handle */
     #titleEditor .sun-editor .se-resizing-bar {
       display: none !important;
     }

@@ -152,16 +152,39 @@ document.addEventListener("DOMContentLoaded", () => {
       height: 'auto',
       width: '100%',
       minHeight: '30px',
-      maxHeight: '60px',
-      overflow: 'hidden',
-      placeholder: 'Enter post title here...',
+      maxHeight: '40px',
+      singleLine: true,
+      charCounter: false,
+      resizingBar: false,
       showPathLabel: false,
+      overflow: false,
+      placeholder: 'Enter post title here...',
+      // After editor creation, apply additional styles to remove scroll
+      callBackSave: function (contents, isChanged) {
+        return contents.replace(/(\r\n|\n|\r)/gm, '');
+      },
+      // Remove paragraph breaks on paste
+      paste: {
+        cleanText: true,
+        onlyText: true,
+        noNewLine: true
+      },
+      // Additional callbacks
       callbacks: {
+        onLoad: function() {
+          // Apply additional styles after editor is loaded
+          const wrapper = document.querySelector('#titleEditor .se-wrapper');
+          if (wrapper) {
+            wrapper.style.overflow = 'hidden';
+            wrapper.style.whiteSpace = 'nowrap';
+          }
+        },
         onChange: function(contents) {
           // Update hidden input with title contents for form submission
           const titleInput = document.getElementById('title');
           if (titleInput) {
-            titleInput.value = contents;
+            // Remove any line breaks from the content
+            titleInput.value = contents.replace(/(\r\n|\n|\r)/gm, '');
           }
           
           // Update preview title
