@@ -85,15 +85,6 @@ function setupImageRemoval() {
   }
 }
 
-// Basic content update preview
-function updatePreview() {
-  const contentEditor = document.getElementById("content");
-  const previewContent = document.getElementById("previewContent");
-  if (previewContent && contentEditor) {
-    previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
-  }
-}
-
 // Text formatting functionality
 function setupTextFormatting() {
   const contentEditor = document.getElementById("content");
@@ -912,6 +903,16 @@ if (previewControls && previewContent) {
 
 // Enhanced preview update function
 function updatePreview(contents) {
+  // First check for the old previewContent element from the simple version
+  const previewContent = document.getElementById("previewContent");
+  const contentEditor = document.getElementById("content");
+  if (previewContent && contentEditor && !contents) {
+    // This looks like a call from the old simple function
+    previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
+    return;
+  }
+
+  // Continue with enhanced preview update
   const preview = document.getElementById('preview');
   if (!preview) return;
 
