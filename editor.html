@@ -9,6 +9,9 @@
   <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
   <!-- SunEditor JS -->
   <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
+  <script>
+    console.log('SunEditor loaded:', typeof SUNEDITOR !== 'undefined');
+  </script>
   <style>
     .content {
       display: flex;
@@ -464,6 +467,15 @@
   </script>
 
   <!-- Editor JavaScript -->
-  <script src="editor.js"></script>
+  <script type="module">
+    // Import necessary Firebase modules
+    import { db } from "./firebase-config.js";
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+    import { storage } from "./firebase-config.js";
+    
+    // Import editor.js
+    import "./editor.js";
+  </script>
 </body>
 </html>
