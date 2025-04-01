@@ -514,15 +514,26 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadDraft() {
     const draft = localStorage.getItem('postDraft');
     if (draft) {
-      const parsedDraft = JSON.parse(draft);
-      document.getElementById("title").value = parsedDraft.title;
-      contentEditor.innerHTML = parsedDraft.content;
-      document.getElementById("tags").value = parsedDraft.tags;
-      document.querySelector(`input[name="status"][value="${parsedDraft.status}"]`).checked = true;
-      document.getElementById("postDate").value = parsedDraft.date;
-      
-      updatePreview();
-      updateCharacterCount();
+      try {
+        const parsedDraft = JSON.parse(draft);
+        
+        const titleElement = document.getElementById("title");
+        const contentEditorElement = contentEditor;
+        const tagsElement = document.getElementById("tags");
+        const statusRadio = parsedDraft.status ? document.querySelector(`input[name="status"][value="${parsedDraft.status}"]`) : null;
+        const dateElement = document.getElementById("postDate");
+        
+        if (titleElement) titleElement.value = parsedDraft.title || '';
+        if (contentEditorElement) contentEditorElement.innerHTML = parsedDraft.content || '';
+        if (tagsElement) tagsElement.value = parsedDraft.tags || '';
+        if (statusRadio) statusRadio.checked = true;
+        if (dateElement) dateElement.value = parsedDraft.date || '';
+        
+        updatePreview();
+        updateCharacterCount();
+      } catch (error) {
+        console.error("Error loading draft:", error);
+      }
     }
   }
 
