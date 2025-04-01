@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create a Post</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@300;400;700&family=Dancing+Script:wght@400;500;600;700&family=Pacifico&family=Great+Vibes&family=Satisfy&family=Tangerine:wght@400;700&family=Petit+Formal+Script&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Lovers+Quarrel&family=Rouge+Script&family=Mr+De+Haviland&family=Yellowtail&family=Italianno&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <!-- SunEditor CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
+  <!-- SunEditor JS -->
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
   <style>
     .content {
       display: flex;
@@ -362,95 +365,7 @@
     .autosave-status.show {
       opacity: 1;
     }
-
-    .title-editor {
-      border: 1px solid #ddd;
-      padding: 8px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-      min-height: 60px;
-    }
-
-    #titleToolbar {
-      margin-bottom: 5px;
-      border: 1px solid #ddd;
-      border-radius: 4px 4px 0 0;
-      background-color: #f8f8f8;
-      padding: 5px;
-      width: 760px;
-      height: 754.93px;
-    }
-    
-    .title-editor-container {
-      margin-bottom: 20px;
-    }
-
-    /* SunEditor toolbar styling */
-    .sun-editor .se-toolbar {
-      border-bottom: 1px solid #ddd;
-      background-color: #f8f8f8;
-      padding: 5px;
-      border-radius: 4px 4px 0 0;
-    }
-
-    .sun-editor .se-wrapper {
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-
-    /* Make title editor toolbar match content editor */
-    #titleToolbar .se-toolbar {
-      border: none;
-      background: none;
-      padding: 0;
-      margin: 0;
-      width: 760px;
-      height: 754.93px;
-    }
-
-    #titleToolbar .se-toolbar-inner {
-      border: 1px solid #ddd;
-      border-radius: 4px 4px 0 0;
-      background-color: #f8f8f8;
-      padding: 5px;
-      width: 760px;
-      height: 754.93px;
-    }
-
-    #titleToolbar .se-btn-list {
-      margin: 0;
-      padding: 0;
-    }
-
-    #titleToolbar .se-btn {
-      margin: 0 2px;
-      padding: 4px 8px;
-    }
-
-    #titleToolbar .se-btn:first-child {
-      margin-left: 0;
-    }
-
-    #titleToolbar .se-btn:last-child {
-      margin-right: 0;
-    }
-
-    #titleToolbar .se-btn-group {
-      margin: 0 2px;
-    }
-
-    #titleToolbar .se-btn-group:first-child {
-      margin-left: 0;
-    }
-
-    #titleToolbar .se-btn-group:last-child {
-      margin-right: 0;
-    }
   </style>
-  <!-- SunEditor CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
-  <!-- SunEditor JS -->
-  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
 </head>
 <body>
   <header>
@@ -471,12 +386,8 @@
       <div class="editor-container">
         <form id="postForm">
           <div class="form-group">
-            <label for="titleEditor">Title</label>
-            <div class="title-editor-container">
-              <div id="titleToolbar"></div>
-              <div id="titleEditor" name="titleEditor" contenteditable="true" class="title-editor" required></div>
-              <input type="hidden" id="title" name="title">
-            </div>
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" required />
           </div>
 
           <div class="form-group">
@@ -551,8 +462,5 @@
       });
     }
   </script>
-  
-  <!-- Load the editor.js file that contains SunEditor initialization -->
-  <script type="module" src="editor.js"></script>
 </body>
 </html>
