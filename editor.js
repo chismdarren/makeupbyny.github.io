@@ -33,9 +33,6 @@ const storage = getStorage(app, "makeupbyny-1.firebasestorage.app");
 // Hardcoded admin UID
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
-// Global variable to store the editor instance
-let editor;
-
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
@@ -47,27 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const insertImageBtn = document.getElementById("insertImageBtn");
   const imageUploadInput = document.getElementById("imageUpload");
   const previewContent = document.getElementById("previewContent");
-
-  // Wait for SunEditor to be initialized in editor.html
-  // We'll use a small delay to ensure it's ready
-  setTimeout(() => {
-    // Get the editor instance
-    editor = window.editor || document.querySelector('.sun-editor')?.editor;
-    
-    if (editor) {
-      console.log("Found existing SunEditor instance");
-      
-      // Set up the onChange callback
-      editor.onChange = function(contents) {
-        updatePreview(contents);
-        clearTimeout(autosaveTimeout);
-        showAutosaveStatus();
-        autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-      };
-    } else {
-      console.error("SunEditor instance not found");
-    }
-  }, 500);
 
   // Add loading indicator
   function showLoading(element) {
@@ -109,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Update preview
-  function updatePreview(contents) {
+  function updatePreview() {
     if (previewContent && contentEditor) {
       previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
     }
@@ -792,34 +768,59 @@ imageUrlInput.addEventListener('input', (e) => {
   }
 });
 
+// Initialize SunEditor with image upload handler
+const editor = SUNEDITOR.create('content', {
+  buttonList: [
+    ['undo', 'redo'],
+    ['font', 'fontSize', 'formatBlock'],
+    ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+    ['removeFormat', 'blockquote', 'codeView'],
+    ['fontColor', 'hiliteColor'],
+    ['indent', 'outdent'],
+    ['align', 'horizontalRule', 'list', 'table'],
+    ['link', 'image', 'video', 'fullScreen'],
+  ],
+  height: '600px',
+  width: '100%',
+  minHeight: '400px',
+  maxHeight: '800px',
+  callbacks: {
+    onChange: function(contents) {
+      updatePreview(contents);
+    },
+    onImageUpload: async function(files, info, uploadHandler) {
+      try {
+        const file = files[0];
+        const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        uploadHandler(url);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert('Error uploading image. Please try again.');
+      }
+    }
+  }
+});
+
 // Preview mode handling
 const previewControls = document.querySelectorAll('.preview-control-btn');
 const previewContent = document.getElementById('preview');
 
-if (previewControls && previewContent) {
-  previewControls.forEach(btn => {
-    btn.addEventListener('click', () => {
-      previewControls.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      previewContent.className = 'preview-content';
-      previewContent.classList.add(`preview-${btn.dataset.view}`);
-    });
+previewControls.forEach(btn => {
+  btn.addEventListener('click', () => {
+    previewControls.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    previewContent.className = 'preview-content';
+    previewContent.classList.add(`preview-${btn.dataset.view}`);
   });
-}
+});
 
 // Enhanced preview update function
 function updatePreview(contents) {
-  // Make sure we have the preview content element
-  const previewElement = document.getElementById('preview');
-  if (!previewElement) return;
-
-  // Get values
-  const titleElement = document.getElementById('title');
-  const imageElement = document.getElementById('image');
-  
-  const title = titleElement ? titleElement.value : '';
-  const imageUrl = imageElement ? imageElement.value : '';
+  const title = document.getElementById('title').value;
+  const imageUrl = document.getElementById('image').value;
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -827,93 +828,35 @@ function updatePreview(contents) {
   });
 
   // Update featured image
-  const imageContainer = previewElement.querySelector('.preview-featured-image-container');
-  if (imageContainer) {
-    if (imageUrl) {
-      imageContainer.innerHTML = `<img src="${imageUrl}" alt="${title}" class="preview-featured-image">`;
-    } else {
-      imageContainer.innerHTML = '';
-    }
+  const imageContainer = previewContent.querySelector('.preview-featured-image-container');
+  if (imageUrl) {
+    imageContainer.innerHTML = `<img src="${imageUrl}" alt="${title}" class="preview-featured-image">`;
+  } else {
+    imageContainer.innerHTML = '';
   }
 
   // Update title
-  const titleContainer = previewElement.querySelector('.preview-title');
-  if (titleContainer) {
-    titleContainer.textContent = title || 'Post Title';
-  }
+  previewContent.querySelector('.preview-title').textContent = title;
 
   // Update date
-  const dateContainer = previewElement.querySelector('.preview-date');
-  if (dateContainer) {
-    dateContainer.textContent = date;
-  }
+  previewContent.querySelector('.preview-date').textContent = date;
 
   // Update content
-  const bodyContainer = previewElement.querySelector('.preview-body');
-  if (bodyContainer) {
-    bodyContainer.innerHTML = contents || '';
-  }
+  previewContent.querySelector('.preview-body').innerHTML = contents;
 }
 
-// Setup event listeners for editor after a small delay to ensure
-// the editor is fully initialized
-setTimeout(() => {
-  // Access the global editor instance
-  const editorInstance = window.editor;
-  
-  if (editorInstance) {
-    console.log("Connected to SunEditor instance");
-    
-    // Set up callbacks
-    editorInstance.onChange = function(contents) {
-      console.log("SunEditor content changed");
-      updatePreview(contents);
-    };
-    
-    // Update preview when editor is ready
-    updatePreview(editorInstance.getContents());
-    
-    // Setup image uploading functionality
-    if (editorInstance.options && typeof editorInstance.setOptions === 'function') {
-      editorInstance.setOptions({
-        imageUploadUrl: '',
-        imageUploadSizeLimit: 5 * 1024 * 1024, // 5MB
-        imageAccept: '.jpg,.jpeg,.png,.gif',
-        imageUploadHandler: async function(files, info, uploadHandler) {
-          try {
-            const file = files[0];
-            const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
-            
-            uploadTask.on(
-              'state_changed',
-              (snapshot) => {
-                // Progress function
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload progress: ${progress}%`);
-              },
-              (error) => {
-                // Error function
-                console.error("Error uploading image:", error);
-                alert('Error uploading image. Please try again.');
-              },
-              async () => {
-                // Complete function
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                uploadHandler(downloadURL);
-              }
-            );
-          } catch (error) {
-            console.error('Error uploading image:', error);
-            alert('Error uploading image. Please try again.');
-          }
-        }
-      });
-    }
-  } else {
-    console.error("SunEditor instance not found globally");
-  }
-}, 1000); // Wait 1 second for everything to initialize properly
+// Update preview when title changes
+document.getElementById('title').addEventListener('input', () => {
+  updatePreview(editor.getContents());
+});
+
+// Update preview when image changes
+imageUrlInput.addEventListener('input', () => {
+  updatePreview(editor.getContents());
+});
+
+// Initialize preview with empty content
+updatePreview('');
 
 // Autosave functionality
 let autosaveTimeout;
@@ -921,29 +864,17 @@ const autosaveStatus = document.getElementById('autosaveStatus');
 const AUTOSAVE_DELAY = 2000; // 2 seconds
 
 function showAutosaveStatus() {
-  if (autosaveStatus) {
-    autosaveStatus.classList.add('show');
-  }
+  autosaveStatus.classList.add('show');
 }
 
 function hideAutosaveStatus() {
-  if (autosaveStatus) {
-    autosaveStatus.classList.remove('show');
-  }
+  autosaveStatus.classList.remove('show');
 }
 
 async function autosave() {
-  // Get the editor instance
-  const editorInstance = window.editor;
-  if (!editorInstance) return;
-  
-  // Get the title element
-  const titleElement = document.getElementById('title');
-  const imageElement = document.getElementById('image');
-  
-  const title = titleElement ? titleElement.value : '';
-  const content = editorInstance.getContents();
-  const imageUrl = imageElement ? imageElement.value : '';
+  const title = document.getElementById('title').value;
+  const content = editor.getContents();
+  const imageUrl = document.getElementById('image').value;
 
   if (!title && !content) return;
 
@@ -962,108 +893,55 @@ async function autosave() {
 }
 
 // Load draft if exists
-setTimeout(() => {
-  const editorInstance = window.editor;
-  if (!editorInstance) return;
-  
-  const savedDraft = localStorage.getItem('postDraft');
-  if (savedDraft) {
-    try {
-      const draft = JSON.parse(savedDraft);
-      
-      // Set title
-      const titleElement = document.getElementById('title');
-      if (titleElement) {
-        titleElement.value = draft.title || '';
-      }
-      
-      // Set content in editor
-      if (draft.content) {
-        editorInstance.setContents(draft.content);
-      }
-      
-      // Set image
-      const imageElement = document.getElementById('image');
-      if (imageElement) {
-        imageElement.value = draft.imageUrl || '';
-      }
-      
-      // Update image preview
-      const imagePreview = document.getElementById('imagePreview');
-      if (imagePreview && draft.imageUrl) {
-        imagePreview.innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
-      }
-      
-      console.log('Draft loaded successfully');
-    } catch (error) {
-      console.error('Error loading draft:', error);
-    }
+const savedDraft = localStorage.getItem('postDraft');
+if (savedDraft) {
+  const draft = JSON.parse(savedDraft);
+  document.getElementById('title').value = draft.title || '';
+  editor.setContents(draft.content || '');
+  document.getElementById('image').value = draft.imageUrl || '';
+  if (draft.imageUrl) {
+    document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
   }
-}, 1500);
-
-// Setup autosave when title changes
-const titleElement = document.getElementById('title');
-if (titleElement) {
-  titleElement.addEventListener('input', () => {
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  });
 }
 
-// Setup autosave when image URL changes
-const imageElement = document.getElementById('image');
-if (imageElement) {
-  imageElement.addEventListener('input', () => {
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  });
-}
+// Setup autosave listeners
+document.getElementById('title').addEventListener('input', () => {
+  clearTimeout(autosaveTimeout);
+  showAutosaveStatus();
+  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+});
 
-// The editor.onChange will be set up in the earlier editor initialization code
+editor.onChange = function(contents) {
+  updatePreview(contents);
+  clearTimeout(autosaveTimeout);
+  showAutosaveStatus();
+  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+};
 
 // Handle form submission
-const postForm = document.getElementById('postForm');
-if (postForm) {
-  postForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const editorInstance = window.editor;
-    if (!editorInstance) {
-      alert('Editor not initialized. Please try again.');
-      return;
-    }
+document.getElementById('postForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    const titleElement = document.getElementById('title');
-    const imageElement = document.getElementById('image');
-    
-    const title = titleElement ? titleElement.value : '';
-    const content = editorInstance.getContents();
-    const imageUrl = imageElement ? imageElement.value : '';
+  const title = document.getElementById('title').value;
+  const content = editor.getContents();
+  const imageUrl = document.getElementById('image').value;
 
-    if (!title) {
-      alert('Please enter a title for your post.');
-      return;
-    }
+  try {
+    await addDoc(collection(db, "posts"), {
+      title,
+      content,
+      imageUrl,
+      createdAt: new Date(),
+    });
 
-    try {
-      await addDoc(collection(db, "posts"), {
-        title,
-        content,
-        imageUrl,
-        createdAt: new Date(),
-      });
-
-      localStorage.removeItem('postDraft'); // Clear draft after successful submission
-      alert('Post published successfully!');
-      window.location.href = 'admin-dashboard.html';
-    } catch (error) {
-      console.error('Error publishing post:', error);
-      alert('Error publishing post. Please try again.');
-    }
-  });
-}
+    localStorage.removeItem('postDraft'); // Clear draft after successful submission
+    alert('Post published successfully!');
+    window.location.href = 'admin-dashboard.html';
+  } catch (error) {
+    console.error('Error publishing post:', error);
+    alert('Error publishing post. Please try again.');
+  }
+});
 
 // Load recent posts
 async function loadRecentPosts() {
