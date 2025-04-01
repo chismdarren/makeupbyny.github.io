@@ -136,6 +136,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add character count
   function updateCharacterCount() {
+    if (!contentEditor) return;
+    
     const content = contentEditor.innerHTML;
     const charCount = content.replace(/<[^>]*>/g, '').length;
     const charCountElement = document.getElementById('charCount');
@@ -514,23 +516,44 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadDraft() {
     const draft = localStorage.getItem('postDraft');
     if (draft) {
-      const parsedDraft = JSON.parse(draft);
-      document.getElementById("title").value = parsedDraft.title;
-      contentEditor.innerHTML = parsedDraft.content;
-      document.getElementById("tags").value = parsedDraft.tags;
-      document.querySelector(`input[name="status"][value="${parsedDraft.status}"]`).checked = true;
-      document.getElementById("postDate").value = parsedDraft.date;
-      
-      updatePreview();
-      updateCharacterCount();
+      try {
+        const parsedDraft = JSON.parse(draft);
+        
+        const titleElement = document.getElementById("title");
+        const tagsElement = document.getElementById("tags");
+        const statusElements = document.querySelectorAll('input[name="status"]');
+        const dateElement = document.getElementById("postDate");
+        
+        if (titleElement) titleElement.value = parsedDraft.title || '';
+        if (contentEditor) contentEditor.innerHTML = parsedDraft.content || '';
+        if (tagsElement) tagsElement.value = parsedDraft.tags || '';
+        
+        // Only try to set radio button if it exists
+        if (statusElements && statusElements.length > 0) {
+          const statusValue = parsedDraft.status || 'draft';
+          const statusElement = document.querySelector(`input[name="status"][value="${statusValue}"]`);
+          if (statusElement) statusElement.checked = true;
+        }
+        
+        if (dateElement) dateElement.value = parsedDraft.date || '';
+        
+        updatePreview();
+        updateCharacterCount();
+      } catch (error) {
+        console.error('Error parsing draft:', error);
+      }
     }
   }
 
   // Initialize
   setupTextFormatting();
   setupImageEditing();
-  loadDraft();
-  updateCharacterCount();
+  
+  // Only try to load draft and update character count if we have the required elements
+  if (contentEditor && document.getElementById("title")) {
+    loadDraft();
+    updateCharacterCount();
+  }
 
   // Handle form submission
   if (postForm) {
