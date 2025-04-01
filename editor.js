@@ -120,9 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
       buttonList: [
         ['undo', 'redo'],
         ['font', 'fontSize', 'formatBlock'],
-        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
-        ['fontColor', 'hiliteColor'],
-        ['align']
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'removeFormat'],
+        ['fontColor', 'hiliteColor', 'align']
       ],
       font: [
         'Arial',
@@ -150,10 +149,11 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
       fontSize: [14, 16, 18, 20, 24, 28, 36, 48, 72],
       defaultStyle: 'font-size: 24px;',
-      height: '50px',
+      height: 'auto',
       width: '100%',
-      minHeight: '50px',
-      maxHeight: '100px',
+      minHeight: '30px',
+      maxHeight: '60px',
+      overflow: 'hidden',
       placeholder: 'Enter post title here...',
       showPathLabel: false,
       callbacks: {
