@@ -601,37 +601,77 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem('postDraft', JSON.stringify(draft));
   }
 
-  // Load draft functionality
-  function loadDraft() {
-    const draft = localStorage.getItem('postDraft');
-    if (draft) {
+  // Load draft if exists
+  if (document.getElementById('postForm')) {
+    const loadDraft = () => {
       try {
-        const parsedDraft = JSON.parse(draft);
+        // Check for new draft format first
+        const draftTitleHTML = localStorage.getItem('draft_title_html');
+        const draftContent = localStorage.getItem('draft_content');
+        const draftTimestamp = localStorage.getItem('draft_timestamp');
         
-        const titleElement = document.getElementById("title");
-        const tagsElement = document.getElementById("tags");
-        const statusElements = document.querySelectorAll('input[name="status"]');
-        const dateElement = document.getElementById("postDate");
+        // Check for old draft format as fallback
+        const savedDraft = localStorage.getItem('postDraft');
         
-        if (titleElement) titleElement.value = parsedDraft.title || '';
-        if (contentEditor) contentEditor.innerHTML = parsedDraft.content || '';
-        if (tagsElement) tagsElement.value = parsedDraft.tags || '';
-        
-        // Only try to set radio button if it exists
-        if (statusElements && statusElements.length > 0) {
-          const statusValue = parsedDraft.status || 'draft';
-          const statusElement = document.querySelector(`input[name="status"][value="${statusValue}"]`);
-          if (statusElement) statusElement.checked = true;
+        if (draftTitleHTML && draftContent) {
+          // Load from new format
+          if (titleEditor && titleEditor.setContents) {
+            titleEditor.setContents(draftTitleHTML);
+          }
+          
+          if (editor && editor.setContents) {
+            editor.setContents(draftContent);
+          }
+          
+          const imageUrl = localStorage.getItem('draft_image_url');
+          if (imageUrl && document.getElementById('image')) {
+            document.getElementById('image').value = imageUrl;
+            
+            if (document.getElementById('imagePreview')) {
+              document.getElementById('imagePreview').innerHTML = `<img src="${imageUrl}" alt="Preview">`;
+            }
+          }
+          
+          console.log(`Loaded draft from ${new Date(parseInt(draftTimestamp)).toLocaleString()}`);
+        } else if (savedDraft) {
+          // Load from old format
+          try {
+            const draft = JSON.parse(savedDraft);
+            
+            if (titleEditor && titleEditor.setContents) {
+              // Try to set as HTML if it might contain HTML
+              if (draft.title && (draft.title.includes('<') || draft.title.includes('>'))) {
+                titleEditor.setContents(draft.title);
+              } else {
+                titleEditor.setContents(`<p>${draft.title || ''}</p>`);
+              }
+            }
+            
+            if (editor && editor.setContents) {
+              editor.setContents(draft.content || '');
+            }
+            
+            if (document.getElementById('image')) {
+              document.getElementById('image').value = draft.imageUrl || '';
+            }
+            
+            if (draft.imageUrl && document.getElementById('imagePreview')) {
+              document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+            }
+          } catch (error) {
+            console.error('Error parsing old draft:', error);
+          }
         }
         
-        if (dateElement) dateElement.value = parsedDraft.date || '';
-        
+        // Update preview after loading draft
         updatePreview();
-        updateCharacterCount();
       } catch (error) {
-        console.error('Error parsing draft:', error);
+        console.error('Error loading draft:', error);
       }
-    }
+    };
+    
+    // Load draft when the page loads
+    loadDraft();
   }
 
   // Initialize
@@ -640,94 +680,42 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Only try to load draft and update character count if we have the required elements
   if (contentEditor && document.getElementById("title")) {
-    loadDraft();
     updateCharacterCount();
   }
 
   // Handle form submission
-  if (postForm) {
-    postForm.addEventListener("submit", async function(event) {
-      event.preventDefault();
-
-      const user = auth.currentUser;
-      if (!user) {
-        alert('Please log in to create a post');
-        return;
-      }
-
-      const title = document.getElementById("title").value;
-      const content = contentEditor.innerHTML;
-      const tags = document.getElementById("tags").value;
-      const status = document.querySelector('input[name="status"]:checked').value;
-      const imageFile = imageInput ? imageInput.files[0] : null;
-      let imageUrl = "";
-
-      console.log("Creating post:", { title, content, tags, status });
-
-      if (imageFile) {
-        const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
-        try {
-          showLoading(postForm);
-          const uploadTask = uploadBytesResumable(imageRef, imageFile);
-          
-          // Wait for upload to complete
-          await new Promise((resolve, reject) => {
-            uploadTask.on('state_changed',
-              (snapshot) => {
-                // Update progress
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Upload progress:', progress + '%');
-              },
-              (error) => {
-                console.error("Error uploading image:", error);
-                reject(error);
-              },
-              async () => {
-                try {
-                  imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                  console.log("Image uploaded:", imageUrl);
-                  resolve();
-                } catch (error) {
-                  reject(error);
-                }
-              }
-            );
-          });
-        } catch (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          alert("Error uploading image. Please try again.");
-          hideLoading(postForm);
-          return;
-        }
-      }
+  if (document.getElementById('postForm')) {
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Get content from both editors
+      const titleHTML = titleEditor && titleEditor.getContents ? titleEditor.getContents() : '';
+      const titleText = titleHTML.replace(/<[^>]*>/g, '');
+      const content = editor && editor.getContents ? editor.getContents() : '';
+      const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
 
       try {
         await addDoc(collection(db, "posts"), {
-          title,
-          content,
-          tags,
-          status,
-          imageUrl,
-          userId: user.uid,
-          createdAt: serverTimestamp()
+          title: titleText,
+          titleHTML: titleHTML,
+          content: content,
+          imageUrl: imageUrl,
+          createdAt: new Date(),
         });
 
-        alert(`Post created successfully: ${title}`);
-        postForm.reset();
-        contentEditor.innerHTML = "";
+        // Clear all drafts after successful submission
         localStorage.removeItem('postDraft');
-        if (previewContent) {
-          previewContent.innerHTML = "Post content preview will appear here...";
-        }
-        updateCharacterCount();
+        localStorage.removeItem('draft_title_html');
+        localStorage.removeItem('draft_title');
+        localStorage.removeItem('draft_content');
+        localStorage.removeItem('draft_timestamp');
+        localStorage.removeItem('draft_image_url');
         
-        // Reload posts list after creating a new post
-        loadUserPosts();
+        alert('Post published successfully!');
+        window.location.href = 'admin-dashboard.html';
       } catch (error) {
-        console.error("Error adding post:", error);
-        alert("Error submitting post. Please try again.");
-      } finally {
-        hideLoading(postForm);
+        console.error('Error publishing post:', error);
+        alert('Error publishing post. Please try again.');
       }
     });
   }
@@ -1007,74 +995,6 @@ async function autosave() {
   } catch (error) {
     console.error('Autosave error:', error);
   }
-}
-
-// Load draft if exists
-const savedDraft = localStorage.getItem('postDraft');
-if (savedDraft && editor) {
-  try {
-    const draft = JSON.parse(savedDraft);
-    if (document.getElementById('title')) {
-      document.getElementById('title').value = draft.title || '';
-    }
-    if (editor && editor.setContents) {
-      editor.setContents(draft.content || '');
-    }
-    if (document.getElementById('image')) {
-      document.getElementById('image').value = draft.imageUrl || '';
-    }
-    if (draft.imageUrl && document.getElementById('imagePreview')) {
-      document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
-    }
-  } catch (error) {
-    console.error('Error loading draft:', error);
-  }
-}
-
-// Setup autosave listeners
-if (document.getElementById('title')) {
-  document.getElementById('title').addEventListener('input', () => {
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  });
-}
-
-// Add onChange handler to editor if it exists
-if (editor && typeof editor.onChange === 'function') {
-  editor.onChange = function(contents) {
-    updatePreview(contents);
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  };
-}
-
-// Handle form submission
-if (document.getElementById('postForm')) {
-  document.getElementById('postForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const title = document.getElementById('title') ? document.getElementById('title').value : '';
-    const content = editor && editor.getContents ? editor.getContents() : '';
-    const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
-
-    try {
-      await addDoc(collection(db, "posts"), {
-        title,
-        content,
-        imageUrl,
-        createdAt: new Date(),
-      });
-
-      localStorage.removeItem('postDraft'); // Clear draft after successful submission
-      alert('Post published successfully!');
-      window.location.href = 'admin-dashboard.html';
-    } catch (error) {
-      console.error('Error publishing post:', error);
-      alert('Error publishing post. Please try again.');
-    }
-  });
 }
 
 // Load recent posts
