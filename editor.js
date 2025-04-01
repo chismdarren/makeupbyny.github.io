@@ -810,10 +810,13 @@ const editor = SUNEDITOR.create('content', {
 const titleEditor = SUNEDITOR.create('titleEditor', {
   buttonList: [
     ['undo', 'redo'],
-    ['font', 'fontSize'],
-    ['bold', 'underline', 'italic'],
-    ['fontColor'],
-    ['align'],
+    ['font', 'fontSize', 'formatBlock'],
+    ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+    ['removeFormat', 'blockquote', 'codeView'],
+    ['fontColor', 'hiliteColor'],
+    ['indent', 'outdent'],
+    ['align', 'horizontalRule', 'list', 'table'],
+    ['link', 'image', 'video', 'fullScreen'],
   ],
   width: '100%',
   minHeight: '60px',
