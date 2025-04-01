@@ -90,7 +90,39 @@ document.addEventListener("DOMContentLoaded", () => {
       callbacks: {
         onChange: function(contents) {
           // Update preview content directly with the HTML content from SunEditor
-          updatePreview(contents);
+          const preview = document.getElementById('preview');
+          if (preview) {
+            // Update content
+            const bodyElement = preview.querySelector('.preview-body');
+            if (bodyElement) {
+              bodyElement.innerHTML = contents || 'Post content preview will appear here...';
+            }
+            
+            // Also update other elements to keep everything in sync
+            // Update title
+            const titleElement = preview.querySelector('.preview-title');
+            const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+            const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
+            
+            if (titleElement) {
+              titleElement.innerHTML = titleContent || 'Post Title';
+              if (titleFont) {
+                titleElement.style.fontFamily = titleFont;
+              }
+            }
+            
+            // Update featured image
+            const imageContainer = preview.querySelector('.preview-featured-image-container');
+            const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
+            
+            if (imageContainer) {
+              if (featuredImage) {
+                imageContainer.innerHTML = `<img src="${featuredImage}" alt="${titleContent}" class="preview-featured-image">`;
+              } else {
+                imageContainer.innerHTML = '';
+              }
+            }
+          }
           
           // For autosave
           clearTimeout(autosaveTimeout);
