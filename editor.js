@@ -35,6 +35,7 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Initialize SunEditor
 let editor;
+let titleEditor;
 
 // Autosave variables
 let autosaveTimeout;
@@ -44,7 +45,82 @@ const AUTOSAVE_DELAY = 2000; // 2 seconds
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
-  // Initialize SunEditor
+  // Initialize Title Editor
+  if (document.getElementById('titleEditor')) {
+    titleEditor = SUNEDITOR.create('titleEditor', {
+      buttonList: [
+        ['undo', 'redo'],
+        ['font', 'fontSize'],
+        ['bold', 'underline', 'italic'],
+        ['fontColor', 'hiliteColor'],
+        ['align'],
+      ],
+      font: [
+        'Arial',
+        'Calibri',
+        'Comic Sans',
+        'Courier',
+        'Garamond',
+        'Georgia',
+        'Impact',
+        'Lucida Console',
+        'Tahoma',
+        'Times New Roman',
+        'Trebuchet MS',
+        'Verdana',
+        'Dancing Script',
+        'Great Vibes',
+        'Pacifico',
+        'Satisfy',
+        'Allura',
+        'Brush Script MT',
+        'Monsieur La Doulaise',
+        'Tangerine',
+        'Alex Brush',
+        'Pinyon Script'
+      ],
+      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+      height: '60px',
+      width: '100%',
+      minHeight: '60px',
+      maxHeight: '120px',
+      placeholder: 'Enter post title...',
+      defaultTag: 'h1',
+      formats: ['h1'],
+      linkProtocol: 'https://',
+      addTagsWhitelist: 'h1, span',
+      pasteTagsWhitelist: 'h1, span',
+      attributesWhitelist: {
+        all: 'style'
+      },
+      mode: 'inline',
+      toolbarContainer: '#titleEditor',
+      showPathLabel: false,
+      resizingBar: false,
+      charCounter: false,
+      fullPage: false,
+      cssClass: {
+        toolbar: 'title-editor-toolbar',
+        editor: 'title-editor'
+      },
+      callbacks: {
+        onChange: function(contents) {
+          // Update hidden field with title content
+          if (document.getElementById('title')) {
+            document.getElementById('title').value = contents;
+          }
+          // Update preview
+          updatePreview();
+          // For autosave
+          clearTimeout(autosaveTimeout);
+          showAutosaveStatus();
+          autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+        }
+      }
+    });
+  }
+
+  // Initialize Content Editor
   if (document.getElementById('content')) {
     editor = SUNEDITOR.create('content', {
       buttonList: [
@@ -89,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maxHeight: '800px',
       callbacks: {
         onChange: function(contents) {
-          updatePreview(contents);
+          updatePreview();
           // For autosave
           clearTimeout(autosaveTimeout);
           showAutosaveStatus();
@@ -162,8 +238,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update preview
   function updatePreview() {
-    if (previewContent && contentEditor) {
-      previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
+    const preview = document.getElementById('preview');
+    if (!preview) return;
+
+    // Get the editor contents
+    const content = editor ? editor.getContents() : '';
+    const title = titleEditor ? titleEditor.getContents() : (document.getElementById('title') ? document.getElementById('title').value : '');
+    const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
+    
+    // Update preview elements
+    const titleElement = preview.querySelector('.preview-title');
+    const bodyElement = preview.querySelector('.preview-body');
+    const dateElement = preview.querySelector('.preview-date');
+    const imageContainer = preview.querySelector('.preview-featured-image-container');
+    
+    if (titleElement) titleElement.innerHTML = title || 'Post Title';
+    if (bodyElement) bodyElement.innerHTML = content || 'Post content preview will appear here...';
+    if (dateElement) dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    
+    // Update featured image
+    if (imageContainer) {
+      if (featuredImage) {
+        imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title}" class="preview-featured-image">`;
+      } else {
+        imageContainer.innerHTML = '';
+      }
     }
   }
 
@@ -881,49 +980,6 @@ if (previewControls && previewContent) {
   });
 }
 
-// Enhanced preview update function
-function updatePreview(contents) {
-  const preview = document.getElementById('preview');
-  if (!preview) return;
-
-  // Get the editor contents
-  const content = contents || (editor ? editor.getContents() : '');
-  const title = document.getElementById('title') ? document.getElementById('title').value : '';
-  const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
-  
-  // Update preview elements
-  const titleElement = preview.querySelector('.preview-title');
-  const bodyElement = preview.querySelector('.preview-body');
-  const dateElement = preview.querySelector('.preview-date');
-  const imageContainer = preview.querySelector('.preview-featured-image-container');
-  
-  if (titleElement) titleElement.textContent = title || 'Post Title';
-  if (bodyElement) bodyElement.innerHTML = content || 'Post content preview will appear here...';
-  if (dateElement) dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  
-  // Update featured image
-  if (imageContainer) {
-    if (featuredImage) {
-      imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title}" class="preview-featured-image">`;
-    } else {
-      imageContainer.innerHTML = '';
-    }
-  }
-}
-
-// Update preview when title changes
-document.getElementById('title').addEventListener('input', () => {
-  updatePreview(editor.getContents());
-});
-
-// Update preview when image changes
-imageUrlInput.addEventListener('input', () => {
-  updatePreview(editor.getContents());
-});
-
-// Initialize preview with empty content
-updatePreview('');
-
 // Autosave functionality
 const autosaveStatus = document.getElementById('autosaveStatus');
 
@@ -937,9 +993,9 @@ function hideAutosaveStatus() {
 
 async function autosave() {
   try {
-    // Get content from editor
+    // Get content from editors
     const content = editor ? editor.getContents() : '';
-    const title = document.getElementById('title') ? document.getElementById('title').value : '';
+    const title = titleEditor ? titleEditor.getContents() : (document.getElementById('title') ? document.getElementById('title').value : '');
     
     // Save to localStorage
     localStorage.setItem('draft_title', title);
@@ -955,7 +1011,7 @@ async function autosave() {
     console.log('Autosaved draft');
     
     // Update preview
-    updatePreview(content);
+    updatePreview();
   } catch (error) {
     console.error('Autosave error:', error);
   }
@@ -963,20 +1019,29 @@ async function autosave() {
 
 // Load draft if exists
 const savedDraft = localStorage.getItem('postDraft');
-if (savedDraft && editor) {
+if (savedDraft && (editor || titleEditor)) {
   try {
     const draft = JSON.parse(savedDraft);
-    if (document.getElementById('title')) {
+    
+    // Set title content if title editor exists
+    if (titleEditor && draft.title) {
+      titleEditor.setContents(draft.title || '');
+    } else if (document.getElementById('title')) {
       document.getElementById('title').value = draft.title || '';
     }
-    if (editor && editor.setContents) {
+    
+    // Set main content if editor exists
+    if (editor && draft.content) {
       editor.setContents(draft.content || '');
     }
+    
+    // Set image URL if it exists
     if (document.getElementById('image')) {
       document.getElementById('image').value = draft.imageUrl || '';
-    }
-    if (draft.imageUrl && document.getElementById('imagePreview')) {
-      document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+      
+      if (draft.imageUrl && document.getElementById('imagePreview')) {
+        document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+      }
     }
   } catch (error) {
     console.error('Error loading draft:', error);
@@ -1007,7 +1072,7 @@ if (document.getElementById('postForm')) {
   document.getElementById('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const title = document.getElementById('title') ? document.getElementById('title').value : '';
+    const title = titleEditor ? titleEditor.getContents() : (document.getElementById('title') ? document.getElementById('title').value : '');
     const content = editor && editor.getContents ? editor.getContents() : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
 
