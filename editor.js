@@ -35,7 +35,6 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Initialize SunEditor
 let editor;
-let titleEditor;
 
 // Autosave variables
 let autosaveTimeout;
@@ -45,72 +44,7 @@ const AUTOSAVE_DELAY = 2000; // 2 seconds
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
-  // Initialize Title SunEditor
-  if (document.getElementById('titleEditor')) {
-    titleEditor = SUNEDITOR.create('titleEditor', {
-      buttonList: [
-        ['font', 'fontSize'],
-        ['bold', 'underline', 'italic', 'strike'],
-        ['fontColor', 'hiliteColor'],
-        ['align'],
-      ],
-      placeholder: 'Enter title here...',
-      width: '100%',
-      minHeight: '50px',
-      maxHeight: '100px',
-      fontSize: [14, 16, 18, 20, 22, 24, 26, 28, 36, 48],
-      font: [
-        'Arial',
-        'Calibri',
-        'Comic Sans',
-        'Courier',
-        'Garamond',
-        'Georgia',
-        'Impact',
-        'Lucida Console',
-        'Tahoma',
-        'Times New Roman',
-        'Trebuchet MS',
-        'Verdana',
-        'Dancing Script',
-        'Great Vibes',
-        'Pacifico',
-        'Satisfy',
-        'Allura',
-        'Brush Script MT',
-        'Monsieur La Doulaise',
-        'Tangerine',
-        'Alex Brush',
-        'Pinyon Script'
-      ],
-      defaultStyle: 'font-size: 24px;',
-      mode: 'inline',
-      resizingBar: false,
-      showPathLabel: false,
-      toolbarContainer: '#titleEditor',
-      // Use callbacks to update the hidden input with the title value
-      callbacks: {
-        onChange: function(contents) {
-          // Strip HTML tags for the actual title value in the hidden input
-          const plainText = contents.replace(/<[^>]*>/g, '');
-          document.getElementById('title').value = plainText;
-          
-          // Update the preview title including the formatting
-          const titleElement = document.querySelector('.preview-title');
-          if (titleElement) {
-            titleElement.innerHTML = contents || 'Post Title';
-          }
-          
-          // For autosave
-          clearTimeout(autosaveTimeout);
-          showAutosaveStatus();
-          autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-        }
-      }
-    });
-  }
-
-  // Initialize SunEditor for main content
+  // Initialize SunEditor
   if (document.getElementById('content')) {
     editor = SUNEDITOR.create('content', {
       buttonList: [
@@ -227,32 +161,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Update preview
-  function updatePreview(contents) {
-    const preview = document.getElementById('preview');
-    if (!preview) return;
-
-    // Get the editor contents
-    const content = contents || (editor ? editor.getContents() : '');
-    const title = titleEditor ? titleEditor.getContents() : document.getElementById('title').value;
-    const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
-    
-    // Update preview elements
-    const titleElement = preview.querySelector('.preview-title');
-    const bodyElement = preview.querySelector('.preview-body');
-    const dateElement = preview.querySelector('.preview-date');
-    const imageContainer = preview.querySelector('.preview-featured-image-container');
-    
-    if (titleElement) titleElement.innerHTML = title || 'Post Title';
-    if (bodyElement) bodyElement.innerHTML = content || 'Post content preview will appear here...';
-    if (dateElement) dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    
-    // Update featured image
-    if (imageContainer) {
-      if (featuredImage) {
-        imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title.replace(/<[^>]*>/g, '')}" class="preview-featured-image">`;
-      } else {
-        imageContainer.innerHTML = '';
-      }
+  function updatePreview() {
+    if (previewContent && contentEditor) {
+      previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
     }
   }
 
@@ -601,77 +512,37 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem('postDraft', JSON.stringify(draft));
   }
 
-  // Load draft if exists
-  if (document.getElementById('postForm')) {
-    const loadDraft = () => {
+  // Load draft functionality
+  function loadDraft() {
+    const draft = localStorage.getItem('postDraft');
+    if (draft) {
       try {
-        // Check for new draft format first
-        const draftTitleHTML = localStorage.getItem('draft_title_html');
-        const draftContent = localStorage.getItem('draft_content');
-        const draftTimestamp = localStorage.getItem('draft_timestamp');
+        const parsedDraft = JSON.parse(draft);
         
-        // Check for old draft format as fallback
-        const savedDraft = localStorage.getItem('postDraft');
+        const titleElement = document.getElementById("title");
+        const tagsElement = document.getElementById("tags");
+        const statusElements = document.querySelectorAll('input[name="status"]');
+        const dateElement = document.getElementById("postDate");
         
-        if (draftTitleHTML && draftContent) {
-          // Load from new format
-          if (titleEditor && titleEditor.setContents) {
-            titleEditor.setContents(draftTitleHTML);
-          }
-          
-          if (editor && editor.setContents) {
-            editor.setContents(draftContent);
-          }
-          
-          const imageUrl = localStorage.getItem('draft_image_url');
-          if (imageUrl && document.getElementById('image')) {
-            document.getElementById('image').value = imageUrl;
-            
-            if (document.getElementById('imagePreview')) {
-              document.getElementById('imagePreview').innerHTML = `<img src="${imageUrl}" alt="Preview">`;
-            }
-          }
-          
-          console.log(`Loaded draft from ${new Date(parseInt(draftTimestamp)).toLocaleString()}`);
-        } else if (savedDraft) {
-          // Load from old format
-          try {
-            const draft = JSON.parse(savedDraft);
-            
-            if (titleEditor && titleEditor.setContents) {
-              // Try to set as HTML if it might contain HTML
-              if (draft.title && (draft.title.includes('<') || draft.title.includes('>'))) {
-                titleEditor.setContents(draft.title);
-              } else {
-                titleEditor.setContents(`<p>${draft.title || ''}</p>`);
-              }
-            }
-            
-            if (editor && editor.setContents) {
-              editor.setContents(draft.content || '');
-            }
-            
-            if (document.getElementById('image')) {
-              document.getElementById('image').value = draft.imageUrl || '';
-            }
-            
-            if (draft.imageUrl && document.getElementById('imagePreview')) {
-              document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
-            }
-          } catch (error) {
-            console.error('Error parsing old draft:', error);
-          }
+        if (titleElement) titleElement.value = parsedDraft.title || '';
+        if (contentEditor) contentEditor.innerHTML = parsedDraft.content || '';
+        if (tagsElement) tagsElement.value = parsedDraft.tags || '';
+        
+        // Only try to set radio button if it exists
+        if (statusElements && statusElements.length > 0) {
+          const statusValue = parsedDraft.status || 'draft';
+          const statusElement = document.querySelector(`input[name="status"][value="${statusValue}"]`);
+          if (statusElement) statusElement.checked = true;
         }
         
-        // Update preview after loading draft
+        if (dateElement) dateElement.value = parsedDraft.date || '';
+        
         updatePreview();
+        updateCharacterCount();
       } catch (error) {
-        console.error('Error loading draft:', error);
+        console.error('Error parsing draft:', error);
       }
-    };
-    
-    // Load draft when the page loads
-    loadDraft();
+    }
   }
 
   // Initialize
@@ -680,42 +551,94 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Only try to load draft and update character count if we have the required elements
   if (contentEditor && document.getElementById("title")) {
+    loadDraft();
     updateCharacterCount();
   }
 
   // Handle form submission
-  if (document.getElementById('postForm')) {
-    document.getElementById('postForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      // Get content from both editors
-      const titleHTML = titleEditor && titleEditor.getContents ? titleEditor.getContents() : '';
-      const titleText = titleHTML.replace(/<[^>]*>/g, '');
-      const content = editor && editor.getContents ? editor.getContents() : '';
-      const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
+  if (postForm) {
+    postForm.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please log in to create a post');
+        return;
+      }
+
+      const title = document.getElementById("title").value;
+      const content = contentEditor.innerHTML;
+      const tags = document.getElementById("tags").value;
+      const status = document.querySelector('input[name="status"]:checked').value;
+      const imageFile = imageInput ? imageInput.files[0] : null;
+      let imageUrl = "";
+
+      console.log("Creating post:", { title, content, tags, status });
+
+      if (imageFile) {
+        const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
+        try {
+          showLoading(postForm);
+          const uploadTask = uploadBytesResumable(imageRef, imageFile);
+          
+          // Wait for upload to complete
+          await new Promise((resolve, reject) => {
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                // Update progress
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload progress:', progress + '%');
+              },
+              (error) => {
+                console.error("Error uploading image:", error);
+                reject(error);
+              },
+              async () => {
+                try {
+                  imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                  console.log("Image uploaded:", imageUrl);
+                  resolve();
+                } catch (error) {
+                  reject(error);
+                }
+              }
+            );
+          });
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          alert("Error uploading image. Please try again.");
+          hideLoading(postForm);
+          return;
+        }
+      }
 
       try {
         await addDoc(collection(db, "posts"), {
-          title: titleText,
-          titleHTML: titleHTML,
-          content: content,
-          imageUrl: imageUrl,
-          createdAt: new Date(),
+          title,
+          content,
+          tags,
+          status,
+          imageUrl,
+          userId: user.uid,
+          createdAt: serverTimestamp()
         });
 
-        // Clear all drafts after successful submission
+        alert(`Post created successfully: ${title}`);
+        postForm.reset();
+        contentEditor.innerHTML = "";
         localStorage.removeItem('postDraft');
-        localStorage.removeItem('draft_title_html');
-        localStorage.removeItem('draft_title');
-        localStorage.removeItem('draft_content');
-        localStorage.removeItem('draft_timestamp');
-        localStorage.removeItem('draft_image_url');
+        if (previewContent) {
+          previewContent.innerHTML = "Post content preview will appear here...";
+        }
+        updateCharacterCount();
         
-        alert('Post published successfully!');
-        window.location.href = 'admin-dashboard.html';
+        // Reload posts list after creating a new post
+        loadUserPosts();
       } catch (error) {
-        console.error('Error publishing post:', error);
-        alert('Error publishing post. Please try again.');
+        console.error("Error adding post:", error);
+        alert("Error submitting post. Please try again.");
+      } finally {
+        hideLoading(postForm);
       }
     });
   }
@@ -958,6 +881,49 @@ if (previewControls && previewContent) {
   });
 }
 
+// Enhanced preview update function
+function updatePreview(contents) {
+  const preview = document.getElementById('preview');
+  if (!preview) return;
+
+  // Get the editor contents
+  const content = contents || (editor ? editor.getContents() : '');
+  const title = document.getElementById('title') ? document.getElementById('title').value : '';
+  const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
+  
+  // Update preview elements
+  const titleElement = preview.querySelector('.preview-title');
+  const bodyElement = preview.querySelector('.preview-body');
+  const dateElement = preview.querySelector('.preview-date');
+  const imageContainer = preview.querySelector('.preview-featured-image-container');
+  
+  if (titleElement) titleElement.textContent = title || 'Post Title';
+  if (bodyElement) bodyElement.innerHTML = content || 'Post content preview will appear here...';
+  if (dateElement) dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  
+  // Update featured image
+  if (imageContainer) {
+    if (featuredImage) {
+      imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title}" class="preview-featured-image">`;
+    } else {
+      imageContainer.innerHTML = '';
+    }
+  }
+}
+
+// Update preview when title changes
+document.getElementById('title').addEventListener('input', () => {
+  updatePreview(editor.getContents());
+});
+
+// Update preview when image changes
+imageUrlInput.addEventListener('input', () => {
+  updatePreview(editor.getContents());
+});
+
+// Initialize preview with empty content
+updatePreview('');
+
 // Autosave functionality
 const autosaveStatus = document.getElementById('autosaveStatus');
 
@@ -971,14 +937,12 @@ function hideAutosaveStatus() {
 
 async function autosave() {
   try {
-    // Get content from editors
+    // Get content from editor
     const content = editor ? editor.getContents() : '';
-    const titleHTML = titleEditor ? titleEditor.getContents() : '';
-    const titleText = titleHTML.replace(/<[^>]*>/g, '');
+    const title = document.getElementById('title') ? document.getElementById('title').value : '';
     
     // Save to localStorage
-    localStorage.setItem('draft_title_html', titleHTML);
-    localStorage.setItem('draft_title', titleText);
+    localStorage.setItem('draft_title', title);
     localStorage.setItem('draft_content', content);
     localStorage.setItem('draft_timestamp', Date.now());
     
@@ -995,6 +959,74 @@ async function autosave() {
   } catch (error) {
     console.error('Autosave error:', error);
   }
+}
+
+// Load draft if exists
+const savedDraft = localStorage.getItem('postDraft');
+if (savedDraft && editor) {
+  try {
+    const draft = JSON.parse(savedDraft);
+    if (document.getElementById('title')) {
+      document.getElementById('title').value = draft.title || '';
+    }
+    if (editor && editor.setContents) {
+      editor.setContents(draft.content || '');
+    }
+    if (document.getElementById('image')) {
+      document.getElementById('image').value = draft.imageUrl || '';
+    }
+    if (draft.imageUrl && document.getElementById('imagePreview')) {
+      document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+    }
+  } catch (error) {
+    console.error('Error loading draft:', error);
+  }
+}
+
+// Setup autosave listeners
+if (document.getElementById('title')) {
+  document.getElementById('title').addEventListener('input', () => {
+    clearTimeout(autosaveTimeout);
+    showAutosaveStatus();
+    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+  });
+}
+
+// Add onChange handler to editor if it exists
+if (editor && typeof editor.onChange === 'function') {
+  editor.onChange = function(contents) {
+    updatePreview(contents);
+    clearTimeout(autosaveTimeout);
+    showAutosaveStatus();
+    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+  };
+}
+
+// Handle form submission
+if (document.getElementById('postForm')) {
+  document.getElementById('postForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('title') ? document.getElementById('title').value : '';
+    const content = editor && editor.getContents ? editor.getContents() : '';
+    const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
+
+    try {
+      await addDoc(collection(db, "posts"), {
+        title,
+        content,
+        imageUrl,
+        createdAt: new Date(),
+      });
+
+      localStorage.removeItem('postDraft'); // Clear draft after successful submission
+      alert('Post published successfully!');
+      window.location.href = 'admin-dashboard.html';
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      alert('Error publishing post. Please try again.');
+    }
+  });
 }
 
 // Load recent posts

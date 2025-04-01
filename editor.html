@@ -135,32 +135,6 @@
       padding: 20px !important;
     }
 
-    /* Title editor specific styles */
-    #titleEditor .sun-editor {
-      border: 1px solid #ddd !important;
-      border-radius: 4px !important;
-      margin-bottom: 20px !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-    }
-
-    #titleEditor .sun-editor .se-wrapper {
-      min-height: 50px !important;
-      max-height: 100px !important;
-    }
-
-    #titleEditor .sun-editor .se-wrapper .se-placeholder {
-      font-size: 1.2em !important;
-    }
-
-    #titleEditor .sun-editor .se-container {
-      padding: 10px !important;
-    }
-
-    #titleEditor .sun-editor .se-toolbar {
-      border-bottom: 1px solid #eee !important;
-      padding: 5px !important;
-    }
-
     .preview-container {
       margin-top: 20px;
       padding: 20px;
@@ -486,8 +460,7 @@
         <form id="postForm">
           <div class="form-group">
             <label for="title">Title</label>
-            <div id="titleEditor"></div>
-            <input type="hidden" id="title" name="title" required />
+            <input type="text" id="title" name="title" required />
           </div>
 
           <div class="form-group">
