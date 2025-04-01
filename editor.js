@@ -37,13 +37,281 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
+  // Initialize SunEditor instances
+  let editor, titleEditor;
+  initializeSunEditors();
+
   // Initialize elements
   const postForm = document.getElementById("postForm");
-  const contentEditor = document.getElementById("content");
   const imageInput = document.getElementById("image");
   const insertImageBtn = document.getElementById("insertImageBtn");
   const imageUploadInput = document.getElementById("imageUpload");
   const previewContent = document.getElementById("previewContent");
+  const previewTitle = document.querySelector('.preview-title');
+  const previewBody = document.querySelector('.preview-body');
+  const previewDate = document.querySelector('.preview-date');
+  const previewFeaturedImage = document.querySelector('.preview-featured-image-container');
+  const imageField = document.getElementById('image');
+  const imageUpload = document.getElementById('imageUpload');
+  const imagePreview = document.getElementById('imagePreview');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const previewControls = document.querySelectorAll('.preview-control-btn');
+  const preview = document.getElementById('preview');
+  const autosaveStatus = document.getElementById('autosaveStatus');
+
+  // Set current date in preview
+  if (previewDate) {
+    const now = new Date();
+    previewDate.textContent = now.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+
+  // Initialize event listeners
+  initializeEventListeners();
+  loadAutosavedData();
+
+  function initializeSunEditors() {
+    // Initialize SunEditor for content if the element exists
+    if (document.getElementById('content')) {
+      editor = SUNEDITOR.create('content', {
+        buttonList: [
+          ['undo', 'redo'],
+          ['font', 'fontSize', 'formatBlock'],
+          ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+          ['removeFormat', 'blockquote'],
+          ['fontColor', 'hiliteColor'],
+          ['indent', 'outdent'],
+          ['align', 'horizontalRule', 'list', 'lineHeight'],
+          ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
+        ],
+        formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        font: [
+          'Arial',
+          'Calibri',
+          'Comic Sans',
+          'Courier',
+          'Garamond',
+          'Georgia',
+          'Impact',
+          'Lucida Console',
+          'Tahoma',
+          'Times New Roman',
+          'Trebuchet MS',
+          'Verdana',
+          'Dancing Script',
+          'Great Vibes',
+          'Pacifico',
+          'Satisfy',
+          'Allura',
+          'Brush Script MT',
+          'Monsieur La Doulaise',
+          'Tangerine',
+          'Alex Brush',
+          'Pinyon Script'
+        ],
+        fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+        height: '400px',
+        width: '100%',
+      });
+    }
+
+    // Initialize SunEditor for title if the element exists
+    if (document.getElementById('title')) {
+      titleEditor = SUNEDITOR.create('title', {
+        buttonList: [
+          ['undo', 'redo'],
+          ['font', 'fontSize'],
+          ['bold', 'underline', 'italic'],
+          ['fontColor', 'hiliteColor'],
+          ['align'],
+        ],
+        formats: ['p', 'h1', 'h2', 'h3'],
+        font: [
+          'Arial',
+          'Calibri',
+          'Comic Sans',
+          'Courier',
+          'Garamond',
+          'Georgia',
+          'Impact',
+          'Lucida Console',
+          'Tahoma',
+          'Times New Roman',
+          'Trebuchet MS',
+          'Verdana',
+          'Dancing Script',
+          'Great Vibes',
+          'Pacifico',
+          'Satisfy',
+          'Allura',
+          'Brush Script MT',
+          'Monsieur La Doulaise',
+          'Tangerine',
+          'Alex Brush',
+          'Pinyon Script'
+        ],
+        fontSize: [16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+        height: '100px',
+        width: '100%',
+        defaultStyle: 'font-size: 24px; font-weight: bold;',
+        placeholder: 'Enter title here...',
+      });
+    }
+  }
+
+  function initializeEventListeners() {
+    // Update preview when content editor changes
+    if (editor && previewBody) {
+      editor.onChange = function() {
+        previewBody.innerHTML = editor.getContents();
+        autosave();
+      };
+    }
+
+    // Update preview when title editor changes
+    if (titleEditor && previewTitle) {
+      titleEditor.onChange = function() {
+        previewTitle.innerHTML = titleEditor.getContents();
+        autosave();
+      };
+    }
+
+    // Handle image preview
+    if (imageField) {
+      imageField.addEventListener('input', updateImagePreview);
+    }
+    
+    if (imageUpload && uploadBtn) {
+      imageUpload.addEventListener('change', handleImageUpload);
+      uploadBtn.addEventListener('click', function() {
+        imageUpload.click();
+      });
+    }
+
+    // Handle preview device switching
+    if (previewControls && previewControls.length > 0) {
+      previewControls.forEach(control => {
+        control.addEventListener('click', function() {
+          previewControls.forEach(c => c.classList.remove('active'));
+          this.classList.add('active');
+          
+          const view = this.dataset.view;
+          preview.className = `preview-content preview-${view}`;
+        });
+      });
+    }
+
+    // Handle form submission
+    if (postForm) {
+      postForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (titleEditor && editor && imageField) {
+          console.log('Title:', titleEditor.getContents());
+          console.log('Content:', editor.getContents());
+          console.log('Image URL:', imageField.value);
+          // Implement actual form submission to your backend here
+        }
+      });
+    }
+
+    // Handle logout
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        signOut(auth).then(() => {
+          console.log("User signed out.");
+          window.location.href = "index.html";
+        });
+      });
+    }
+  }
+
+  function updateImagePreview() {
+    if (!imageField || !previewFeaturedImage || !imagePreview) return;
+    
+    const imageUrl = imageField.value;
+    if (imageUrl) {
+      previewFeaturedImage.innerHTML = `<img src="${imageUrl}" class="preview-featured-image">`;
+      imagePreview.innerHTML = `<img src="${imageUrl}">`;
+    } else {
+      previewFeaturedImage.innerHTML = '';
+      imagePreview.innerHTML = '';
+    }
+    autosave();
+  }
+
+  function handleImageUpload(e) {
+    if (!e.target.files || !e.target.files[0]) return;
+    
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imageUrl = event.target.result;
+        if (imageField) {
+          imageField.value = imageUrl;
+          updateImagePreview();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // Autosave functionality
+  let autosaveTimeout;
+
+  function autosave() {
+    if (!titleEditor || !editor || !imageField || !autosaveStatus) return;
+    
+    clearTimeout(autosaveTimeout);
+    autosaveTimeout = setTimeout(() => {
+      // Show autosave status
+      autosaveStatus.classList.add('show');
+      
+      // Store data in localStorage
+      const postData = {
+        title: titleEditor.getContents(),
+        content: editor.getContents(),
+        image: imageField.value,
+        lastSaved: new Date().toISOString()
+      };
+      
+      localStorage.setItem('autosave_post', JSON.stringify(postData));
+      
+      // Hide autosave status after 2 seconds
+      setTimeout(() => {
+        autosaveStatus.classList.remove('show');
+      }, 2000);
+    }, 1000);
+  }
+
+  // Load autosaved data if it exists
+  function loadAutosavedData() {
+    if (!titleEditor || !editor || !imageField) return;
+    
+    const savedData = localStorage.getItem('autosave_post');
+    if (savedData) {
+      const postData = JSON.parse(savedData);
+      
+      if (postData.title && titleEditor && previewTitle) {
+        titleEditor.setContents(postData.title);
+        previewTitle.innerHTML = postData.title;
+      }
+      
+      if (postData.content && editor && previewBody) {
+        editor.setContents(postData.content);
+        previewBody.innerHTML = postData.content;
+      }
+      
+      if (postData.image && imageField) {
+        imageField.value = postData.image;
+        updateImagePreview();
+      }
+    }
+  }
 
   // Add loading indicator
   function showLoading(element) {
@@ -59,6 +327,8 @@ document.addEventListener("DOMContentLoaded", () => {
       element.style.pointerEvents = 'auto';
     }
   }
+
+  // Rest of your existing code...
 
   // Add character count
   function updateCharacterCount() {
@@ -86,8 +356,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update preview
   function updatePreview() {
-    if (previewContent && contentEditor) {
-      previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
+    if (preview && contentEditor) {
+      preview.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
     }
   }
 
@@ -136,139 +406,6 @@ document.addEventListener("DOMContentLoaded", () => {
         contentEditor.focus();
       });
     }
-  }
-
-  // Handle image upload and preview
-  function handleImageUpload(file) {
-    return new Promise((resolve, reject) => {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        reject(new Error('File must be an image'));
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        reject(new Error('Image must be less than 5MB'));
-        return;
-      }
-
-      showLoading(contentEditor);
-      showLoading(previewContent);
-
-      // Create a temporary preview while uploading
-      const tempId = Date.now();
-      const tempImgHtml = `<div id="temp-${tempId}" class="image-uploading">
-        <div class="upload-progress">Uploading... 0%</div>
-        <img src="${URL.createObjectURL(file)}" alt="Uploading..." style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      </div>`;
-      
-      // Add temporary preview
-      if (previewContent) {
-        previewContent.innerHTML = tempImgHtml + previewContent.innerHTML;
-      }
-      if (contentEditor) {
-        contentEditor.innerHTML = tempImgHtml + contentEditor.innerHTML;
-      }
-
-      // Compress image
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          // Calculate new dimensions (max 1200px width)
-          let width = img.width;
-          let height = img.height;
-          if (width > 1200) {
-            height = (height * 1200) / width;
-            width = 1200;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          // Draw and compress
-          ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(function(blob) {
-            // Upload to Firebase Storage using uploadBytesResumable
-            const imageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-            const uploadTask = uploadBytesResumable(imageRef, blob);
-            
-            uploadTask.on('state_changed',
-              (snapshot) => {
-                // Update progress
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                const progressElement = document.querySelector(`#temp-${tempId} .upload-progress`);
-                if (progressElement) {
-                  progressElement.textContent = `Uploading... ${Math.round(progress)}%`;
-                }
-              },
-              (error) => {
-                console.error('Upload error:', error);
-                // Remove temporary preview on error
-                const tempElement = document.querySelector(`#temp-${tempId}`);
-                if (tempElement) {
-                  tempElement.remove();
-                }
-                reject(error);
-              },
-              async () => {
-                try {
-                  // Get download URL
-                  const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                  
-                  // Replace temporary preview with final image
-                  const finalImgHtml = `<img src="${downloadURL}" alt="Preview" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" title="Click to edit image" data-image-id="${tempId}">`;
-                  
-                  // Update preview
-                  if (previewContent) {
-                    const tempElement = previewContent.querySelector(`#temp-${tempId}`);
-                    if (tempElement) {
-                      tempElement.outerHTML = finalImgHtml;
-                    }
-                  }
-                  
-                  // Update content editor
-                  if (contentEditor) {
-                    const tempElement = contentEditor.querySelector(`#temp-${tempId}`);
-                    if (tempElement) {
-                      tempElement.outerHTML = finalImgHtml;
-                    }
-                  }
-                  
-                  hideLoading(contentEditor);
-                  hideLoading(previewContent);
-                  resolve(downloadURL);
-                } catch (error) {
-                  console.error('Error getting download URL:', error);
-                  // Remove temporary preview on error
-                  const tempElement = document.querySelector(`#temp-${tempId}`);
-                  if (tempElement) {
-                    tempElement.remove();
-                  }
-                  reject(error);
-                }
-              }
-            );
-          }, 'image/jpeg', 0.8); // Compress to JPEG with 80% quality
-        };
-        img.onerror = () => {
-          hideLoading(contentEditor);
-          hideLoading(previewContent);
-          reject(new Error('Error loading image'));
-        };
-        img.src = e.target.result;
-      };
-      reader.onerror = () => {
-        hideLoading(contentEditor);
-        hideLoading(previewContent);
-        reject(new Error('Error reading file'));
-      };
-      reader.readAsDataURL(file);
-    });
   }
 
   // Handle image editing
@@ -530,8 +667,8 @@ document.addEventListener("DOMContentLoaded", () => {
         postForm.reset();
         contentEditor.innerHTML = "";
         localStorage.removeItem('postDraft');
-        if (previewContent) {
-          previewContent.innerHTML = "Post content preview will appear here...";
+        if (preview) {
+          preview.innerHTML = "Post content preview will appear here...";
         }
         updateCharacterCount();
         
@@ -571,16 +708,6 @@ document.addEventListener("DOMContentLoaded", () => {
           postsList.innerHTML = '<p>Please log in to view your posts.</p>';
         }
       }
-    });
-  }
-
-  // Handle logout
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      signOut(auth).then(() => {
-        console.log("User signed out.");
-        window.location.href = "index.html";
-      });
     });
   }
 
@@ -805,15 +932,15 @@ const editor = SUNEDITOR.create('content', {
 
 // Preview mode handling
 const previewControls = document.querySelectorAll('.preview-control-btn');
-const previewContent = document.getElementById('preview');
+const preview = document.getElementById('preview');
 
 previewControls.forEach(btn => {
   btn.addEventListener('click', () => {
     previewControls.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     
-    previewContent.className = 'preview-content';
-    previewContent.classList.add(`preview-${btn.dataset.view}`);
+    preview.className = 'preview-content';
+    preview.classList.add(`preview-${btn.dataset.view}`);
   });
 });
 
@@ -828,7 +955,7 @@ function updatePreview(contents) {
   });
 
   // Update featured image
-  const imageContainer = previewContent.querySelector('.preview-featured-image-container');
+  const imageContainer = preview.querySelector('.preview-featured-image-container');
   if (imageUrl) {
     imageContainer.innerHTML = `<img src="${imageUrl}" alt="${title}" class="preview-featured-image">`;
   } else {
@@ -836,13 +963,13 @@ function updatePreview(contents) {
   }
 
   // Update title
-  previewContent.querySelector('.preview-title').textContent = title;
+  preview.querySelector('.preview-title').textContent = title;
 
   // Update date
-  previewContent.querySelector('.preview-date').textContent = date;
+  preview.querySelector('.preview-date').textContent = date;
 
   // Update content
-  previewContent.querySelector('.preview-body').innerHTML = contents;
+  preview.querySelector('.preview-body').innerHTML = contents;
 }
 
 // Update preview when title changes
