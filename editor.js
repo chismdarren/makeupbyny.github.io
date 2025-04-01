@@ -638,89 +638,38 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Handle form submission
-  if (postForm) {
-    postForm.addEventListener("submit", async function(event) {
-      event.preventDefault();
-
-      const user = auth.currentUser;
-      if (!user) {
-        alert('Please log in to create a post');
-        return;
-      }
-
-      const title = document.getElementById("title").value;
-      const content = contentEditor.innerHTML;
-      const tags = document.getElementById("tags").value;
-      const status = document.querySelector('input[name="status"]:checked').value;
-      const imageFile = imageInput ? imageInput.files[0] : null;
-      let imageUrl = "";
-
-      console.log("Creating post:", { title, content, tags, status });
-
-      if (imageFile) {
-        const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
-        try {
-          showLoading(postForm);
-          const uploadTask = uploadBytesResumable(imageRef, imageFile);
-          
-          // Wait for upload to complete
-          await new Promise((resolve, reject) => {
-            uploadTask.on('state_changed',
-              (snapshot) => {
-                // Update progress
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Upload progress:', progress + '%');
-              },
-              (error) => {
-                console.error("Error uploading image:", error);
-                reject(error);
-              },
-              async () => {
-                try {
-                  imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                  console.log("Image uploaded:", imageUrl);
-                  resolve();
-                } catch (error) {
-                  reject(error);
-                }
-              }
-            );
-          });
-        } catch (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          alert("Error uploading image. Please try again.");
-          hideLoading(postForm);
-          return;
-        }
-      }
+  if (document.getElementById('postForm')) {
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Get values from the form and editor
+      const titleValue = document.getElementById('title') ? document.getElementById('title').value : '';
+      const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
+      const content = editor && editor.getContents ? editor.getContents() : '';
+      const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
 
       try {
         await addDoc(collection(db, "posts"), {
-          title,
-          content,
-          tags,
-          status,
-          imageUrl,
-          userId: user.uid,
-          createdAt: serverTimestamp()
+          title: titleValue,
+          titleFont: titleFont,
+          content: content,
+          imageUrl: imageUrl,
+          createdAt: new Date(),
         });
 
-        alert(`Post created successfully: ${title}`);
-        postForm.reset();
-        contentEditor.innerHTML = "";
-        localStorage.removeItem('postDraft');
-        if (previewContent) {
-          previewContent.innerHTML = "Post content preview will appear here...";
-        }
-        updateCharacterCount();
+        // Clear all draft data after successful submission
+        localStorage.removeItem('draft_title');
+        localStorage.removeItem('draft_content');
+        localStorage.removeItem('draft_title_font');
+        localStorage.removeItem('draft_image_url');
+        localStorage.removeItem('draft_timestamp');
+        localStorage.removeItem('postDraft'); // Clear old format too
         
-        // Reload posts list after creating a new post
-        loadUserPosts();
+        alert('Post published successfully!');
+        window.location.href = 'admin-dashboard.html';
       } catch (error) {
-        console.error("Error adding post:", error);
-        alert("Error submitting post. Please try again.");
-      } finally {
-        hideLoading(postForm);
+        console.error('Error publishing post:', error);
+        alert('Error publishing post. Please try again.');
       }
     });
   }
@@ -786,6 +735,113 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load user's posts
   loadUserPosts();
+
+  // Load draft data
+  function loadSavedDraft() {
+    // Check for individual draft items (new format)
+    const title = localStorage.getItem('draft_title');
+    const content = localStorage.getItem('draft_content');
+    const titleFont = localStorage.getItem('draft_title_font');
+    const imageUrl = localStorage.getItem('draft_image_url');
+    
+    // Only proceed if we have saved draft data
+    if (title || content || imageUrl) {
+      console.log('Loading saved draft');
+      
+      // Set title content and font
+      const titleField = document.getElementById('titleField');
+      if (titleField && title) {
+        titleField.innerHTML = title;
+        
+        // Also update the hidden input
+        const titleInput = document.getElementById('title');
+        if (titleInput) {
+          titleInput.value = title;
+        }
+      }
+      
+      // Set title font if saved
+      if (titleField && titleFont) {
+        titleField.style.fontFamily = titleFont;
+        const titleFontSelect = document.getElementById('titleFont');
+        if (titleFontSelect) {
+          titleFontSelect.value = titleFont;
+        }
+      }
+      
+      // Set content in editor
+      if (editor && content) {
+        editor.setContents(content);
+      }
+      
+      // Set image URL and preview
+      if (imageUrl) {
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+        if (imageInput) {
+          imageInput.value = imageUrl;
+        }
+        if (imagePreview) {
+          imagePreview.innerHTML = `<img src="${imageUrl}" alt="Preview">`;
+        }
+      }
+      
+      // Update preview with loaded content
+      updatePreview(content);
+      return true;
+    }
+    
+    // Check for older format draft
+    const savedDraft = localStorage.getItem('postDraft');
+    if (savedDraft && editor) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        
+        // Set title content in the title field if it exists
+        const titleField = document.getElementById('titleField');
+        if (titleField && draft.title) {
+          titleField.innerHTML = draft.title;
+          
+          // Also update the hidden input
+          const titleInput = document.getElementById('title');
+          if (titleInput) {
+            titleInput.value = draft.title;
+          }
+          
+          // Set font if saved
+          if (draft.titleFont) {
+            titleField.style.fontFamily = draft.titleFont;
+            const titleFontSelect = document.getElementById('titleFont');
+            if (titleFontSelect) {
+              titleFontSelect.value = draft.titleFont;
+            }
+          }
+        }
+        
+        if (editor && editor.setContents) {
+          editor.setContents(draft.content || '');
+        }
+        if (document.getElementById('image')) {
+          document.getElementById('image').value = draft.imageUrl || '';
+        }
+        if (draft.imageUrl && document.getElementById('imagePreview')) {
+          document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('Error loading draft:', error);
+        return false;
+      }
+    }
+    
+    return false;
+  }
+
+  // Call this function after DOM is loaded
+  setTimeout(() => {
+    loadSavedDraft();
+  }, 500);
 });
 
 // Function to load and display user's posts
@@ -919,33 +975,51 @@ const uploadBtn = document.getElementById('uploadBtn');
 const imagePreview = document.getElementById('imagePreview');
 const imageUrlInput = document.getElementById('image');
 
-uploadBtn.addEventListener('click', () => imageUpload.click());
+if (uploadBtn) {
+  uploadBtn.addEventListener('click', () => imageUpload.click());
+}
 
-imageUpload.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+if (imageUpload) {
+  imageUpload.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  try {
-    const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
-    imageUrlInput.value = url;
-    imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    alert('Error uploading image. Please try again.');
-  }
-});
+    try {
+      const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      imageUrlInput.value = url;
+      imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
+      
+      // Trigger autosave after successful image upload
+      updatePreview(editor.getContents());
+      clearTimeout(autosaveTimeout);
+      showAutosaveStatus();
+      autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    }
+  });
+}
 
 // Update image preview when URL is entered
-imageUrlInput.addEventListener('input', (e) => {
-  const url = e.target.value;
-  if (url) {
-    imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
-  } else {
-    imagePreview.innerHTML = '';
-  }
-});
+if (imageUrlInput) {
+  imageUrlInput.addEventListener('input', (e) => {
+    const url = e.target.value;
+    if (url) {
+      imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
+    } else {
+      imagePreview.innerHTML = '';
+    }
+    
+    // Trigger autosave after image URL changes
+    updatePreview(editor.getContents());
+    clearTimeout(autosaveTimeout);
+    showAutosaveStatus();
+    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+  });
+}
 
 // Preview mode handling
 const previewControls = document.querySelectorAll('.preview-control-btn');
@@ -1023,6 +1097,7 @@ async function autosave() {
     const content = editor ? editor.getContents() : '';
     const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
     const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
+    const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
     
     // Update hidden title input if needed
     const titleInput = document.getElementById('title');
@@ -1034,6 +1109,7 @@ async function autosave() {
     localStorage.setItem('draft_title', titleContent);
     localStorage.setItem('draft_content', content);
     localStorage.setItem('draft_title_font', titleFont);
+    localStorage.setItem('draft_image_url', imageUrl);
     localStorage.setItem('draft_timestamp', Date.now());
     
     // Show autosave status
@@ -1046,77 +1122,6 @@ async function autosave() {
   } catch (error) {
     console.error('Autosave error:', error);
   }
-}
-
-// Load draft if exists
-const savedDraft = localStorage.getItem('postDraft');
-if (savedDraft && editor) {
-  try {
-    const draft = JSON.parse(savedDraft);
-    
-    // Set title content in the title field if it exists
-    const titleField = document.getElementById('titleField');
-    if (titleField && draft.title) {
-      titleField.innerHTML = draft.title;
-      
-      // Also update the hidden input
-      const titleInput = document.getElementById('title');
-      if (titleInput) {
-        titleInput.value = draft.title;
-      }
-      
-      // Set font if saved
-      if (draft.titleFont) {
-        titleField.style.fontFamily = draft.titleFont;
-        const titleFontSelect = document.getElementById('titleFont');
-        if (titleFontSelect) {
-          titleFontSelect.value = draft.titleFont;
-        }
-      }
-    }
-    
-    if (editor && editor.setContents) {
-      editor.setContents(draft.content || '');
-    }
-    if (document.getElementById('image')) {
-      document.getElementById('image').value = draft.imageUrl || '';
-    }
-    if (draft.imageUrl && document.getElementById('imagePreview')) {
-      document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
-    }
-  } catch (error) {
-    console.error('Error loading draft:', error);
-  }
-}
-
-// Handle form submission
-if (document.getElementById('postForm')) {
-  document.getElementById('postForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    // Get values from the form and editor
-    const titleValue = document.getElementById('title') ? document.getElementById('title').value : '';
-    const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
-    const content = editor && editor.getContents ? editor.getContents() : '';
-    const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
-
-    try {
-      await addDoc(collection(db, "posts"), {
-        title: titleValue,
-        titleFont: titleFont,
-        content: content,
-        imageUrl: imageUrl,
-        createdAt: new Date(),
-      });
-
-      localStorage.removeItem('postDraft'); // Clear draft after successful submission
-      alert('Post published successfully!');
-      window.location.href = 'admin-dashboard.html';
-    } catch (error) {
-      console.error('Error publishing post:', error);
-      alert('Error publishing post. Please try again.');
-    }
-  });
 }
 
 // Load recent posts
