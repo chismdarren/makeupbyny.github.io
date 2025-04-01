@@ -770,6 +770,40 @@ imageUrlInput.addEventListener('input', (e) => {
 
 // Initialize SunEditor with image upload handler
 const editor = SUNEDITOR.create('content', {
+  font: [
+    // System Fonts
+    'Arial',
+    'Helvetica',
+    'Comic Sans MS',
+    'Courier New',
+    'Georgia',
+    'Tahoma',
+    'Times New Roman',
+    'Verdana',
+    'Impact',
+    // Standard Google Fonts
+    'Roboto',
+    'Open Sans',
+    'Lato',
+    'Montserrat',
+    'Playfair Display',
+    'Merriweather',
+    // Cursive & Handwriting Fonts
+    'Dancing Script',
+    'Pacifico',
+    'Great Vibes',
+    'Satisfy',
+    'Tangerine',
+    'Petit Formal Script',
+    'Alex Brush',
+    'Allura',
+    'Pinyon Script',
+    'Lovers Quarrel',
+    'Rouge Script',
+    'Mr De Haviland',
+    'Yellowtail',
+    'Italianno'
+  ],
   buttonList: [
     ['undo', 'redo'],
     ['font', 'fontSize', 'formatBlock'],
@@ -784,6 +818,7 @@ const editor = SUNEDITOR.create('content', {
   width: '100%',
   minHeight: '400px',
   maxHeight: '800px',
+  defaultStyle: '@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@300;400;700&family=Dancing+Script:wght@400;500;600;700&family=Pacifico&family=Great+Vibes&family=Satisfy&family=Tangerine:wght@400;700&family=Petit+Formal+Script&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Lovers+Quarrel&family=Rouge+Script&family=Mr+De+Haviland&family=Yellowtail&family=Italianno&display=swap");',
   callbacks: {
     onChange: function(contents) {
       updatePreview(contents);
@@ -808,6 +843,40 @@ const editor = SUNEDITOR.create('content', {
 
 // Initialize SunEditor for the title field with limited formatting options
 const titleEditor = SUNEDITOR.create('titleEditor', {
+  font: [
+    // System Fonts
+    'Arial',
+    'Helvetica',
+    'Comic Sans MS',
+    'Courier New',
+    'Georgia',
+    'Tahoma',
+    'Times New Roman',
+    'Verdana',
+    'Impact',
+    // Standard Google Fonts
+    'Roboto',
+    'Open Sans',
+    'Lato',
+    'Montserrat',
+    'Playfair Display',
+    'Merriweather',
+    // Cursive & Handwriting Fonts
+    'Dancing Script',
+    'Pacifico',
+    'Great Vibes',
+    'Satisfy',
+    'Tangerine',
+    'Petit Formal Script',
+    'Alex Brush',
+    'Allura',
+    'Pinyon Script',
+    'Lovers Quarrel',
+    'Rouge Script',
+    'Mr De Haviland',
+    'Yellowtail',
+    'Italianno'
+  ],
   buttonList: [
     ['undo', 'redo'],
     ['font', 'fontSize', 'formatBlock'],
@@ -821,7 +890,7 @@ const titleEditor = SUNEDITOR.create('titleEditor', {
   width: '100%',
   minHeight: '60px',
   maxHeight: '120px',
-  defaultStyle: 'font-size: 18px; font-weight: bold;',
+  defaultStyle: '@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@300;400;700&family=Dancing+Script:wght@400;500;600;700&family=Pacifico&family=Great+Vibes&family=Satisfy&family=Tangerine:wght@400;700&family=Petit+Formal+Script&family=Alex+Brush&family=Allura&family=Pinyon+Script&family=Lovers+Quarrel&family=Rouge+Script&family=Mr+De+Haviland&family=Yellowtail&family=Italianno&display=swap");',
   placeholder: 'Enter your title here...',
   toolbarContainer: '#titleToolbar',
   showPathLabel: false,
