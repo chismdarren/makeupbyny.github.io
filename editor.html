@@ -104,6 +104,21 @@
     }
 
     /* Title field styles */
+    .title-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .title-font-select {
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
     .title-field {
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -480,6 +495,31 @@
         <form id="postForm">
           <div class="form-group">
             <label for="title">Title</label>
+            <div class="title-controls">
+              <select id="titleFont" class="title-font-select">
+                <option value="Arial">Arial</option>
+                <option value="Calibri">Calibri</option>
+                <option value="Comic Sans">Comic Sans</option>
+                <option value="Courier">Courier</option>
+                <option value="Garamond">Garamond</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Impact">Impact</option>
+                <option value="Lucida Console">Lucida Console</option>
+                <option value="Tahoma">Tahoma</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Dancing Script">Dancing Script</option>
+                <option value="Great Vibes">Great Vibes</option>
+                <option value="Pacifico">Pacifico</option>
+                <option value="Satisfy">Satisfy</option>
+                <option value="Allura">Allura</option>
+                <option value="Brush Script MT">Brush Script MT</option>
+                <option value="Monsieur La Doulaise">Monsieur La Doulaise</option>
+                <option value="Tangerine">Tangerine</option>
+                <option value="Alex Brush">Alex Brush</option>
+                <option value="Pinyon Script">Pinyon Script</option>
+              </select>
+            </div>
             <div id="titleField" contenteditable="true" class="title-field" placeholder="Enter post title here..."></div>
             <input type="hidden" id="title" name="title" />
           </div>

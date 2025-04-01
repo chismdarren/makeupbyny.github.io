@@ -115,6 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Initialize title field event listeners
   const titleField = document.getElementById('titleField');
+  const titleFontSelect = document.getElementById('titleFont');
+  
   if (titleField && document.getElementById('title')) {
     const titleHiddenInput = document.getElementById('title');
     
@@ -138,6 +140,35 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         return false;
       }
+    });
+  }
+
+  // Handle font changes for the title
+  if (titleFontSelect && titleField) {
+    // Set initial font style if saved in localStorage
+    const savedFont = localStorage.getItem('title_font');
+    if (savedFont) {
+      titleField.style.fontFamily = savedFont;
+      titleFontSelect.value = savedFont;
+    }
+    
+    titleFontSelect.addEventListener('change', function() {
+      const selectedFont = this.value;
+      titleField.style.fontFamily = selectedFont;
+      
+      // Update preview title font
+      const previewTitle = document.querySelector('.preview-title');
+      if (previewTitle) {
+        previewTitle.style.fontFamily = selectedFont;
+      }
+      
+      // Save font preference
+      localStorage.setItem('title_font', selectedFont);
+      
+      // Trigger autosave
+      clearTimeout(autosaveTimeout);
+      showAutosaveStatus();
+      autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
     });
   }
 
@@ -209,6 +240,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const titleElement = preview.querySelector('.preview-title');
     if (titleElement) {
       titleElement.innerHTML = contents || 'Post Title';
+      
+      // Apply the selected font to the preview title
+      const titleFont = document.getElementById('titleFont');
+      if (titleFont) {
+        titleElement.style.fontFamily = titleFont.value;
+      }
     }
   }
 
@@ -985,6 +1022,7 @@ async function autosave() {
     // Get content from editor
     const content = editor ? editor.getContents() : '';
     const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+    const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
     
     // Update hidden title input if needed
     const titleInput = document.getElementById('title');
@@ -995,6 +1033,7 @@ async function autosave() {
     // Save to localStorage
     localStorage.setItem('draft_title', titleContent);
     localStorage.setItem('draft_content', content);
+    localStorage.setItem('draft_title_font', titleFont);
     localStorage.setItem('draft_timestamp', Date.now());
     
     // Show autosave status
@@ -1025,6 +1064,15 @@ if (savedDraft && editor) {
       if (titleInput) {
         titleInput.value = draft.title;
       }
+      
+      // Set font if saved
+      if (draft.titleFont) {
+        titleField.style.fontFamily = draft.titleFont;
+        const titleFontSelect = document.getElementById('titleFont');
+        if (titleFontSelect) {
+          titleFontSelect.value = draft.titleFont;
+        }
+      }
     }
     
     if (editor && editor.setContents) {
@@ -1048,12 +1096,14 @@ if (document.getElementById('postForm')) {
     
     // Get values from the form and editor
     const titleValue = document.getElementById('title') ? document.getElementById('title').value : '';
+    const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
     const content = editor && editor.getContents ? editor.getContents() : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
 
     try {
       await addDoc(collection(db, "posts"), {
         title: titleValue,
+        titleFont: titleFont,
         content: content,
         imageUrl: imageUrl,
         createdAt: new Date(),
