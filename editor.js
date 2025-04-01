@@ -35,6 +35,7 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Initialize SunEditor
 let editor;
+let titleEditor;
 
 // Autosave variables
 let autosaveTimeout;
@@ -44,7 +45,7 @@ const AUTOSAVE_DELAY = 2000; // 2 seconds
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
-  // Initialize SunEditor
+  // Initialize main content SunEditor
   if (document.getElementById('content')) {
     editor = SUNEDITOR.create('content', {
       buttonList: [
@@ -89,7 +90,9 @@ document.addEventListener("DOMContentLoaded", () => {
       maxHeight: '800px',
       callbacks: {
         onChange: function(contents) {
+          // Update preview content
           updatePreview(contents);
+          
           // For autosave
           clearTimeout(autosaveTimeout);
           showAutosaveStatus();
@@ -106,6 +109,68 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error('Error uploading image:', error);
             alert('Error uploading image. Please try again.');
           }
+        }
+      }
+    });
+  }
+  
+  // Initialize title SunEditor with simplified toolbar
+  if (document.getElementById('titleEditor')) {
+    titleEditor = SUNEDITOR.create('titleEditor', {
+      buttonList: [
+        ['font', 'fontSize'],
+        ['bold', 'underline', 'italic'],
+        ['fontColor', 'hiliteColor'],
+        ['align']
+      ],
+      font: [
+        'Arial',
+        'Calibri',
+        'Comic Sans',
+        'Courier',
+        'Garamond',
+        'Georgia',
+        'Impact',
+        'Lucida Console',
+        'Tahoma',
+        'Times New Roman',
+        'Trebuchet MS',
+        'Verdana',
+        'Dancing Script',
+        'Great Vibes',
+        'Pacifico',
+        'Satisfy',
+        'Allura',
+        'Brush Script MT',
+        'Monsieur La Doulaise',
+        'Tangerine',
+        'Alex Brush',
+        'Pinyon Script'
+      ],
+      fontSize: [14, 16, 18, 20, 24, 28, 36, 48, 72],
+      defaultStyle: 'font-size: 24px;',
+      height: '80px',
+      width: '100%',
+      minHeight: '50px',
+      maxHeight: '120px',
+      placeholder: 'Enter post title here...',
+      toolbarContainer: '#titleEditor',
+      showPathLabel: false,
+      callbacks: {
+        onChange: function(contents) {
+          // Update hidden input with title contents for form submission
+          const titleInput = document.getElementById('title');
+          if (titleInput) {
+            titleInput.value = contents;
+          }
+          
+          // Update preview title
+          updateTitlePreview(contents);
+          
+          // For autosave
+          clearTimeout(autosaveTimeout);
+          showAutosaveStatus();
+          autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
         }
       }
     });
@@ -161,9 +226,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Update preview
-  function updatePreview() {
-    if (previewContent && contentEditor) {
-      previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
+  function updatePreview(contents) {
+    const preview = document.getElementById('preview');
+    if (!preview) return;
+    
+    const bodyElement = preview.querySelector('.preview-body');
+    if (bodyElement) {
+      bodyElement.innerHTML = contents || 'Post content preview will appear here...';
+    }
+  }
+  
+  // Update title preview
+  function updateTitlePreview(contents) {
+    const preview = document.getElementById('preview');
+    if (!preview) return;
+    
+    const titleElement = preview.querySelector('.preview-title');
+    if (titleElement) {
+      titleElement.innerHTML = contents || 'Post Title';
     }
   }
 
@@ -937,12 +1017,18 @@ function hideAutosaveStatus() {
 
 async function autosave() {
   try {
-    // Get content from editor
+    // Get content from editors
     const content = editor ? editor.getContents() : '';
-    const title = document.getElementById('title') ? document.getElementById('title').value : '';
+    const titleContent = titleEditor ? titleEditor.getContents() : '';
+    
+    // Update hidden title input
+    const titleInput = document.getElementById('title');
+    if (titleInput) {
+      titleInput.value = titleContent;
+    }
     
     // Save to localStorage
-    localStorage.setItem('draft_title', title);
+    localStorage.setItem('draft_title', titleContent);
     localStorage.setItem('draft_content', content);
     localStorage.setItem('draft_timestamp', Date.now());
     
@@ -953,9 +1039,6 @@ async function autosave() {
     setTimeout(hideAutosaveStatus, 2000);
     
     console.log('Autosaved draft');
-    
-    // Update preview
-    updatePreview(content);
   } catch (error) {
     console.error('Autosave error:', error);
   }
@@ -966,9 +1049,18 @@ const savedDraft = localStorage.getItem('postDraft');
 if (savedDraft && editor) {
   try {
     const draft = JSON.parse(savedDraft);
-    if (document.getElementById('title')) {
-      document.getElementById('title').value = draft.title || '';
+    
+    // Set title content in the title editor if it exists
+    if (titleEditor && draft.title) {
+      titleEditor.setContents(draft.title);
+      
+      // Also update the hidden input
+      const titleInput = document.getElementById('title');
+      if (titleInput) {
+        titleInput.value = draft.title;
+      }
     }
+    
     if (editor && editor.setContents) {
       editor.setContents(draft.content || '');
     }
@@ -983,39 +1075,27 @@ if (savedDraft && editor) {
   }
 }
 
-// Setup autosave listeners
-if (document.getElementById('title')) {
-  document.getElementById('title').addEventListener('input', () => {
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  });
-}
-
-// Add onChange handler to editor if it exists
-if (editor && typeof editor.onChange === 'function') {
-  editor.onChange = function(contents) {
-    updatePreview(contents);
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  };
-}
-
 // Handle form submission
 if (document.getElementById('postForm')) {
   document.getElementById('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const title = document.getElementById('title') ? document.getElementById('title').value : '';
+    // Get values from the form and editors
+    const titleContent = titleEditor ? titleEditor.getContents() : '';
     const content = editor && editor.getContents ? editor.getContents() : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
+    
+    // Update the hidden title field for form submission
+    const titleInput = document.getElementById('title');
+    if (titleInput) {
+      titleInput.value = titleContent;
+    }
 
     try {
       await addDoc(collection(db, "posts"), {
-        title,
-        content,
-        imageUrl,
+        title: titleContent,
+        content: content,
+        imageUrl: imageUrl,
         createdAt: new Date(),
       });
 

@@ -103,6 +103,48 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
+    /* Title editor styles */
+    #titleEditor {
+      margin-bottom: 20px;
+    }
+    
+    #titleEditor .sun-editor {
+      border: 1px solid #ddd !important;
+      border-radius: 4px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    }
+    
+    #titleEditor .sun-editor .se-wrapper {
+      min-height: 50px !important;
+      padding: 10px !important;
+    }
+    
+    #titleEditor .sun-editor .se-toolbar {
+      padding: 5px !important;
+      background-color: #f9f9f9 !important;
+      border-bottom: 1px solid #eee !important;
+    }
+    
+    #titleEditor .sun-editor .se-container {
+      padding: 0 !important;
+    }
+    
+    /* Make title text larger by default */
+    #titleEditor .sun-editor .se-wrapper-inner {
+      font-size: 24px !important;
+      font-weight: bold !important;
+    }
+    
+    /* Style title toolbar differently from main editor */
+    #titleEditor .sun-editor .se-btn-tray {
+      border-radius: 3px !important;
+      background-color: #f4f4f4 !important;
+    }
+    
+    #titleEditor .sun-editor .se-btn {
+      border-radius: 3px !important;
+    }
+
     .form-group {
       margin-bottom: 20px;
     }
@@ -460,7 +502,8 @@
         <form id="postForm">
           <div class="form-group">
             <label for="title">Title</label>
-            <input type="text" id="title" name="title" required />
+            <div id="titleEditor"></div>
+            <input type="hidden" id="title" name="title" />
           </div>
 
           <div class="form-group">
