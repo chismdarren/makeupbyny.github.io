@@ -43,12 +43,13 @@
 
     /* Editor styles */
     .editor-container {
-      flex: 3;
+      flex: 1;
       background: #fff;
       padding: 30px;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      max-width: 800px;
+      width: 60%;
+      max-width: 700px;
     }
     
     .form-group {
@@ -92,6 +93,9 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
     }
     
     .title-field:focus {
@@ -129,10 +133,13 @@
       border-radius: 4px !important;
       margin-bottom: 20px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper {
       min-height: 400px !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
     }
 
     .sun-editor .se-container {
@@ -359,8 +366,9 @@
     
     /* Styles for the preview sidebar */
     .preview-sidebar {
-      width: 300px;
+      width: 40%;
       flex-shrink: 0;
+      max-width: 400px;
     }
     
     .preview-sidebar .preview-container {
@@ -558,6 +566,9 @@
     
     .blog-post {
       padding: 20px;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
     }
     
     .preview-featured-image-container {
@@ -665,11 +676,13 @@
       
       .editor-container {
         width: 60%;
+        max-width: 700px;
         padding-right: 20px;
       }
       
       .preview-sidebar {
         width: 40%;
+        max-width: 400px;
         position: sticky;
         top: 20px;
         height: calc(100vh - 40px);
