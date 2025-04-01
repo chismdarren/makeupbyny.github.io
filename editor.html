@@ -515,67 +515,11 @@
 
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
-
-  <!-- Main JavaScript for handling posts, authentication, and UI -->
-  <script type="module">
-    // Import necessary Firebase modules
-    import { db } from "./firebase-config.js";  // Import Firestore database instance
-    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";  // Firestore functions
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  // Auth functions
-    import { auth } from "./firebase-config.js";  // Auth instance
-
-    // Initialize SunEditor
-    const editor = SUNEDITOR.create('content', {
-      buttonList: [
-        ['undo', 'redo'],
-        ['font', 'fontSize', 'formatBlock'],
-        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
-        ['removeFormat', 'blockquote'],
-        ['fontColor', 'hiliteColor'],
-        ['indent', 'outdent'],
-        ['align', 'horizontalRule', 'list', 'lineHeight'],
-        ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
-      ],
-      formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-      font: [
-        'Arial',
-        'Calibri',
-        'Comic Sans',
-        'Courier',
-        'Garamond',
-        'Georgia',
-        'Impact',
-        'Lucida Console',
-        'Tahoma',
-        'Times New Roman',
-        'Trebuchet MS',
-        'Verdana',
-        'Dancing Script',
-        'Great Vibes',
-        'Pacifico',
-        'Satisfy',
-        'Allura',
-        'Brush Script MT',
-        'Monsieur La Doulaise',
-        'Tangerine',
-        'Alex Brush',
-        'Pinyon Script'
-      ],
-      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
-      height: '400px',
-      width: '100%',
-    });
-
-    // Handle logout
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
-        signOut(auth).then(() => {
-          console.log("User signed out.");
-          window.location.href = "index.html";
-        });
-      });
-    }
-  </script>
+  
+  <!-- Load SunEditor script -->
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
+  
+  <!-- Main JavaScript for the editor -->
+  <script type="module" src="editor.js"></script>
 </body>
 </html>

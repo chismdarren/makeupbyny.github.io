@@ -33,9 +33,83 @@ const storage = getStorage(app, "makeupbyny-1.firebasestorage.app");
 // Hardcoded admin UID
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
+// Initialize SunEditor
+let editor;
+
+// Autosave variables
+let autosaveTimeout;
+const AUTOSAVE_DELAY = 2000; // 2 seconds
+
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
+
+  // Initialize SunEditor
+  if (document.getElementById('content')) {
+    editor = SUNEDITOR.create('content', {
+      buttonList: [
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+        ['removeFormat', 'blockquote'],
+        ['fontColor', 'hiliteColor'],
+        ['indent', 'outdent'],
+        ['align', 'horizontalRule', 'list', 'lineHeight'],
+        ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
+      ],
+      formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+      font: [
+        'Arial',
+        'Calibri',
+        'Comic Sans',
+        'Courier',
+        'Garamond',
+        'Georgia',
+        'Impact',
+        'Lucida Console',
+        'Tahoma',
+        'Times New Roman',
+        'Trebuchet MS',
+        'Verdana',
+        'Dancing Script',
+        'Great Vibes',
+        'Pacifico',
+        'Satisfy',
+        'Allura',
+        'Brush Script MT',
+        'Monsieur La Doulaise',
+        'Tangerine',
+        'Alex Brush',
+        'Pinyon Script'
+      ],
+      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+      height: '400px',
+      width: '100%',
+      minHeight: '300px',
+      maxHeight: '800px',
+      callbacks: {
+        onChange: function(contents) {
+          updatePreview(contents);
+          // For autosave
+          clearTimeout(autosaveTimeout);
+          showAutosaveStatus();
+          autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+        },
+        onImageUpload: async function(files, info, uploadHandler) {
+          try {
+            const file = files[0];
+            const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            uploadHandler(url);
+          } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Error uploading image. Please try again.');
+          }
+        }
+      }
+    });
+  }
 
   // Initialize elements
   const postForm = document.getElementById("postForm");
@@ -768,81 +842,50 @@ imageUrlInput.addEventListener('input', (e) => {
   }
 });
 
-// Initialize SunEditor with image upload handler
-const editor = SUNEDITOR.create('content', {
-  buttonList: [
-    ['undo', 'redo'],
-    ['font', 'fontSize', 'formatBlock'],
-    ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
-    ['removeFormat', 'blockquote', 'codeView'],
-    ['fontColor', 'hiliteColor'],
-    ['indent', 'outdent'],
-    ['align', 'horizontalRule', 'list', 'table'],
-    ['link', 'image', 'video', 'fullScreen'],
-  ],
-  height: '600px',
-  width: '100%',
-  minHeight: '400px',
-  maxHeight: '800px',
-  callbacks: {
-    onChange: function(contents) {
-      updatePreview(contents);
-    },
-    onImageUpload: async function(files, info, uploadHandler) {
-      try {
-        const file = files[0];
-        const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        uploadHandler(url);
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        alert('Error uploading image. Please try again.');
-      }
-    }
-  }
-});
-
 // Preview mode handling
 const previewControls = document.querySelectorAll('.preview-control-btn');
 const previewContent = document.getElementById('preview');
 
-previewControls.forEach(btn => {
-  btn.addEventListener('click', () => {
-    previewControls.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    
-    previewContent.className = 'preview-content';
-    previewContent.classList.add(`preview-${btn.dataset.view}`);
+if (previewControls && previewContent) {
+  previewControls.forEach(btn => {
+    btn.addEventListener('click', () => {
+      previewControls.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      previewContent.className = 'preview-content';
+      previewContent.classList.add(`preview-${btn.dataset.view}`);
+    });
   });
-});
+}
 
 // Enhanced preview update function
 function updatePreview(contents) {
-  const title = document.getElementById('title').value;
-  const imageUrl = document.getElementById('image').value;
-  const date = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const preview = document.getElementById('preview');
+  if (!preview) return;
 
+  // Get the editor contents
+  const content = contents || (editor ? editor.getContents() : '');
+  const title = document.getElementById('title') ? document.getElementById('title').value : '';
+  const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
+  
+  // Update preview elements
+  const titleElement = preview.querySelector('.preview-title');
+  const bodyElement = preview.querySelector('.preview-body');
+  const dateElement = preview.querySelector('.preview-date');
+  const imageContainer = preview.querySelector('.preview-featured-image-container');
+  
+  if (titleElement) titleElement.textContent = title || 'Post Title';
+  if (bodyElement) bodyElement.innerHTML = content || 'Post content preview will appear here...';
+  if (dateElement) dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  
   // Update featured image
-  const imageContainer = previewContent.querySelector('.preview-featured-image-container');
-  if (imageUrl) {
-    imageContainer.innerHTML = `<img src="${imageUrl}" alt="${title}" class="preview-featured-image">`;
-  } else {
-    imageContainer.innerHTML = '';
+  if (imageContainer) {
+    if (featuredImage) {
+      imageContainer.innerHTML = `<img src="${featuredImage}" alt="${title}" class="preview-featured-image">`;
+    } else {
+      imageContainer.innerHTML = '';
+    }
   }
-
-  // Update title
-  previewContent.querySelector('.preview-title').textContent = title;
-
-  // Update date
-  previewContent.querySelector('.preview-date').textContent = date;
-
-  // Update content
-  previewContent.querySelector('.preview-body').innerHTML = contents;
 }
 
 // Update preview when title changes
@@ -859,9 +902,7 @@ imageUrlInput.addEventListener('input', () => {
 updatePreview('');
 
 // Autosave functionality
-let autosaveTimeout;
 const autosaveStatus = document.getElementById('autosaveStatus');
-const AUTOSAVE_DELAY = 2000; // 2 seconds
 
 function showAutosaveStatus() {
   autosaveStatus.classList.add('show');
@@ -872,23 +913,28 @@ function hideAutosaveStatus() {
 }
 
 async function autosave() {
-  const title = document.getElementById('title').value;
-  const content = editor.getContents();
-  const imageUrl = document.getElementById('image').value;
-
-  if (!title && !content) return;
-
   try {
-    const draft = {
-      title,
-      content,
-      imageUrl,
-      lastSaved: new Date(),
-    };
-    localStorage.setItem('postDraft', JSON.stringify(draft));
-    hideAutosaveStatus();
+    // Get content from editor
+    const content = editor ? editor.getContents() : '';
+    const title = document.getElementById('title') ? document.getElementById('title').value : '';
+    
+    // Save to localStorage
+    localStorage.setItem('draft_title', title);
+    localStorage.setItem('draft_content', content);
+    localStorage.setItem('draft_timestamp', Date.now());
+    
+    // Show autosave status
+    showAutosaveStatus();
+    
+    // Hide status after 2 seconds
+    setTimeout(hideAutosaveStatus, 2000);
+    
+    console.log('Autosaved draft');
+    
+    // Update preview
+    updatePreview(content);
   } catch (error) {
-    console.error('Error autosaving:', error);
+    console.error('Autosave error:', error);
   }
 }
 
