@@ -9,6 +9,27 @@
   <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
   <!-- SunEditor JS -->
   <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
+  <!-- SunEditor plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/lang/en.js"></script>
+  <!-- All plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/align.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/command/blockquote.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/font.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/fontColor.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/fontSize.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/formatBlock.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/hiliteColor.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/horizontalRule.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/lineHeight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/dialog/link.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/submenu/list.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/dialog/table.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/dialog/image.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/dialog/video.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/dialog/audio.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/command/fullScreen.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/src/plugins/command/codeView.js"></script>
   <style>
     .content {
       display: flex;
@@ -451,36 +472,47 @@
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  // Auth functions
     import { auth } from "./firebase-config.js";  // Auth instance
 
-    // Initialize SunEditor
-    const editor = SUNEDITOR.create('content', {
-      buttonList: [
-        ['undo', 'redo'],
-        ['font', 'fontSize', 'formatBlock'],
-        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
-        ['removeFormat', 'blockquote', 'code'],
-        ['fontColor', 'hiliteColor'],
-        ['indent', 'outdent'],
-        ['align', 'horizontalRule', 'list', 'lineHeight'],
-        ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
-      ],
-      formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-      font: [
-        'Arial',
-        'Calibri',
-        'Comic Sans',
-        'Courier',
-        'Garamond',
-        'Georgia',
-        'Impact',
-        'Lucida Console',
-        'Tahoma',
-        'Times New Roman',
-        'Trebuchet MS',
-        'Verdana'
-      ],
-      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
-      height: '400px',
-      width: '100%',
+    // Initialize SunEditor after DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize SunEditor
+      const editor = SUNEDITOR.create(document.getElementById('content'), {
+        // Optional: Set language
+        lang: SUNEDITOR_LANG ? SUNEDITOR_LANG.en : null,
+        // Button list - removing 'code' which is causing the issue
+        buttonList: [
+          ['undo', 'redo'],
+          ['font', 'fontSize', 'formatBlock'],
+          ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+          ['removeFormat', 'blockquote'],  // Removed 'code' from here
+          ['fontColor', 'hiliteColor'],
+          ['indent', 'outdent'],
+          ['align', 'horizontalRule', 'list', 'lineHeight'],
+          ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
+        ],
+        formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        font: [
+          'Arial',
+          'Calibri',
+          'Comic Sans',
+          'Courier',
+          'Garamond',
+          'Georgia',
+          'Impact',
+          'Lucida Console',
+          'Tahoma',
+          'Times New Roman',
+          'Trebuchet MS',
+          'Verdana'
+        ],
+        fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+        height: '400px',
+        width: '100%',
+      });
+      
+      // Make editor globally accessible
+      window.editor = editor;
+      
+      console.log('SunEditor initialized');
     });
 
     // Handle logout
@@ -494,5 +526,8 @@
       });
     }
   </script>
+  
+  <!-- Load editor.js for additional editor functionality -->
+  <script type="module" src="editor.js"></script>
 </body>
 </html>
