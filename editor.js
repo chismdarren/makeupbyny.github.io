@@ -821,6 +821,9 @@ const titleEditor = SUNEDITOR.create('titleEditor', {
   defaultStyle: 'font-size: 18px; font-weight: bold;',
   placeholder: 'Enter your title here...',
   toolbarContainer: '#titleToolbar',
+  showPathLabel: false,
+  formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+  defaultBlock: 'h1',
   callbacks: {
     onChange: function(contents) {
       document.getElementById('title').value = contents.replace(/(<([^>]+)>)/gi, "");
@@ -839,6 +842,13 @@ titleEditor.onKeyDown = function(e, core) {
     return false;
   }
 };
+
+// Ensure the title editor is properly initialized
+document.addEventListener('DOMContentLoaded', function() {
+  if (titleEditor) {
+    titleEditor.setContents('');
+  }
+});
 
 // Preview mode handling
 const previewControls = document.querySelectorAll('.preview-control-btn');
