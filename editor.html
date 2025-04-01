@@ -12,98 +12,90 @@
   <!-- Google Fonts for Cursive Options -->
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Satisfy&family=Allura&family=Tangerine&family=Pinyon+Script&family=Alex+Brush&display=swap" rel="stylesheet">
   <style>
+    /* Basic layout styles */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    header {
+      background-color: white;
+      padding: 10px 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    header nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    
+    header nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    header nav a:hover {
+      color: #4dabf7;
+    }
+    
+    header nav button {
+      background-color: #f03e3e;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
     .content {
       display: flex;
-      gap: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
+      gap: 30px;
+      max-width: 1400px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    
+    footer {
+      text-align: center;
       padding: 20px;
+      background-color: #f1f3f5;
+      border-top: 1px solid #dee2e6;
+      margin-top: 50px;
     }
 
-    /* Custom font styles for the editor */
-    .sun-editor .se-wrapper[style*="font-family: 'Dancing Script'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Dancing Script"] *,
-    .preview-body [style*="font-family: 'Dancing Script'"],
-    .preview-body [style*="font-family: Dancing Script"] {
-      font-family: 'Dancing Script', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Great Vibes'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Great Vibes"] *,
-    .preview-body [style*="font-family: 'Great Vibes'"],
-    .preview-body [style*="font-family: Great Vibes"] {
-      font-family: 'Great Vibes', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Pacifico'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Pacifico"] *,
-    .preview-body [style*="font-family: 'Pacifico'"],
-    .preview-body [style*="font-family: Pacifico"] {
-      font-family: 'Pacifico', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Satisfy'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Satisfy"] *,
-    .preview-body [style*="font-family: 'Satisfy'"],
-    .preview-body [style*="font-family: Satisfy"] {
-      font-family: 'Satisfy', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Allura'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Allura"] *,
-    .preview-body [style*="font-family: 'Allura'"],
-    .preview-body [style*="font-family: Allura"] {
-      font-family: 'Allura', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Brush Script MT'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Brush Script MT"] *,
-    .preview-body [style*="font-family: 'Brush Script MT'"],
-    .preview-body [style*="font-family: Brush Script MT"] {
-      font-family: 'Brush Script MT', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Tangerine'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Tangerine"] *,
-    .preview-body [style*="font-family: 'Tangerine'"],
-    .preview-body [style*="font-family: Tangerine"] {
-      font-family: 'Tangerine', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Alex Brush'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Alex Brush"] *,
-    .preview-body [style*="font-family: 'Alex Brush'"],
-    .preview-body [style*="font-family: Alex Brush"] {
-      font-family: 'Alex Brush', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Pinyon Script'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Pinyon Script"] *,
-    .preview-body [style*="font-family: 'Pinyon Script'"],
-    .preview-body [style*="font-family: Pinyon Script"] {
-      font-family: 'Pinyon Script', cursive !important;
-    }
-    
-    .sun-editor .se-wrapper[style*="font-family: 'Monsieur La Doulaise'"] *,
-    .sun-editor .se-wrapper[style*="font-family: Monsieur La Doulaise"] *,
-    .preview-body [style*="font-family: 'Monsieur La Doulaise'"],
-    .preview-body [style*="font-family: Monsieur La Doulaise"] {
-      font-family: 'Monsieur La Doulaise', cursive !important;
-    }
-
-    main {
-      flex: 1;
-      max-width: 800px;
-    }
-
+    /* Editor styles */
     .editor-container {
+      flex: 3;
       background: #fff;
-      padding: 20px;
+      padding: 30px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-
-    /* Title field styles */
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #495057;
+    }
+    
     .title-controls {
       display: flex;
       gap: 10px;
@@ -111,25 +103,33 @@
     }
     
     .title-font-select {
-      padding: 5px 10px;
-      border: 1px solid #ddd;
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
       border-radius: 4px;
       background-color: #fff;
       font-size: 14px;
       cursor: pointer;
+      color: #495057;
     }
     
     .title-field {
-      border: 1px solid #ddd;
+      border: 1px solid #ced4da;
       border-radius: 4px;
-      padding: 10px;
+      padding: 15px;
       font-size: 24px;
       font-weight: bold;
       min-height: 32px;
       margin-bottom: 20px;
       width: 100%;
+      box-sizing: border-box;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .title-field:focus {
+      border-color: #4dabf7;
+      box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
     }
 
     .title-field:empty:before {
@@ -176,6 +176,8 @@
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 20px;
     }
 
     .preview-header {
@@ -183,6 +185,14 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .preview-header h2 {
+      margin: 0;
+      font-size: 1.5em;
+      color: #333;
     }
 
     .preview-controls {
@@ -206,11 +216,16 @@
     }
 
     .preview-content {
-      border: 1px solid #ddd;
+      border: 1px solid #eee;
       padding: 20px;
       border-radius: 4px;
       min-height: 200px;
       background: #fff;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
 
     .preview-featured-image {
@@ -234,11 +249,17 @@
       margin-bottom: 20px;
       color: #333;
       line-height: 1.3;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      max-width: 100%;
     }
 
     .preview-body {
       line-height: 1.6;
       color: #333;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      max-width: 100%;
     }
 
     .preview-body img {
@@ -317,16 +338,45 @@
     .preview-mobile {
       max-width: 375px;
       margin: 0 auto;
+      font-size: 0.9em;
+      border: 2px solid #eee;
+      border-radius: 20px;
+      padding: 15px;
+      background: #fff;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      position: relative;
+    }
+    
+    .preview-mobile:before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 5px;
+      background: #eee;
+      border-radius: 10px;
     }
 
     .preview-desktop {
       max-width: 800px;
       margin: 0 auto;
+      border: 1px solid #eee;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      border-radius: 8px;
+      padding: 20px;
+      background: #fff;
     }
 
     .preview-tablet {
       max-width: 768px;
       margin: 0 auto;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
     }
 
     .about-me {
@@ -427,6 +477,19 @@
         width: 100%;
         margin-top: 20px;
       }
+      
+      .editor-container, .preview-sidebar {
+        padding: 15px;
+      }
+      
+      .title-field {
+        font-size: 20px;
+        padding: 10px;
+      }
+      
+      .publish-btn {
+        width: 100%;
+      }
     }
 
     .image-upload-container {
@@ -473,6 +536,248 @@
     .autosave-status.show {
       opacity: 1;
     }
+
+    /* Preview Styles */
+    .preview-sidebar {
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .preview-container {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .preview-header {
+      padding: 15px;
+      background-color: #f1f3f5;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .preview-header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #495057;
+    }
+    
+    .preview-controls {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .preview-control-btn {
+      padding: 6px 12px;
+      background-color: #e9ecef;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .preview-control-btn.active {
+      background-color: #4dabf7;
+      color: white;
+      border-color: #339af0;
+    }
+    
+    .blog-post {
+      padding: 20px;
+    }
+    
+    .preview-featured-image-container {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      overflow: hidden;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .preview-featured-image-container img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+    
+    .preview-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #212529;
+      line-height: 1.3;
+    }
+    
+    .preview-meta {
+      font-size: 14px;
+      color: #6c757d;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    
+    .preview-body {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #343a40;
+    }
+    
+    .preview-body img {
+      max-width: 100%;
+      height: auto;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .preview-body p {
+      margin-bottom: 20px;
+    }
+    
+    .preview-body h2 {
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 24px;
+    }
+    
+    .preview-body h3 {
+      margin-top: 25px;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+    
+    /* Preview Device Styles */
+    .preview-desktop {
+      max-width: 100%;
+      transition: max-width 0.3s ease;
+    }
+    
+    .preview-tablet {
+      max-width: 768px;
+      margin: 0 auto;
+      border-left: 10px solid #343a40;
+      border-right: 10px solid #343a40;
+      transition: max-width 0.3s ease;
+    }
+    
+    .preview-mobile {
+      max-width: 360px;
+      margin: 0 auto;
+      border-left: 12px solid #343a40;
+      border-right: 12px solid #343a40;
+      position: relative;
+      transition: max-width 0.3s ease;
+    }
+    
+    .preview-mobile::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 10px;
+      background-color: #343a40;
+      border-radius: 10px 10px 0 0;
+    }
+    
+    /* Responsive layout for editor and preview */
+    @media (min-width: 992px) {
+      main {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      
+      .editor-container {
+        width: 60%;
+        padding-right: 20px;
+      }
+      
+      .preview-sidebar {
+        width: 40%;
+        position: sticky;
+        top: 20px;
+        height: calc(100vh - 40px);
+        overflow-y: auto;
+      }
+    }
+
+    /* Custom font styles for the editor */
+    .sun-editor .se-wrapper[style*="font-family: 'Dancing Script'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Dancing Script"] *,
+    .preview-body [style*="font-family: 'Dancing Script'"],
+    .preview-body [style*="font-family: Dancing Script"] {
+      font-family: 'Dancing Script', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Great Vibes'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Great Vibes"] *,
+    .preview-body [style*="font-family: 'Great Vibes'"],
+    .preview-body [style*="font-family: Great Vibes"] {
+      font-family: 'Great Vibes', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Pacifico'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Pacifico"] *,
+    .preview-body [style*="font-family: 'Pacifico'"],
+    .preview-body [style*="font-family: Pacifico"] {
+      font-family: 'Pacifico', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Satisfy'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Satisfy"] *,
+    .preview-body [style*="font-family: 'Satisfy'"],
+    .preview-body [style*="font-family: Satisfy"] {
+      font-family: 'Satisfy', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Allura'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Allura"] *,
+    .preview-body [style*="font-family: 'Allura'"],
+    .preview-body [style*="font-family: Allura"] {
+      font-family: 'Allura', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Brush Script MT'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Brush Script MT"] *,
+    .preview-body [style*="font-family: 'Brush Script MT'"],
+    .preview-body [style*="font-family: Brush Script MT"] {
+      font-family: 'Brush Script MT', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Tangerine'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Tangerine"] *,
+    .preview-body [style*="font-family: 'Tangerine'"],
+    .preview-body [style*="font-family: Tangerine"] {
+      font-family: 'Tangerine', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Alex Brush'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Alex Brush"] *,
+    .preview-body [style*="font-family: 'Alex Brush'"],
+    .preview-body [style*="font-family: Alex Brush"] {
+      font-family: 'Alex Brush', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Pinyon Script'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Pinyon Script"] *,
+    .preview-body [style*="font-family: 'Pinyon Script'"],
+    .preview-body [style*="font-family: Pinyon Script"] {
+      font-family: 'Pinyon Script', cursive !important;
+    }
+    
+    .sun-editor .se-wrapper[style*="font-family: 'Monsieur La Doulaise'"] *,
+    .sun-editor .se-wrapper[style*="font-family: Monsieur La Doulaise"] *,
+    .preview-body [style*="font-family: 'Monsieur La Doulaise'"],
+    .preview-body [style*="font-family: Monsieur La Doulaise"] {
+      font-family: 'Monsieur La Doulaise', cursive !important;
+    }
   </style>
 </head>
 <body>
@@ -490,58 +795,56 @@
   </header>
 
   <div class="content">
-    <main>
-      <div class="editor-container">
-        <form id="postForm">
-          <div class="form-group">
-            <label for="title">Title</label>
-            <div class="title-controls">
-              <select id="titleFont" class="title-font-select">
-                <option value="Arial">Arial</option>
-                <option value="Calibri">Calibri</option>
-                <option value="Comic Sans">Comic Sans</option>
-                <option value="Courier">Courier</option>
-                <option value="Garamond">Garamond</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Impact">Impact</option>
-                <option value="Lucida Console">Lucida Console</option>
-                <option value="Tahoma">Tahoma</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Verdana">Verdana</option>
-                <option value="Dancing Script">Dancing Script</option>
-                <option value="Great Vibes">Great Vibes</option>
-                <option value="Pacifico">Pacifico</option>
-                <option value="Satisfy">Satisfy</option>
-                <option value="Allura">Allura</option>
-                <option value="Brush Script MT">Brush Script MT</option>
-                <option value="Monsieur La Doulaise">Monsieur La Doulaise</option>
-                <option value="Tangerine">Tangerine</option>
-                <option value="Alex Brush">Alex Brush</option>
-                <option value="Pinyon Script">Pinyon Script</option>
-              </select>
-            </div>
-            <div id="titleField" contenteditable="true" class="title-field" placeholder="Enter post title here..."></div>
-            <input type="hidden" id="title" name="title" />
+    <main class="editor-container">
+      <form id="postForm">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <div class="title-controls">
+            <select id="titleFont" class="title-font-select">
+              <option value="Arial">Arial</option>
+              <option value="Calibri">Calibri</option>
+              <option value="Comic Sans">Comic Sans</option>
+              <option value="Courier">Courier</option>
+              <option value="Garamond">Garamond</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Impact">Impact</option>
+              <option value="Lucida Console">Lucida Console</option>
+              <option value="Tahoma">Tahoma</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Dancing Script">Dancing Script</option>
+              <option value="Great Vibes">Great Vibes</option>
+              <option value="Pacifico">Pacifico</option>
+              <option value="Satisfy">Satisfy</option>
+              <option value="Allura">Allura</option>
+              <option value="Brush Script MT">Brush Script MT</option>
+              <option value="Monsieur La Doulaise">Monsieur La Doulaise</option>
+              <option value="Tangerine">Tangerine</option>
+              <option value="Alex Brush">Alex Brush</option>
+              <option value="Pinyon Script">Pinyon Script</option>
+            </select>
           </div>
+          <div id="titleField" contenteditable="true" class="title-field" placeholder="Enter post title here..."></div>
+          <input type="hidden" id="title" name="title" />
+        </div>
 
-          <div class="form-group">
-            <label for="content">Content</label>
-            <textarea id="content" name="content"></textarea>
+        <div class="form-group">
+          <label for="content">Content</label>
+          <textarea id="content" name="content"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Featured Image</label>
+          <div class="image-upload-container">
+            <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+            <button type="button" id="uploadBtn" class="upload-btn">Choose Image</button>
+            <input type="text" id="image" name="image" placeholder="Or enter image URL" />
           </div>
+          <div id="imagePreview" class="image-preview"></div>
+        </div>
 
-          <div class="form-group">
-            <label for="image">Featured Image</label>
-            <div class="image-upload-container">
-              <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-              <button type="button" id="uploadBtn" class="upload-btn">Choose Image</button>
-              <input type="text" id="image" name="image" placeholder="Or enter image URL" />
-            </div>
-            <div id="imagePreview" class="image-preview"></div>
-          </div>
-
-          <button type="submit">Publish Post</button>
-        </form>
-      </div>
+        <button type="submit" class="publish-btn">Publish Post</button>
+      </form>
     </main>
 
     <!-- Live Preview (moved from main content to sidebar position) -->
@@ -556,13 +859,15 @@
           </div>
         </div>
         <div id="preview" class="preview-content preview-desktop">
-          <div class="preview-featured-image-container"></div>
-          <h1 class="preview-title"></h1>
-          <div class="preview-meta">
-            <span class="preview-date"></span>
-            <span class="preview-author">By Ny</span>
-          </div>
-          <div class="preview-body"></div>
+          <article class="blog-post">
+            <div class="preview-featured-image-container"></div>
+            <h1 class="preview-title"></h1>
+            <div class="preview-meta">
+              <span class="preview-date"></span>
+              <span class="preview-author">By Ny</span>
+            </div>
+            <div class="preview-body"></div>
+          </article>
         </div>
       </div>
     </aside>
@@ -582,5 +887,43 @@
   
   <!-- Main JavaScript for the editor -->
   <script type="module" src="editor.js"></script>
+
+  <!-- Add this JavaScript for preview controls at the end of the file before the closing body tag -->
+  <script>
+    // ... existing code ...
+    
+    // Preview device switching
+    document.addEventListener('DOMContentLoaded', function() {
+      const previewElement = document.getElementById('preview');
+      const controlBtns = document.querySelectorAll('.preview-control-btn');
+      
+      controlBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Remove active class from all buttons
+          controlBtns.forEach(b => b.classList.remove('active'));
+          
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          // Get the view type from data attribute
+          const viewType = this.getAttribute('data-view');
+          
+          // Remove all preview type classes
+          previewElement.classList.remove('preview-desktop', 'preview-tablet', 'preview-mobile');
+          
+          // Add the selected view type class
+          previewElement.classList.add(`preview-${viewType}`);
+        });
+      });
+      
+      // Set current date in preview
+      const previewDate = document.querySelector('.preview-date');
+      if (previewDate) {
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        previewDate.textContent = now.toLocaleDateString('en-US', options);
+      }
+    });
+  </script>
 </body>
 </html>

@@ -98,7 +98,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const preview = document.getElementById('preview');
           if (preview) {
             // Update content
-            const bodyElement = preview.querySelector('.preview-body');
+            const article = preview.querySelector('.blog-post');
+            if (!article) return;
+            
+            const bodyElement = article.querySelector('.preview-body');
             if (bodyElement) {
               bodyElement.innerHTML = contents || 'Post content preview will appear here...';
               console.log("Updated preview body with new content");
@@ -106,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Also update other elements to keep everything in sync
             // Update title
-            const titleElement = preview.querySelector('.preview-title');
+            const titleElement = article.querySelector('.preview-title');
             const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
             const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
             
@@ -118,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             // Update featured image
-            const imageContainer = preview.querySelector('.preview-featured-image-container');
+            const imageContainer = article.querySelector('.preview-featured-image-container');
             const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
             
             if (imageContainer) {
@@ -182,7 +185,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Update the preview with the latest content
         const preview = document.getElementById('preview');
         if (preview) {
-          const bodyElement = preview.querySelector('.preview-body');
+          const article = preview.querySelector('.blog-post');
+          if (!article) return;
+          
+          const bodyElement = article.querySelector('.preview-body');
           if (bodyElement) {
             bodyElement.innerHTML = contents || 'Post content preview will appear here...';
             console.log("Preview updated from custom handler");
@@ -975,6 +981,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }, 1000); // Wait a bit longer for SunEditor to fully initialize
     }
+    
+    // Initialize preview device switching
+    const previewElement = document.getElementById('preview');
+    const controlBtns = document.querySelectorAll('.preview-control-btn');
+    
+    if (previewElement && controlBtns.length > 0) {
+      console.log("Initializing preview device switching");
+      controlBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Remove active class from all buttons
+          controlBtns.forEach(b => b.classList.remove('active'));
+          
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          // Get the view type from data attribute
+          const viewType = this.getAttribute('data-view');
+          
+          // Remove all preview type classes
+          previewElement.classList.remove('preview-desktop', 'preview-tablet', 'preview-mobile');
+          
+          // Add the selected view type class
+          previewElement.classList.add(`preview-${viewType}`);
+          
+          console.log(`Switched preview to ${viewType} view`);
+        });
+      });
+      
+      // Set current date in preview if not set
+      const article = previewElement.querySelector('.blog-post');
+      if (article) {
+        const previewDate = article.querySelector('.preview-date');
+        if (previewDate && !previewDate.textContent) {
+          const now = new Date();
+          const options = { year: 'numeric', month: 'long', day: 'numeric' };
+          previewDate.textContent = now.toLocaleDateString('en-US', options);
+        }
+      }
+    }
   }, 500);
 });
 
@@ -1208,10 +1253,13 @@ function updatePreview(contents) {
   const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
   
   // Update preview elements
-  const titleElement = preview.querySelector('.preview-title');
-  const bodyElement = preview.querySelector('.preview-body');
-  const dateElement = preview.querySelector('.preview-date');
-  const imageContainer = preview.querySelector('.preview-featured-image-container');
+  const article = preview.querySelector('.blog-post');
+  if (!article) return;
+  
+  const titleElement = article.querySelector('.preview-title');
+  const bodyElement = article.querySelector('.preview-body');
+  const dateElement = article.querySelector('.preview-date');
+  const imageContainer = article.querySelector('.preview-featured-image-container');
   
   if (titleElement) {
     titleElement.innerHTML = titleContent || 'Post Title';
@@ -1224,7 +1272,7 @@ function updatePreview(contents) {
     bodyElement.innerHTML = content || 'Post content preview will appear here...';
   }
   
-  if (dateElement) {
+  if (dateElement && !dateElement.textContent) {
     dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
   
@@ -1236,6 +1284,8 @@ function updatePreview(contents) {
       imageContainer.innerHTML = '';
     }
   }
+  
+  console.log("Preview updated with current content");
 }
 
 // Initialize preview when page loads
