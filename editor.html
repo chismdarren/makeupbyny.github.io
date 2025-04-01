@@ -9,9 +9,6 @@
   <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
   <!-- SunEditor JS -->
   <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
-  <script>
-    console.log('SunEditor loaded:', typeof SUNEDITOR !== 'undefined');
-  </script>
   <style>
     .content {
       display: flex;
@@ -454,6 +451,38 @@
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  // Auth functions
     import { auth } from "./firebase-config.js";  // Auth instance
 
+    // Initialize SunEditor
+    const editor = SUNEDITOR.create('content', {
+      buttonList: [
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+        ['removeFormat', 'blockquote', 'code'],
+        ['fontColor', 'hiliteColor'],
+        ['indent', 'outdent'],
+        ['align', 'horizontalRule', 'list', 'lineHeight'],
+        ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
+      ],
+      formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+      font: [
+        'Arial',
+        'Calibri',
+        'Comic Sans',
+        'Courier',
+        'Garamond',
+        'Georgia',
+        'Impact',
+        'Lucida Console',
+        'Tahoma',
+        'Times New Roman',
+        'Trebuchet MS',
+        'Verdana'
+      ],
+      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+      height: '400px',
+      width: '100%',
+    });
+
     // Handle logout
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
@@ -464,18 +493,6 @@
         });
       });
     }
-  </script>
-
-  <!-- Editor JavaScript -->
-  <script type="module">
-    // Import necessary Firebase modules
-    import { db } from "./firebase-config.js";
-    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
-    import { storage } from "./firebase-config.js";
-    
-    // Import editor.js
-    import "./editor.js";
   </script>
 </body>
 </html>

@@ -607,228 +607,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load user's posts
   loadUserPosts();
-
-  console.log("DOM fully loaded. Initializing SunEditor...");
-
-  // Initialize SunEditor with image upload handler
-  const editor = SUNEDITOR.create('content', {
-    buttonList: [
-      ['undo', 'redo'],
-      ['font', 'fontSize', 'formatBlock'],
-      ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
-      ['removeFormat', 'blockquote', 'codeView'],
-      ['fontColor', 'hiliteColor'],
-      ['indent', 'outdent'],
-      ['align', 'horizontalRule', 'list', 'table'],
-      ['link', 'image', 'video', 'fullScreen'],
-    ],
-    height: '600px',
-    width: '100%',
-    minHeight: '400px',
-    maxHeight: '800px',
-    callbacks: {
-      onChange: function(contents) {
-        updatePreview(contents);
-      },
-      onImageUpload: async function(files, info, uploadHandler) {
-        try {
-          const file = files[0];
-          const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-          await uploadBytes(storageRef, file);
-          const url = await getDownloadURL(storageRef);
-          uploadHandler(url);
-        } catch (error) {
-          console.error('Error uploading image:', error);
-          alert('Error uploading image. Please try again.');
-        }
-      }
-    }
-  });
-
-  // Preview mode handling
-  const previewControls = document.querySelectorAll('.preview-control-btn');
-  const previewContent = document.getElementById('preview');
-
-  previewControls.forEach(btn => {
-    btn.addEventListener('click', () => {
-      previewControls.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      previewContent.className = 'preview-content';
-      previewContent.classList.add(`preview-${btn.dataset.view}`);
-    });
-  });
-
-  // Enhanced preview update function
-  function updatePreview(contents) {
-    const title = document.getElementById('title').value;
-    const imageUrl = document.getElementById('image').value;
-    const date = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-
-    // Update featured image
-    const imageContainer = previewContent.querySelector('.preview-featured-image-container');
-    if (imageUrl) {
-      imageContainer.innerHTML = `<img src="${imageUrl}" alt="${title}" class="preview-featured-image">`;
-    } else {
-      imageContainer.innerHTML = '';
-    }
-
-    // Update title
-    previewContent.querySelector('.preview-title').textContent = title;
-
-    // Update date
-    previewContent.querySelector('.preview-date').textContent = date;
-
-    // Update content
-    previewContent.querySelector('.preview-body').innerHTML = contents;
-  }
-
-  // Update preview when title changes
-  document.getElementById('title').addEventListener('input', () => {
-    updatePreview(editor.getContents());
-  });
-
-  // Update preview when image changes
-  const imageUrlInput = document.getElementById('image');
-  if (imageUrlInput) {
-    imageUrlInput.addEventListener('input', () => {
-      updatePreview(editor.getContents());
-    });
-  }
-
-  // Initialize preview with empty content
-  updatePreview('');
-
-  // Autosave functionality
-  let autosaveTimeout;
-  const autosaveStatus = document.getElementById('autosaveStatus');
-  const AUTOSAVE_DELAY = 2000; // 2 seconds
-
-  function showAutosaveStatus() {
-    autosaveStatus.classList.add('show');
-  }
-
-  function hideAutosaveStatus() {
-    autosaveStatus.classList.remove('show');
-  }
-
-  async function autosave() {
-    const title = document.getElementById('title').value;
-    const content = editor.getContents();
-    const imageUrl = document.getElementById('image').value;
-
-    if (!title && !content) return;
-
-    try {
-      const draft = {
-        title,
-        content,
-        imageUrl,
-        lastSaved: new Date(),
-      };
-      localStorage.setItem('postDraft', JSON.stringify(draft));
-      hideAutosaveStatus();
-    } catch (error) {
-      console.error('Error autosaving:', error);
-    }
-  }
-
-  // Load draft if exists
-  const savedDraft = localStorage.getItem('postDraft');
-  if (savedDraft) {
-    const draft = JSON.parse(savedDraft);
-    document.getElementById('title').value = draft.title || '';
-    editor.setContents(draft.content || '');
-    document.getElementById('image').value = draft.imageUrl || '';
-    if (draft.imageUrl) {
-      document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
-    }
-  }
-
-  // Setup autosave listeners
-  document.getElementById('title').addEventListener('input', () => {
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  });
-
-  editor.onChange = function(contents) {
-    updatePreview(contents);
-    clearTimeout(autosaveTimeout);
-    showAutosaveStatus();
-    autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-  };
-
-  // Handle form submission
-  const postForm = document.getElementById('postForm');
-  if (postForm) {
-    postForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const title = document.getElementById('title').value;
-      const content = editor.getContents();
-      const imageUrl = document.getElementById('image').value;
-
-      try {
-        await addDoc(collection(db, "posts"), {
-          title,
-          content,
-          imageUrl,
-          createdAt: new Date(),
-        });
-
-        localStorage.removeItem('postDraft'); // Clear draft after successful submission
-        alert('Post published successfully!');
-        window.location.href = 'admin-dashboard.html';
-      } catch (error) {
-        console.error('Error publishing post:', error);
-        alert('Error publishing post. Please try again.');
-      }
-    });
-  }
-
-  // Image upload handling
-  const imageUpload = document.getElementById('imageUpload');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const imagePreview = document.getElementById('imagePreview');
-
-  if (uploadBtn) {
-    uploadBtn.addEventListener('click', () => imageUpload.click());
-  }
-
-  if (imageUpload) {
-    imageUpload.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      try {
-        const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        imageUrlInput.value = url;
-        imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        alert('Error uploading image. Please try again.');
-      }
-    });
-  }
-
-  // Update image preview when URL is entered
-  if (imageUrlInput) {
-    imageUrlInput.addEventListener('input', (e) => {
-      const url = e.target.value;
-      if (url) {
-        imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
-      } else {
-        imagePreview.innerHTML = '';
-      }
-    });
-  }
 });
 
 // Function to load and display user's posts
@@ -955,6 +733,215 @@ async function deletePost(postId) {
     alert('Error deleting post. Please try again later.');
   }
 }
+
+// Image upload handling
+const imageUpload = document.getElementById('imageUpload');
+const uploadBtn = document.getElementById('uploadBtn');
+const imagePreview = document.getElementById('imagePreview');
+const imageUrlInput = document.getElementById('image');
+
+uploadBtn.addEventListener('click', () => imageUpload.click());
+
+imageUpload.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+    imageUrlInput.value = url;
+    imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    alert('Error uploading image. Please try again.');
+  }
+});
+
+// Update image preview when URL is entered
+imageUrlInput.addEventListener('input', (e) => {
+  const url = e.target.value;
+  if (url) {
+    imagePreview.innerHTML = `<img src="${url}" alt="Preview">`;
+  } else {
+    imagePreview.innerHTML = '';
+  }
+});
+
+// Initialize SunEditor with image upload handler
+const editor = SUNEDITOR.create('content', {
+  buttonList: [
+    ['undo', 'redo'],
+    ['font', 'fontSize', 'formatBlock'],
+    ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+    ['removeFormat', 'blockquote', 'codeView'],
+    ['fontColor', 'hiliteColor'],
+    ['indent', 'outdent'],
+    ['align', 'horizontalRule', 'list', 'table'],
+    ['link', 'image', 'video', 'fullScreen'],
+  ],
+  height: '600px',
+  width: '100%',
+  minHeight: '400px',
+  maxHeight: '800px',
+  callbacks: {
+    onChange: function(contents) {
+      updatePreview(contents);
+    },
+    onImageUpload: async function(files, info, uploadHandler) {
+      try {
+        const file = files[0];
+        const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        uploadHandler(url);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert('Error uploading image. Please try again.');
+      }
+    }
+  }
+});
+
+// Preview mode handling
+const previewControls = document.querySelectorAll('.preview-control-btn');
+const previewContent = document.getElementById('preview');
+
+previewControls.forEach(btn => {
+  btn.addEventListener('click', () => {
+    previewControls.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    previewContent.className = 'preview-content';
+    previewContent.classList.add(`preview-${btn.dataset.view}`);
+  });
+});
+
+// Enhanced preview update function
+function updatePreview(contents) {
+  const title = document.getElementById('title').value;
+  const imageUrl = document.getElementById('image').value;
+  const date = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Update featured image
+  const imageContainer = previewContent.querySelector('.preview-featured-image-container');
+  if (imageUrl) {
+    imageContainer.innerHTML = `<img src="${imageUrl}" alt="${title}" class="preview-featured-image">`;
+  } else {
+    imageContainer.innerHTML = '';
+  }
+
+  // Update title
+  previewContent.querySelector('.preview-title').textContent = title;
+
+  // Update date
+  previewContent.querySelector('.preview-date').textContent = date;
+
+  // Update content
+  previewContent.querySelector('.preview-body').innerHTML = contents;
+}
+
+// Update preview when title changes
+document.getElementById('title').addEventListener('input', () => {
+  updatePreview(editor.getContents());
+});
+
+// Update preview when image changes
+imageUrlInput.addEventListener('input', () => {
+  updatePreview(editor.getContents());
+});
+
+// Initialize preview with empty content
+updatePreview('');
+
+// Autosave functionality
+let autosaveTimeout;
+const autosaveStatus = document.getElementById('autosaveStatus');
+const AUTOSAVE_DELAY = 2000; // 2 seconds
+
+function showAutosaveStatus() {
+  autosaveStatus.classList.add('show');
+}
+
+function hideAutosaveStatus() {
+  autosaveStatus.classList.remove('show');
+}
+
+async function autosave() {
+  const title = document.getElementById('title').value;
+  const content = editor.getContents();
+  const imageUrl = document.getElementById('image').value;
+
+  if (!title && !content) return;
+
+  try {
+    const draft = {
+      title,
+      content,
+      imageUrl,
+      lastSaved: new Date(),
+    };
+    localStorage.setItem('postDraft', JSON.stringify(draft));
+    hideAutosaveStatus();
+  } catch (error) {
+    console.error('Error autosaving:', error);
+  }
+}
+
+// Load draft if exists
+const savedDraft = localStorage.getItem('postDraft');
+if (savedDraft) {
+  const draft = JSON.parse(savedDraft);
+  document.getElementById('title').value = draft.title || '';
+  editor.setContents(draft.content || '');
+  document.getElementById('image').value = draft.imageUrl || '';
+  if (draft.imageUrl) {
+    document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
+  }
+}
+
+// Setup autosave listeners
+document.getElementById('title').addEventListener('input', () => {
+  clearTimeout(autosaveTimeout);
+  showAutosaveStatus();
+  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+});
+
+editor.onChange = function(contents) {
+  updatePreview(contents);
+  clearTimeout(autosaveTimeout);
+  showAutosaveStatus();
+  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+};
+
+// Handle form submission
+document.getElementById('postForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById('title').value;
+  const content = editor.getContents();
+  const imageUrl = document.getElementById('image').value;
+
+  try {
+    await addDoc(collection(db, "posts"), {
+      title,
+      content,
+      imageUrl,
+      createdAt: new Date(),
+    });
+
+    localStorage.removeItem('postDraft'); // Clear draft after successful submission
+    alert('Post published successfully!');
+    window.location.href = 'admin-dashboard.html';
+  } catch (error) {
+    console.error('Error publishing post:', error);
+    alert('Error publishing post. Please try again.');
+  }
+});
 
 // Load recent posts
 async function loadRecentPosts() {
