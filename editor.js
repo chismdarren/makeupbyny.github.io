@@ -87,8 +87,13 @@ document.addEventListener("DOMContentLoaded", () => {
       width: '100%',
       minHeight: '300px',
       maxHeight: '800px',
+      callBackSave: function(contents) {
+        updatePreview(contents);
+        return contents;
+      },
       callbacks: {
         onChange: function(contents) {
+          console.log("SunEditor content changed");
           // Update preview content directly with the HTML content from SunEditor
           const preview = document.getElementById('preview');
           if (preview) {
@@ -96,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const bodyElement = preview.querySelector('.preview-body');
             if (bodyElement) {
               bodyElement.innerHTML = contents || 'Post content preview will appear here...';
+              console.log("Updated preview body with new content");
             }
             
             // Also update other elements to keep everything in sync
@@ -147,10 +153,64 @@ document.addEventListener("DOMContentLoaded", () => {
         onLoad: function() {
           console.log("SunEditor loaded");
           // Initial preview update
-          setTimeout(() => updatePreview(this.getContents()), 500);
+          const initialContent = this.getContents();
+          console.log("Initial content:", initialContent);
+          setTimeout(() => {
+            // Directly call the onChange handler with the initial content
+            this.onChange(initialContent);
+            updatePreview(initialContent);
+          }, 500);
         }
       }
     });
+    
+    // After initialization, explicitly monitor the editor for changes
+    if (editor) {
+      console.log("Setting up additional event handler on editor");
+      
+      // Store the original onChange handler
+      const originalOnChange = editor.onChange;
+      
+      // Override with our custom handler that ensures the preview updates
+      editor.onChange = function(contents, core) {
+        console.log("Custom onChange handler called");
+        // Call the original handler if it exists
+        if (typeof originalOnChange === 'function') {
+          originalOnChange.call(this, contents, core);
+        }
+        
+        // Update the preview with the latest content
+        const preview = document.getElementById('preview');
+        if (preview) {
+          const bodyElement = preview.querySelector('.preview-body');
+          if (bodyElement) {
+            bodyElement.innerHTML = contents || 'Post content preview will appear here...';
+            console.log("Preview updated from custom handler");
+          }
+        }
+        
+        // Trigger autosave
+        clearTimeout(autosaveTimeout);
+        showAutosaveStatus();
+        autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+      };
+      
+      // Add direct event listener to the editor's internal elements
+      const editorElement = document.querySelector('.sun-editor-editable');
+      if (editorElement) {
+        editorElement.addEventListener('input', function() {
+          console.log("Editor content input event detected");
+          const currentContent = editor.getContents();
+          updatePreview(currentContent);
+        });
+        
+        editorElement.addEventListener('keyup', function() {
+          console.log("Editor keyup event detected");
+          const currentContent = editor.getContents();
+          updatePreview(currentContent);
+        });
+      }
+    }
   }
   
   // Initialize title field event listeners
@@ -881,6 +941,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // Call this function after DOM is loaded
   setTimeout(() => {
     loadSavedDraft();
+    
+    // Make sure editor events are properly connected after everything is loaded
+    if (editor) {
+      console.log("Ensuring editor events are connected");
+      
+      // Force an update with the current content
+      const currentContent = editor.getContents();
+      updatePreview(currentContent);
+      
+      // Try to find and attach to the editor's content area if not already attached
+      setTimeout(() => {
+        const editorElements = document.querySelectorAll('.sun-editor-editable');
+        if (editorElements.length > 0) {
+          console.log("Found editor elements, attaching events");
+          editorElements.forEach(editorElement => {
+            // Check if we've already attached events to avoid duplicates
+            if (!editorElement.hasAttribute('data-events-attached')) {
+              editorElement.setAttribute('data-events-attached', 'true');
+              
+              editorElement.addEventListener('input', function() {
+                console.log("Late-bound input event fired");
+                const currentContent = editor.getContents();
+                updatePreview(currentContent);
+                
+                // Trigger autosave
+                clearTimeout(autosaveTimeout);
+                showAutosaveStatus();
+                autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+              });
+            }
+          });
+        }
+      }, 1000); // Wait a bit longer for SunEditor to fully initialize
+    }
   }, 500);
 });
 
