@@ -118,8 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById('titleEditor')) {
     titleEditor = SUNEDITOR.create('titleEditor', {
       buttonList: [
-        ['font', 'fontSize'],
-        ['bold', 'underline', 'italic'],
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
         ['fontColor', 'hiliteColor'],
         ['align']
       ],
@@ -149,12 +150,11 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
       fontSize: [14, 16, 18, 20, 24, 28, 36, 48, 72],
       defaultStyle: 'font-size: 24px;',
-      height: '80px',
+      height: '50px',
       width: '100%',
       minHeight: '50px',
-      maxHeight: '120px',
+      maxHeight: '100px',
       placeholder: 'Enter post title here...',
-      toolbarContainer: '#titleEditor',
       showPathLabel: false,
       callbacks: {
         onChange: function(contents) {
