@@ -365,6 +365,24 @@
     .autosave-status.show {
       opacity: 1;
     }
+
+    .title-editor {
+      border: 1px solid #ddd;
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    #titleToolbar {
+      margin-bottom: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px 4px 0 0;
+      background-color: #f8f8f8;
+    }
+    
+    .title-editor-container {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -386,8 +404,12 @@
       <div class="editor-container">
         <form id="postForm">
           <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" required />
+            <label for="titleEditor">Title</label>
+            <div class="title-editor-container">
+              <div id="titleToolbar"></div>
+              <div id="titleEditor" name="titleEditor" contenteditable="true" class="title-editor" required></div>
+              <input type="hidden" id="title" name="title">
+            </div>
           </div>
 
           <div class="form-group">

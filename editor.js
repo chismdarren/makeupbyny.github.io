@@ -787,6 +787,9 @@ const editor = SUNEDITOR.create('content', {
   callbacks: {
     onChange: function(contents) {
       updatePreview(contents);
+      clearTimeout(autosaveTimeout);
+      showAutosaveStatus();
+      autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
     },
     onImageUpload: async function(files, info, uploadHandler) {
       try {
@@ -802,6 +805,40 @@ const editor = SUNEDITOR.create('content', {
     }
   }
 });
+
+// Initialize SunEditor for the title field with limited formatting options
+const titleEditor = SUNEDITOR.create('titleEditor', {
+  buttonList: [
+    ['undo', 'redo'],
+    ['font', 'fontSize'],
+    ['bold', 'underline', 'italic'],
+    ['fontColor'],
+    ['align'],
+  ],
+  width: '100%',
+  minHeight: '60px',
+  maxHeight: '120px',
+  defaultStyle: 'font-size: 18px; font-weight: bold;',
+  placeholder: 'Enter your title here...',
+  toolbarContainer: '#titleToolbar',
+  callbacks: {
+    onChange: function(contents) {
+      document.getElementById('title').value = contents.replace(/(<([^>]+)>)/gi, "");
+      updatePreview(editor.getContents());
+      clearTimeout(autosaveTimeout);
+      showAutosaveStatus();
+      autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+    }
+  }
+});
+
+// Set content to a single line and disable enter key
+titleEditor.onKeyDown = function(e, core) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    return false;
+  }
+};
 
 // Preview mode handling
 const previewControls = document.querySelectorAll('.preview-control-btn');
@@ -820,6 +857,7 @@ previewControls.forEach(btn => {
 // Enhanced preview update function
 function updatePreview(contents) {
   const title = document.getElementById('title').value;
+  const formattedTitle = titleEditor.getContents();
   const imageUrl = document.getElementById('image').value;
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
@@ -835,8 +873,8 @@ function updatePreview(contents) {
     imageContainer.innerHTML = '';
   }
 
-  // Update title
-  previewContent.querySelector('.preview-title').textContent = title;
+  // Update title with formatted content
+  previewContent.querySelector('.preview-title').innerHTML = formattedTitle;
 
   // Update date
   previewContent.querySelector('.preview-date').textContent = date;
@@ -845,10 +883,7 @@ function updatePreview(contents) {
   previewContent.querySelector('.preview-body').innerHTML = contents;
 }
 
-// Update preview when title changes
-document.getElementById('title').addEventListener('input', () => {
-  updatePreview(editor.getContents());
-});
+// Update preview when title changes (handled by titleEditor.onChange)
 
 // Update preview when image changes
 imageUrlInput.addEventListener('input', () => {
@@ -873,6 +908,7 @@ function hideAutosaveStatus() {
 
 async function autosave() {
   const title = document.getElementById('title').value;
+  const formattedTitle = titleEditor.getContents();
   const content = editor.getContents();
   const imageUrl = document.getElementById('image').value;
 
@@ -881,6 +917,7 @@ async function autosave() {
   try {
     const draft = {
       title,
+      formattedTitle,
       content,
       imageUrl,
       lastSaved: new Date(),
@@ -896,6 +933,7 @@ async function autosave() {
 const savedDraft = localStorage.getItem('postDraft');
 if (savedDraft) {
   const draft = JSON.parse(savedDraft);
+  titleEditor.setContents(draft.formattedTitle || '');
   document.getElementById('title').value = draft.title || '';
   editor.setContents(draft.content || '');
   document.getElementById('image').value = draft.imageUrl || '';
@@ -903,45 +941,6 @@ if (savedDraft) {
     document.getElementById('imagePreview').innerHTML = `<img src="${draft.imageUrl}" alt="Preview">`;
   }
 }
-
-// Setup autosave listeners
-document.getElementById('title').addEventListener('input', () => {
-  clearTimeout(autosaveTimeout);
-  showAutosaveStatus();
-  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-});
-
-editor.onChange = function(contents) {
-  updatePreview(contents);
-  clearTimeout(autosaveTimeout);
-  showAutosaveStatus();
-  autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-};
-
-// Handle form submission
-document.getElementById('postForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const title = document.getElementById('title').value;
-  const content = editor.getContents();
-  const imageUrl = document.getElementById('image').value;
-
-  try {
-    await addDoc(collection(db, "posts"), {
-      title,
-      content,
-      imageUrl,
-      createdAt: new Date(),
-    });
-
-    localStorage.removeItem('postDraft'); // Clear draft after successful submission
-    alert('Post published successfully!');
-    window.location.href = 'admin-dashboard.html';
-  } catch (error) {
-    console.error('Error publishing post:', error);
-    alert('Error publishing post. Please try again.');
-  }
-});
 
 // Load recent posts
 async function loadRecentPosts() {
@@ -978,4 +977,31 @@ async function loadRecentPosts() {
 }
 
 // Load recent posts when page loads
-document.addEventListener('DOMContentLoaded', loadRecentPosts); 
+document.addEventListener('DOMContentLoaded', loadRecentPosts);
+
+// Handle form submission
+document.getElementById('postForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById('title').value;
+  const formattedTitle = titleEditor.getContents();
+  const content = editor.getContents();
+  const imageUrl = document.getElementById('image').value;
+
+  try {
+    await addDoc(collection(db, "posts"), {
+      title,
+      formattedTitle,
+      content,
+      imageUrl,
+      createdAt: new Date(),
+    });
+
+    localStorage.removeItem('postDraft'); // Clear draft after successful submission
+    alert('Post published successfully!');
+    window.location.href = 'admin-dashboard.html';
+  } catch (error) {
+    console.error('Error publishing post:', error);
+    alert('Error publishing post. Please try again.');
+  }
+}); 
