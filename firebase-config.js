@@ -5,12 +5,13 @@ import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyBeCYpS1JV5gJWD8qWsnVKenwgbDrIt_h8",
   authDomain: "makeupbyny-1.firebaseapp.com",
   projectId: "makeupbyny-1",
   storageBucket: "makeupbyny-1.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  messagingSenderId: "327675302548",
+  appId: "1:327675302548:web:581f25c2c6aebaab629a81",
+  measurementId: "G-P8F85KTSFP"
 };
 
 // Initialize Firebase
