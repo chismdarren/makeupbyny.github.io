@@ -35,7 +35,6 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Initialize SunEditor
 let editor;
-let titleEditor;
 
 // Autosave variables
 let autosaveTimeout;
@@ -114,96 +113,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // Initialize title SunEditor with simplified toolbar
-  if (document.getElementById('titleEditor')) {
-    titleEditor = SUNEDITOR.create('titleEditor', {
-      buttonList: [
-        ['undo', 'redo'],
-        ['font', 'fontSize', 'formatBlock'],
-        ['bold', 'underline', 'italic', 'strike', 'superscript', 'removeFormat'],
-        ['fontColor', 'hiliteColor', 'align']
-      ],
-      font: [
-        'Arial',
-        'Calibri',
-        'Comic Sans',
-        'Courier',
-        'Garamond',
-        'Georgia',
-        'Impact',
-        'Lucida Console',
-        'Tahoma',
-        'Times New Roman',
-        'Trebuchet MS',
-        'Verdana',
-        'Dancing Script',
-        'Great Vibes',
-        'Pacifico',
-        'Satisfy',
-        'Allura',
-        'Brush Script MT',
-        'Monsieur La Doulaise',
-        'Tangerine',
-        'Alex Brush',
-        'Pinyon Script'
-      ],
-      fontSize: [14, 16, 18, 20, 24, 28, 36, 48, 72],
-      defaultStyle: 'font-size: 24px;',
-      height: '32px',
-      width: '100%',
-      minHeight: '32px',
-      maxHeight: '32px',
-      singleLine: true,
-      charCounter: false,
-      resizingBar: false,
-      showPathLabel: false,
-      overflow: false,
-      placeholder: 'Enter post title here...',
-      // After editor creation, apply additional styles to remove scroll
-      callBackSave: function (contents, isChanged) {
-        return contents.replace(/(\r\n|\n|\r)/gm, '');
-      },
-      // Remove paragraph breaks on paste
-      paste: {
-        cleanText: true,
-        onlyText: true,
-        noNewLine: true
-      },
-      // Additional callbacks
-      callbacks: {
-        onLoad: function() {
-          // Apply additional styles after editor is loaded
-          const wrapper = document.querySelector('#titleEditor .se-wrapper');
-          if (wrapper) {
-            wrapper.style.overflow = 'hidden';
-            wrapper.style.whiteSpace = 'nowrap';
-            wrapper.style.height = '32px';
-            wrapper.style.maxHeight = '32px';
-            
-            // Find and disable scrollbars in all child elements
-            const innerElements = wrapper.querySelectorAll('*');
-            innerElements.forEach(el => {
-              el.style.overflow = 'hidden';
-              el.style.maxHeight = '32px';
-            });
-          }
-        },
-        onChange: function(contents) {
-          // Update hidden input with title contents for form submission
-          const titleInput = document.getElementById('title');
-          if (titleInput) {
-            // Remove any line breaks from the content
-            titleInput.value = contents.replace(/(\r\n|\n|\r)/gm, '');
-          }
-          
-          // Update preview title
-          updateTitlePreview(contents);
-          
-          // For autosave
-          clearTimeout(autosaveTimeout);
-          showAutosaveStatus();
-          autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-        }
+  // Initialize title field event listeners
+  const titleField = document.getElementById('titleField');
+  if (titleField && document.getElementById('title')) {
+    const titleHiddenInput = document.getElementById('title');
+    
+    // Handle input in the title field
+    titleField.addEventListener('input', function() {
+      // Update hidden input for form submission
+      titleHiddenInput.value = this.innerHTML;
+      
+      // Update the preview title
+      updateTitlePreview(this.innerHTML);
+      
+      // Trigger autosave
+      clearTimeout(autosaveTimeout);
+      showAutosaveStatus();
+      autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+    });
+    
+    // Prevent line breaks in title field
+    titleField.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        return false;
       }
     });
   }
@@ -1049,11 +982,11 @@ function hideAutosaveStatus() {
 
 async function autosave() {
   try {
-    // Get content from editors
+    // Get content from editor
     const content = editor ? editor.getContents() : '';
-    const titleContent = titleEditor ? titleEditor.getContents() : '';
+    const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
     
-    // Update hidden title input
+    // Update hidden title input if needed
     const titleInput = document.getElementById('title');
     if (titleInput) {
       titleInput.value = titleContent;
@@ -1082,9 +1015,10 @@ if (savedDraft && editor) {
   try {
     const draft = JSON.parse(savedDraft);
     
-    // Set title content in the title editor if it exists
-    if (titleEditor && draft.title) {
-      titleEditor.setContents(draft.title);
+    // Set title content in the title field if it exists
+    const titleField = document.getElementById('titleField');
+    if (titleField && draft.title) {
+      titleField.innerHTML = draft.title;
       
       // Also update the hidden input
       const titleInput = document.getElementById('title');
@@ -1112,20 +1046,14 @@ if (document.getElementById('postForm')) {
   document.getElementById('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Get values from the form and editors
-    const titleContent = titleEditor ? titleEditor.getContents() : '';
+    // Get values from the form and editor
+    const titleValue = document.getElementById('title') ? document.getElementById('title').value : '';
     const content = editor && editor.getContents ? editor.getContents() : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
-    
-    // Update the hidden title field for form submission
-    const titleInput = document.getElementById('title');
-    if (titleInput) {
-      titleInput.value = titleContent;
-    }
 
     try {
       await addDoc(collection(db, "posts"), {
-        title: titleContent,
+        title: titleValue,
         content: content,
         imageUrl: imageUrl,
         createdAt: new Date(),
