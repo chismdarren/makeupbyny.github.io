@@ -229,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle input in the title field
     titleField.addEventListener('input', function() {
       // Update hidden input for form submission
-      titleHiddenInput.value = this.innerHTML;
+      titleHiddenInput.value = this.innerHTML.trim();
       
       // Update the preview title
       updateTitlePreview(this.innerHTML);
@@ -749,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       
       // Get values from the form and editor
-      const titleValue = document.getElementById('title') ? document.getElementById('title').value : '';
+      const titleValue = document.getElementById('title') ? document.getElementById('title').value.trim() : '';
       const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
       const content = editor && editor.getContents ? editor.getContents() : '';
       const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';

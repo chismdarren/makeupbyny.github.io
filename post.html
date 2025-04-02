@@ -502,7 +502,8 @@
           postHeading.style.fontFamily = `"${postData.titleFont}"`;
           console.log('Applied font:', postData.titleFont); // Debug log
         }
-        postHeading.innerText = postData.title;
+        // Set the title text content instead of innerHTML to prevent HTML entities from showing
+        postHeading.textContent = postData.title;
         
         document.getElementById("postContent").innerHTML = postData.content;
 
