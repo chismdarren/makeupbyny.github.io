@@ -283,11 +283,6 @@
       word-break: break-word;
       hyphens: auto;
     }
-
-    /* Ensure font styles are preserved */
-    #postHeading[style*="font-family"] {
-      font-family: inherit !important;
-    }
   </style>
 </head>
 <body>
@@ -455,7 +450,9 @@
         // Apply the title font if it exists
         const postHeading = document.getElementById("postHeading");
         if (postHeading && postData.titleFont) {
-          postHeading.style.fontFamily = postData.titleFont;
+          // Apply the font with quotes to handle font names with spaces
+          postHeading.style.fontFamily = `"${postData.titleFont}"`;
+          console.log('Applied font:', postData.titleFont); // Debug log
         }
         postHeading.innerText = postData.title;
         
