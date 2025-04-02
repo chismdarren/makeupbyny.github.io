@@ -55,6 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const currentPostId = params.get("postId");
   
+  // Variable to keep track of the latest post
+  let latestPostId = null;
+  
   // Handle sorting change
   if (sortBySelect) {
     sortBySelect.addEventListener('change', () => {
@@ -396,19 +399,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Load post data
-  async function loadPostData() {
-    if (!currentPostId) {
+  async function loadPostData(postId = currentPostId) {
+    if (!postId) {
       console.error("No post ID provided");
-      alert("No post ID provided. Redirecting to home page...");
-      window.location.href = "index.html";
+      alert("No post ID provided. Please select a post from the sidebar.");
       return;
     }
 
     try {
-      showLoading(editPostForm);
-      console.log("Loading post data for ID:", currentPostId);
+      // Update the current post ID
+      window.currentPostId = postId;
       
-      const postDocRef = doc(db, "posts", currentPostId);
+      showLoading(editPostForm);
+      console.log("Loading post data for ID:", postId);
+      
+      const postDocRef = doc(db, "posts", postId);
       const postSnapshot = await getDoc(postDocRef);
       
       if (postSnapshot.exists()) {
@@ -461,9 +466,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         updateCharacterCount();
+        
+        // Highlight the active post in the sidebar
+        document.querySelectorAll('.post-item').forEach(item => {
+          item.classList.remove('active');
+          if (item.dataset.postId === postId) {
+            item.classList.add('active');
+          }
+        });
+        
         console.log("Post data loaded successfully");
       } else {
-        console.error("Post not found for ID:", currentPostId);
+        console.error("Post not found for ID:", postId);
         alert("Post not found. Redirecting to home page...");
         window.location.href = "index.html";
       }
@@ -546,16 +560,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         // Load all posts for the sidebar
-        loadAllPosts();
-        
-        // Only load post data if we have a post ID
-        if (currentPostId) {
-          loadPostData();
-        } else {
-          console.error("No post ID provided in URL");
-          alert("No post ID provided. Please select a post from the sidebar.");
-          // Don't redirect, let them select from sidebar instead
-        }
+        loadAllPosts().then(() => {
+          // If no specific post ID was provided, load the most recent post
+          if (!currentPostId && latestPostId) {
+            // Update the URL with the latest post ID without refreshing
+            const url = new URL(window.location);
+            url.searchParams.set('postId', latestPostId);
+            window.history.pushState({}, '', url);
+            
+            // Load the latest post
+            loadPostData(latestPostId);
+          } else if (currentPostId) {
+            // Load the specified post
+            loadPostData(currentPostId);
+          } else {
+            console.error("No posts found");
+          }
+        });
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
@@ -601,6 +622,11 @@ document.addEventListener("DOMContentLoaded", () => {
           commentCount: 0 // Will be populated if needed
         };
       });
+      
+      // Store the ID of the most recent post
+      if (allPosts.length > 0) {
+        latestPostId = allPosts[0].id;
+      }
       
       // Load comment counts for each post
       await loadCommentCounts();
@@ -675,10 +701,14 @@ document.addEventListener("DOMContentLoaded", () => {
     sortedPosts.forEach(post => {
       const postElement = document.createElement('div');
       postElement.className = 'post-item';
-      if (post.id === currentPostId) {
+      postElement.dataset.postId = post.id;
+      
+      // Mark as active if this is the current post
+      if (post.id === (currentPostId || latestPostId)) {
         postElement.classList.add('active');
       }
       
+      // Format date
       const date = post.createdAt.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -700,11 +730,8 @@ document.addEventListener("DOMContentLoaded", () => {
         url.searchParams.set('postId', post.id);
         window.history.pushState({}, '', url);
         
-        // Update currentPostId
-        currentPostId = post.id;
-        
         // Load the selected post
-        loadPostData();
+        loadPostData(post.id);
         
         // Update active state in sidebar
         document.querySelectorAll('.post-item').forEach(item => {
