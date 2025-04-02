@@ -272,6 +272,22 @@
       font-style: italic;
       margin: 20px 0;
     }
+
+    /* Add these styles to ensure proper font display */
+    #postHeading {
+      font-size: 2.5em;
+      margin-bottom: 1em;
+      line-height: 1.3;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+    }
+
+    /* Ensure font styles are preserved */
+    #postHeading[style*="font-family"] {
+      font-family: inherit !important;
+    }
   </style>
 </head>
 <body>
@@ -435,7 +451,14 @@
 
         // Populate the DOM with the post's details.
         document.title = postData.title + " - Makeup by NY";
-        document.getElementById("postHeading").innerText = postData.title;
+        
+        // Apply the title font if it exists
+        const postHeading = document.getElementById("postHeading");
+        if (postHeading && postData.titleFont) {
+          postHeading.style.fontFamily = postData.titleFont;
+        }
+        postHeading.innerText = postData.title;
+        
         document.getElementById("postContent").innerHTML = postData.content;
 
         // If there's an image, display it.
