@@ -9,7 +9,13 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  where,
+  limit
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Import Firebase Storage functions
@@ -27,6 +33,9 @@ const storage = getStorage();
 // Hardcoded admin UID
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
+// Store posts data globally for sorting
+let allPosts = [];
+
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
@@ -38,10 +47,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const imageUploadInput = document.getElementById("imageUpload");
   const previewContent = document.getElementById("previewContent");
   const deletePostBtn = document.getElementById("deletePostBtn");
+  const sortBySelect = document.getElementById("sortBy");
+  const postsList = document.querySelector(".posts-list");
+  const searchInput = document.getElementById("searchPosts");
 
   // Get post ID from URL
   const params = new URLSearchParams(window.location.search);
   const currentPostId = params.get("postId");
+  
+  // Handle sorting change
+  if (sortBySelect) {
+    sortBySelect.addEventListener('change', () => {
+      sortAndRenderPosts(sortBySelect.value);
+    });
+  }
+
+  // Handle search input
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const currentSortValue = sortBySelect ? sortBySelect.value : 'newest';
+      sortAndRenderPosts(currentSortValue);
+    });
+  }
 
   // Add loading indicator
   function showLoading(element) {
@@ -511,13 +538,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (user) {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
+        
+        // Load all posts for the sidebar
+        loadAllPosts();
+        
         // Only load post data if we have a post ID
         if (currentPostId) {
           loadPostData();
         } else {
           console.error("No post ID provided in URL");
-          alert("No post ID provided. Redirecting to home page...");
-          window.location.href = "index.html";
+          alert("No post ID provided. Please select a post from the sidebar.");
+          // Don't redirect, let them select from sidebar instead
         }
       } else {
         loginLink.style.display = "block";
@@ -534,6 +565,146 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("User signed out.");
         window.location.href = "index.html";
       });
+    });
+  }
+
+  // Function to load all posts for the sidebar
+  async function loadAllPosts() {
+    try {
+      const postsRef = collection(db, "posts");
+      const q = query(postsRef, orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        if (postsList) {
+          postsList.innerHTML = '<div class="no-posts">No posts found</div>';
+        }
+        return;
+      }
+      
+      // Store posts for sorting
+      allPosts = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          title: data.title || 'Untitled Post',
+          createdAt: data.createdAt?.toDate() || new Date(),
+          commentCount: 0 // Will be populated if needed
+        };
+      });
+      
+      // Load comment counts for each post
+      await loadCommentCounts();
+      
+      // Initial sort by newest (default)
+      sortAndRenderPosts('newest');
+      
+    } catch (error) {
+      console.error("Error loading posts:", error);
+      if (postsList) {
+        postsList.innerHTML = '<div class="error">Error loading posts</div>';
+      }
+    }
+  }
+  
+  // Function to load comment counts for all posts
+  async function loadCommentCounts() {
+    try {
+      for (let post of allPosts) {
+        // For each post, get the comments collection
+        const commentsRef = collection(db, "posts", post.id, "comments");
+        const q = query(commentsRef);
+        const querySnapshot = await getDocs(q);
+        
+        // Store the comment count
+        post.commentCount = querySnapshot.size;
+      }
+    } catch (error) {
+      console.error("Error loading comment counts:", error);
+    }
+  }
+  
+  // Function to sort and render posts in the sidebar
+  function sortAndRenderPosts(sortType) {
+    if (!postsList) return;
+    
+    let sortedPosts = [...allPosts];
+    
+    // Filter posts by search term if search input exists and has value
+    if (searchInput && searchInput.value.trim() !== '') {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      sortedPosts = sortedPosts.filter(post => 
+        post.title.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    switch (sortType) {
+      case 'newest':
+        sortedPosts.sort((a, b) => b.createdAt - a.createdAt);
+        break;
+      case 'oldest':
+        sortedPosts.sort((a, b) => a.createdAt - b.createdAt);
+        break;
+      case 'title':
+        sortedPosts.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'comments':
+        sortedPosts.sort((a, b) => b.commentCount - a.commentCount);
+        break;
+    }
+    
+    // Clear the posts list
+    postsList.innerHTML = '';
+    
+    // Show message if no posts match search
+    if (sortedPosts.length === 0) {
+      postsList.innerHTML = '<div class="no-posts">No posts found</div>';
+      return;
+    }
+    
+    // Add each post to the list
+    sortedPosts.forEach(post => {
+      const postElement = document.createElement('div');
+      postElement.className = 'post-item';
+      if (post.id === currentPostId) {
+        postElement.classList.add('active');
+      }
+      
+      const date = post.createdAt.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+      
+      postElement.innerHTML = `
+        <div class="post-item-title">${post.title}</div>
+        <div class="post-item-meta">
+          <span>${date}</span>
+          <span>${post.commentCount} comments</span>
+        </div>
+      `;
+      
+      // Add click event to load the post
+      postElement.addEventListener('click', () => {
+        // Change URL without page refresh
+        const url = new URL(window.location);
+        url.searchParams.set('postId', post.id);
+        window.history.pushState({}, '', url);
+        
+        // Update currentPostId
+        currentPostId = post.id;
+        
+        // Load the selected post
+        loadPostData();
+        
+        // Update active state in sidebar
+        document.querySelectorAll('.post-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        postElement.classList.add('active');
+      });
+      
+      postsList.appendChild(postElement);
     });
   }
 
