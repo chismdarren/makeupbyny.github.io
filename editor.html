@@ -50,10 +50,14 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       width: 60%;
       max-width: 700px;
+      overflow: hidden;
     }
     
     .form-group {
       margin-bottom: 25px;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
     }
     
     .form-group label {
@@ -109,21 +113,11 @@
       font-weight: normal;
     }
 
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-
-    .form-group input[type="text"] {
+    .form-group textarea {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     /* SunEditor specific styles */
@@ -145,6 +139,7 @@
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-container {
@@ -154,24 +149,29 @@
       box-sizing: border-box !important;
       overflow-wrap: break-word !important;
       word-wrap: break-word !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper-inner {
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper .se-container {
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     /* Ensure all content inside the editor stays within bounds */
     .sun-editor .se-wrapper * {
       max-width: 100% !important;
       box-sizing: border-box !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
     }
 
     .sun-editor img {
