@@ -126,6 +126,7 @@
       border-radius: 4px;
     }
 
+    /* SunEditor specific styles */
     .sun-editor {
       width: 100% !important;
       max-width: 100% !important;
@@ -134,16 +135,58 @@
       margin-bottom: 20px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
       overflow: hidden !important;
+      box-sizing: border-box !important;
     }
 
     .sun-editor .se-wrapper {
       min-height: 400px !important;
       overflow-wrap: break-word !important;
       word-wrap: break-word !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
     }
 
     .sun-editor .se-container {
       padding: 20px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+    }
+
+    .sun-editor .se-wrapper-inner {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .sun-editor .se-wrapper .se-container {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Ensure all content inside the editor stays within bounds */
+    .sun-editor .se-wrapper * {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .sun-editor img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    .sun-editor table {
+      max-width: 100% !important;
+      table-layout: fixed !important;
+    }
+
+    .sun-editor td, .sun-editor th {
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
     }
 
     .preview-container {
