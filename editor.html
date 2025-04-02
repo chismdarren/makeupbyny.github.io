@@ -415,13 +415,21 @@
     
     /* Styles for the preview sidebar */
     .preview-sidebar {
-      width: 40%;
+      width: 45%;
       flex-shrink: 0;
-      max-width: 400px;
+      max-width: 500px;
     }
     
     .preview-sidebar .preview-container {
       margin-top: 0;
+      height: calc(100vh - 40px);
+      overflow-y: auto;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    .preview-sidebar .preview-container::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
     }
 
     .profile-pic {
@@ -696,14 +704,6 @@
       transition: max-width 0.3s ease;
     }
     
-    .preview-tablet {
-      max-width: 768px;
-      margin: 0 auto;
-      border-left: 10px solid #343a40;
-      border-right: 10px solid #343a40;
-      transition: max-width 0.3s ease;
-    }
-    
     .preview-mobile {
       max-width: 360px;
       margin: 0 auto;
@@ -733,14 +733,14 @@
       }
       
       .editor-container {
-        width: 60%;
+        width: 55%;
         max-width: 700px;
         padding-right: 20px;
       }
       
       .preview-sidebar {
-        width: 40%;
-        max-width: 400px;
+        width: 45%;
+        max-width: 500px;
         position: sticky;
         top: 20px;
         height: calc(100vh - 40px);
@@ -909,7 +909,6 @@
           <h2>Live Preview</h2>
           <div class="preview-controls">
             <button class="preview-control-btn active" data-view="desktop">Desktop</button>
-            <button class="preview-control-btn" data-view="tablet">Tablet</button>
             <button class="preview-control-btn" data-view="mobile">Mobile</button>
           </div>
         </div>
