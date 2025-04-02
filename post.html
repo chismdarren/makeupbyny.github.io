@@ -502,6 +502,7 @@
           postHeading.style.fontFamily = `"${postData.titleFont}"`;
           console.log('Applied font:', postData.titleFont); // Debug log
         }
+        // Set title directly without processing spaces
         postHeading.innerText = postData.title;
         
         // Properly parse and render the content
@@ -514,8 +515,11 @@
           // Process the content to ensure proper space rendering
           const processNode = (node) => {
             if (node.nodeType === Node.TEXT_NODE) {
-              // Replace multiple spaces with non-breaking spaces
-              node.textContent = node.textContent.replace(/\s{2,}/g, match => '&nbsp;'.repeat(match.length));
+              // Only process text nodes that are not part of the title
+              if (!node.parentElement || node.parentElement.id !== 'postHeading') {
+                // Replace multiple spaces with non-breaking spaces
+                node.textContent = node.textContent.replace(/\s{2,}/g, match => '&nbsp;'.repeat(match.length));
+              }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
               // Recursively process child nodes
               Array.from(node.childNodes).forEach(processNode);
