@@ -228,8 +228,16 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Handle input in the title field
     titleField.addEventListener('input', function() {
-      // Update hidden input for form submission
-      titleHiddenInput.value = this.innerHTML.trim();
+      // Create a temporary div to decode HTML entities
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = this.innerHTML;
+      const decodedText = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Replace &nbsp; with regular spaces and trim
+      const cleanTitle = decodedText.replace(/&nbsp;/g, ' ').trim();
+      
+      // Update hidden input for form submission with clean text
+      titleHiddenInput.value = cleanTitle;
       
       // Update the preview title
       updateTitlePreview(this.innerHTML);
@@ -749,7 +757,17 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       
       // Get values from the form and editor
-      const titleValue = document.getElementById('title') ? document.getElementById('title').value.trim() : '';
+      const titleInputElement = document.getElementById('title');
+      let titleValue = '';
+      
+      if (titleInputElement) {
+        // Create a temporary div to properly decode any HTML entities
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = titleInputElement.value;
+        titleValue = tempDiv.textContent || tempDiv.innerText || '';
+        titleValue = titleValue.replace(/&nbsp;/g, ' ').trim(); // Specifically handle nbsp entities and trim
+      }
+      
       const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
       const content = editor && editor.getContents ? editor.getContents() : '';
       const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
@@ -1320,7 +1338,17 @@ async function autosave() {
   try {
     // Get content from editor
     const content = editor ? editor.getContents() : '';
-    const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+    
+    // Get title content and clean it
+    let titleContent = '';
+    const titleField = document.getElementById('titleField');
+    if (titleField) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = titleField.innerHTML;
+      titleContent = tempDiv.textContent || tempDiv.innerText || '';
+      titleContent = titleContent.replace(/&nbsp;/g, ' ').trim();
+    }
+    
     const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
     
