@@ -336,6 +336,24 @@
         display: block;
       }
     }
+
+    /* Fix navigation menu order */
+    #mainNav {
+      display: flex;
+      align-items: center;
+    }
+    
+    #mainNav a, #mainNav button {
+      margin-right: 15px;
+    }
+    
+    #logout-btn {
+      order: 5; /* Position after admin dashboard */
+    }
+    
+    #login-link {
+      order: 6;
+    }
   </style>
 </head>
 <body>
