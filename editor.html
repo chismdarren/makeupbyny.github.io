@@ -137,7 +137,6 @@
       margin-bottom: 20px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
       box-sizing: border-box !important;
-      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper {
@@ -145,7 +144,7 @@
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
-      overflow: hidden !important;
+      overflow-y: auto !important;
     }
 
     .sun-editor .se-container {
@@ -155,29 +154,26 @@
       box-sizing: border-box !important;
       overflow-wrap: break-word !important;
       word-wrap: break-word !important;
-      overflow: hidden !important;
     }
 
-    .sun-editor .se-wrapper-inner {
-      width: 100% !important;
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-      overflow: hidden !important;
+    /* Custom scrollbar for SunEditor */
+    .sun-editor .se-wrapper::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
 
-    .sun-editor .se-wrapper .se-container {
-      width: 100% !important;
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-      overflow: hidden !important;
+    .sun-editor .se-wrapper::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
     }
 
-    /* Ensure all content inside the editor stays within bounds */
-    .sun-editor .se-wrapper * {
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-      overflow-wrap: break-word !important;
-      word-wrap: break-word !important;
+    .sun-editor .se-wrapper::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .sun-editor .se-wrapper::-webkit-scrollbar-thumb:hover {
+      background: #555;
     }
 
     .sun-editor img {
