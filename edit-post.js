@@ -35,6 +35,7 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Store posts data globally for sorting
 let allPosts = [];
+let editor = null; // SunEditor instance
 
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -42,14 +43,110 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize elements
   const editPostForm = document.getElementById("editPostForm");
-  const contentEditor = document.getElementById("content");
-  const insertImageBtn = document.getElementById("insertImageBtn");
-  const imageUploadInput = document.getElementById("imageUpload");
+  const contentElement = document.getElementById("content");
   const previewContent = document.getElementById("previewContent");
   const deletePostBtn = document.getElementById("deletePostBtn");
   const sortBySelect = document.getElementById("sortBy");
   const postsList = document.querySelector(".posts-list");
   const searchInput = document.getElementById("searchPosts");
+  const titleField = document.getElementById("titleField");
+  const titleHiddenInput = document.getElementById("title");
+  const titleFontSelect = document.getElementById("titleFont");
+
+  // Initialize SunEditor
+  if (contentElement) {
+    editor = SUNEDITOR.create(contentElement, {
+      buttonList: [
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+        ['removeFormat'],
+        ['fontColor', 'hiliteColor'],
+        ['outdent', 'indent'],
+        ['align', 'list', 'lineHeight'],
+        ['table', 'link', 'image', 'video'],
+        ['fullScreen', 'showBlocks', 'codeView'],
+        ['preview', 'print']
+      ],
+      width: '100%',
+      minHeight: '400px',
+      placeholder: 'Start writing your content here...',
+      imageUploadUrl: null, // We'll handle uploads manually
+      imageUploadSizeLimit: 5 * 1024 * 1024, // 5MB
+      videoResizing: true,
+      videoHeightShow: true,
+      videoRatioShow: true,
+      videoWidth: '100%',
+      youtubeQuery: 'autoplay=0&mute=0',
+      tabDisable: false,
+      callBackSave: function(contents) {
+        console.log('SunEditor contents saved:', contents);
+      },
+      lang: SUNEDITOR_LANG['en']
+    });
+
+    // Handle SunEditor events
+    editor.onChange = function(contents) {
+      if (previewContent) {
+        previewContent.innerHTML = contents;
+      }
+    };
+  }
+
+  // Handle title field and font
+  if (titleField && titleHiddenInput) {
+    // Handle input in the title field
+    titleField.addEventListener('input', function() {
+      // Create a temporary div to decode HTML entities
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = this.innerHTML;
+      const decodedText = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Replace &nbsp; with regular spaces and trim
+      const cleanTitle = decodedText.replace(/&nbsp;/g, ' ').trim();
+      
+      // Update hidden input for form submission with clean text
+      titleHiddenInput.value = cleanTitle;
+      
+      // Update the preview title
+      updateTitlePreview(this.innerHTML);
+    });
+    
+    // Prevent line breaks in title field
+    titleField.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+
+  // Handle font changes for the title
+  if (titleFontSelect && titleField) {
+    titleFontSelect.addEventListener('change', function() {
+      const selectedFont = this.value;
+      titleField.style.fontFamily = selectedFont;
+      
+      // Update preview title font
+      const previewTitle = document.getElementById('previewTitle');
+      if (previewTitle) {
+        previewTitle.style.fontFamily = selectedFont;
+      }
+    });
+  }
+
+  // Update title preview
+  function updateTitlePreview(contents) {
+    const previewTitle = document.getElementById('previewTitle');
+    if (previewTitle) {
+      previewTitle.innerHTML = contents || 'Post Title';
+      
+      // Apply the selected font to the preview title
+      if (titleFontSelect) {
+        previewTitle.style.fontFamily = titleFontSelect.value;
+      }
+    }
+  }
 
   // Get post ID from URL
   const params = new URLSearchParams(window.location.search);
@@ -90,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add character count
   function updateCharacterCount() {
-    const content = contentEditor.innerHTML;
+    const content = contentElement.innerHTML;
     const charCount = content.replace(/<[^>]*>/g, '').length;
     const charCountElement = document.getElementById('charCount');
     if (charCountElement) {
@@ -100,8 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update preview
   function updatePreview() {
-    if (previewContent && contentEditor) {
-      previewContent.innerHTML = contentEditor.innerHTML || "Post content preview will appear here...";
+    if (previewContent && contentElement) {
+      previewContent.innerHTML = contentElement.innerHTML || "Post content preview will appear here...";
     }
   }
 
@@ -117,21 +214,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (boldBtn) {
       boldBtn.addEventListener('click', () => {
         document.execCommand('bold', false, null);
-        contentEditor.focus();
+        contentElement.focus();
       });
     }
     
     if (italicBtn) {
       italicBtn.addEventListener('click', () => {
         document.execCommand('italic', false, null);
-        contentEditor.focus();
+        contentElement.focus();
       });
     }
     
     if (underlineBtn) {
       underlineBtn.addEventListener('click', () => {
         document.execCommand('underline', false, null);
-        contentEditor.focus();
+        contentElement.focus();
       });
     }
     
@@ -139,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fontFamilySelect) {
       fontFamilySelect.addEventListener('change', () => {
         document.execCommand('fontName', false, fontFamilySelect.value);
-        contentEditor.focus();
+        contentElement.focus();
       });
     }
     
@@ -147,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fontSizeSelect) {
       fontSizeSelect.addEventListener('change', () => {
         document.execCommand('fontSize', false, fontSizeSelect.value);
-        contentEditor.focus();
+        contentElement.focus();
       });
     }
   }
@@ -167,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      showLoading(contentEditor);
+      showLoading(contentElement);
       showLoading(previewContent);
 
       // Create a temporary preview while uploading
@@ -181,8 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (previewContent) {
         previewContent.innerHTML = tempImgHtml + previewContent.innerHTML;
       }
-      if (contentEditor) {
-        contentEditor.innerHTML = tempImgHtml + contentEditor.innerHTML;
+      if (contentElement) {
+        contentElement.innerHTML = tempImgHtml + contentElement.innerHTML;
       }
 
       // Compress image
@@ -241,14 +338,14 @@ document.addEventListener("DOMContentLoaded", () => {
                   }
                   
                   // Update content editor
-                  if (contentEditor) {
-                    const tempElement = contentEditor.querySelector(`#temp-${tempId}`);
+                  if (contentElement) {
+                    const tempElement = contentElement.querySelector(`#temp-${tempId}`);
                     if (tempElement) {
                       tempElement.outerHTML = finalImgHtml;
                     }
                   }
                   
-                  hideLoading(contentEditor);
+                  hideLoading(contentElement);
                   hideLoading(previewContent);
                   resolve(downloadURL);
                 } catch (error) {
@@ -262,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
         img.src = e.target.result;
       };
       reader.onerror = () => {
-        hideLoading(contentEditor);
+        hideLoading(contentElement);
         hideLoading(previewContent);
         reject(new Error('Error reading file'));
       };
@@ -272,8 +369,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle image editing
   function setupImageEditing() {
-    if (contentEditor) {
-      contentEditor.addEventListener('click', function(e) {
+    if (contentElement) {
+      contentElement.addEventListener('click', function(e) {
         if (e.target.tagName === 'IMG') {
           const img = e.target;
           const action = prompt('What would you like to do?\n1. Remove image\n2. Edit alt text\n3. Change position\n4. Resize image\n5. Cancel');
@@ -338,6 +435,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Handle image upload button
+  const insertImageBtn = document.getElementById("insertImageBtn");
+  const imageUploadInput = document.getElementById("imageUpload");
   if (insertImageBtn && imageUploadInput) {
     insertImageBtn.addEventListener("click", () => {
       imageUploadInput.click();
@@ -357,8 +456,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Live update for content
-  if (contentEditor) {
-    contentEditor.addEventListener("input", function() {
+  if (contentElement) {
+    contentElement.addEventListener("input", function() {
       updatePreview();
       updateCharacterCount();
     });
@@ -422,18 +521,33 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Populate form fields
         const titleInput = document.getElementById("title");
+        const titleField = document.getElementById("titleField");
+        const titleFontSelect = document.getElementById("titleFont");
         const tagsInput = document.getElementById("tags");
         const dateInput = document.getElementById("postDate");
         const statusInputs = document.querySelectorAll('input[name="status"]');
         
-        if (titleInput) titleInput.value = postData.title || '';
-        if (contentEditor) {
-          contentEditor.innerHTML = postData.content || '';
-          // Add image if it exists
-          if (postData.imageUrl) {
-            contentEditor.innerHTML += `<img src="${postData.imageUrl}" alt="Post image" style="max-width:100%; margin-top:10px;">`;
+        // Update title field and font
+        if (titleField) {
+          titleField.innerHTML = postData.title || '';
+          
+          // Set title font if specified
+          if (postData.titleFont && titleFontSelect) {
+            titleFontSelect.value = postData.titleFont;
+            titleField.style.fontFamily = postData.titleFont;
           }
         }
+        
+        // Update hidden title input
+        if (titleInput) {
+          titleInput.value = postData.title || '';
+        }
+        
+        // Update content in SunEditor
+        if (editor) {
+          editor.setContents(postData.content || '');
+        }
+        
         if (tagsInput) tagsInput.value = postData.tags || '';
         if (dateInput) dateInput.value = postData.postDate || new Date().toISOString().split('T')[0];
         
@@ -451,21 +565,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const previewTags = document.getElementById("previewTags");
         const previewDate = document.getElementById("previewDate");
         
-        if (previewTitle) previewTitle.textContent = postData.title || "Post Title Preview";
-        if (previewContent) {
-          previewContent.innerHTML = postData.content || "Post content preview will appear here...";
-          // Add image to preview if it exists
-          if (postData.imageUrl) {
-            previewContent.innerHTML += `<img src="${postData.imageUrl}" alt="Post image" style="max-width:100%; margin-top:10px;">`;
+        if (previewTitle) {
+          previewTitle.textContent = postData.title || "Post Title Preview";
+          if (postData.titleFont) {
+            previewTitle.style.fontFamily = postData.titleFont;
           }
         }
+        
+        if (previewContent) {
+          previewContent.innerHTML = postData.content || "Post content preview will appear here...";
+        }
+        
         if (previewTags) previewTags.textContent = postData.tags ? `Tags: ${postData.tags}` : '';
         if (previewDate) {
           const date = postData.postDate || postData.lastModified || postData.createdAt;
           previewDate.textContent = date ? new Date(date).toLocaleDateString() : '';
         }
-        
-        updateCharacterCount();
         
         // Highlight the active post in the sidebar
         document.querySelectorAll('.post-item').forEach(item => {
@@ -494,16 +609,24 @@ document.addEventListener("DOMContentLoaded", () => {
     editPostForm.addEventListener("submit", async function(event) {
       event.preventDefault();
 
+      // Get title from the hidden input (already cleaned)
       const title = document.getElementById("title").value;
-      const content = contentEditor.innerHTML;
+      
+      // Get title font
+      const titleFont = document.getElementById("titleFont").value;
+      
+      // Get content from SunEditor
+      const content = editor ? editor.getContents() : '';
+      
       const tags = document.getElementById("tags").value;
       const status = document.querySelector('input[name="status"]:checked').value;
       const postDate = document.getElementById("postDate").value;
 
       try {
         showLoading(editPostForm);
-        await updateDoc(doc(db, "posts", currentPostId), {
+        await updateDoc(doc(db, "posts", window.currentPostId), {
           title,
+          titleFont,
           content,
           tags,
           status,
@@ -512,7 +635,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         alert("Post updated successfully!");
-        window.location.href = "index.html";
+        window.location.href = "admin-dashboard.html";
       } catch (error) {
         console.error("Error updating post:", error);
         alert("Error updating post. Please try again.");
