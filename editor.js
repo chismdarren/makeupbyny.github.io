@@ -769,6 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
           content: content,
           imageUrl: imageUrl,
           createdAt: new Date(),
+          userId: auth.currentUser.uid
         });
 
         // Clear all draft data after successful submission
@@ -1053,13 +1054,13 @@ async function loadUserPosts() {
     // Get posts from Firestore
     const postsRef = collection(db, 'posts');
     console.log('Querying Firestore for posts...');
-    // Temporarily remove the orderBy clause until the index is created
-    const q = query(postsRef, where('userId', '==', user.uid));
+    // Get all posts ordered by creation date
+    const q = query(postsRef, orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     console.log('Query completed. Number of posts found:', querySnapshot.size);
 
     if (querySnapshot.empty) {
-      console.log('No posts found for user:', user.uid);
+      console.log('No posts found');
       postsList.innerHTML = '<p>No posts found. Create your first post!</p>';
       return;
     }
@@ -1067,21 +1068,9 @@ async function loadUserPosts() {
     // Clear existing posts
     postsList.innerHTML = '';
 
-    // Convert to array and sort in memory
-    const posts = [];
-    querySnapshot.forEach((doc) => {
-      posts.push({ id: doc.id, ...doc.data() });
-    });
-    
-    // Sort posts by createdAt in descending order
-    posts.sort((a, b) => {
-      const dateA = a.createdAt ? a.createdAt.seconds : 0;
-      const dateB = b.createdAt ? b.createdAt.seconds : 0;
-      return dateB - dateA;
-    });
-
     // Add each post to the list
-    posts.forEach((post) => {
+    querySnapshot.forEach((doc) => {
+      const post = { id: doc.id, ...doc.data() };
       console.log('Processing post:', post.id, post);
       const postCard = createPostCard(post.id, post);
       postsList.appendChild(postCard);
