@@ -99,6 +99,10 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .preview-section {
@@ -420,6 +424,7 @@
       margin-bottom: 20px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper {
@@ -428,6 +433,7 @@
       max-width: 100% !important;
       box-sizing: border-box !important;
       overflow-y: auto !important;
+      overflow-x: hidden !important;
     }
 
     .sun-editor .se-container {
@@ -437,6 +443,30 @@
       box-sizing: border-box !important;
       overflow-wrap: break-word !important;
       word-wrap: break-word !important;
+      word-break: break-word !important;
+    }
+    
+    /* Ensure content inside SunEditor stays within bounds */
+    .sun-editor .se-wrapper * {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Prevent overflow in editor content area */
+    .sun-editor .se-wrapper .se-wrapper-inner {
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+      word-break: break-word !important;
+      white-space: pre-wrap !important;
+      overflow: hidden !important;
+      max-width: 100% !important;
+    }
+
+    /* Force wrapping for long content */
+    .sun-editor .se-wrapper .se-wrapper-inner * {
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+      white-space: pre-wrap !important;
     }
 
     /* Custom scrollbar for SunEditor */
@@ -472,6 +502,46 @@
     .sun-editor td, .sun-editor th {
       word-wrap: break-word !important;
       overflow-wrap: break-word !important;
+    }
+
+    /* Ensure images are responsive and don't overflow */
+    .sun-editor .se-wrapper img,
+    .sun-editor .se-wrapper figure,
+    .sun-editor .se-wrapper video,
+    .sun-editor .se-wrapper iframe {
+      max-width: 100% !important;
+      height: auto !important;
+      box-sizing: border-box !important;
+      display: block !important;
+    }
+    
+    /* Make tables responsive */
+    .sun-editor .se-wrapper table {
+      width: 100% !important;
+      max-width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+      word-break: break-word !important;
+    }
+    
+    .sun-editor .se-wrapper td,
+    .sun-editor .se-wrapper th {
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      max-width: 100% !important;
+      padding: 6px !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Handle pre and code blocks */
+    .sun-editor .se-wrapper pre,
+    .sun-editor .se-wrapper code {
+      white-space: pre-wrap !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+      max-width: 100% !important;
     }
   </style>
 </head>
