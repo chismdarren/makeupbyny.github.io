@@ -51,6 +51,7 @@
       width: 60%;
       max-width: 700px;
       box-sizing: border-box;
+      overflow: hidden;
     }
     
     .form-group {
@@ -58,6 +59,7 @@
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
+      overflow: hidden;
     }
     
     .form-group label {
@@ -65,12 +67,16 @@
       margin-bottom: 8px;
       font-weight: 600;
       color: #495057;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .title-controls {
       display: flex;
       gap: 10px;
       margin-bottom: 10px;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .title-font-select {
@@ -81,6 +87,9 @@
       font-size: 14px;
       cursor: pointer;
       color: #495057;
+      width: auto;
+      min-width: 150px;
+      box-sizing: border-box;
     }
     
     .title-field {
@@ -128,6 +137,7 @@
       margin-bottom: 20px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper {
@@ -135,6 +145,7 @@
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-container {
@@ -144,18 +155,21 @@
       box-sizing: border-box !important;
       overflow-wrap: break-word !important;
       word-wrap: break-word !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper-inner {
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .sun-editor .se-wrapper .se-container {
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     /* Ensure all content inside the editor stays within bounds */
@@ -508,6 +522,16 @@
       display: flex;
       gap: 10px;
       margin-bottom: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .image-upload-container input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
 
     .upload-btn {
@@ -516,15 +540,14 @@
       border: 1px solid #ddd;
       border-radius: 4px;
       cursor: pointer;
-    }
-
-    .upload-btn:hover {
-      background: #e0e0e0;
+      white-space: nowrap;
+      box-sizing: border-box;
     }
 
     .image-preview {
       margin-top: 10px;
-      max-width: 300px;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .image-preview img {
@@ -794,6 +817,18 @@
     .preview-body [style*="font-family: 'Monsieur La Doulaise'"],
     .preview-body [style*="font-family: Monsieur La Doulaise"] {
       font-family: 'Monsieur La Doulaise', cursive !important;
+    }
+
+    /* Ensure form elements don't overflow */
+    #postForm {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    #postForm * {
+      box-sizing: border-box;
     }
   </style>
 </head>
