@@ -530,6 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle authentication state
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
+  const adminDashboardLink = document.getElementById("adminDashboard");
 
   if (loginLink && logoutBtn) {
     onAuthStateChanged(auth, (user) => {
@@ -538,6 +539,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (user) {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
+        
+        // Show admin dashboard link only for admin user
+        if (user.uid === adminUID && adminDashboardLink) {
+          adminDashboardLink.style.display = "inline";
+        }
         
         // Load all posts for the sidebar
         loadAllPosts();
@@ -553,6 +559,9 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
+        if (adminDashboardLink) {
+          adminDashboardLink.style.display = "none";
+        }
         window.location.href = "login.html";
       }
     });

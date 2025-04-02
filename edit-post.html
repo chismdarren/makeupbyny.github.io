@@ -5,7 +5,9 @@
   <!-- Responsive meta tag for mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Post - Makeup by NY</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts for Cursive Options -->
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Satisfy&family=Allura&family=Tangerine&family=Pinyon+Script&family=Alex+Brush&display=swap" rel="stylesheet">
   <style>
     .editor-container {
       display: grid;
@@ -337,114 +339,120 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Makeup by NY</h1>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="admin-dashboard.html">Admin Dashboard</a>
-        <a href="editor.html">Create Post</a>
-        <a href="manage-users.html">Users</a>
-        <button id="logoutBtn">Logout</button>
-      </nav>
-    </header>
+  <header>
+    <a href="index.html">
+      <img src="nvblog.png" alt="Makeup by NY Logo" style="width: 610px; height: 117px; object-fit: contain;">
+    </a>
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <!-- Admin-only link (initially hidden) -->
+      <a id="adminDashboard" href="admin-dashboard.html">Admin Dashboard</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html" style="display:none;">Login</a>
+      <button id="logout-btn">Logout</button>
+    </nav>
+  </header>
 
-    <main>
-      <div class="editor-container">
-        <div class="posts-sidebar">
-          <h2>Posts</h2>
-          <div class="sorting-controls">
-            <input type="text" id="searchPosts" placeholder="Search posts..." class="search-input">
-            <label for="sortBy">Sort by:</label>
-            <select id="sortBy">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="title">Title</option>
-              <option value="comments">Most Comments</option>
-            </select>
-          </div>
-          <div class="posts-list">
-            <!-- Posts will be dynamically added here -->
-          </div>
+  <main>
+    <div class="editor-container">
+      <div class="posts-sidebar">
+        <h2>Posts</h2>
+        <div class="sorting-controls">
+          <input type="text" id="searchPosts" placeholder="Search posts..." class="search-input">
+          <label for="sortBy">Sort by:</label>
+          <select id="sortBy">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="title">Title</option>
+            <option value="comments">Most Comments</option>
+          </select>
         </div>
-
-        <div class="editor-section">
-          <h2>Edit Post</h2>
-          <form id="editPostForm">
-            <div class="form-group">
-              <label for="title">Title</label>
-              <input type="text" id="title" name="title" required>
-            </div>
-
-            <div class="form-group">
-              <label for="tags">Tags (comma-separated)</label>
-              <input type="text" id="tags" name="tags">
-            </div>
-
-            <div class="form-group">
-              <label for="postDate">Post Date</label>
-              <input type="date" id="postDate" name="postDate" required>
-            </div>
-
-            <div class="form-group">
-              <label for="status">Status</label>
-              <div class="status-group">
-                <label>
-                  <input type="radio" name="status" value="draft" checked> Draft
-                </label>
-                <label>
-                  <input type="radio" name="status" value="published"> Published
-                </label>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Content</label>
-              <div class="toolbar">
-                <button type="button" id="boldBtn">Bold</button>
-                <button type="button" id="italicBtn">Italic</button>
-                <button type="button" id="underlineBtn">Underline</button>
-                <select id="fontFamily">
-                  <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Verdana">Verdana</option>
-                </select>
-                <select id="fontSize">
-                  <option value="1">Small</option>
-                  <option value="3" selected>Normal</option>
-                  <option value="5">Large</option>
-                </select>
-                <button type="button" id="insertImageBtn">Insert Image</button>
-                <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
-              </div>
-              <div id="content" contenteditable="true"></div>
-              <div id="charCount" class="char-count">Character count: 0</div>
-            </div>
-
-            <div class="button-group">
-              <button type="submit" class="save-btn">Save Changes</button>
-              <button type="button" class="cancel-btn" onclick="window.location.href='index.html'">Cancel</button>
-              <button type="button" class="delete-btn" id="deletePostBtn">Delete Post</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="preview-section">
-          <h2>Preview</h2>
-          <div class="preview-content">
-            <div id="previewTitle" class="preview-title">Post Title Preview</div>
-            <div id="previewMeta" class="preview-meta">
-              <span id="previewDate"></span>
-            </div>
-            <div id="previewTags" class="preview-tags"></div>
-            <div id="previewContent">Post content preview will appear here...</div>
-          </div>
+        <div class="posts-list">
+          <!-- Posts will be dynamically added here -->
         </div>
       </div>
-    </main>
-  </div>
+
+      <div class="editor-section">
+        <h2>Edit Post</h2>
+        <form id="editPostForm">
+          <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tags">Tags (comma-separated)</label>
+            <input type="text" id="tags" name="tags">
+          </div>
+
+          <div class="form-group">
+            <label for="postDate">Post Date</label>
+            <input type="date" id="postDate" name="postDate" required>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status</label>
+            <div class="status-group">
+              <label>
+                <input type="radio" name="status" value="draft" checked> Draft
+              </label>
+              <label>
+                <input type="radio" name="status" value="published"> Published
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Content</label>
+            <div class="toolbar">
+              <button type="button" id="boldBtn">Bold</button>
+              <button type="button" id="italicBtn">Italic</button>
+              <button type="button" id="underlineBtn">Underline</button>
+              <select id="fontFamily">
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+              </select>
+              <select id="fontSize">
+                <option value="1">Small</option>
+                <option value="3" selected>Normal</option>
+                <option value="5">Large</option>
+              </select>
+              <button type="button" id="insertImageBtn">Insert Image</button>
+              <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+            </div>
+            <div id="content" contenteditable="true"></div>
+            <div id="charCount" class="char-count">Character count: 0</div>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" class="save-btn">Save Changes</button>
+            <button type="button" class="cancel-btn" onclick="window.location.href='index.html'">Cancel</button>
+            <button type="button" class="delete-btn" id="deletePostBtn">Delete Post</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="preview-section">
+        <h2>Preview</h2>
+        <div class="preview-content">
+          <div id="previewTitle" class="preview-title">Post Title Preview</div>
+          <div id="previewMeta" class="preview-meta">
+            <span id="previewDate"></span>
+          </div>
+          <div id="previewTags" class="preview-tags"></div>
+          <div id="previewContent">Post content preview will appear here...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Makeup by NY</p>
+  </footer>
 
   <script type="module" src="edit-post.js"></script>
 </body>
