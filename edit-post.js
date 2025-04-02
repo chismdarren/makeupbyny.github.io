@@ -462,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         showLoading(editPostForm);
         await updateDoc(doc(db, "posts", currentPostId), {
-          title,
+          title: title.replace(/&nbsp;/g, ' '), // Replace &nbsp; with regular spaces
           content,
           tags,
           status,

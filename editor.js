@@ -110,11 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // Also update other elements to keep everything in sync
             // Update title
             const titleElement = article.querySelector('.preview-title');
-            const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+            const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
             const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
             
             if (titleElement) {
-              titleElement.innerHTML = titleContent || 'Post Title';
+              titleElement.textContent = titleContent || 'Post Title';
               if (titleFont) {
                 titleElement.style.fontFamily = titleFont;
               }
@@ -229,10 +229,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle input in the title field
     titleField.addEventListener('input', function() {
       // Update hidden input for form submission
-      titleHiddenInput.value = this.innerHTML;
+      titleHiddenInput.value = this.textContent;
       
       // Update the preview title
-      updateTitlePreview(this.innerHTML);
+      updateTitlePreview(this.textContent);
       
       // Trigger autosave
       clearTimeout(autosaveTimeout);
@@ -305,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateCharacterCount() {
     if (!contentEditor) return;
     
-    const content = contentEditor.innerHTML;
+    const content = contentEditor.textContent;
     const charCount = content.replace(/<[^>]*>/g, '').length;
     const charCountElement = document.getElementById('charCount');
     if (charCountElement) {
@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const titleElement = preview.querySelector('.preview-title');
     if (titleElement) {
-      titleElement.innerHTML = contents || 'Post Title';
+      titleElement.textContent = contents || 'Post Title';
       
       // Apply the selected font to the preview title
       const titleFont = document.getElementById('titleFont');
@@ -749,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       
       // Get values from the form and editor
-      const titleValue = document.getElementById('title') ? document.getElementById('title').value : '';
+      const titleValue = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
       const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
       const content = editor && editor.getContents ? editor.getContents() : '';
       const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
@@ -865,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Set title content and font
       const titleField = document.getElementById('titleField');
       if (titleField && title) {
-        titleField.innerHTML = title;
+        titleField.textContent = title;
         
         // Also update the hidden input
         const titleInput = document.getElementById('title');
@@ -914,7 +914,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Set title content in the title field if it exists
         const titleField = document.getElementById('titleField');
         if (titleField && draft.title) {
-          titleField.innerHTML = draft.title;
+          titleField.textContent = draft.title;
           
           // Also update the hidden input
           const titleInput = document.getElementById('title');
@@ -1256,7 +1256,7 @@ function updatePreview(contents) {
 
   // Get the editor contents - ensure we're getting the actual content from SunEditor
   const content = contents !== undefined ? contents : (editor && editor.getContents ? editor.getContents() : '');
-  const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+  const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
   const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
   const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
   
@@ -1270,14 +1270,14 @@ function updatePreview(contents) {
   const imageContainer = article.querySelector('.preview-featured-image-container');
   
   if (titleElement) {
-    titleElement.innerHTML = titleContent || 'Post Title';
+    titleElement.textContent = titleContent || 'Post Title';
     if (titleFont) {
       titleElement.style.fontFamily = titleFont;
     }
   }
   
   if (bodyElement) {
-    bodyElement.innerHTML = content || 'Post content preview will appear here...';
+    bodyElement.textContent = content || 'Post content preview will appear here...';
   }
   
   if (dateElement && !dateElement.textContent) {
@@ -1320,7 +1320,7 @@ async function autosave() {
   try {
     // Get content from editor
     const content = editor ? editor.getContents() : '';
-    const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+    const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
     const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
     
