@@ -60,22 +60,6 @@
       resize: vertical;
     }
 
-    .title-field {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
-      min-height: 40px;
-      outline: none;
-      background: white;
-    }
-
-    .title-field:empty:before {
-      content: attr(placeholder);
-      color: #999;
-    }
-
     .toolbar {
       display: flex;
       gap: 10px;
@@ -285,8 +269,7 @@
           <form id="editPostForm">
             <div class="form-group">
               <label for="title">Title</label>
-              <div id="titleField" contenteditable="true" class="title-field" placeholder="Enter post title here..."></div>
-              <input type="hidden" id="title" name="title" />
+              <input type="text" id="title" name="title" required>
             </div>
 
             <div class="form-group">

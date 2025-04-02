@@ -110,11 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // Also update other elements to keep everything in sync
             // Update title
             const titleElement = article.querySelector('.preview-title');
-            const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
+            const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
             const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
             
             if (titleElement) {
-              titleElement.textContent = titleContent || 'Post Title';
+              titleElement.innerHTML = titleContent || 'Post Title';
               if (titleFont) {
                 titleElement.style.fontFamily = titleFont;
               }
@@ -229,10 +229,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle input in the title field
     titleField.addEventListener('input', function() {
       // Update hidden input for form submission
-      titleHiddenInput.value = this.textContent;
+      titleHiddenInput.value = this.innerHTML;
       
       // Update the preview title
-      updateTitlePreview(this.textContent);
+      updateTitlePreview(this.innerHTML);
       
       // Trigger autosave
       clearTimeout(autosaveTimeout);
@@ -305,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateCharacterCount() {
     if (!contentEditor) return;
     
-    const content = contentEditor.textContent;
+    const content = contentEditor.innerHTML;
     const charCount = content.replace(/<[^>]*>/g, '').length;
     const charCountElement = document.getElementById('charCount');
     if (charCountElement) {
@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const titleElement = preview.querySelector('.preview-title');
     if (titleElement) {
-      titleElement.textContent = contents || 'Post Title';
+      titleElement.innerHTML = contents || 'Post Title';
       
       // Apply the selected font to the preview title
       const titleFont = document.getElementById('titleFont');
@@ -749,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       
       // Get values from the form and editor
-      const titleValue = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
+      const titleValue = document.getElementById('title') ? document.getElementById('title').value : '';
       const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
       const content = editor && editor.getContents ? editor.getContents() : '';
       const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
@@ -769,7 +769,6 @@ document.addEventListener("DOMContentLoaded", () => {
           content: content,
           imageUrl: imageUrl,
           createdAt: new Date(),
-          userId: auth.currentUser.uid
         });
 
         // Clear all draft data after successful submission
@@ -866,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Set title content and font
       const titleField = document.getElementById('titleField');
       if (titleField && title) {
-        titleField.textContent = title;
+        titleField.innerHTML = title;
         
         // Also update the hidden input
         const titleInput = document.getElementById('title');
@@ -915,7 +914,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Set title content in the title field if it exists
         const titleField = document.getElementById('titleField');
         if (titleField && draft.title) {
-          titleField.textContent = draft.title;
+          titleField.innerHTML = draft.title;
           
           // Also update the hidden input
           const titleInput = document.getElementById('title');
@@ -1054,13 +1053,13 @@ async function loadUserPosts() {
     // Get posts from Firestore
     const postsRef = collection(db, 'posts');
     console.log('Querying Firestore for posts...');
-    // Get all posts ordered by creation date
-    const q = query(postsRef, orderBy('createdAt', 'desc'));
+    // Temporarily remove the orderBy clause until the index is created
+    const q = query(postsRef, where('userId', '==', user.uid));
     const querySnapshot = await getDocs(q);
     console.log('Query completed. Number of posts found:', querySnapshot.size);
 
     if (querySnapshot.empty) {
-      console.log('No posts found');
+      console.log('No posts found for user:', user.uid);
       postsList.innerHTML = '<p>No posts found. Create your first post!</p>';
       return;
     }
@@ -1068,9 +1067,21 @@ async function loadUserPosts() {
     // Clear existing posts
     postsList.innerHTML = '';
 
-    // Add each post to the list
+    // Convert to array and sort in memory
+    const posts = [];
     querySnapshot.forEach((doc) => {
-      const post = { id: doc.id, ...doc.data() };
+      posts.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Sort posts by createdAt in descending order
+    posts.sort((a, b) => {
+      const dateA = a.createdAt ? a.createdAt.seconds : 0;
+      const dateB = b.createdAt ? b.createdAt.seconds : 0;
+      return dateB - dateA;
+    });
+
+    // Add each post to the list
+    posts.forEach((post) => {
       console.log('Processing post:', post.id, post);
       const postCard = createPostCard(post.id, post);
       postsList.appendChild(postCard);
@@ -1245,7 +1256,7 @@ function updatePreview(contents) {
 
   // Get the editor contents - ensure we're getting the actual content from SunEditor
   const content = contents !== undefined ? contents : (editor && editor.getContents ? editor.getContents() : '');
-  const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
+  const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
   const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
   const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
   
@@ -1259,14 +1270,14 @@ function updatePreview(contents) {
   const imageContainer = article.querySelector('.preview-featured-image-container');
   
   if (titleElement) {
-    titleElement.textContent = titleContent || 'Post Title';
+    titleElement.innerHTML = titleContent || 'Post Title';
     if (titleFont) {
       titleElement.style.fontFamily = titleFont;
     }
   }
   
   if (bodyElement) {
-    bodyElement.textContent = content || 'Post content preview will appear here...';
+    bodyElement.innerHTML = content || 'Post content preview will appear here...';
   }
   
   if (dateElement && !dateElement.textContent) {
@@ -1309,7 +1320,7 @@ async function autosave() {
   try {
     // Get content from editor
     const content = editor ? editor.getContents() : '';
-    const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').textContent : '';
+    const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
     const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
     const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
     

@@ -826,108 +826,6 @@
     #postForm * {
       box-sizing: border-box;
     }
-
-    /* Posts List Styles */
-    .posts-section {
-      max-width: 1200px;
-      margin: 30px auto;
-      padding: 0 20px;
-    }
-
-    .posts-section h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-
-    .posts-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-
-    .post-card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 20px;
-      transition: transform 0.2s;
-    }
-
-    .post-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .post-card h3 {
-      margin: 0 0 10px 0;
-      font-size: 1.2em;
-      color: #333;
-    }
-
-    .post-card .post-content {
-      margin-bottom: 15px;
-      color: #666;
-      font-size: 0.9em;
-      line-height: 1.5;
-    }
-
-    .post-card .post-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.8em;
-      color: #999;
-      margin-bottom: 15px;
-    }
-
-    .post-card .post-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .post-card .edit-btn,
-    .post-card .delete-btn {
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9em;
-      transition: background-color 0.2s;
-    }
-
-    .post-card .edit-btn {
-      background: #007bff;
-      color: white;
-    }
-
-    .post-card .edit-btn:hover {
-      background: #0056b3;
-    }
-
-    .post-card .delete-btn {
-      background: #dc3545;
-      color: white;
-    }
-
-    .post-card .delete-btn:hover {
-      background: #c82333;
-    }
-
-    .status-badge {
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 0.8em;
-      font-weight: 500;
-    }
-
-    .status-draft {
-      background: #e9ecef;
-      color: #495057;
-    }
-
-    .status-published {
-      background: #d4edda;
-      color: #155724;
-    }
   </style>
 </head>
 <body>
@@ -989,14 +887,6 @@
         <button type="submit" class="publish-btn">Publish Post</button>
       </form>
     </main>
-
-    <!-- Posts List Section -->
-    <div class="posts-section">
-      <h2>Your Posts</h2>
-      <div id="postsList" class="posts-list">
-        <!-- Posts will be loaded here -->
-      </div>
-    </div>
 
     <!-- Live Preview (moved from main content to sidebar position) -->
     <aside class="preview-sidebar">
