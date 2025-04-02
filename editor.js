@@ -755,6 +755,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
 
       try {
+        // Log the values being saved
+        console.log('Saving post with:', {
+          title: titleValue,
+          titleFont: titleFont,
+          content: content,
+          imageUrl: imageUrl
+        });
+
         await addDoc(collection(db, "posts"), {
           title: titleValue,
           titleFont: titleFont,
