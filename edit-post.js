@@ -82,7 +82,8 @@ document.addEventListener("DOMContentLoaded", () => {
       callBackSave: function(contents) {
         console.log('SunEditor contents saved:', contents);
       },
-      lang: SUNEDITOR_LANG['en']
+      // Use the language pack if available, otherwise use null
+      lang: typeof SUNEDITOR_LANG !== 'undefined' ? SUNEDITOR_LANG['en'] : null
     });
 
     // Handle SunEditor events
