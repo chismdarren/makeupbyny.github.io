@@ -1054,6 +1054,101 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }, 500);
+
+  // Load recent posts when page loads
+  loadRecentPosts();
+
+  // Preview popup functionality
+  const previewElement = document.getElementById('preview');
+  const controlBtns = document.querySelectorAll('.preview-control-btn');
+  const previewBtn = document.getElementById('previewBtn');
+  const closePreviewBtn = document.getElementById('closePreviewBtn');
+  const previewSidebar = document.getElementById('previewSidebar');
+  const previewOverlay = document.getElementById('previewOverlay');
+  
+  if (previewBtn && previewSidebar) {
+    // Toggle preview popup
+    previewBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      previewSidebar.classList.add('open');
+      previewOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+    });
+    
+    // Close preview when clicking the close button
+    if (closePreviewBtn) {
+      closePreviewBtn.addEventListener('click', function() {
+        closePreview();
+      });
+    }
+    
+    // Close preview when clicking the overlay
+    if (previewOverlay) {
+      previewOverlay.addEventListener('click', function() {
+        closePreview();
+      });
+    }
+    
+    // Close preview with escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && previewSidebar.classList.contains('open')) {
+        closePreview();
+      }
+    });
+  }
+  
+  // Close preview function
+  function closePreview() {
+    if (previewSidebar && previewOverlay) {
+      previewSidebar.classList.remove('open');
+      previewOverlay.classList.remove('open');
+      document.body.style.overflow = ''; // Restore scrolling
+    }
+  }
+  
+  // Preview device switching
+  if (previewElement && controlBtns) {
+    controlBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Remove active class from all buttons
+        controlBtns.forEach(b => b.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Get the view type from data attribute
+        const viewType = this.getAttribute('data-view');
+        
+        // Remove all preview type classes
+        previewElement.classList.remove('preview-desktop', 'preview-tablet', 'preview-mobile');
+        
+        // Add the selected view type class
+        previewElement.classList.add(`preview-${viewType}`);
+      });
+    });
+  }
+  
+  // Set current date in preview
+  const previewDate = document.querySelector('.preview-date');
+  
+  if (previewDate && dateInput) {
+    // Initialize with the date from the input field
+    updatePreviewDateInPreview();
+    
+    // Update preview date when date input changes
+    dateInput.addEventListener('change', updatePreviewDateInPreview);
+    
+    function updatePreviewDateInPreview() {
+      const selectedDate = new Date(dateInput.value);
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      previewDate.textContent = selectedDate.toLocaleDateString('en-US', options);
+    }
+  } else if (previewDate) {
+    // Fallback to current date if no date input
+    const now = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    previewDate.textContent = now.toLocaleDateString('en-US', options);
+  }
 });
 
 // Function to load and display user's posts
