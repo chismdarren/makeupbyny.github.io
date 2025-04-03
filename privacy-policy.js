@@ -6,7 +6,7 @@ import { auth, db } from "./firebase-config.js";
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Get DOM elements
-const adminDashboard = document.getElementById("adminDashboard");
+const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 const loginLink = document.getElementById("login-link");
 const logoutBtn = document.getElementById("logout-btn");
 const recentPostsList = document.getElementById("recentPostsList");
@@ -20,15 +20,15 @@ onAuthStateChanged(auth, (user) => {
 
     // Check if user is admin
     if (user.uid === adminUID) {
-      adminDashboard.style.display = "inline";
+      adminDropdownBtn.style.display = "inline";
     } else {
-      adminDashboard.style.display = "none";
+      adminDropdownBtn.style.display = "none";
     }
   } else {
     // User is signed out
     loginLink.style.display = "inline";
     logoutBtn.style.display = "none";
-    adminDashboard.style.display = "none";
+    adminDropdownBtn.style.display = "none";
   }
 });
 
@@ -75,5 +75,25 @@ async function loadRecentPosts() {
 
 // Initialize page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  // Load recent posts
   loadRecentPosts();
+  
+  // Toggle dropdown menu on click
+  adminDropdownBtn.addEventListener("click", function(e) {
+    e.preventDefault(); // Prevent default link behavior
+    this.classList.toggle("active");
+    document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+  });
+
+  // Close dropdown when clicking outside
+  window.addEventListener("click", function(e) {
+    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+      const dropdown = document.getElementById("adminDropdownContent");
+      const btn = document.getElementById("adminDropdownBtn");
+      if (dropdown.classList.contains("show-dropdown")) {
+        dropdown.classList.remove("show-dropdown");
+        btn.classList.remove("active");
+      }
+    }
+  });
 }); 

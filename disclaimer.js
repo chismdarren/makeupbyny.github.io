@@ -17,17 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Check if user is admin
       if (user.uid === adminUID) {
-        // Show admin dashboard link
-        document.getElementById("adminDashboard").style.display = "inline";
+        // Show admin dropdown button
+        document.getElementById("adminDropdownBtn").style.display = "inline";
       } else {
-        // Hide admin dashboard link for regular users
-        document.getElementById("adminDashboard").style.display = "none";
+        // Hide admin dropdown button for regular users
+        document.getElementById("adminDropdownBtn").style.display = "none";
       }
     } else {
       // If user is not logged in, show login button and hide admin features
       document.getElementById("login-link").style.display = "inline";
       document.getElementById("logout-btn").style.display = "none";
-      document.getElementById("adminDashboard").style.display = "none";
+      document.getElementById("adminDropdownBtn").style.display = "none";
     }
   });
 
@@ -36,5 +36,24 @@ document.addEventListener("DOMContentLoaded", () => {
     auth.signOut().then(() => {
       window.location.href = "index.html";
     });
+  });
+
+  // Toggle dropdown menu on click
+  document.getElementById("adminDropdownBtn").addEventListener("click", function(e) {
+    e.preventDefault(); // Prevent default link behavior
+    this.classList.toggle("active");
+    document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+  });
+
+  // Close dropdown when clicking outside
+  window.addEventListener("click", function(e) {
+    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+      const dropdown = document.getElementById("adminDropdownContent");
+      const btn = document.getElementById("adminDropdownBtn");
+      if (dropdown.classList.contains("show-dropdown")) {
+        dropdown.classList.remove("show-dropdown");
+        btn.classList.remove("active");
+      }
+    }
   });
 }); 
