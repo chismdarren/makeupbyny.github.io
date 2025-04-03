@@ -337,13 +337,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update preview
   function updatePreview(contents) {
-    const preview = document.getElementById('preview');
-    if (!preview) return;
+    console.log("updatePreview called with contents:", contents ? "content provided" : "no content");
     
-    const bodyElement = preview.querySelector('.preview-body');
-    if (bodyElement) {
-      bodyElement.innerHTML = contents || 'Post content preview will appear here...';
+    const preview = document.getElementById('preview');
+    if (!preview) {
+      console.log("Preview element not found");
+      return;
     }
+
+    // Get the editor contents - ensure we're getting the actual content from SunEditor
+    const content = contents !== undefined ? contents : (editor && editor.getContents ? editor.getContents() : '');
+    console.log("Content to be used for preview:", content ? "content available" : "no content");
+    
+    const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+    const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
+    const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
+    
+    // Update preview elements
+    const article = preview.querySelector('.blog-post');
+    if (!article) {
+      console.log("Blog post article element not found in preview");
+      return;
+    }
+    
+    const titleElement = article.querySelector('.preview-title');
+    const bodyElement = article.querySelector('.preview-body');
+    const dateElement = article.querySelector('.preview-date');
+    const imageContainer = article.querySelector('.preview-featured-image-container');
+    
+    if (titleElement) {
+      titleElement.innerHTML = titleContent || 'Post Title';
+      if (titleFont) {
+        titleElement.style.fontFamily = titleFont;
+      }
+    }
+    
+    if (bodyElement) {
+      bodyElement.innerHTML = content || 'Post content preview will appear here...';
+    }
+    
+    if (dateElement && !dateElement.textContent) {
+      dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    
+    // Update featured image
+    if (imageContainer) {
+      if (featuredImage) {
+        imageContainer.innerHTML = `<img src="${featuredImage}" alt="${titleContent}" class="preview-featured-image">`;
+      } else {
+        imageContainer.innerHTML = '';
+      }
+    }
+    
+    console.log("Preview updated with current content");
   }
   
   // Update title preview
@@ -1059,18 +1105,32 @@ document.addEventListener("DOMContentLoaded", () => {
   loadRecentPosts();
 
   // Preview popup functionality
-  const previewElement = document.getElementById('preview');
-  const controlBtns = document.querySelectorAll('.preview-control-btn');
+  console.log("Setting up preview popup functionality");
   const previewBtn = document.getElementById('previewBtn');
   const closePreviewBtn = document.getElementById('closePreviewBtn');
   const previewSidebar = document.getElementById('previewSidebar');
   const previewOverlay = document.getElementById('previewOverlay');
   
+  // Debug elements
+  console.log("Preview button:", previewBtn);
+  console.log("Close preview button:", closePreviewBtn);
+  console.log("Preview sidebar:", previewSidebar);
+  console.log("Preview overlay:", previewOverlay);
+  
   if (previewBtn && previewSidebar) {
     // Toggle preview popup
     previewBtn.addEventListener('click', function(e) {
+      console.log("Preview button clicked");
       e.preventDefault();
       e.stopPropagation(); // Prevent event from bubbling up to form
+      
+      // Update preview content first
+      if (editor) {
+        const currentContent = editor.getContents();
+        console.log("Updating preview with current content");
+        updatePreview(currentContent);
+      }
+      
       previewSidebar.classList.add('open');
       previewOverlay.classList.add('open');
       document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
@@ -1079,6 +1139,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Close preview when clicking the close button
     if (closePreviewBtn) {
       closePreviewBtn.addEventListener('click', function() {
+        console.log("Close preview button clicked");
         closePreview();
       });
     }
@@ -1086,6 +1147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Close preview when clicking the overlay
     if (previewOverlay) {
       previewOverlay.addEventListener('click', function() {
+        console.log("Preview overlay clicked");
         closePreview();
       });
     }
@@ -1093,6 +1155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Close preview with escape key
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && previewSidebar.classList.contains('open')) {
+        console.log("Escape key pressed");
         closePreview();
       }
     });
@@ -1100,6 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Close preview function
   function closePreview() {
+    console.log("Closing preview");
     if (previewSidebar && previewOverlay) {
       previewSidebar.classList.remove('open');
       previewOverlay.classList.remove('open');
@@ -1108,9 +1172,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   // Preview device switching
+  const previewElement = document.getElementById('preview');
+  const controlBtns = document.querySelectorAll('.preview-control-btn');
+  
+  // Debug elements
+  console.log("Preview element:", previewElement);
+  console.log("Control buttons:", controlBtns);
+  
   if (previewElement && controlBtns) {
     controlBtns.forEach(btn => {
       btn.addEventListener('click', function() {
+        console.log("Preview device button clicked:", this.getAttribute('data-view'));
         // Remove active class from all buttons
         controlBtns.forEach(b => b.classList.remove('active'));
         
@@ -1370,62 +1442,6 @@ if (previewControls && previewContent) {
   });
 }
 
-// Enhanced preview update function
-function updatePreview(contents) {
-  const preview = document.getElementById('preview');
-  if (!preview) return;
-
-  // Get the editor contents - ensure we're getting the actual content from SunEditor
-  const content = contents !== undefined ? contents : (editor && editor.getContents ? editor.getContents() : '');
-  const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
-  const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
-  const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
-  
-  // Update preview elements
-  const article = preview.querySelector('.blog-post');
-  if (!article) return;
-  
-  const titleElement = article.querySelector('.preview-title');
-  const bodyElement = article.querySelector('.preview-body');
-  const dateElement = article.querySelector('.preview-date');
-  const imageContainer = article.querySelector('.preview-featured-image-container');
-  
-  if (titleElement) {
-    titleElement.innerHTML = titleContent || 'Post Title';
-    if (titleFont) {
-      titleElement.style.fontFamily = titleFont;
-    }
-  }
-  
-  if (bodyElement) {
-    bodyElement.innerHTML = content || 'Post content preview will appear here...';
-  }
-  
-  if (dateElement && !dateElement.textContent) {
-    dateElement.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  }
-  
-  // Update featured image
-  if (imageContainer) {
-    if (featuredImage) {
-      imageContainer.innerHTML = `<img src="${featuredImage}" alt="${titleContent}" class="preview-featured-image">`;
-    } else {
-      imageContainer.innerHTML = '';
-    }
-  }
-  
-  console.log("Preview updated with current content");
-}
-
-// Initialize preview when page loads
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    if (editor) {
-      updatePreview(editor.getContents());
-    }
-  }, 1000); // Give the editor time to initialize
-});
-
 // Autosave functionality
 const autosaveStatus = document.getElementById('autosaveStatus');
 
@@ -1521,4 +1537,12 @@ async function loadRecentPosts() {
 }
 
 // Load recent posts when page loads
-document.addEventListener('DOMContentLoaded', loadRecentPosts); 
+document.addEventListener('DOMContentLoaded', loadRecentPosts);
+
+// Initialize preview when page loads
+setTimeout(() => {
+  console.log("Initializing preview with current content");
+  if (editor) {
+    updatePreview(editor.getContents());
+  }
+}, 1000); // Give the editor time to initialize 
