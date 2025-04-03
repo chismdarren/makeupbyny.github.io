@@ -137,6 +137,35 @@
       #blogPosts h3 {
         font-size: 1.5em;
       }
+
+      /* Admin dropdown adjustments for mobile */
+      .admin-dropdown-content {
+        position: absolute;
+        right: 0;
+        left: auto;
+        width: 200px;
+      }
+
+      header nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .admin-dropdown {
+        position: relative;
+      }
+    }
+
+    /* For very small screens */
+    @media (max-width: 480px) {
+      .admin-dropdown-content {
+        right: -50px; /* Adjust position to be more centered on small screens */
+      }
+
+      .admin-dropdown-btn {
+        padding: 10px 5px;
+      }
     }
 
     .posts {
@@ -196,6 +225,86 @@
       line-height: 1.4;
       margin-bottom: 3px;
     }
+
+    /* Admin Dropdown Menu Styles */
+    .admin-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .admin-dropdown-btn {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 1em;
+      padding: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      display: none;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    .admin-dropdown-btn .dropdown-icon {
+      display: inline-block;
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    .admin-dropdown-btn.active .dropdown-icon {
+      transform: rotate(180deg);
+    }
+
+    .admin-dropdown-btn:hover, 
+    .admin-dropdown-btn.active {
+      color: #a07;
+    }
+
+    .admin-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+      border: 1px solid #eee;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .admin-dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .admin-dropdown-content a:last-child {
+      border-bottom: none;
+    }
+
+    .admin-dropdown-content a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
+    }
+
+    /* This class is toggled via JavaScript */
+    .show-dropdown {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -207,8 +316,18 @@
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
-      <!-- Admin-only link (initially hidden) -->
-      <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+      <!-- Admin dropdown menu (initially hidden) -->
+      <div class="admin-dropdown">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+          Admin Dashboard 
+          <span class="dropdown-icon">▼</span>
+        </a>
+        <div id="adminDropdownContent" class="admin-dropdown-content">
+          <a href="editor.html">Create Post</a>
+          <a href="admin-dashboard.html">Edit Posts</a>
+          <a href="user-management.html">User Management</a>
+        </div>
+      </div>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
@@ -299,17 +418,17 @@
 
           // Check if user is admin
           if (user.uid === adminUID) {
-            // Show only admin dashboard link
-            document.getElementById("adminDashboard").style.display = "inline";
+            // Show admin dropdown button
+            document.getElementById("adminDropdownBtn").style.display = "inline";
           } else {
-            // Hide admin dashboard link for regular users
-            document.getElementById("adminDashboard").style.display = "none";
+            // Hide admin dropdown button for regular users
+            document.getElementById("adminDropdownBtn").style.display = "none";
           }
         } else {
           // If user is not logged in, show login button and hide admin features
           document.getElementById("login-link").style.display = "inline";
           document.getElementById("logout-btn").style.display = "none";
-          document.getElementById("adminDashboard").style.display = "none";
+          document.getElementById("adminDropdownBtn").style.display = "none";
         }
       });
 
@@ -318,6 +437,25 @@
         auth.signOut().then(() => {
           window.location.href = "index.html";
         });
+      });
+
+      // Toggle dropdown menu on click
+      document.getElementById("adminDropdownBtn").addEventListener("click", function(e) {
+        e.preventDefault(); // Prevent default link behavior
+        this.classList.toggle("active");
+        document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      });
+
+      // Close dropdown when clicking outside
+      window.addEventListener("click", function(e) {
+        if (!e.target.matches('#adminDropdownBtn')) {
+          const dropdown = document.getElementById("adminDropdownContent");
+          const btn = document.getElementById("adminDropdownBtn");
+          if (dropdown.classList.contains("show-dropdown")) {
+            dropdown.classList.remove("show-dropdown");
+            btn.classList.remove("active");
+          }
+        }
       });
 
       // Get container for blog posts
