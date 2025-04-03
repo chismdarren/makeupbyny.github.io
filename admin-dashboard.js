@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
 import { getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -17,9 +17,74 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// Hardcoded admin UID
+const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Load contact messages immediately
-  loadContactMessages();
+  // Get DOM elements
+  const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+  const loginLink = document.getElementById('login-link');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // Handle authentication state
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      // Not logged in, redirect to login page
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // User is logged in
+    if (loginLink) loginLink.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'block';
+
+    // Check if user is admin
+    if (user.uid === adminUID) {
+      // User is admin, show admin dropdown menu
+      if (adminDropdownBtn) adminDropdownBtn.style.display = 'inline';
+      
+      // Load contact messages
+      loadContactMessages();
+    } else {
+      // User is not admin, redirect to home
+      alert('Access denied. Admin privileges required.');
+      window.location.href = 'index.html';
+    }
+  });
+
+  // Handle admin dropdown toggle
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
+      this.classList.toggle('active');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+        const dropdown = document.getElementById('adminDropdownContent');
+        const btn = document.getElementById('adminDropdownBtn');
+        if (dropdown && dropdown.classList.contains('show-dropdown')) {
+          dropdown.classList.remove('show-dropdown');
+          btn.classList.remove('active');
+        }
+      }
+    });
+  }
+
+  // Handle logout
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    });
+  }
 });
 
 // Load and display contact messages
@@ -99,17 +164,4 @@ async function deleteMessage(id) {
     console.error('Error deleting message:', error);
     alert('Failed to delete message. Please try again.');
   }
-}
-
-// Handle logout
-const logoutBtn = document.getElementById('logout-btn');
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', async () => {
-    try {
-      await auth.signOut();
-      window.location.href = 'index.html';
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  });
 } 

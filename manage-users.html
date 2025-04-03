@@ -62,21 +62,146 @@
       text-align: center;
       padding: 20px;
     }
+    
+    /* Admin Dropdown Menu Styles */
+    .admin-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .admin-dropdown-btn {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 1em;
+      padding: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .admin-dropdown-btn .dropdown-icon {
+      display: inline-block;
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    .admin-dropdown-btn.active .dropdown-icon {
+      transform: rotate(180deg);
+    }
+
+    .admin-dropdown-btn:hover, 
+    .admin-dropdown-btn.active {
+      color: #a07;
+    }
+
+    .admin-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      z-index: 1;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+      border: 1px solid #eee;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .admin-dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .admin-dropdown-content a:last-child {
+      border-bottom: none;
+    }
+
+    .admin-dropdown-content a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
+    }
+
+    /* This class is toggled via JavaScript */
+    .show-dropdown {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive adjustments for admin dropdown */
+    @media (max-width: 768px) {
+      .admin-dropdown-content {
+        position: absolute;
+        right: 0;
+        left: auto;
+        width: 200px;
+      }
+
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .admin-dropdown {
+        position: relative;
+      }
+    }
+
+    /* For very small screens */
+    @media (max-width: 480px) {
+      .admin-dropdown-content {
+        right: -50px; /* Adjust position to be more centered on small screens */
+      }
+
+      .admin-dropdown-btn {
+        padding: 10px 5px;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Manage Users</h1>
-    <nav>
+    <a href="index.html">
+      <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
+    </a>
+    <nav id="mainNav">
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
-      <a href="admin-dashboard.html">Admin Dashboard</a>
-      <a href="editor.html">Create Post</a>
-      <a href="manage-users.html">Users</a>
+      <a href="contact.html">Contact</a>
+      <!-- Admin dropdown menu -->
+      <div class="admin-dropdown">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#">
+          Admin Dashboard 
+          <span class="dropdown-icon">▼</span>
+        </a>
+        <div id="adminDropdownContent" class="admin-dropdown-content">
+          <a href="editor.html">Create Post</a>
+          <a href="admin-dashboard.html">Edit Posts</a>
+          <a href="manage-users.html">User Management</a>
+        </div>
+      </div>
+      <!-- Public links -->
+      <a id="login-link" href="login.html" style="display:none;">Login</a>
       <button id="logoutBtn">Logout</button>
     </nav>
   </header>
   <main>
+    <h1>Manage Users</h1>
     <div id="content">
       <ul id="user-list">
         <!-- User accounts will be listed here -->
@@ -123,6 +248,8 @@
 
     // Admin UID
     const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+    const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+    const loginLink = document.getElementById("login-link");
 
     // Check authentication and admin status
     onAuthStateChanged(auth, async (user) => {
@@ -142,10 +269,37 @@
         return;
       }
 
+      // Set display state for auth UI elements
+      if (loginLink) loginLink.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "block";
+      if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+
       console.log("User is admin, loading users...");
       // User is admin, load the users
       await loadUsers();
     });
+
+    // Handle admin dropdown functionality
+    if (adminDropdownBtn) {
+      adminDropdownBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+        this.classList.toggle("active");
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener("click", function(e) {
+        if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+          const dropdown = document.getElementById("adminDropdownContent");
+          const btn = document.getElementById("adminDropdownBtn");
+          if (dropdown && dropdown.classList.contains("show-dropdown")) {
+            dropdown.classList.remove("show-dropdown");
+            btn.classList.remove("active");
+          }
+        }
+      });
+    }
 
     // Close modal when clicking the X
     closeBtn.onclick = function() {
