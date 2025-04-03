@@ -76,6 +76,69 @@
       line-height: 1.3;
     }
 
+    .sorting-options {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 0 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .sorting-options span {
+      margin-right: 10px;
+      color: #555;
+      font-size: 0.9em;
+    }
+
+    .sorting-options select {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      background-color: white;
+      cursor: pointer;
+      font-size: 0.9em;
+      color: #333;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .sorting-options select:hover {
+      border-color: #bbb;
+    }
+
+    .sorting-options select:focus {
+      border-color: #a07;
+      box-shadow: 0 0 0 2px rgba(170, 0, 119, 0.1);
+    }
+
+    /* Active sort indicator */
+    .active-sort {
+      display: none;
+      margin-left: 15px;
+      font-size: 0.85em;
+      color: #a07;
+      font-weight: bold;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .sorting-options {
+        justify-content: center;
+        margin-bottom: 15px;
+      }
+      
+      #blogPosts > div {
+        padding: 0 15px;
+      }
+      
+      #blogPosts h3 {
+        font-size: 1.5em;
+      }
+    }
+
     .posts {
       display: flex;
       flex-direction: column;
@@ -156,6 +219,16 @@
   <div class="content">
     <!-- Posts Section -->
     <main class="posts">
+      <!-- Sorting Options -->
+      <div class="sorting-options">
+        <span>Sort by:</span>
+        <select id="sortPosts">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="comments">Most Comments</option>
+        </select>
+        <span id="activeSortIndicator" class="active-sort">Newest</span>
+      </div>
       <!-- Container where posts will be loaded -->
       <div id="blogPosts"></div>
     </main>
@@ -249,6 +322,122 @@
 
       // Get container for blog posts
       const blogPostsContainer = document.getElementById("blogPosts");
+      let allPosts = []; // Store all posts for sorting
+
+      // Function to render posts based on current sort order
+      const renderPosts = (posts) => {
+        // Clear the container
+        blogPostsContainer.innerHTML = '';
+
+        // Display all posts in the main content area
+        for (const post of posts) {
+          // Get comment count for each post
+          post.commentCount = post.commentCount || 0; // Use cached count if available
+
+          // Create post image HTML if available
+          const imageHtml = post.imageUrl 
+            ? `<img src="${post.imageUrl}" alt="${post.title} image" style="max-width:100%; height:auto;">`
+            : "";
+
+          // Create content preview (strip HTML and limit to 200 characters)
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = post.content;
+          const textContent = tempDiv.textContent || tempDiv.innerText || '';
+          const contentPreview = textContent.length > 200 
+            ? textContent.substring(0, 200) + '...' 
+            : textContent;
+
+          // Create and append post element
+          const postElement = document.createElement("div");
+          
+          // Get date for display (use postDate if available, fallback to createdAt)
+          const getPostDate = (post) => {
+            if (post.postDate) {
+              // If postDate exists, it could be a string or a timestamp
+              return typeof post.postDate === 'string' 
+                ? new Date(post.postDate) 
+                : new Date(post.postDate);
+            } else {
+              // Fall back to createdAt, which is a Firestore timestamp
+              return post.createdAt.toDate();
+            }
+          };
+          
+          const displayDate = getPostDate(post);
+
+          postElement.innerHTML = `
+            <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
+              <h3 style="${post.titleFont ? `font-family: '${post.titleFont}', cursive` : ''}">${post.title}</h3>
+              <div class="post-meta" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                ${displayDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} by Ny - ${post.commentCount} comment${post.commentCount !== 1 ? 's' : ''}
+              </div>
+              ${imageHtml}
+              <p>${contentPreview}</p>
+              <p style="text-align: right; color: #a07; font-weight: bold;">Read more &rarr;</p>
+            </a>
+            <hr>
+          `;
+          blogPostsContainer.appendChild(postElement);
+        }
+      };
+
+      // Function to sort posts based on selected option
+      const sortPosts = (sortOption) => {
+        let sortedPosts = [...allPosts]; // Create a copy of the posts array
+        
+        // Helper function to get comparable date from a post
+        const getPostDate = (post) => {
+          if (post.postDate) {
+            // If postDate exists, it could be a string or a timestamp
+            return typeof post.postDate === 'string' 
+              ? new Date(post.postDate) 
+              : new Date(post.postDate);
+          } else {
+            // Fall back to createdAt, which is a Firestore timestamp
+            return post.createdAt.toDate();
+          }
+        };
+        
+        switch(sortOption) {
+          case 'newest':
+            sortedPosts.sort((a, b) => {
+              return getPostDate(b) - getPostDate(a); // Newest first
+            });
+            break;
+          case 'oldest':
+            sortedPosts.sort((a, b) => {
+              return getPostDate(a) - getPostDate(b); // Oldest first
+            });
+            break;
+          case 'comments':
+            sortedPosts.sort((a, b) => b.commentCount - a.commentCount); // Most comments first
+            break;
+        }
+        
+        renderPosts(sortedPosts);
+      };
+
+      // Add event listener to sort dropdown
+      document.getElementById('sortPosts').addEventListener('change', (e) => {
+        sortPosts(e.target.value);
+        
+        // Update the visual indicator
+        const indicator = document.getElementById('activeSortIndicator');
+        indicator.style.display = 'inline';
+        
+        // Set the indicator text based on selected option
+        switch(e.target.value) {
+          case 'newest':
+            indicator.textContent = 'Newest';
+            break;
+          case 'oldest':
+            indicator.textContent = 'Oldest';
+            break;
+          case 'comments':
+            indicator.textContent = 'Most Comments';
+            break;
+        }
+      });
       
       // Async function to fetch and display posts
       (async () => {
@@ -258,14 +447,33 @@
           const querySnapshot = await getDocs(q);
           
           // Store all posts in an array
-          const posts = [];
+          allPosts = [];
           querySnapshot.forEach((doc) => {
-            posts.push({ id: doc.id, ...doc.data() });
+            allPosts.push({ id: doc.id, ...doc.data() });
           });
 
           // Populate the recent posts sidebar (first 5 posts)
           const recentPostsList = document.getElementById("recentPostsList");
-          posts.slice(0, 5).forEach(post => {
+          
+          // Sort posts by date for recent posts display (newest first)
+          const sortedForRecent = [...allPosts].sort((a, b) => {
+            // Helper function to get comparable date from a post
+            const getPostDate = (post) => {
+              if (post.postDate) {
+                // If postDate exists, it could be a string or a timestamp
+                return typeof post.postDate === 'string' 
+                  ? new Date(post.postDate) 
+                  : new Date(post.postDate);
+              } else {
+                // Fall back to createdAt, which is a Firestore timestamp
+                return post.createdAt.toDate();
+              }
+            };
+            
+            return getPostDate(b) - getPostDate(a); // Newest first
+          });
+          
+          sortedForRecent.slice(0, 5).forEach(post => {
             const recentPostElement = document.createElement("a");
             recentPostElement.href = `post.html?postId=${post.id}`;
             recentPostElement.className = "recent-post-item";
@@ -275,13 +483,28 @@
               ? `<img src="${post.imageUrl}" alt="${post.title}">`
               : `<div style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;"></div>`;
             
+            // Get date for display
+            const getPostDate = (post) => {
+              if (post.postDate) {
+                // If postDate exists, it could be a string or a timestamp
+                return typeof post.postDate === 'string' 
+                  ? new Date(post.postDate) 
+                  : new Date(post.postDate);
+              } else {
+                // Fall back to createdAt, which is a Firestore timestamp
+                return post.createdAt.toDate();
+              }
+            };
+            
+            const displayDate = getPostDate(post);
+            
             // Set up recent post item HTML
             recentPostElement.innerHTML = `
               ${imageHtml}
               <div>
                 <div class="post-title">${post.title}</div>
                 <div style="font-size: 0.8em; color: #666;">
-                  ${post.postDate ? new Date(post.postDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  ${displayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
             `;
@@ -289,50 +512,19 @@
             recentPostsList.appendChild(recentPostElement);
           });
 
-          // Display all posts in the main content area
-          for (const post of posts) {
-            // Get comment count for each post
+          // Fetch comment counts for all posts
+          for (const post of allPosts) {
             const commentsQuery = query(collection(db, `posts/${post.id}/comments`));
             const commentsSnapshot = await getDocs(commentsQuery);
-            const commentCount = commentsSnapshot.size;
-
-            // Create post image HTML if available
-            const imageHtml = post.imageUrl 
-              ? `<img src="${post.imageUrl}" alt="${post.title} image" style="max-width:100%; height:auto;">`
-              : "";
-
-            // Create content preview (strip HTML and limit to 200 characters)
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = post.content;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            const contentPreview = textContent.length > 200 
-              ? textContent.substring(0, 200) + '...' 
-              : textContent;
-
-            // Create and append post element
-            const postElement = document.createElement("div");
-            
-            // Log the post data to debug font issues
-            console.log('Creating post element with data:', {
-              title: post.title,
-              titleFont: post.titleFont,
-              id: post.id
-            });
-
-            postElement.innerHTML = `
-              <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
-                <h3 style="${post.titleFont ? `font-family: '${post.titleFont}', cursive` : ''}">${post.title}</h3>
-                <div class="post-meta" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
-                  ${post.postDate ? new Date(post.postDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} by Ny - ${commentCount} comment${commentCount !== 1 ? 's' : ''}
-                </div>
-                ${imageHtml}
-                <p>${contentPreview}</p>
-                <p style="text-align: right; color: #a07; font-weight: bold;">Read more &rarr;</p>
-              </a>
-              <hr>
-            `;
-            blogPostsContainer.appendChild(postElement);
+            post.commentCount = commentsSnapshot.size;
           }
+
+          // Initial sort by newest (default)
+          sortPosts('newest');
+          
+          // Show initial sort indicator
+          document.getElementById('activeSortIndicator').style.display = 'inline';
+          
         } catch (error) {
           // Handle any errors during post loading
           console.error("Error fetching posts:", error);
