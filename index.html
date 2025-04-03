@@ -105,6 +105,34 @@
       text-align: left;
       line-height: 1.6;
     }
+
+    .recent-post-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      text-decoration: none;
+      color: inherit;
+      border-bottom: 1px solid #eee;
+    }
+
+    .recent-post-item:last-child {
+      border-bottom: none;
+    }
+
+    .recent-post-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .post-title {
+      font-size: 0.9em;
+      line-height: 1.4;
+      margin-bottom: 3px;
+    }
   </style>
 </head>
 <body>
@@ -250,7 +278,12 @@
             // Set up recent post item HTML
             recentPostElement.innerHTML = `
               ${imageHtml}
-              <div class="post-title">${post.title}</div>
+              <div>
+                <div class="post-title">${post.title}</div>
+                <div style="font-size: 0.8em; color: #666;">
+                  ${post.postDate ? new Date(post.postDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+              </div>
             `;
             
             recentPostsList.appendChild(recentPostElement);
@@ -268,6 +301,14 @@
               ? `<img src="${post.imageUrl}" alt="${post.title} image" style="max-width:100%; height:auto;">`
               : "";
 
+            // Create content preview (strip HTML and limit to 200 characters)
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = post.content;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            const contentPreview = textContent.length > 200 
+              ? textContent.substring(0, 200) + '...' 
+              : textContent;
+
             // Create and append post element
             const postElement = document.createElement("div");
             
@@ -282,10 +323,11 @@
               <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
                 <h3 style="${post.titleFont ? `font-family: '${post.titleFont}', cursive` : ''}">${post.title}</h3>
                 <div class="post-meta" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
-                  ${new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} by Ny - ${commentCount} comment${commentCount !== 1 ? 's' : ''}
+                  ${post.postDate ? new Date(post.postDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date(post.createdAt.toDate()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} by Ny - ${commentCount} comment${commentCount !== 1 ? 's' : ''}
                 </div>
                 ${imageHtml}
-                <p>${post.content}</p>
+                <p>${contentPreview}</p>
+                <p style="text-align: right; color: #a07; font-weight: bold;">Read more &rarr;</p>
               </a>
               <hr>
             `;
