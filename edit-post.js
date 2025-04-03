@@ -851,10 +851,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <span>${date}</span>
           <span>${post.commentCount} comments</span>
         </div>
+        <div class="post-item-actions">
+          <button class="post-action-btn archive-post-btn" title="Archive Post">Archive</button>
+          <button class="post-action-btn delete-post-btn" title="Delete Post">Delete</button>
+        </div>
       `;
       
       // Add click event to load the post
-      postElement.addEventListener('click', () => {
+      postElement.querySelector('.post-item-title').addEventListener('click', () => {
         // Change URL without page refresh
         const url = new URL(window.location);
         url.searchParams.set('postId', post.id);
@@ -869,6 +873,90 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         postElement.classList.add('active');
       });
+      
+      // Add click event for the meta info to also load the post
+      postElement.querySelector('.post-item-meta').addEventListener('click', () => {
+        postElement.querySelector('.post-item-title').click();
+      });
+      
+      // Add delete button handler
+      const deleteBtn = postElement.querySelector('.delete-post-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', async (e) => {
+          e.stopPropagation(); // Prevent post selection
+          
+          if (confirm(`Are you sure you want to delete "${post.title}"? This action cannot be undone.`)) {
+            try {
+              await deleteDoc(doc(db, "posts", post.id));
+              
+              // Remove from DOM
+              postElement.remove();
+              
+              // Remove from allPosts array
+              const index = allPosts.findIndex(p => p.id === post.id);
+              if (index >= 0) {
+                allPosts.splice(index, 1);
+              }
+              
+              // Notify user
+              alert("Post deleted successfully!");
+              
+              // If deleted post is currently loaded, redirect to latest post
+              if (post.id === currentPostId) {
+                if (allPosts.length > 0) {
+                  // Load another post
+                  const nextPostId = allPosts[0].id;
+                  
+                  // Update URL
+                  const url = new URL(window.location);
+                  url.searchParams.set('postId', nextPostId);
+                  window.history.pushState({}, '', url);
+                  
+                  // Load the post
+                  loadPostData(nextPostId);
+                } else {
+                  // No posts left, redirect to dashboard
+                  window.location.href = "admin-dashboard.html";
+                }
+              }
+            } catch (error) {
+              console.error("Error deleting post:", error);
+              alert("Error deleting post. Please try again.");
+            }
+          }
+        });
+      }
+      
+      // Add archive button handler
+      const archiveBtn = postElement.querySelector('.archive-post-btn');
+      if (archiveBtn) {
+        archiveBtn.addEventListener('click', async (e) => {
+          e.stopPropagation(); // Prevent post selection
+          
+          try {
+            // Update post to archived status
+            await updateDoc(doc(db, "posts", post.id), {
+              status: 'archived',
+              lastModified: serverTimestamp()
+            });
+            
+            // Update visual indication
+            archiveBtn.textContent = "Archived";
+            archiveBtn.disabled = true;
+            
+            // Notify user
+            alert(`"${post.title}" has been archived.`);
+            
+            // If this is the current post, reload it to show updated status
+            if (post.id === currentPostId) {
+              loadPostData(post.id);
+            }
+          } catch (error) {
+            console.error("Error archiving post:", error);
+            alert("Error archiving post. Please try again.");
+          }
+        });
+      }
       
       postsList.appendChild(postElement);
     });

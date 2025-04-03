@@ -34,6 +34,11 @@
       overflow-y: auto;
       position: sticky;
       top: 20px;
+      resize: horizontal;
+      overflow-x: auto;
+      min-width: 200px;
+      max-width: 500px;
+      transition: width 0.3s ease;
     }
 
     .posts-list {
@@ -47,6 +52,9 @@
       border-bottom: 1px solid #eee;
       cursor: pointer;
       transition: background-color 0.2s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .post-item:hover {
@@ -71,6 +79,45 @@
       color: #666;
       display: flex;
       justify-content: space-between;
+    }
+
+    .post-item-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+      justify-content: flex-end;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    .post-item:hover .post-item-actions {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .post-action-btn {
+      padding: 3px 8px;
+      font-size: 12px;
+      border: 1px solid #222;
+      background: transparent;
+      color: #222;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .post-action-btn:hover {
+      background: #222;
+      color: white;
+    }
+    
+    .delete-post-btn {
+      border-color: #222;
+    }
+    
+    .archive-post-btn {
+      border-color: #222;
     }
 
     .sorting-controls {
