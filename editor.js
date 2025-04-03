@@ -686,12 +686,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Set default date to today
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
-    const previewDate = document.getElementById("previewDate");
-    if (previewDate) {
-      previewDate.textContent = new Date().toLocaleDateString();
+    // Initialize date field with today's date if empty
+    if (!dateInput.value) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+      
+      // Also update preview date if it exists
+      const previewDate = document.querySelector('.preview-date');
+      if (previewDate) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        previewDate.textContent = new Date().toLocaleDateString('en-US', options);
+      }
     }
   }
 
@@ -700,9 +704,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const draft = {
       title: document.getElementById("title").value,
       content: contentEditor.innerHTML,
-      tags: document.getElementById("tags").value,
-      status: document.querySelector('input[name="status"]:checked').value,
-      date: document.getElementById("postDate").value,
+      tags: document.getElementById("tags") ? document.getElementById("tags").value : '',
+      status: document.querySelector('input[name="status"]:checked') ? document.querySelector('input[name="status"]:checked').value : 'draft',
+      date: document.getElementById("postDate") ? document.getElementById("postDate").value : new Date().toISOString().split('T')[0],
       lastSaved: new Date().toISOString()
     };
     localStorage.setItem('postDraft', JSON.stringify(draft));
@@ -771,6 +775,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
       const content = editor && editor.getContents ? editor.getContents() : '';
       const imageUrl = document.getElementById('image') ? document.getElementById('image').value : '';
+      const postDate = document.getElementById('postDate') ? document.getElementById('postDate').value : new Date().toISOString().split('T')[0];
 
       try {
         // Log the values being saved
@@ -778,7 +783,8 @@ document.addEventListener("DOMContentLoaded", () => {
           title: titleValue,
           titleFont: titleFont,
           content: content,
-          imageUrl: imageUrl
+          imageUrl: imageUrl,
+          postDate: postDate
         });
 
         await addDoc(collection(db, "posts"), {
@@ -786,6 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
           titleFont: titleFont,
           content: content,
           imageUrl: imageUrl,
+          postDate: postDate,
           createdAt: new Date(),
         });
 
@@ -870,52 +877,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load draft data
   function loadSavedDraft() {
-    // Check for individual draft items (new format)
+    if (!editor || !document.getElementById('title')) return;
+    
     const title = localStorage.getItem('draft_title');
     const content = localStorage.getItem('draft_content');
     const titleFont = localStorage.getItem('draft_title_font');
     const imageUrl = localStorage.getItem('draft_image_url');
+    const timestamp = localStorage.getItem('draft_timestamp');
+    const postDate = localStorage.getItem('draft_post_date');
     
-    // Only proceed if we have saved draft data
-    if (title || content || imageUrl) {
-      console.log('Loading saved draft');
+    // Only load if we have a saved draft
+    if (title || content) {
+      console.log('Loading saved draft content');
       
-      // Set title content and font
+      // Load title
       const titleField = document.getElementById('titleField');
       if (titleField && title) {
         titleField.innerHTML = title;
-        
-        // Also update the hidden input
-        const titleInput = document.getElementById('title');
-        if (titleInput) {
-          titleInput.value = title;
+      }
+      
+      // Load title font
+      const titleFontSelect = document.getElementById('titleFont');
+      if (titleFontSelect && titleFont) {
+        titleFontSelect.value = titleFont;
+        if (titleField) {
+          titleField.style.fontFamily = titleFont;
         }
       }
       
-      // Set title font if saved
-      if (titleField && titleFont) {
-        titleField.style.fontFamily = titleFont;
-        const titleFontSelect = document.getElementById('titleFont');
-        if (titleFontSelect) {
-          titleFontSelect.value = titleFont;
-        }
-      }
-      
-      // Set content in editor
+      // Load content into editor
       if (editor && content) {
         editor.setContents(content);
       }
       
-      // Set image URL and preview
-      if (imageUrl) {
-        const imageInput = document.getElementById('image');
-        const imagePreview = document.getElementById('imagePreview');
-        if (imageInput) {
-          imageInput.value = imageUrl;
-        }
-        if (imagePreview) {
-          imagePreview.innerHTML = `<img src="${imageUrl}" alt="Preview">`;
-        }
+      // Load image URL
+      const imageInput = document.getElementById('image');
+      if (imageInput && imageUrl) {
+        imageInput.value = imageUrl;
+      }
+      
+      // Load post date
+      const dateInput = document.getElementById('postDate');
+      if (dateInput && postDate) {
+        dateInput.value = postDate;
+      } else if (dateInput) {
+        // Default to today if no saved date
+        dateInput.value = new Date().toISOString().split('T')[0];
       }
       
       // Update preview with loaded content
@@ -1364,6 +1371,12 @@ async function autosave() {
     localStorage.setItem('draft_title_font', titleFont);
     localStorage.setItem('draft_image_url', imageUrl);
     localStorage.setItem('draft_timestamp', Date.now());
+    
+    // Save post date if available
+    const postDate = document.getElementById('postDate');
+    if (postDate) {
+      localStorage.setItem('draft_post_date', postDate.value);
+    }
     
     // Show autosave status
     showAutosaveStatus();

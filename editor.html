@@ -122,6 +122,24 @@
       font-weight: normal;
     }
 
+    .date-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #495057;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .date-input:focus {
+      border-color: #4dabf7;
+      box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
+      outline: none;
+    }
+
     .form-group textarea {
       width: 100%;
       max-width: 100%;
@@ -880,6 +898,11 @@
         </div>
 
         <div class="form-group">
+          <label for="postDate">Post Date</label>
+          <input type="date" id="postDate" name="postDate" class="date-input" required />
+        </div>
+
+        <div class="form-group">
           <label for="content">Content</label>
           <textarea id="content" name="content"></textarea>
         </div>
@@ -958,7 +981,22 @@
       
       // Set current date in preview
       const previewDate = document.querySelector('.preview-date');
-      if (previewDate) {
+      const dateInput = document.getElementById('postDate');
+      
+      if (previewDate && dateInput) {
+        // Initialize with the date from the input field
+        updatePreviewDate();
+        
+        // Update preview date when date input changes
+        dateInput.addEventListener('change', updatePreviewDate);
+        
+        function updatePreviewDate() {
+          const selectedDate = new Date(dateInput.value);
+          const options = { year: 'numeric', month: 'long', day: 'numeric' };
+          previewDate.textContent = selectedDate.toLocaleDateString('en-US', options);
+        }
+      } else if (previewDate) {
+        // Fallback to current date if no date input
         const now = new Date();
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         previewDate.textContent = now.toLocaleDateString('en-US', options);
