@@ -426,77 +426,82 @@
       margin-bottom: 20px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
       box-sizing: border-box !important;
-      overflow: hidden !important;
     }
 
+    /* Fix for scrolling issue - update the wrapper class */
     .sun-editor .se-wrapper {
       min-height: 400px !important;
       max-height: 600px !important;
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
-      overflow-y: scroll !important;
-      overflow-x: hidden !important;
     }
     
+    /* Fix the editable area to ensure scrolling works */
+    .sun-editor .se-wrapper-inner {
+      overflow-y: auto !important;
+      max-height: 600px !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+      word-break: break-word !important;
+      white-space: pre-wrap !important;
+      max-width: 100% !important;
+    }
+    
+    /* Make sure all content inside the editor wraps properly */
+    .sun-editor .se-wrapper-inner * {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+    }
+    
+    /* Container styles */
     .sun-editor .se-container {
       padding: 20px !important;
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
-      overflow-wrap: break-word !important;
-      word-wrap: break-word !important;
-      word-break: break-word !important;
     }
     
-    /* Ensure content inside SunEditor stays within bounds */
-    .sun-editor .se-wrapper * {
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-    }
-
-    /* Prevent overflow in editor content area */
-    .sun-editor .se-wrapper .se-wrapper-inner {
-      overflow-wrap: break-word !important;
-      word-wrap: break-word !important;
-      word-break: break-word !important;
-      white-space: pre-wrap !important;
-      overflow: hidden !important;
-      max-width: 100% !important;
-    }
-
-    /* Force wrapping for long content */
-    .sun-editor .se-wrapper .se-wrapper-inner * {
-      overflow-wrap: break-word !important;
-      word-wrap: break-word !important;
-      white-space: pre-wrap !important;
+    /* Make sure the content area itself is scrollable */
+    .sun-editor .se-wrapper .se-wrapper-wysiwyg {
+      overflow-y: auto !important;
+      height: 100% !important;
+      min-height: 400px !important;
+      max-height: 600px !important;
     }
     
     /* Always show scrollbar for SunEditor content area */
-    .sun-editor .se-wrapper::-webkit-scrollbar {
+    .sun-editor .se-wrapper-inner::-webkit-scrollbar,
+    .sun-editor .se-wrapper-wysiwyg::-webkit-scrollbar {
       width: 12px !important;
       height: 12px !important;
       background-color: #f1f1f1 !important;
       display: block !important;
     }
 
-    .sun-editor .se-wrapper::-webkit-scrollbar-track {
+    .sun-editor .se-wrapper-inner::-webkit-scrollbar-track,
+    .sun-editor .se-wrapper-wysiwyg::-webkit-scrollbar-track {
       background: #f1f1f1 !important;
       border-radius: 4px !important;
     }
 
-    .sun-editor .se-wrapper::-webkit-scrollbar-thumb {
+    .sun-editor .se-wrapper-inner::-webkit-scrollbar-thumb,
+    .sun-editor .se-wrapper-wysiwyg::-webkit-scrollbar-thumb {
       background: #888 !important;
       border-radius: 4px !important;
       border: 2px solid #f1f1f1 !important;
     }
 
-    .sun-editor .se-wrapper::-webkit-scrollbar-thumb:hover {
+    .sun-editor .se-wrapper-inner::-webkit-scrollbar-thumb:hover,
+    .sun-editor .se-wrapper-wysiwyg::-webkit-scrollbar-thumb:hover {
       background: #555 !important;
     }
     
     /* Firefox scrollbar */
-    .sun-editor .se-wrapper {
+    .sun-editor .se-wrapper-inner,
+    .sun-editor .se-wrapper-wysiwyg {
       scrollbar-width: thin !important;
       scrollbar-color: #888 #f1f1f1 !important;
     }
