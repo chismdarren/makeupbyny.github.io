@@ -52,7 +52,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleField = document.getElementById("titleField");
   const titleHiddenInput = document.getElementById("title");
   const titleFontSelect = document.getElementById("titleFont");
-
+  
+  // Preview popup elements
+  const previewBtn = document.getElementById('previewBtn');
+  const closePreviewBtn = document.getElementById('closePreviewBtn');
+  const previewSection = document.getElementById('previewSection');
+  const previewOverlay = document.getElementById('previewOverlay');
+  
   // Initialize SunEditor
   if (contentElement) {
     editor = SUNEDITOR.create(contentElement, {
@@ -866,6 +872,46 @@ document.addEventListener("DOMContentLoaded", () => {
       
       postsList.appendChild(postElement);
     });
+  }
+
+  // Preview popup functionality
+  if (previewBtn && previewSection) {
+    // Open preview
+    previewBtn.addEventListener('click', function() {
+      previewSection.classList.add('open');
+      previewOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+    });
+    
+    // Close preview when clicking the close button
+    if (closePreviewBtn) {
+      closePreviewBtn.addEventListener('click', function() {
+        closePreview();
+      });
+    }
+    
+    // Close preview when clicking the overlay
+    if (previewOverlay) {
+      previewOverlay.addEventListener('click', function() {
+        closePreview();
+      });
+    }
+    
+    // Close preview with escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && previewSection.classList.contains('open')) {
+        closePreview();
+      }
+    });
+  }
+  
+  // Close preview function
+  function closePreview() {
+    if (previewSection && previewOverlay) {
+      previewSection.classList.remove('open');
+      previewOverlay.classList.remove('open');
+      document.body.style.overflow = ''; // Restore scrolling
+    }
   }
 
   // Initialize

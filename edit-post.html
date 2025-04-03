@@ -17,7 +17,7 @@
   <style>
     .editor-container {
       display: grid;
-      grid-template-columns: 300px 1fr 1fr;
+      grid-template-columns: 300px 1fr;
       gap: 20px;
       padding: 20px;
       max-width: 1600px;
@@ -107,16 +107,78 @@
       overflow: hidden;
     }
 
+    .preview-button {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .preview-button:hover {
+      background: #0069d9;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
     .preview-section {
+      position: fixed;
+      top: 0;
+      right: -800px;
+      width: 700px;
+      height: 100vh;
       background: white;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 20px;
-      height: fit-content;
-      max-height: calc(100vh - 40px);
+      box-shadow: -5px 0 15px rgba(0,0,0,0.1);
       overflow-y: auto;
+      z-index: 1000;
+      transition: right 0.3s ease;
+    }
+    
+    .preview-section.open {
+      right: 0;
+    }
+    
+    .preview-section .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .preview-section .close-btn:hover {
+      color: #333;
+    }
+    
+    .preview-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      display: none;
+    }
+    
+    .preview-overlay.open {
+      display: block;
     }
 
     .form-group {
@@ -324,10 +386,6 @@
       .editor-container {
         grid-template-columns: 250px 1fr;
       }
-      
-      .preview-section {
-        display: none;
-      }
     }
 
     @media (max-width: 768px) {
@@ -341,9 +399,8 @@
       }
 
       .preview-section {
-        position: static;
-        max-height: none;
-        display: block;
+        width: 100%;
+        right: -100%;
       }
     }
 
@@ -667,7 +724,9 @@
         </form>
       </div>
 
-      <div class="preview-section">
+      <div class="preview-overlay" id="previewOverlay"></div>
+      <div class="preview-section" id="previewSection">
+        <button class="close-btn" id="closePreviewBtn">&times;</button>
         <h2>Preview</h2>
         <div class="preview-content">
           <div id="previewTitle" class="preview-title">Post Title Preview</div>
@@ -678,6 +737,10 @@
           <div id="previewContent">Post content preview will appear here...</div>
         </div>
       </div>
+      
+      <button class="preview-button" id="previewBtn" title="Show Preview">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      </button>
     </div>
   </main>
 
