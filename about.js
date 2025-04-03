@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Close dropdown when clicking outside
   window.addEventListener("click", function(e) {
-    if (!e.target.matches('#adminDropdownBtn')) {
+    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
       const dropdown = document.getElementById("adminDropdownContent");
       const btn = document.getElementById("adminDropdownBtn");
       if (dropdown.classList.contains("show-dropdown")) {
