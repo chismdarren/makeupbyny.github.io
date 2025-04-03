@@ -435,7 +435,7 @@
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
-      overflow-y: auto !important;
+      overflow-y: scroll !important;
       overflow-x: hidden !important;
     }
     
@@ -474,8 +474,8 @@
     
     /* Always show scrollbar for SunEditor content area */
     .sun-editor .se-wrapper::-webkit-scrollbar {
-      width: 10px !important;
-      height: 10px !important;
+      width: 12px !important;
+      height: 12px !important;
       background-color: #f1f1f1 !important;
       display: block !important;
     }
@@ -486,13 +486,19 @@
     }
 
     .sun-editor .se-wrapper::-webkit-scrollbar-thumb {
-      background: #c1c1c1 !important;
+      background: #888 !important;
       border-radius: 4px !important;
       border: 2px solid #f1f1f1 !important;
     }
 
     .sun-editor .se-wrapper::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8 !important;
+      background: #555 !important;
+    }
+    
+    /* Firefox scrollbar */
+    .sun-editor .se-wrapper {
+      scrollbar-width: thin !important;
+      scrollbar-color: #888 #f1f1f1 !important;
     }
 
     .sun-editor img {
