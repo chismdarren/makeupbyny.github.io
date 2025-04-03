@@ -1070,6 +1070,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Toggle preview popup
     previewBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      e.stopPropagation(); // Prevent event from bubbling up to form
       previewSidebar.classList.add('open');
       previewOverlay.classList.add('open');
       document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
