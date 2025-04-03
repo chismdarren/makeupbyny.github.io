@@ -358,6 +358,7 @@
     <main>
       <article>
         <h2 id="postHeading">Post Content</h2>
+        <p id="postDate" class="post-date" style="color: #666; font-size: 0.9em; margin-bottom: 20px; text-align: center; font-style: italic;"></p>
         <img id="postImage" style="max-width: 100%; display: none;" alt="Post Image" />
         <p id="postContent">Fetching post...</p>
       </article>
@@ -508,6 +509,14 @@
         }
         // Set the title text content instead of innerHTML to prevent HTML entities from showing
         postHeading.textContent = postData.title;
+        
+        // Format and display the post date
+        const postDateElement = document.getElementById("postDate");
+        if (postDateElement && postData.postDate) {
+          const date = new Date(postData.postDate);
+          const options = { year: 'numeric', month: 'long', day: 'numeric' };
+          postDateElement.textContent = date.toLocaleDateString('en-US', options);
+        }
         
         document.getElementById("postContent").innerHTML = postData.content;
 

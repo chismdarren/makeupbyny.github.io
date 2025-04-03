@@ -499,7 +499,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const previewDate = document.getElementById("previewDate");
       if (previewDate) {
         const selectedDate = new Date(this.value);
-        previewDate.textContent = selectedDate.toLocaleDateString();
+        // Format the date in a more readable format
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        previewDate.textContent = selectedDate.toLocaleDateString('en-US', options);
+        
+        // Update the post in real-time if possible
+        if (window.currentPostId) {
+          // Update the post date in Firestore
+          updateDoc(doc(db, "posts", window.currentPostId), {
+            postDate: this.value,
+            lastModified: serverTimestamp()
+          }).then(() => {
+            console.log("Post date updated successfully");
+          }).catch(error => {
+            console.error("Error updating post date:", error);
+          });
+        }
       }
     });
   }
