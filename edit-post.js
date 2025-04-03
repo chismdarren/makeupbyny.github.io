@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleField = document.getElementById("titleField");
   const titleHiddenInput = document.getElementById("title");
   const titleFontSelect = document.getElementById("titleFont");
+  const dateInput = document.getElementById("postDate");
   
   // Preview popup elements
   const previewBtn = document.getElementById('previewBtn');
@@ -492,21 +493,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Live update for date
-  const dateInput = document.getElementById("postDate");
+  // Handle date input change
   if (dateInput) {
-    dateInput.addEventListener("change", function() {
-      const previewDate = document.getElementById("previewDate");
+    dateInput.addEventListener('change', function() {
+      const selectedDate = new Date(this.value);
+      const previewDate = document.getElementById('previewDate');
+      
       if (previewDate) {
-        const selectedDate = new Date(this.value);
-        // Format the date in a more readable format
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         previewDate.textContent = selectedDate.toLocaleDateString('en-US', options);
-        
-        // Update the post in real-time if possible
-        if (window.currentPostId) {
-          // Update the post date in Firestore
-          updateDoc(doc(db, "posts", window.currentPostId), {
+      }
+      
+      // Update the post date in real-time
+      if (currentPostId) {
+        try {
+          updateDoc(doc(db, "posts", currentPostId), {
             postDate: this.value,
             lastModified: serverTimestamp()
           }).then(() => {
@@ -514,6 +515,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }).catch(error => {
             console.error("Error updating post date:", error);
           });
+        } catch (error) {
+          console.error("Error updating post date:", error);
         }
       }
     });
@@ -601,7 +604,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (previewTags) previewTags.textContent = postData.tags ? `Tags: ${postData.tags}` : '';
         if (previewDate) {
           const date = postData.postDate || postData.lastModified || postData.createdAt;
-          previewDate.textContent = date ? new Date(date).toLocaleDateString() : '';
+          if (date) {
+            const selectedDate = new Date(date);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            previewDate.textContent = selectedDate.toLocaleDateString('en-US', options);
+          } else {
+            previewDate.textContent = '';
+          }
         }
         
         // Highlight the active post in the sidebar
@@ -689,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle authentication state
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
-  const adminDashboardLink = document.getElementById("adminDashboard");
+  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 
   if (loginLink && logoutBtn) {
     onAuthStateChanged(auth, (user) => {
@@ -699,9 +708,11 @@ document.addEventListener("DOMContentLoaded", () => {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
         
-        // Show admin dashboard link only for admin user
-        if (user.uid === adminUID && adminDashboardLink) {
-          adminDashboardLink.style.display = "inline";
+        // Show admin dropdown only for admin user
+        if (user.uid === adminUID && adminDropdownBtn) {
+          adminDropdownBtn.style.display = "inline";
+        } else if (adminDropdownBtn) {
+          adminDropdownBtn.style.display = "none";
         }
         
         // Load all posts for the sidebar
@@ -725,8 +736,8 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
-        if (adminDashboardLink) {
-          adminDashboardLink.style.display = "none";
+        if (adminDropdownBtn) {
+          adminDropdownBtn.style.display = "none";
         }
         window.location.href = "login.html";
       }
@@ -740,6 +751,28 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("User signed out.");
         window.location.href = "index.html";
       });
+    });
+  }
+
+  // Handle admin dropdown functionality
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      this.classList.toggle("active");
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+        const dropdown = document.getElementById("adminDropdownContent");
+        const btn = document.getElementById("adminDropdownBtn");
+        if (dropdown && dropdown.classList.contains("show-dropdown")) {
+          dropdown.classList.remove("show-dropdown");
+          btn.classList.remove("active");
+        }
+      }
     });
   }
 

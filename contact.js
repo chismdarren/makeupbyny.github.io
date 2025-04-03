@@ -2,20 +2,11 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDxQqXqXqXqXqXqXqXqXqXqXqXqXqXqXqXq",
-  authDomain: "makeupbyny.firebaseapp.com",
-  projectId: "makeupbyny",
-  storageBucket: "gs://makeupbyny-1.firebasestorage.app",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890"
-};
+// Import from firebase-config.js instead of defining config here
+import { auth, db } from './firebase-config.js';
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// Define admin user ID - correct ID from other pages
+const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Handle contact form submission
 document.addEventListener('DOMContentLoaded', () => {
@@ -56,26 +47,28 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Handle authentication state
   onAuthStateChanged(auth, (user) => {
-    const adminDashboard = document.getElementById('adminDashboard');
-    const createPost = document.getElementById('createPost');
-    const manageUsers = document.getElementById('manageUsers');
+    const adminDropdownBtn = document.getElementById('adminDropdownBtn');
     const loginLink = document.getElementById('login-link');
     const logoutBtn = document.getElementById('logout-btn');
     
     if (user) {
       // User is signed in
-      adminDashboard.style.display = 'inline-block';
-      createPost.style.display = 'inline-block';
-      manageUsers.style.display = 'inline-block';
       loginLink.style.display = 'none';
-      logoutBtn.style.display = 'inline-block';
+      logoutBtn.style.display = 'inline';
+      
+      // Check if user is admin
+      if (user.uid === adminUID) {
+        // Show admin dropdown button
+        adminDropdownBtn.style.display = 'inline';
+      } else {
+        // Hide admin dropdown button for regular users
+        adminDropdownBtn.style.display = 'none';
+      }
     } else {
       // User is signed out
-      adminDashboard.style.display = 'none';
-      createPost.style.display = 'none';
-      manageUsers.style.display = 'none';
-      loginLink.style.display = 'inline-block';
+      loginLink.style.display = 'inline';
       logoutBtn.style.display = 'none';
+      adminDropdownBtn.style.display = 'none';
     }
   });
   
@@ -91,4 +84,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+  
+  // Toggle dropdown menu on click
+  const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent default link behavior
+      this.classList.toggle('active');
+      document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
+    });
+  }
+
+  // Close dropdown when clicking outside
+  window.addEventListener('click', function(e) {
+    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+      const dropdown = document.getElementById('adminDropdownContent');
+      const btn = document.getElementById('adminDropdownBtn');
+      if (dropdown && dropdown.classList.contains('show-dropdown')) {
+        dropdown.classList.remove('show-dropdown');
+        btn.classList.remove('active');
+      }
+    }
+  });
 }); 

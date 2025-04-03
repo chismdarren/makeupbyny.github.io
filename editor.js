@@ -863,21 +863,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
   const createPostLink = document.getElementById("create-post-link");
+  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 
-  if (loginLink && logoutBtn && createPostLink) {
+  if (loginLink && logoutBtn) {
     onAuthStateChanged(auth, (user) => {
       console.log("Auth state changed. Current user:", user ? user.uid : "No user");
 
       if (user) {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
-        createPostLink.style.display = "inline";
+        if (createPostLink) createPostLink.style.display = "inline";
+        
+        // Show admin dropdown only for admin user
+        if (user.uid === adminUID) {
+          if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+        } else {
+          if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+        }
+        
         // Load posts when user is logged in
         loadUserPosts();
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
-        createPostLink.style.display = "none";
+        if (createPostLink) createPostLink.style.display = "none";
+        if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+        
         // Clear posts list when user logs out
         const postsList = document.getElementById('postsList');
         if (postsList) {
@@ -894,6 +905,28 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("User signed out.");
         window.location.href = "index.html";
       });
+    });
+  }
+
+  // Handle admin dropdown functionality
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      this.classList.toggle("active");
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+        const dropdown = document.getElementById("adminDropdownContent");
+        const btn = document.getElementById("adminDropdownBtn");
+        if (dropdown && dropdown.classList.contains("show-dropdown")) {
+          dropdown.classList.remove("show-dropdown");
+          btn.classList.remove("active");
+        }
+      }
     });
   }
 
