@@ -1,21 +1,6 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDxQqXqXqXqXqXqXqXqXqXqXqXqXqXqXqXq",
-  authDomain: "makeupbyny.firebaseapp.com",
-  projectId: "makeupbyny",
-  storageBucket: "gs://makeupbyny-1.firebasestorage.app",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+import { db, auth } from './firebase-config.js';
+import { collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 // Hardcoded admin UID
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
@@ -98,6 +83,11 @@ function loadContactMessages() {
   // Listen for real-time updates
   onSnapshot(q, (snapshot) => {
     messagesContainer.innerHTML = ''; // Clear existing messages
+    
+    if (snapshot.empty) {
+      messagesContainer.innerHTML = '<p>No messages found.</p>';
+      return;
+    }
 
     snapshot.forEach((doc) => {
       const message = doc.data();
@@ -110,17 +100,20 @@ function loadContactMessages() {
 // Create HTML element for a message
 function createMessageElement(id, message) {
   const div = document.createElement('div');
-  div.className = `message-card ${message.status}`;
+  div.className = `message-card ${message.status || 'new'}`;
+  
+  const timestamp = message.timestamp ? message.timestamp.toDate().toLocaleString() : 'Unknown date';
+  
   div.innerHTML = `
     <div class="message-header">
-      <h3>${message.subject}</h3>
-      <span class="timestamp">${message.timestamp.toDate().toLocaleString()}</span>
+      <h3>${message.subject || 'No Subject'}</h3>
+      <span class="timestamp">${timestamp}</span>
     </div>
     <div class="message-content">
-      <p><strong>From:</strong> ${message.name}</p>
-      <p><strong>Email:</strong> ${message.email}</p>
+      <p><strong>From:</strong> ${message.name || 'Unknown'}</p>
+      <p><strong>Email:</strong> ${message.email || 'No email provided'}</p>
       <p><strong>Message:</strong></p>
-      <p>${message.message}</p>
+      <p>${message.message || 'No message content'}</p>
     </div>
     <div class="message-actions">
       <select class="status-select" data-id="${id}">
