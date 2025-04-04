@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Get DOM elements
   const adminDropdownBtn = document.getElementById('adminDropdownBtn');
   const loginLink = document.getElementById('login-link');
-  const logoutBtn = document.getElementById('logoutBtn');
+  const logoutBtn = document.getElementById('logout-btn');
 
   // Handle authentication state
   onAuthStateChanged(auth, (user) => {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // User is logged in
     if (loginLink) loginLink.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'block';
+    if (logoutBtn) logoutBtn.style.display = 'inline';
 
     // Check if user is admin
     if (user.uid === adminUID) {
