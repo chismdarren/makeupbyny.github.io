@@ -531,6 +531,7 @@
           postElement.innerHTML = `
             <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
               <h3 style="${post.titleFont ? `font-family: '${post.titleFont}', cursive` : ''}">${post.title}</h3>
+              <hr style="width: 30%; margin: 10px auto; border-top: 1px solid #000; border-bottom: none;">
               <div class="post-meta" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
                 ${displayDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} by Ny - ${post.commentCount} comment${post.commentCount !== 1 ? 's' : ''}
               </div>
@@ -543,10 +544,11 @@
           `;
           blogPostsContainer.appendChild(postElement);
           
-          // Add a horizontal line only after the first post
-          if (i === 0 && posts.length > 1) {
-            const divider = document.createElement("hr");
-            blogPostsContainer.appendChild(divider);
+          // Add a bottom border to separate posts (except the last one)
+          if (i < posts.length - 1) {
+            postElement.style.borderBottom = "1px solid #eee";
+            postElement.style.paddingBottom = "30px";
+            postElement.style.marginBottom = "30px";
           }
         }
       };
