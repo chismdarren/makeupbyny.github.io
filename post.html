@@ -56,35 +56,123 @@
     section h3, section h2 {
       text-align: center;
       margin-bottom: 20px;
+      font-size: 1.5em;
+      position: relative;
+    }
+    
+    section h3::after, section h2::after {
+      content: "";
+      display: block;
+      width: 30%;
+      height: 1px;
+      background-color: #000;
+      margin: 10px auto;
     }
 
+    /* New comment form styling */
     #commentForm {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 15px;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    #commentForm label {
+      font-size: 0.85em;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #222;
     }
 
     #commentForm textarea,
     #commentForm input {
       width: 100%;
-      max-width: 500px;
-      padding: 10px;
+      padding: 10px 12px;
       border: 1px solid #ddd;
       border-radius: 4px;
+      margin-bottom: 15px;
+      font-family: inherit;
+      font-size: 0.95em;
+      transition: border-color 0.3s;
+    }
+    
+    #commentForm textarea:focus,
+    #commentForm input:focus {
+      border-color: #222;
+      outline: none;
+    }
+
+    #commentForm textarea {
+      min-height: 120px;
+      resize: vertical;
     }
 
     #commentForm button {
-      padding: 10px 20px;
-      background-color: #333;
-      color: white;
-      border: none;
+      align-self: flex-end;
+      padding: 8px 16px;
+      background: transparent;
+      border: 2px solid #222;
+      color: #222;
+      font-size: 14px;
+      font-weight: bold;
       border-radius: 4px;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
 
     #commentForm button:hover {
-      background-color: #444;
+      background: #222;
+      color: white;
+    }
+    
+    /* Comment display styles */
+    #commentsContainer {
+      margin: 30px 0;
+    }
+    
+    .comment {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 15px;
+      transition: background-color 0.2s;
+    }
+    
+    .comment:hover {
+      background-color: #f9f9f9;
+    }
+    
+    .comment:last-child {
+      border-bottom: none;
+    }
+    
+    .comment strong {
+      color: #222;
+      font-size: 0.95em;
+    }
+    
+    .comment p {
+      margin: 8px 0 0;
+      font-size: 0.95em;
+      line-height: 1.5;
+    }
+    
+    .comment hr {
+      margin: 15px 0 0;
+      border: none;
+      border-top: 1px solid #eee;
+    }
+    
+    /* Description text under heading */
+    .comment-description {
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 20px;
     }
 
     .about-me {
@@ -371,21 +459,18 @@
         <div id="commentsContainer"></div>
 
         <h2>Leave a Reply</h2>
-        <p>Your email address will not be published. Required fields are marked *</p>
+        <p class="comment-description">Your email address will not be published. Required fields are marked *</p>
 
         <form id="commentForm">
-          <label for="commentText">Comment*</label><br />
-          <textarea id="commentText" name="commentText" required></textarea>
-          <br /><br />
-
-          <label for="name">Name*</label><br />
-          <input id="name" name="name" type="text" required />
-          <br /><br />
-
-          <label for="email">Email*</label><br />
-          <input id="email" name="email" type="email" required />
-          <br /><br />
-
+          <label for="commentText">Comment*</label>
+          <textarea id="commentText" name="commentText" placeholder="Share your thoughts..." required></textarea>
+          
+          <label for="name">Name*</label>
+          <input id="name" name="name" type="text" placeholder="Your name" required />
+          
+          <label for="email">Email*</label>
+          <input id="email" name="email" type="email" placeholder="Your email" required />
+          
           <button type="submit">Post Comment</button>
         </form>
       </section>
@@ -596,16 +681,21 @@
         const q = query(commentsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
 
+        if (querySnapshot.empty) {
+          commentsContainer.innerHTML = "<p style='text-align: center; color: #666; font-style: italic;'>No comments yet. Be the first to share your thoughts!</p>";
+          return;
+        }
+
         querySnapshot.forEach((commentDoc) => {
           const commentData = commentDoc.data();
 
           // Create a simple DOM structure for each comment
           const commentElement = document.createElement("div");
-          commentElement.style.marginBottom = "1em";
+          commentElement.className = "comment";
           commentElement.innerHTML = `
-            <p><strong>${commentData.name}</strong> says:</p>
+            <strong>${commentData.name}</strong>
             <p>${commentData.text}</p>
-            <hr />
+            <hr>
           `;
 
           commentsContainer.appendChild(commentElement);
