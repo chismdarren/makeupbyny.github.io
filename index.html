@@ -492,7 +492,8 @@
         blogPostsContainer.innerHTML = '';
 
         // Display all posts in the main content area
-        for (const post of posts) {
+        for (let i = 0; i < posts.length; i++) {
+          const post = posts[i];
           // Get comment count for each post
           post.commentCount = post.commentCount || 0; // Use cached count if available
 
@@ -539,7 +540,7 @@
             <div style="text-align: right;">
               <a href="post.html?postId=${post.id}" class="read-more-btn">Read More</a>
             </div>
-            <hr>
+            ${i === 0 ? '<hr>' : ''}
           `;
           blogPostsContainer.appendChild(postElement);
         }
