@@ -1,6 +1,6 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 // Import from firebase-config.js instead of defining config here
 import { auth, db } from './firebase-config.js';
@@ -8,11 +8,17 @@ import { auth, db } from './firebase-config.js';
 // Define admin user ID - correct ID from other pages
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
+// Log to verify db is properly imported
+console.log("DB reference imported:", db ? "✅ Success" : "❌ Failed");
+
 // Handle contact form submission
 document.addEventListener('DOMContentLoaded', () => {
+  console.log("Contact form script loaded");
   const contactForm = document.getElementById('contactForm');
   
   if (contactForm) {
+    console.log("Contact form found in document");
+    
     // Create a feedback element
     const feedbackElement = document.createElement('div');
     feedbackElement.id = 'form-feedback';
@@ -27,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add submit event listener to the form
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      console.log("Form submission started");
       
       // Disable form during submission
       const submitButton = contactForm.querySelector('button[type="submit"]');
@@ -49,16 +56,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       try {
-        // Add the contact form submission to Firestore
-        await addDoc(collection(db, 'contact_messages'), {
+        console.log("Attempting to add document to Firestore");
+        
+        // Verify Firestore and collection path
+        if (!db) {
+          throw new Error("Firestore database reference is undefined");
+        }
+        
+        // Create a message object
+        const messageData = {
           name,
           email,
           subject,
           message,
-          timestamp: serverTimestamp(), // Use server timestamp for consistency
+          timestamp: serverTimestamp(),
           status: 'new',
           read: false
-        });
+        };
+        
+        console.log("Message data prepared:", { ...messageData, timestamp: "serverTimestamp()" });
+        
+        // Add the contact form submission to Firestore
+        const docRef = await addDoc(collection(db, 'contact_messages'), messageData);
+        console.log("Document written with ID: ", docRef.id);
         
         // Show success message
         showFeedback('Thank you for your message! It has been sent to the admin dashboard, and I will get back to you soon.', 'success');
@@ -67,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contactForm.reset();
       } catch (error) {
         console.error('Error submitting contact form:', error);
-        showFeedback('Sorry, there was an error sending your message. Please try again later.', 'error');
+        showFeedback(`Sorry, there was an error sending your message: ${error.message}. Please try again later.`, 'error');
       } finally {
         // Re-enable the submit button
         submitButton.disabled = false;
