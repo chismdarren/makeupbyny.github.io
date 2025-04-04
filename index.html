@@ -305,6 +305,26 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    .read-more-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: transparent;
+      border: 2px solid #222;
+      color: #222;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+    
+    .read-more-btn:hover {
+      background: #222;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -515,8 +535,10 @@
               </div>
               ${imageHtml}
               <p>${contentPreview}</p>
-              <p style="text-align: right; color: #a07; font-weight: bold;">Read more &rarr;</p>
             </a>
+            <div style="text-align: right;">
+              <a href="post.html?postId=${post.id}" class="read-more-btn">Read More</a>
+            </div>
             <hr>
           `;
           blogPostsContainer.appendChild(postElement);
