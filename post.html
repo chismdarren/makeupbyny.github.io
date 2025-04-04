@@ -80,6 +80,7 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-sizing: border-box;
     }
 
     #commentForm label {
@@ -99,6 +100,7 @@
       font-family: inherit;
       font-size: 0.95em;
       transition: border-color 0.3s;
+      box-sizing: border-box;
     }
     
     #commentForm textarea:focus,
@@ -109,7 +111,10 @@
 
     #commentForm textarea {
       min-height: 120px;
+      max-height: 200px;
       resize: vertical;
+      overflow-y: auto;
+      line-height: 1.4;
     }
 
     #commentForm button {
