@@ -1,5 +1,5 @@
 import { db, auth } from './firebase-config.js';
-import { collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 // Hardcoded admin UID
@@ -77,6 +77,52 @@ function loadContactMessages() {
   const messagesContainer = document.getElementById('messagesContainer');
   if (!messagesContainer) return;
 
+  // Add message count and controls at the top
+  const controlsDiv = document.createElement('div');
+  controlsDiv.className = 'messages-controls';
+  controlsDiv.style.display = 'flex';
+  controlsDiv.style.justifyContent = 'space-between';
+  controlsDiv.style.alignItems = 'center';
+  controlsDiv.style.marginBottom = '20px';
+  controlsDiv.style.padding = '10px';
+  controlsDiv.style.backgroundColor = '#f9f9f9';
+  controlsDiv.style.borderRadius = '4px';
+  
+  controlsDiv.innerHTML = `
+    <div class="message-count">
+      <span id="totalMessages">0 messages</span>
+      <span id="unreadCount" style="margin-left: 10px; background-color: #4CAF50; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">0 new</span>
+    </div>
+    <div class="message-filters">
+      <select id="statusFilter" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+        <option value="all">All Messages</option>
+        <option value="new">New</option>
+        <option value="read">Read</option>
+        <option value="replied">Replied</option>
+      </select>
+    </div>
+  `;
+  
+  // Insert controls before messages
+  const messagesSection = messagesContainer.parentElement;
+  messagesSection.insertBefore(controlsDiv, messagesContainer);
+  
+  // Add event listener to status filter
+  const statusFilter = document.getElementById('statusFilter');
+  statusFilter.addEventListener('change', function() {
+    const selectedStatus = this.value;
+    
+    // Show all messages or filter by status
+    const messageCards = document.querySelectorAll('.message-card');
+    messageCards.forEach(card => {
+      if (selectedStatus === 'all' || card.classList.contains(selectedStatus)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+
   // Create a query to get all messages ordered by timestamp
   const q = query(collection(db, 'contact_messages'), orderBy('timestamp', 'desc'));
 
@@ -85,15 +131,31 @@ function loadContactMessages() {
     messagesContainer.innerHTML = ''; // Clear existing messages
     
     if (snapshot.empty) {
-      messagesContainer.innerHTML = '<p>No messages found.</p>';
+      messagesContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No messages found.</p>';
+      document.getElementById('totalMessages').textContent = '0 messages';
+      document.getElementById('unreadCount').textContent = '0 new';
+      document.getElementById('unreadCount').style.display = 'none';
       return;
     }
 
+    let totalMessages = 0;
+    let unreadMessages = 0;
+    
     snapshot.forEach((doc) => {
       const message = doc.data();
+      totalMessages++;
+      if (message.status === 'new') {
+        unreadMessages++;
+      }
+      
       const messageElement = createMessageElement(doc.id, message);
       messagesContainer.appendChild(messageElement);
     });
+    
+    // Update message count display
+    document.getElementById('totalMessages').textContent = `${totalMessages} message${totalMessages !== 1 ? 's' : ''}`;
+    document.getElementById('unreadCount').textContent = `${unreadMessages} new`;
+    document.getElementById('unreadCount').style.display = unreadMessages > 0 ? 'inline' : 'none';
   });
 }
 
@@ -102,18 +164,30 @@ function createMessageElement(id, message) {
   const div = document.createElement('div');
   div.className = `message-card ${message.status || 'new'}`;
   
-  const timestamp = message.timestamp ? message.timestamp.toDate().toLocaleString() : 'Unknown date';
+  // Format the timestamp
+  let timestampDisplay = 'Unknown date';
+  if (message.timestamp) {
+    if (message.timestamp instanceof Timestamp) {
+      timestampDisplay = message.timestamp.toDate().toLocaleString();
+    } else {
+      // Handle if timestamp is already a Date or string
+      const date = new Date(message.timestamp);
+      if (!isNaN(date)) {
+        timestampDisplay = date.toLocaleString();
+      }
+    }
+  }
   
   div.innerHTML = `
     <div class="message-header">
       <h3>${message.subject || 'No Subject'}</h3>
-      <span class="timestamp">${timestamp}</span>
+      <span class="timestamp">${timestampDisplay}</span>
     </div>
     <div class="message-content">
       <p><strong>From:</strong> ${message.name || 'Unknown'}</p>
-      <p><strong>Email:</strong> ${message.email || 'No email provided'}</p>
+      <p><strong>Email:</strong> <a href="mailto:${message.email || ''}" style="color: #222; text-decoration: underline;">${message.email || 'No email provided'}</a></p>
       <p><strong>Message:</strong></p>
-      <p>${message.message || 'No message content'}</p>
+      <div style="background-color: #f9f9f9; padding: 10px; border-radius: 4px; margin-top: 5px;">${message.message || 'No message content'}</div>
     </div>
     <div class="message-actions">
       <select class="status-select" data-id="${id}">
@@ -121,6 +195,7 @@ function createMessageElement(id, message) {
         <option value="read" ${message.status === 'read' ? 'selected' : ''}>Read</option>
         <option value="replied" ${message.status === 'replied' ? 'selected' : ''}>Replied</option>
       </select>
+      <button class="reply-btn" style="margin: 0 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="window.location.href='mailto:${message.email || ''}'">Reply</button>
       <button class="delete-btn" data-id="${id}">Delete</button>
     </div>
   `;

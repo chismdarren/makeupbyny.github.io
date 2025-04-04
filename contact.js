@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
 // Import from firebase-config.js instead of defining config here
@@ -13,14 +13,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const contactForm = document.getElementById('contactForm');
   
   if (contactForm) {
+    // Create a feedback element
+    const feedbackElement = document.createElement('div');
+    feedbackElement.id = 'form-feedback';
+    feedbackElement.style.padding = '15px';
+    feedbackElement.style.margin = '15px 0';
+    feedbackElement.style.borderRadius = '4px';
+    feedbackElement.style.display = 'none';
+    
+    // Insert the feedback element after the form
+    contactForm.parentNode.insertBefore(feedbackElement, contactForm.nextSibling);
+    
+    // Add submit event listener to the form
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      // Disable form during submission
+      const submitButton = contactForm.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Sending...';
+      
       // Get form values
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const subject = document.getElementById('subject').value;
-      const message = document.getElementById('message').value;
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const message = document.getElementById('message').value.trim();
+      
+      // Simple client-side validation
+      if (!name || !email || !subject || !message) {
+        showFeedback('Please fill in all fields.', 'error');
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+        return;
+      }
       
       try {
         // Add the contact form submission to Firestore
@@ -29,20 +55,54 @@ document.addEventListener('DOMContentLoaded', () => {
           email,
           subject,
           message,
-          timestamp: new Date(),
-          status: 'new'
+          timestamp: serverTimestamp(), // Use server timestamp for consistency
+          status: 'new',
+          read: false
         });
         
         // Show success message
-        alert('Thank you for your message! I will get back to you soon.');
+        showFeedback('Thank you for your message! It has been sent to the admin dashboard, and I will get back to you soon.', 'success');
         
         // Clear the form
         contactForm.reset();
       } catch (error) {
         console.error('Error submitting contact form:', error);
-        alert('Sorry, there was an error sending your message. Please try again later.');
+        showFeedback('Sorry, there was an error sending your message. Please try again later.', 'error');
+      } finally {
+        // Re-enable the submit button
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
       }
     });
+  }
+  
+  // Function to show feedback to the user
+  function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('form-feedback');
+    if (feedbackElement) {
+      feedbackElement.textContent = message;
+      feedbackElement.style.display = 'block';
+      
+      if (type === 'success') {
+        feedbackElement.style.backgroundColor = '#dff0d8';
+        feedbackElement.style.color = '#3c763d';
+        feedbackElement.style.border = '1px solid #d6e9c6';
+      } else if (type === 'error') {
+        feedbackElement.style.backgroundColor = '#f2dede';
+        feedbackElement.style.color = '#a94442';
+        feedbackElement.style.border = '1px solid #ebccd1';
+      }
+      
+      // Scroll to the feedback message
+      feedbackElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Clear the message after 5 seconds for success messages
+      if (type === 'success') {
+        setTimeout(() => {
+          feedbackElement.style.display = 'none';
+        }, 5000);
+      }
+    }
   }
   
   // Handle authentication state
