@@ -155,16 +155,6 @@
             left: auto;
             width: 200px;
           }
-
-          header nav {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-          }
-
-          .admin-dropdown {
-            position: relative;
-          }
         }
 
         /* For very small screens */
@@ -177,46 +167,11 @@
             padding: 10px 5px;
           }
         }
-        
-        /* Navigation layout */
-        #mainNav {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
-        }
-        
-        #logoutBtn {
-            background: none;
-            border: none;
-            color: #333;
-            font-size: 1em;
-            padding: 10px;
-            cursor: pointer;
-            font-family: inherit;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        #logoutBtn:hover {
-            color: #a07;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            #mainNav {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-            }
-        }
     </style>
 </head>
 <body>
     <header>
-        <a href="index.html">
-            <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
-        </a>
+        <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
         <nav id="mainNav">
             <a href="index.html">Home</a>
             <a href="about.html">About</a>
@@ -239,14 +194,16 @@
             <button id="logout-btn" style="display:none;">Logout</button>
         </nav>
     </header>
-    <main>
-        <div class="messages-section">
-            <h2>Contact Messages</h2>
-            <div id="messagesContainer">
-                <!-- Messages will be loaded here dynamically -->
+    <div class="content">
+        <main class="posts">
+            <div class="messages-section">
+                <h2>Contact Messages</h2>
+                <div id="messagesContainer">
+                    <!-- Messages will be loaded here dynamically -->
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
     <footer>
         <p>&copy; 2025 Makeup by NY</p>
     </footer>
