@@ -871,7 +871,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (user) {
         loginLink.style.display = "none";
-        logoutBtn.style.display = "block";
+        logoutBtn.style.display = "inline";
         if (createPostLink) createPostLink.style.display = "inline";
         
         // Show admin dropdown only for admin user
@@ -884,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Load posts when user is logged in
         loadUserPosts();
       } else {
-        loginLink.style.display = "block";
+        loginLink.style.display = "inline";
         logoutBtn.style.display = "none";
         if (createPostLink) createPostLink.style.display = "none";
         if (adminDropdownBtn) adminDropdownBtn.style.display = "none";

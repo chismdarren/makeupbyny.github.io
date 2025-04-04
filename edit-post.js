@@ -706,7 +706,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (user) {
         loginLink.style.display = "none";
-        logoutBtn.style.display = "block";
+        logoutBtn.style.display = "inline";
         
         // Show admin dropdown only for admin user
         if (user.uid === adminUID && adminDropdownBtn) {
@@ -734,7 +734,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       } else {
-        loginLink.style.display = "block";
+        loginLink.style.display = "inline";
         logoutBtn.style.display = "none";
         if (adminDropdownBtn) {
           adminDropdownBtn.style.display = "none";
