@@ -528,6 +528,7 @@
           
           const displayDate = getPostDate(post);
 
+          // No horizontal line between content and Read More button
           postElement.innerHTML = `
             <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
               <h3 style="${post.titleFont ? `font-family: '${post.titleFont}', cursive` : ''}">${post.title}</h3>
@@ -538,7 +539,7 @@
               ${imageHtml}
               <p>${contentPreview}</p>
             </a>
-            <div style="text-align: right;">
+            <div style="text-align: right; margin-top: 15px;">
               <a href="post.html?postId=${post.id}" class="read-more-btn">Read More</a>
             </div>
           `;
