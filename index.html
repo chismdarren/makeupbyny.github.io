@@ -341,16 +341,6 @@
   <div class="content">
     <!-- Posts Section -->
     <main class="posts">
-      <!-- Sorting Options -->
-      <div class="sorting-options">
-        <span>Sort by:</span>
-        <select id="sortPosts">
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="comments">Most Comments</option>
-        </select>
-        <span id="activeSortIndicator" class="active-sort">Newest</span>
-      </div>
       <!-- Container where posts will be loaded -->
       <div id="blogPosts"></div>
     </main>
@@ -375,6 +365,17 @@
       <div class="recent-posts">
         <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
         <div id="recentPostsList"></div>
+      </div>
+
+      <!-- Sorting Options (moved from main content) -->
+      <div class="sorting-options" style="border-bottom: none; justify-content: flex-start; margin: 15px 0 5px; padding: 0;">
+        <span style="font-size: 0.9em; color: #555;">Sort posts by:</span>
+        <select id="sortPosts" style="font-size: 0.8em; padding: 4px 8px;">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="comments">Most Comments</option>
+        </select>
+        <span id="activeSortIndicator" class="active-sort">Newest</span>
       </div>
 
       <!-- Social Media Links -->
