@@ -71,12 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
           message,
           timestamp: serverTimestamp(),
           status: 'new',
-          read: false
+          read: false,
+          // Don't include any auth-dependent fields here
         };
         
         console.log("Message data prepared:", { ...messageData, timestamp: "serverTimestamp()" });
         
         // Add the contact form submission to Firestore
+        // The security rules should allow this for any user (auth or not)
         const docRef = await addDoc(collection(db, 'contact_messages'), messageData);
         console.log("Document written with ID: ", docRef.id);
         
@@ -87,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contactForm.reset();
       } catch (error) {
         console.error('Error submitting contact form:', error);
+        // Show more detailed error message
         showFeedback(`Sorry, there was an error sending your message: ${error.message}. Please try again later.`, 'error');
       } finally {
         // Re-enable the submit button
