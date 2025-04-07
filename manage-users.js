@@ -168,11 +168,12 @@ async function loadUsers() {
           <strong>Email:</strong> ${user.email} | 
           <strong>UID:</strong> ${user.uid} | 
           <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
-          <strong>Role:</strong> ${userData.isAdmin ? 'Admin' : 'User'}
+          <strong>Role:</strong> <span class="user-role ${userData.isAdmin ? 'admin-role' : 'user-role'}">${userData.isAdmin ? 'Admin' : 'User'}</span>
         </div>
         <div class="user-actions">
           <button onclick="window.showUserDetails('${user.uid}', ${JSON.stringify({...user, isAdmin: userData.isAdmin})})">View Details</button>
-          <button onclick="window.deleteUser('${user.uid}')">Delete</button>
+          <button class="role-btn ${userData.isAdmin ? 'remove-admin' : 'make-admin'}" onclick="window.updateUserRole('${user.uid}', ${!userData.isAdmin})">${userData.isAdmin ? 'Remove Admin' : 'Make Admin'}</button>
+          <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
         </div>
       `;
       userList.appendChild(li);
@@ -193,12 +194,15 @@ window.showUserDetails = async function(userId, userData) {
       <p><strong>Email:</strong> ${userData.email}</p>
       <p><strong>UID:</strong> ${userData.uid}</p>
       <p><strong>Status:</strong> ${userData.disabled ? 'Disabled' : 'Active'}</p>
-      <p><strong>Role:</strong> ${userData.isAdmin ? 'Admin' : 'User'}</p>
-      <div class="user-actions">
-        <button onclick="window.updateUserRole('${userId}', ${!userData.isAdmin})">
-          ${userData.isAdmin ? 'Remove Admin' : 'Make Admin'}
-        </button>
-        <button onclick="window.deleteUser('${userId}')">Delete User</button>
+      <p><strong>Role:</strong> <span class="user-role ${userData.isAdmin ? 'admin-role' : 'user-role'}">${userData.isAdmin ? 'Admin' : 'User'}</span></p>
+      <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+        <h3>User Management</h3>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button class="role-btn ${userData.isAdmin ? 'remove-admin' : 'make-admin'}" onclick="window.updateUserRole('${userId}', ${!userData.isAdmin})">
+            ${userData.isAdmin ? 'Remove Admin' : 'Make Admin'}
+          </button>
+          <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
+        </div>
       </div>
       ${commentsHtml}
     </div>
@@ -208,14 +212,72 @@ window.showUserDetails = async function(userId, userData) {
 
 window.updateUserRole = async function(userId, isAdmin) {
   try {
+    // First update the UI to provide immediate feedback
+    // Find the list item containing this user by iterating through all user items
+    const userItems = document.querySelectorAll('.user-item');
+    let userItem = null;
+    userItems.forEach(item => {
+      if (item.innerHTML.includes(userId)) {
+        userItem = item;
+      }
+    });
+    
+    if (userItem) {
+      const roleSpan = userItem.querySelector('.user-role');
+      const roleButton = userItem.querySelector('.role-btn');
+      
+      if (roleSpan) {
+        roleSpan.textContent = isAdmin ? 'Admin' : 'User';
+        roleSpan.className = `user-role ${isAdmin ? 'admin-role' : 'user-role'}`;
+      }
+      
+      if (roleButton) {
+        roleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
+        roleButton.className = `role-btn ${isAdmin ? 'remove-admin' : 'make-admin'}`;
+      }
+    }
+    
+    // Update in Firestore
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, { isAdmin });
-    alert(`User ${isAdmin ? 'promoted to admin' : 'removed from admin role'}`);
-    modal.style.display = "none";
-    await loadUsers(); // Reload the list
+    
+    // Show success message
+    const message = document.createElement('div');
+    message.className = 'success-message';
+    message.textContent = `User ${isAdmin ? 'promoted to admin' : 'removed from admin role'} successfully`;
+    message.style.position = 'fixed';
+    message.style.top = '20px';
+    message.style.left = '50%';
+    message.style.transform = 'translateX(-50%)';
+    message.style.backgroundColor = '#4CAF50';
+    message.style.color = 'white';
+    message.style.padding = '10px 20px';
+    message.style.borderRadius = '5px';
+    message.style.zIndex = '1000';
+    document.body.appendChild(message);
+    
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 3000);
+    
+    // If a modal is currently displayed, update it too
+    if (currentUserId === userId && modal.style.display === "block") {
+      const modalRoleText = Array.from(modalContent.querySelectorAll('p')).find(p => p.textContent.includes('Role'));
+      if (modalRoleText) {
+        modalRoleText.innerHTML = `<strong>Role:</strong> ${isAdmin ? 'Admin' : 'User'}`;
+      }
+      
+      const modalRoleButton = Array.from(modalContent.querySelectorAll('button')).find(btn => 
+        btn.textContent.includes('Admin'));
+      if (modalRoleButton) {
+        modalRoleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
+        modalRoleButton.onclick = function() { window.updateUserRole(userId, !isAdmin); };
+      }
+    }
   } catch (error) {
     console.error("Error updating user role:", error);
-    alert("Error updating user role");
+    alert("Error updating user role: " + error.message);
   }
 };
 
