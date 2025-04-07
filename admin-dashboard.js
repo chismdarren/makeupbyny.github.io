@@ -123,6 +123,20 @@ function loadContactMessages() {
     });
   });
 
+  // Set up modal close event
+  const modal = document.getElementById('messageModal');
+  const closeBtn = document.querySelector('.message-modal-close');
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+  
+  // Close modal when clicking outside
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
   // Create a query to get all messages ordered by timestamp
   const q = query(collection(db, 'contact_messages'), orderBy('timestamp', 'desc'));
 
@@ -163,6 +177,7 @@ function loadContactMessages() {
 function createMessageElement(id, message) {
   const div = document.createElement('div');
   div.className = `message-card ${message.status || 'new'}`;
+  div.dataset.id = id;
   
   // Format the timestamp
   let timestampDisplay = 'Unknown date';
@@ -178,36 +193,114 @@ function createMessageElement(id, message) {
     }
   }
   
+  // Create a truncated message preview (first 50 characters)
+  const messagePreview = (message.message || 'No message content').slice(0, 50) + 
+    ((message.message && message.message.length > 50) ? '...' : '');
+  
   div.innerHTML = `
     <div class="message-header">
-      <h3>${message.subject || 'No Subject'}</h3>
+      <h3>${message.name || 'Unknown'}</h3>
       <span class="timestamp">${timestampDisplay}</span>
     </div>
-    <div class="message-content">
-      <p><strong>From:</strong> ${message.name || 'Unknown'}</p>
-      <p><strong>Email:</strong> <a href="mailto:${message.email || ''}" style="color: #222; text-decoration: underline;">${message.email || 'No email provided'}</a></p>
-      <p><strong>Message:</strong></p>
-      <div style="background-color: #f9f9f9; padding: 10px; border-radius: 4px; margin-top: 5px;">${message.message || 'No message content'}</div>
-    </div>
-    <div class="message-actions">
-      <select class="status-select" data-id="${id}">
-        <option value="new" ${message.status === 'new' ? 'selected' : ''}>New</option>
-        <option value="read" ${message.status === 'read' ? 'selected' : ''}>Read</option>
-        <option value="replied" ${message.status === 'replied' ? 'selected' : ''}>Replied</option>
-      </select>
-      <button class="reply-btn" style="margin: 0 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="window.location.href='mailto:${message.email || ''}'">Reply</button>
-      <button class="delete-btn" data-id="${id}">Delete</button>
-    </div>
+    <div class="message-preview">${messagePreview}</div>
   `;
 
-  // Add event listeners
-  const statusSelect = div.querySelector('.status-select');
-  statusSelect.addEventListener('change', (e) => updateMessageStatus(id, e.target.value));
-
-  const deleteBtn = div.querySelector('.delete-btn');
-  deleteBtn.addEventListener('click', () => deleteMessage(id));
-
+  // Add click event to open modal
+  div.addEventListener('click', (e) => {
+    // Don't open modal if user is clicking on controls
+    if (e.target.classList.contains('status-select') || 
+        e.target.classList.contains('delete-btn') ||
+        e.target.classList.contains('reply-btn')) {
+      return;
+    }
+    
+    showMessageDetails(id, message);
+  });
+  
   return div;
+}
+
+// Function to show message details in modal
+function showMessageDetails(id, message) {
+  const modal = document.getElementById('messageModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalContent = document.getElementById('modalContent');
+  const modalActions = document.getElementById('modalActions');
+  
+  // Format the timestamp
+  let timestampDisplay = 'Unknown date';
+  if (message.timestamp) {
+    if (message.timestamp instanceof Timestamp) {
+      timestampDisplay = message.timestamp.toDate().toLocaleString();
+    } else {
+      // Handle if timestamp is already a Date or string
+      const date = new Date(message.timestamp);
+      if (!isNaN(date)) {
+        timestampDisplay = date.toLocaleString();
+      }
+    }
+  }
+  
+  // Update modal title
+  modalTitle.textContent = message.subject || 'Message from ' + (message.name || 'Unknown');
+  
+  // Update modal content
+  modalContent.innerHTML = `
+    <div>
+      <p><strong>From:</strong> ${message.name || 'Unknown'}</p>
+      <p><strong>Email:</strong> <a href="mailto:${message.email || ''}" style="color: #222; text-decoration: underline;">${message.email || 'No email provided'}</a></p>
+      <p><strong>Time:</strong> ${timestampDisplay}</p>
+      <div class="message-full-content">
+        <p><strong>Message:</strong></p>
+        <div style="background-color: #f9f9f9; padding: 10px; border-radius: 4px; margin-top: 5px;">
+          ${message.message || 'No message content'}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Update modal actions
+  modalActions.innerHTML = `
+    <select class="status-select" data-id="${id}">
+      <option value="new" ${message.status === 'new' ? 'selected' : ''}>New</option>
+      <option value="read" ${message.status === 'read' ? 'selected' : ''}>Read</option>
+      <option value="replied" ${message.status === 'replied' ? 'selected' : ''}>Replied</option>
+    </select>
+    <button class="reply-btn" style="margin: 0 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="window.location.href='mailto:${message.email || ''}'">Reply</button>
+    <button class="delete-btn" data-id="${id}">Delete</button>
+  `;
+  
+  // Add event listeners to action buttons
+  const statusSelect = modalActions.querySelector('.status-select');
+  statusSelect.addEventListener('change', (e) => {
+    updateMessageStatus(id, e.target.value);
+    
+    // Also update the status class on the message card
+    const messageCard = document.querySelector(`.message-card[data-id="${id}"]`);
+    if (messageCard) {
+      messageCard.className = `message-card ${e.target.value}`;
+    }
+  });
+  
+  const deleteBtn = modalActions.querySelector('.delete-btn');
+  deleteBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+    deleteMessage(id);
+  });
+  
+  // If message was new, mark it as read
+  if (message.status === 'new') {
+    updateMessageStatus(id, 'read');
+    
+    // Update the message card status class without waiting for Firestore
+    const messageCard = document.querySelector(`.message-card[data-id="${id}"]`);
+    if (messageCard) {
+      messageCard.className = 'message-card read';
+    }
+  }
+  
+  // Show modal
+  modal.style.display = 'block';
 }
 
 // Update message status
