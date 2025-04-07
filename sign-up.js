@@ -22,14 +22,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastName = lastNameInput.value.trim();
     
     if (firstName && lastName) {
-      // Get first name and first letter of last name, lowercase everything
-      const baseUsername = `${firstName}${lastName.charAt(0)}`.toLowerCase();
+      // Get first name and first letter of last name with proper capitalization
+      const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+      const lastInitial = lastName.charAt(0).toUpperCase();
       
-      // Remove special characters and spaces
-      let cleanUsername = baseUsername.replace(/[^a-zA-Z0-9]/g, '');
+      // Create username in format "FirstName. LastInitial"
+      const formattedUsername = `${capitalizedFirstName}. ${lastInitial}`;
       
       // Set the username
-      usernameInput.value = cleanUsername;
+      usernameInput.value = formattedUsername;
     }
   }
   
@@ -77,8 +78,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const usernameSnapshot = await getDocs(usernameQuery);
         
         if (!usernameSnapshot.empty) {
-          alert("Username already exists. Please use a different username.");
-          return;
+          // If username exists, try adding a number to make it unique
+          let counter = 1;
+          let isUnique = false;
+          let newUsername = '';
+          
+          while (!isUnique && counter <= 10) {
+            // Format: "FirstName. LastInitial_1"
+            newUsername = `${username}_${counter}`;
+            const newQuery = query(usersRef, where("username", "==", newUsername));
+            const newSnapshot = await getDocs(newQuery);
+            
+            if (newSnapshot.empty) {
+              isUnique = true;
+              usernameInput.value = newUsername;
+              alert(`Username "${username}" already exists. We've changed it to "${newUsername}".`);
+            } else {
+              counter++;
+            }
+          }
+          
+          if (!isUnique) {
+            alert("Username already exists. Please try different names.");
+            return;
+          }
         }
         
         // Create the user
