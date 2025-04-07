@@ -51,6 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
       const confirmPassword = confirmPasswordInput.value.trim();
+      const agreeTerms = document.getElementById('agreeTerms').checked;
+      
+      // Check terms agreement
+      if (!agreeTerms) {
+        alert("You must agree to the Terms of Service and Privacy Policy to create an account");
+        return;
+      }
       
       // Validate password
       if (password.length < 6) {
@@ -113,7 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
           firstName,
           lastName,
           username,
-          phoneNumber
+          phoneNumber,
+          termsAccepted: true,
+          termsAcceptedDate: new Date().toISOString()
         });
         
         // Show success message and redirect

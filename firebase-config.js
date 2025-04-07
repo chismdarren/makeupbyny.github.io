@@ -65,6 +65,8 @@ export async function createUserDocument(user, additionalData = {}) {
         lastName: additionalData.lastName || '',
         username: additionalData.username || '',
         phoneNumber: additionalData.phoneNumber || '',
+        termsAccepted: additionalData.termsAccepted || false,
+        termsAcceptedDate: additionalData.termsAcceptedDate || null,
         createdAt: serverTimestamp(),
         isAdmin: user.uid === "yuoaYY14sINHaqtNK5EAz4nl8cc2" // Hardcoded Admin
       });
