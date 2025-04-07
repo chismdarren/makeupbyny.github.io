@@ -93,30 +93,54 @@ async function loadUserComments(userId) {
   try {
     const commentsQuery = query(collection(db, "posts"), where("comments", "array-contains", userId));
     const querySnapshot = await getDocs(commentsQuery);
-    let commentsHtml = '<h3>User Comments</h3>';
+    let commentsHtml = '<div class="user-comments-section"><h3>User Comments</h3>';
     
     if (querySnapshot.empty) {
       commentsHtml += '<p>No comments found for this user.</p>';
     } else {
       commentsHtml += '<div class="comments-list">';
+      let commentCount = 0;
+      
       querySnapshot.forEach((doc) => {
         const postData = doc.data();
         if (postData.comments) {
           postData.comments.forEach(comment => {
             if (comment.userId === userId) {
+              commentCount++;
+              
+              // Format the date
+              let commentDate = 'Unknown date';
+              if (comment.createdAt) {
+                if (typeof comment.createdAt.toDate === 'function') {
+                  commentDate = comment.createdAt.toDate().toLocaleString();
+                } else if (comment.createdAt instanceof Date) {
+                  commentDate = comment.createdAt.toLocaleString();
+                } else if (typeof comment.createdAt === 'string') {
+                  commentDate = new Date(comment.createdAt).toLocaleString();
+                }
+              }
+              
               commentsHtml += `
                 <div class="comment-item">
-                  <p><strong>Post:</strong> ${postData.title}</p>
+                  <p><strong>Post:</strong> <a href="post.html?id=${doc.id}" target="_blank">${postData.title || 'Untitled Post'}</a></p>
                   <p><strong>Comment:</strong> ${comment.text}</p>
-                  <p><strong>Date:</strong> ${new Date(comment.createdAt.toDate()).toLocaleString()}</p>
+                  <p><strong>Date:</strong> ${commentDate}</p>
+                  ${comment.likes ? `<p><strong>Likes:</strong> ${comment.likes}</p>` : ''}
+                  <div class="comment-actions" style="margin-top: 8px; text-align: right;">
+                    <button class="delete-comment-btn" onclick="window.deleteComment('${doc.id}', '${comment.id}')" style="padding: 4px 8px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete Comment</button>
+                  </div>
                 </div>
               `;
             }
           });
         }
       });
+      
       commentsHtml += '</div>';
+      commentsHtml = commentsHtml.replace('<h3>User Comments</h3>', `<h3>User Comments (${commentCount})</h3>`);
     }
+    
+    commentsHtml += '</div>';
     return commentsHtml;
   } catch (error) {
     console.error("Error loading comments:", error);
@@ -187,27 +211,73 @@ async function loadUsers() {
 // Make functions available globally for onclick handlers
 window.showUserDetails = async function(userId, userData) {
   currentUserId = userId;
-  const commentsHtml = await loadUserComments(userId);
   
-  modalContent.innerHTML = `
-    <div>
-      <p><strong>Email:</strong> ${userData.email}</p>
-      <p><strong>UID:</strong> ${userData.uid}</p>
-      <p><strong>Status:</strong> ${userData.disabled ? 'Disabled' : 'Active'}</p>
-      <p><strong>Role:</strong> <span class="user-role ${userData.isAdmin ? 'admin-role' : 'user-role'}">${userData.isAdmin ? 'Admin' : 'User'}</span></p>
-      <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-        <h3>User Management</h3>
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-          <button class="role-btn ${userData.isAdmin ? 'remove-admin' : 'make-admin'}" onclick="window.updateUserRole('${userId}', ${!userData.isAdmin})">
-            ${userData.isAdmin ? 'Remove Admin' : 'Make Admin'}
-          </button>
-          <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
+  // Get complete user data from Firestore since userData might not have all fields
+  try {
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userFullData = userDoc.data();
+      const commentsHtml = await loadUserComments(userId);
+      
+      // Format timestamps
+      let createdAtDisplay = 'Unknown';
+      if (userFullData.createdAt) {
+        createdAtDisplay = new Date(userFullData.createdAt.toDate()).toLocaleString();
+      }
+      
+      let termsAcceptedDateDisplay = 'Not accepted';
+      if (userFullData.termsAcceptedDate) {
+        termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate).toLocaleString();
+      }
+      
+      modalContent.innerHTML = `
+        <div class="user-details-container">
+          <div class="user-basic-info">
+            <h3>Basic Information</h3>
+            <p><strong>Email:</strong> ${userData.email || 'Not provided'}</p>
+            <p><strong>UID:</strong> ${userData.uid}</p>
+            <p><strong>Status:</strong> ${userData.disabled ? 'Disabled' : 'Active'}</p>
+            <p><strong>Role:</strong> <span class="user-role ${userFullData.isAdmin ? 'admin-role' : 'user-role'}">${userFullData.isAdmin ? 'Admin' : 'User'}</span></p>
+          </div>
+          
+          <div class="user-personal-info">
+            <h3>Personal Information</h3>
+            <p><strong>First Name:</strong> ${userFullData.firstName || 'Not provided'}</p>
+            <p><strong>Last Name:</strong> ${userFullData.lastName || 'Not provided'}</p>
+            <p><strong>Username:</strong> ${userFullData.username || 'Not provided'}</p>
+            <p><strong>Phone Number:</strong> ${userFullData.phoneNumber || 'Not provided'}</p>
+          </div>
+          
+          <div class="user-account-info">
+            <h3>Account Information</h3>
+            <p><strong>Account Created:</strong> ${createdAtDisplay}</p>
+            <p><strong>Terms & Policy Accepted:</strong> ${userFullData.termsAccepted ? 'Yes' : 'No'}</p>
+            <p><strong>Acceptance Date:</strong> ${termsAcceptedDateDisplay}</p>
+          </div>
+          
+          <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+            <h3>User Management</h3>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button class="role-btn ${userFullData.isAdmin ? 'remove-admin' : 'make-admin'}" onclick="window.updateUserRole('${userId}', ${!userFullData.isAdmin})">
+                ${userFullData.isAdmin ? 'Remove Admin' : 'Make Admin'}
+              </button>
+              <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
+            </div>
+          </div>
+          
+          ${commentsHtml}
         </div>
-      </div>
-      ${commentsHtml}
-    </div>
-  `;
-  modal.style.display = "block";
+      `;
+      modal.style.display = "block";
+    } else {
+      alert('User details not found');
+    }
+  } catch (error) {
+    console.error('Error loading user details:', error);
+    alert('Error loading user details: ' + error.message);
+  }
 };
 
 window.updateUserRole = async function(userId, isAdmin) {
@@ -298,6 +368,37 @@ window.deleteUser = async function(uid) {
       console.error("Error deleting user:", error);
       alert("Error deleting user");
     }
+  }
+};
+
+// Add function to delete comments
+window.deleteComment = async function(postId, commentId) {
+  if (!confirm('Are you sure you want to delete this comment?')) return;
+  
+  try {
+    // Get the post document
+    const postRef = doc(db, "posts", postId);
+    const postDoc = await getDoc(postRef);
+    
+    if (postDoc.exists()) {
+      const postData = postDoc.data();
+      
+      // Filter out the comment to be deleted
+      const updatedComments = postData.comments.filter(comment => comment.id !== commentId);
+      
+      // Update the post document with the filtered comments
+      await updateDoc(postRef, { comments: updatedComments });
+      
+      alert('Comment deleted successfully');
+      
+      // Refresh the current user details modal
+      if (currentUserId) {
+        window.showUserDetails(currentUserId, { uid: currentUserId });
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    alert('Error deleting comment: ' + error.message);
   }
 };
 

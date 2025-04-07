@@ -37,11 +37,13 @@
     }
     .modal-content {
       background-color: white;
-      margin: 15% auto;
-      padding: 20px;
-      width: 80%;
-      max-width: 600px;
-      border-radius: 5px;
+      margin: 5% auto;
+      padding: 25px;
+      width: 90%;
+      max-width: 800px;
+      border-radius: 8px;
+      max-height: 85vh;
+      overflow-y: auto;
     }
     .close {
       float: right;
@@ -61,6 +63,54 @@
       color: red;
       text-align: center;
       padding: 20px;
+    }
+    
+    /* User Details Modal Styling */
+    .user-details-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .user-details-container h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+    
+    .user-details-container p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    
+    .user-basic-info,
+    .user-personal-info,
+    .user-account-info {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    
+    .comments-list {
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    
+    .comment-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 10px;
+    }
+    
+    .comment-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
     }
     
     /* Role styling */
