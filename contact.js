@@ -44,12 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
       // Get form values
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const contactPreference = document.getElementById('contactPreference').value;
       const subject = document.getElementById('subject').value.trim();
       const message = document.getElementById('message').value.trim();
       
       // Simple client-side validation
-      if (!name || !email || !subject || !message) {
-        showFeedback('Please fill in all fields.', 'error');
+      if (!name || !email || !subject || !message || !contactPreference) {
+        showFeedback('Please fill in all required fields.', 'error');
         submitButton.disabled = false;
         submitButton.textContent = originalButtonText;
         return;
@@ -67,6 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageData = {
           name,
           email,
+          phone,
+          contactPreference,
           subject,
           message,
           timestamp: serverTimestamp(),

@@ -56,6 +56,22 @@
       font-size: 1em;
     }
 
+    .form-group select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1em;
+      background-color: white;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 1em;
+      cursor: pointer;
+    }
+
     .form-group textarea {
       min-height: 150px;
       resize: vertical;
@@ -332,6 +348,21 @@
             </div>
             
             <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" placeholder="Your phone number (optional)" pattern="[0-9]{3}[\-\s]?[0-9]{3}[\-\s]?[0-9]{4}" title="Phone number format: 123-456-7890 or 123 456 7890 or 1234567890">
+            </div>
+            
+            <div class="form-group">
+              <label for="contactPreference">Preferred Contact Method <span style="color: #a94442;">*</span></label>
+              <select id="contactPreference" name="contactPreference" required>
+                <option value="">Please select...</option>
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+                <option value="either">Either is fine</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
               <label for="subject">Subject <span style="color: #a94442;">*</span></label>
               <input type="text" id="subject" name="subject" placeholder="Message subject" required>
             </div>
@@ -347,6 +378,8 @@
           <div class="contact-info">
             <h3>Other Ways to Connect</h3>
             <p><strong>Email:</strong> contact@makeupbyny.com</p>
+            <p><strong>Phone:</strong> (123) 456-7890</p>
+            <p><strong>Preferred Contact Hours:</strong> Monday-Friday, 9 AM - 5 PM EST</p>
             <p><strong>Social Media:</strong></p>
             <div class="social-icons">
               <a href="#" class="social-icon">Instagram</a>
