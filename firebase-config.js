@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Function to create user document in Firestore
-export async function createUserDocument(user) {
+export async function createUserDocument(user, additionalData = {}) {
   try {
     const userRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userRef);
@@ -61,6 +61,10 @@ export async function createUserDocument(user) {
     if (!userDoc.exists()) {
       await setDoc(userRef, {
         email: user.email,
+        firstName: additionalData.firstName || '',
+        lastName: additionalData.lastName || '',
+        username: additionalData.username || '',
+        phoneNumber: additionalData.phoneNumber || '',
         createdAt: serverTimestamp(),
         isAdmin: user.uid === "yuoaYY14sINHaqtNK5EAz4nl8cc2" // Hardcoded Admin
       });
