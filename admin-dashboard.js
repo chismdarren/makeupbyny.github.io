@@ -98,7 +98,6 @@ function loadContactMessages() {
         <option value="all">All Messages</option>
         <option value="new">New</option>
         <option value="read">Read</option>
-        <option value="replied">Replied</option>
       </select>
     </div>
   `;
@@ -209,8 +208,7 @@ function createMessageElement(id, message) {
   div.addEventListener('click', (e) => {
     // Don't open modal if user is clicking on controls
     if (e.target.classList.contains('status-select') || 
-        e.target.classList.contains('delete-btn') ||
-        e.target.classList.contains('reply-btn')) {
+        e.target.classList.contains('delete-btn')) {
       return;
     }
     
@@ -249,6 +247,8 @@ function showMessageDetails(id, message) {
     <div>
       <p><strong>From:</strong> ${message.name || 'Unknown'}</p>
       <p><strong>Email:</strong> <a href="mailto:${message.email || ''}" style="color: #222; text-decoration: underline;">${message.email || 'No email provided'}</a></p>
+      <p><strong>Phone:</strong> <a href="tel:${message.phone || ''}" style="color: #222; text-decoration: underline;">${message.phone || 'No phone provided'}</a></p>
+      <p><strong>Preferred Contact Method:</strong> ${message.contactPreference || 'Not specified'}</p>
       <p><strong>Time:</strong> ${timestampDisplay}</p>
       <div class="message-full-content">
         <p><strong>Message:</strong></p>
@@ -264,9 +264,7 @@ function showMessageDetails(id, message) {
     <select class="status-select" data-id="${id}">
       <option value="new" ${message.status === 'new' ? 'selected' : ''}>New</option>
       <option value="read" ${message.status === 'read' ? 'selected' : ''}>Read</option>
-      <option value="replied" ${message.status === 'replied' ? 'selected' : ''}>Replied</option>
     </select>
-    <button class="reply-btn" style="margin: 0 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="window.location.href='mailto:${message.email || ''}'">Reply</button>
     <button class="delete-btn" data-id="${id}">Delete</button>
   `;
   
