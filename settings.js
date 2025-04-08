@@ -24,8 +24,7 @@ const preferencesForm = document.getElementById('preferences-form');
 
 // Navigation elements
 const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-const userDropdownBtn = document.getElementById('userDropdownBtn');
-const userDropdownContent = document.getElementById('userDropdownContent');
+const userAccountLink = document.getElementById('userAccountLink');
 const loginLink = document.getElementById('login-link');
 const logoutBtn = document.getElementById('logout-btn');
 const logoutLink = document.getElementById('logout-link');
@@ -84,10 +83,10 @@ async function handleAuthStateChange(user) {
     if (loginLink) loginLink.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'inline';
     
-    // Show admin or user dropdown based on role
+    // Show admin dropdown or user account link based on role
     const isAdmin = currentUser.uid === adminUID;
     if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
-    if (userDropdownBtn) userDropdownBtn.style.display = 'inline';
+    if (userAccountLink) userAccountLink.style.display = 'inline';
     
     // Show settings icon when user is logged in
     const settingsIcon = document.getElementById('settingsIcon');
@@ -283,16 +282,6 @@ function showNotification(message, type) {
 
 // Set up dropdowns
 function setupDropdowns() {
-    // User dropdown
-    if (userDropdownBtn) {
-        userDropdownBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            userDropdownContent.classList.toggle('show-dropdown');
-            this.classList.toggle('active');
-        });
-    }
-    
     // Admin dropdown (reusing existing behavior)
     if (adminDropdownBtn) {
         adminDropdownBtn.addEventListener('click', function(e) {
@@ -305,14 +294,13 @@ function setupDropdowns() {
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-        if (!e.target.matches('.user-dropdown-btn') && !e.target.matches('.admin-dropdown-btn')) {
+        if (!e.target.matches('.admin-dropdown-btn')) {
             const dropdowns = document.querySelectorAll('.admin-dropdown-content');
             dropdowns.forEach(dropdown => {
                 if (dropdown.classList.contains('show-dropdown')) {
                     dropdown.classList.remove('show-dropdown');
                     
                     // Also remove active class from buttons
-                    if (userDropdownBtn) userDropdownBtn.classList.remove('active');
                     if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
                 }
             });
@@ -324,13 +312,6 @@ function setupDropdowns() {
 function setupLogout() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
-    }
-    
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            handleLogout();
-        });
     }
 }
 
