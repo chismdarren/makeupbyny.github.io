@@ -24,6 +24,12 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 const loginLink = document.getElementById("login-link");
 const logoutBtn = document.getElementById("logout-btn");
+const userAccountLink = document.getElementById("userAccountLink");
+const settingsIcon = document.getElementById("settingsIcon");
+
+// Initially hide account link and settings icon
+if (userAccountLink) userAccountLink.style.display = "none";
+if (settingsIcon) settingsIcon.style.display = "none";
 
 // Check authentication and admin status
 onAuthStateChanged(auth, async (user) => {
@@ -47,6 +53,8 @@ onAuthStateChanged(auth, async (user) => {
   if (loginLink) loginLink.style.display = "none";
   if (logoutBtn) logoutBtn.style.display = "inline";
   if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+  if (userAccountLink) userAccountLink.style.display = "inline";
+  if (settingsIcon) settingsIcon.style.display = "flex";
 
   console.log("User is admin, loading users...");
   // User is admin, load the users
