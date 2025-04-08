@@ -264,6 +264,70 @@
         padding: 10px 5px;
       }
     }
+
+    /* Settings gear icon styles */
+    .settings-icon {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .settings-icon:hover {
+      transform: rotate(30deg);
+    }
+
+    .settings-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: #333;
+    }
+
+    /* User dropdown styles (same as admin dropdown) */
+    .user-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .user-dropdown-btn {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 1em;
+      padding: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      display: none;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    .user-dropdown-btn .dropdown-icon {
+      display: inline-block;
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    .user-dropdown-btn.active .dropdown-icon {
+      transform: rotate(180deg);
+    }
+
+    .user-dropdown-btn:hover, 
+    .user-dropdown-btn.active {
+      color: #a07;
+    }
   </style>
 </head>
 <body>
@@ -289,11 +353,29 @@
           <a href="manage-users.html">User Management</a>
         </div>
       </div>
+      <!-- User dropdown -->
+      <div class="user-dropdown">
+        <a id="userDropdownBtn" class="user-dropdown-btn" href="#" style="display:none;">
+          My Account
+          <span class="dropdown-icon">▼</span>
+        </a>
+        <div id="userDropdownContent" class="admin-dropdown-content">
+          <a href="settings.html">Settings</a>
+          <a href="#" id="logout-link">Logout</a>
+        </div>
+      </div>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
+
+  <!-- Settings Icon -->
+  <a href="settings.html" class="settings-icon" id="settingsIcon" style="display:none;" title="Account Settings">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+    </svg>
+  </a>
 
   <!-- Main Content Area -->
   <div class="content">
@@ -430,5 +512,127 @@
 
   <!-- Load about.js for page-specific functionality -->
   <script type="module" src="about.js"></script>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    // Import Firebase modules
+    import { auth } from './firebase-config.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+
+    // DOM elements
+    const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+    const adminDropdownContent = document.getElementById('adminDropdownContent');
+    const userDropdownBtn = document.getElementById('userDropdownBtn');
+    const userDropdownContent = document.getElementById('userDropdownContent');
+    const loginLink = document.getElementById('login-link');
+    const logoutBtn = document.getElementById('logout-btn');
+    const logoutLink = document.getElementById('logout-link');
+    const settingsIcon = document.getElementById('settingsIcon');
+
+    // Hardcoded admin UID
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
+    // Check authentication state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is logged in
+        console.log('User logged in:', user.email);
+        
+        // Hide login link, show logout button
+        if (loginLink) loginLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline';
+        
+        // Show settings icon for all logged-in users
+        if (settingsIcon) settingsIcon.style.display = 'flex';
+
+        // Show admin dropdown or user dropdown based on role
+        const isAdmin = user.uid === adminUID;
+        if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
+        if (userDropdownBtn) userDropdownBtn.style.display = 'inline';
+      } else {
+        // User is logged out
+        console.log('No user logged in');
+        
+        // Show login link, hide logout button and dropdowns
+        if (loginLink) loginLink.style.display = 'inline';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (adminDropdownBtn) adminDropdownBtn.style.display = 'none';
+        if (userDropdownBtn) userDropdownBtn.style.display = 'none';
+        
+        // Hide settings icon
+        if (settingsIcon) settingsIcon.style.display = 'none';
+      }
+    });
+
+    // Toggle admin dropdown menu
+    if (adminDropdownBtn) {
+      adminDropdownBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        adminDropdownContent.classList.toggle('show-dropdown');
+        this.classList.toggle('active');
+        
+        // Close user dropdown if open
+        if (userDropdownContent && userDropdownContent.classList.contains('show-dropdown')) {
+          userDropdownContent.classList.remove('show-dropdown');
+          userDropdownBtn.classList.remove('active');
+        }
+      });
+    }
+
+    // Toggle user dropdown menu
+    if (userDropdownBtn) {
+      userDropdownBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        userDropdownContent.classList.toggle('show-dropdown');
+        this.classList.toggle('active');
+        
+        // Close admin dropdown if open
+        if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
+          adminDropdownContent.classList.remove('show-dropdown');
+          adminDropdownBtn.classList.remove('active');
+        }
+      });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.matches('.admin-dropdown-btn') && !e.target.matches('.user-dropdown-btn')) {
+        // Close admin dropdown
+        if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
+          adminDropdownContent.classList.remove('show-dropdown');
+          adminDropdownBtn.classList.remove('active');
+        }
+        
+        // Close user dropdown
+        if (userDropdownContent && userDropdownContent.classList.contains('show-dropdown')) {
+          userDropdownContent.classList.remove('show-dropdown');
+          userDropdownBtn.classList.remove('active');
+        }
+      }
+    });
+
+    // Handle logout
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    if (logoutLink) {
+      logoutLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        handleLogout();
+      });
+    }
+
+    function handleLogout() {
+      signOut(auth).then(() => {
+        console.log('User signed out');
+        window.location.href = 'index.html';
+      }).catch(error => {
+        console.error('Error signing out:', error);
+      });
+    }
+  </script>
 </body>
 </html> 
