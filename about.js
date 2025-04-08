@@ -11,9 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
   onAuthStateChanged(auth, (user) => {
     // If user is logged in
     if (user) {
-      // Hide login button, show logout button
+      // Hide login button, show logout button and account link
       document.getElementById("login-link").style.display = "none";
       document.getElementById("logout-btn").style.display = "inline";
+      document.getElementById("userAccountLink").style.display = "inline";
+      
+      // Show settings icon
+      const settingsIcon = document.getElementById('settingsIcon');
+      if (settingsIcon) settingsIcon.style.display = 'flex';
 
       // Check if user is admin
       if (user.uid === adminUID) {
@@ -24,10 +29,15 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("adminDropdownBtn").style.display = "none";
       }
     } else {
-      // If user is not logged in, show login button and hide admin features
+      // If user is not logged in, show login button and hide user features
       document.getElementById("login-link").style.display = "inline";
       document.getElementById("logout-btn").style.display = "none";
+      document.getElementById("userAccountLink").style.display = "none";
       document.getElementById("adminDropdownBtn").style.display = "none";
+      
+      // Hide settings icon
+      const settingsIcon = document.getElementById('settingsIcon');
+      if (settingsIcon) settingsIcon.style.display = 'none';
     }
   });
 

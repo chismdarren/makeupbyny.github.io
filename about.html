@@ -353,17 +353,8 @@
           <a href="manage-users.html">User Management</a>
         </div>
       </div>
-      <!-- User dropdown -->
-      <div class="user-dropdown">
-        <a id="userDropdownBtn" class="user-dropdown-btn" href="#" style="display:none;">
-          My Account
-          <span class="dropdown-icon">▼</span>
-        </a>
-        <div id="userDropdownContent" class="admin-dropdown-content">
-          <a href="settings.html">Settings</a>
-          <a href="#" id="logout-link">Logout</a>
-        </div>
-      </div>
+      <!-- User account link (initially hidden) -->
+      <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
@@ -522,11 +513,9 @@
     // DOM elements
     const adminDropdownBtn = document.getElementById('adminDropdownBtn');
     const adminDropdownContent = document.getElementById('adminDropdownContent');
-    const userDropdownBtn = document.getElementById('userDropdownBtn');
-    const userDropdownContent = document.getElementById('userDropdownContent');
+    const userAccountLink = document.getElementById('userAccountLink');
     const loginLink = document.getElementById('login-link');
     const logoutBtn = document.getElementById('logout-btn');
-    const logoutLink = document.getElementById('logout-link');
     const settingsIcon = document.getElementById('settingsIcon');
 
     // Hardcoded admin UID
@@ -534,30 +523,23 @@
 
     // Check authentication state
     onAuthStateChanged(auth, (user) => {
+      // User is logged in
       if (user) {
-        // User is logged in
-        console.log('User logged in:', user.email);
-        
-        // Hide login link, show logout button
+        // Update UI elements
         if (loginLink) loginLink.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'inline';
-        
-        // Show settings icon for all logged-in users
+        if (userAccountLink) userAccountLink.style.display = 'inline';
         if (settingsIcon) settingsIcon.style.display = 'flex';
-
-        // Show admin dropdown or user dropdown based on role
+        
+        // Check if user is admin
         const isAdmin = user.uid === adminUID;
         if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
-        if (userDropdownBtn) userDropdownBtn.style.display = 'inline';
       } else {
         // User is logged out
-        console.log('No user logged in');
-        
-        // Show login link, hide logout button and dropdowns
         if (loginLink) loginLink.style.display = 'inline';
         if (logoutBtn) logoutBtn.style.display = 'none';
+        if (userAccountLink) userAccountLink.style.display = 'none';
         if (adminDropdownBtn) adminDropdownBtn.style.display = 'none';
-        if (userDropdownBtn) userDropdownBtn.style.display = 'none';
         
         // Hide settings icon
         if (settingsIcon) settingsIcon.style.display = 'none';
@@ -571,44 +553,16 @@
         e.stopPropagation();
         adminDropdownContent.classList.toggle('show-dropdown');
         this.classList.toggle('active');
-        
-        // Close user dropdown if open
-        if (userDropdownContent && userDropdownContent.classList.contains('show-dropdown')) {
-          userDropdownContent.classList.remove('show-dropdown');
-          userDropdownBtn.classList.remove('active');
-        }
-      });
-    }
-
-    // Toggle user dropdown menu
-    if (userDropdownBtn) {
-      userDropdownBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        userDropdownContent.classList.toggle('show-dropdown');
-        this.classList.toggle('active');
-        
-        // Close admin dropdown if open
-        if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
-          adminDropdownContent.classList.remove('show-dropdown');
-          adminDropdownBtn.classList.remove('active');
-        }
       });
     }
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-      if (!e.target.matches('.admin-dropdown-btn') && !e.target.matches('.user-dropdown-btn')) {
+      if (!e.target.matches('.admin-dropdown-btn')) {
         // Close admin dropdown
         if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
           adminDropdownContent.classList.remove('show-dropdown');
           adminDropdownBtn.classList.remove('active');
-        }
-        
-        // Close user dropdown
-        if (userDropdownContent && userDropdownContent.classList.contains('show-dropdown')) {
-          userDropdownContent.classList.remove('show-dropdown');
-          userDropdownBtn.classList.remove('active');
         }
       }
     });
@@ -618,13 +572,6 @@
       logoutBtn.addEventListener('click', handleLogout);
     }
     
-    if (logoutLink) {
-      logoutLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        handleLogout();
-      });
-    }
-
     function handleLogout() {
       signOut(auth).then(() => {
         console.log('User signed out');
