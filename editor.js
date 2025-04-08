@@ -40,185 +40,48 @@ let editor;
 let autosaveTimeout;
 const AUTOSAVE_DELAY = 2000; // 2 seconds
 
+// DOM elements
+const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+const userAccountLink = document.getElementById('userAccountLink');
+const loginLink = document.getElementById('login-link');
+const logoutBtn = document.getElementById('logout-btn');
+const settingsIcon = document.getElementById('settingsIcon');
+
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
+  // Initially hide user account link and settings icon until auth check completes
+  if (userAccountLink) userAccountLink.style.display = 'none';
+  if (settingsIcon) settingsIcon.style.display = 'none';
+
   // Initialize main content SunEditor
-  if (document.getElementById('content')) {
-    editor = SUNEDITOR.create('content', {
-      buttonList: [
-        ['undo', 'redo'],
-        ['font', 'fontSize', 'formatBlock'],
-        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
-        ['removeFormat', 'blockquote'],
-        ['fontColor', 'hiliteColor'],
-        ['indent', 'outdent'],
-        ['align', 'horizontalRule', 'list', 'lineHeight'],
-        ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
-      ],
-      formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-      font: [
-        'Arial',
-        'Calibri',
-        'Comic Sans',
-        'Courier',
-        'Garamond',
-        'Georgia',
-        'Impact',
-        'Lucida Console',
-        'Tahoma',
-        'Times New Roman',
-        'Trebuchet MS',
-        'Verdana',
-        'Dancing Script',
-        'Great Vibes',
-        'Pacifico',
-        'Satisfy',
-        'Allura',
-        'Brush Script MT',
-        'Monsieur La Doulaise',
-        'Tangerine',
-        'Alex Brush',
-        'Pinyon Script'
-      ],
-      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
-      height: '400px',
-      width: '100%',
-      minHeight: '300px',
-      maxHeight: '800px',
-      callBackSave: function(contents) {
-        updatePreview(contents);
-        return contents;
-      },
-      callbacks: {
-        onChange: function(contents) {
-          console.log("SunEditor content changed");
-          // Update preview content directly with the HTML content from SunEditor
-          const preview = document.getElementById('preview');
-          if (preview) {
-            // Update content
-            const article = preview.querySelector('.blog-post');
-            if (!article) return;
-            
-            const bodyElement = article.querySelector('.preview-body');
-            if (bodyElement) {
-              bodyElement.innerHTML = contents || 'Post content preview will appear here...';
-              console.log("Updated preview body with new content");
-            }
-            
-            // Also update other elements to keep everything in sync
-            // Update title
-            const titleElement = article.querySelector('.preview-title');
-            const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
-            const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
-            
-            if (titleElement) {
-              titleElement.innerHTML = titleContent || 'Post Title';
-              if (titleFont) {
-                titleElement.style.fontFamily = titleFont;
-              }
-            }
-            
-            // Update featured image
-            const imageContainer = article.querySelector('.preview-featured-image-container');
-            const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
-            
-            if (imageContainer) {
-              if (featuredImage) {
-                imageContainer.innerHTML = `<img src="${featuredImage}" alt="${titleContent}" class="preview-featured-image">`;
-              } else {
-                imageContainer.innerHTML = '';
-              }
-            }
-          }
-          
-          // For autosave
-          clearTimeout(autosaveTimeout);
-          showAutosaveStatus();
-          autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-        },
-        // Ensure preview updates after image insertion
-        onImageUpload: async function(files, info, uploadHandler) {
-          try {
-            const file = files[0];
-            const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-            await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(storageRef);
-            uploadHandler(url);
-            // No need to call updatePreview here as onChange will be triggered
-          } catch (error) {
-            console.error('Error uploading image:', error);
-            alert('Error uploading image. Please try again.');
-          }
-        },
-        // Add an onload callback to ensure the editor is ready
-        onLoad: function() {
-          console.log("SunEditor loaded");
-          // Initial preview update
-          const initialContent = this.getContents();
-          console.log("Initial content:", initialContent);
-          setTimeout(() => {
-            // Directly call the onChange handler with the initial content
-            this.onChange(initialContent);
-            updatePreview(initialContent);
-          }, 500);
-        }
-      }
-    });
-    
-    // After initialization, explicitly monitor the editor for changes
-    if (editor) {
-      console.log("Setting up additional event handler on editor");
-      
-      // Store the original onChange handler
-      const originalOnChange = editor.onChange;
-      
-      // Override with our custom handler that ensures the preview updates
-      editor.onChange = function(contents, core) {
-        console.log("Custom onChange handler called");
-        // Call the original handler if it exists
-        if (typeof originalOnChange === 'function') {
-          originalOnChange.call(this, contents, core);
-        }
-        
-        // Update the preview with the latest content
-        const preview = document.getElementById('preview');
-        if (preview) {
-          const article = preview.querySelector('.blog-post');
-          if (!article) return;
-          
-          const bodyElement = article.querySelector('.preview-body');
-          if (bodyElement) {
-            bodyElement.innerHTML = contents || 'Post content preview will appear here...';
-            console.log("Preview updated from custom handler");
-          }
-        }
-        
-        // Trigger autosave
-        clearTimeout(autosaveTimeout);
-        showAutosaveStatus();
-        autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
-      };
-      
-      // Add direct event listener to the editor's internal elements
-      const editorElement = document.querySelector('.sun-editor-editable');
-      if (editorElement) {
-        editorElement.addEventListener('input', function() {
-          console.log("Editor content input event detected");
-          const currentContent = editor.getContents();
-          updatePreview(currentContent);
-        });
-        
-        editorElement.addEventListener('keyup', function() {
-          console.log("Editor keyup event detected");
-          const currentContent = editor.getContents();
-          updatePreview(currentContent);
-        });
-      }
-    }
-  }
+  sunEditorInit();
   
+  // Set up image upload UI
+  setupImageUpload();
+  
+  // Initialize post form
+  initPostForm();
+  
+  // Initialize tabs
+  setupTabs();
+  
+  // Set up dropdowns
+  setupDropdowns();
+  
+  // Set up logout button
+  setupLogout();
+  
+  // Check authentication state
+  onAuthStateChanged(auth, handleAuthStateChange);
+  
+  // Initialize tooltips
+  setupTooltips();
+  
+  // Setup save and publish buttons
+  setupSavePublishButtons();
+
   // Initialize title field event listeners
   const titleField = document.getElementById('titleField');
   const titleFontSelect = document.getElementById('titleFont');
@@ -860,71 +723,72 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Handle authentication state
-  const loginLink = document.getElementById("login-link");
-  const logoutBtn = document.getElementById("logout-btn");
   const createPostLink = document.getElementById("create-post-link");
-  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 
   if (loginLink && logoutBtn) {
+    // Check auth state
     onAuthStateChanged(auth, (user) => {
-      console.log("Auth state changed. Current user:", user ? user.uid : "No user");
-
       if (user) {
+        // User is signed in
+        console.log("User is signed in:", user.email);
         loginLink.style.display = "none";
         logoutBtn.style.display = "inline";
         if (createPostLink) createPostLink.style.display = "inline";
         
-        // Show admin dropdown only for admin user
-        if (user.uid === adminUID) {
-          if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
-        } else {
-          if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
-        }
+        // Show user account link and settings icon
+        if (userAccountLink) userAccountLink.style.display = 'inline';
+        if (settingsIcon) settingsIcon.style.display = 'flex';
         
         // Load posts when user is logged in
-        loadUserPosts();
+        if (typeof loadPosts === 'function') {
+          loadPosts();
+        }
       } else {
+        // User is signed out
+        console.log("User is signed out");
         loginLink.style.display = "inline";
         logoutBtn.style.display = "none";
         if (createPostLink) createPostLink.style.display = "none";
-        if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+        if (userAccountLink) userAccountLink.style.display = 'none';
+        if (settingsIcon) settingsIcon.style.display = 'none';
         
         // Clear posts list when user logs out
-        const postsList = document.getElementById('postsList');
-        if (postsList) {
-          postsList.innerHTML = '<p>Please log in to view your posts.</p>';
+        const postsListContainer = document.getElementById('postsList');
+        if (postsListContainer) {
+          postsListContainer.innerHTML = '';
         }
       }
     });
   }
 
-  // Handle logout
+  // Set up logout button
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      signOut(auth).then(() => {
-        console.log("User signed out.");
-        window.location.href = "index.html";
-      });
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
     });
   }
 
-  // Handle admin dropdown functionality
+  // Toggle admin dropdown menu
   if (adminDropdownBtn) {
-    adminDropdownBtn.addEventListener("click", function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
-      this.classList.toggle("active");
+    adminDropdownBtn.addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent default link behavior
+      this.classList.toggle('active');
+      document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
     });
     
     // Close dropdown when clicking outside
-    document.addEventListener("click", function(e) {
+    window.addEventListener('click', function(e) {
       if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
-        const dropdown = document.getElementById("adminDropdownContent");
-        const btn = document.getElementById("adminDropdownBtn");
-        if (dropdown && dropdown.classList.contains("show-dropdown")) {
-          dropdown.classList.remove("show-dropdown");
-          btn.classList.remove("active");
+        const dropdown = document.getElementById('adminDropdownContent');
+        const btn = document.getElementById('adminDropdownBtn');
+        if (dropdown && dropdown.classList.contains('show-dropdown')) {
+          dropdown.classList.remove('show-dropdown');
+          btn.classList.remove('active');
         }
       }
     });
@@ -1579,3 +1443,252 @@ setTimeout(() => {
     updatePreview(editor.getContents());
   }
 }, 1000); // Give the editor time to initialize 
+
+// Handle authentication state changes
+function handleAuthStateChange(user) {
+  if (user) {
+    console.log("User is logged in:", user.email);
+    
+    // Update UI based on user role
+    if (loginLink) loginLink.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline";
+    if (userAccountLink) userAccountLink.style.display = "inline";
+    
+    // Check if user is admin
+    const isAdmin = user.uid === adminUID;
+    
+    if (isAdmin) {
+      // Show admin dropdown and editor container
+      if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+      if (settingsIcon) settingsIcon.style.display = "flex";
+    } else {
+      // User is not admin, redirect to home page
+      console.log("Non-admin user attempted to access editor");
+      alert("You do not have permission to access this page.");
+      window.location.href = "index.html";
+    }
+  } else {
+    // User is not logged in, redirect to login page
+    console.log("User is not logged in, redirecting to login page");
+    window.location.href = "login.html";
+  }
+}
+
+// Set up dropdowns
+function setupDropdowns() {
+  // Admin dropdown
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      this.classList.toggle("active");
+    });
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener("click", function(e) {
+    if (!e.target.matches(".admin-dropdown-btn")) {
+      const dropdowns = document.querySelectorAll(".admin-dropdown-content");
+      dropdowns.forEach(dropdown => {
+        if (dropdown.classList.contains("show-dropdown")) {
+          dropdown.classList.remove("show-dropdown");
+          
+          // Also remove active class from buttons
+          if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
+        }
+      });
+    }
+  });
+}
+
+// Set up logout
+function setupLogout() {
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function() {
+      signOut(auth).then(() => {
+        console.log("User signed out");
+        window.location.href = "index.html";
+      }).catch(error => {
+        console.error("Error signing out:", error);
+      });
+    });
+  }
+}
+
+// Define sunEditorInit function if it doesn't exist
+function sunEditorInit() {
+  if (document.getElementById('content')) {
+    editor = SUNEDITOR.create('content', {
+      buttonList: [
+        ['undo', 'redo'],
+        ['font', 'fontSize', 'formatBlock'],
+        ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+        ['removeFormat', 'blockquote'],
+        ['fontColor', 'hiliteColor'],
+        ['indent', 'outdent'],
+        ['align', 'horizontalRule', 'list', 'lineHeight'],
+        ['table', 'link', 'image', 'video', 'audio', 'fullScreen'],
+      ],
+      formats: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+      font: [
+        'Arial',
+        'Calibri',
+        'Comic Sans',
+        'Courier',
+        'Garamond',
+        'Georgia',
+        'Impact',
+        'Lucida Console',
+        'Tahoma',
+        'Times New Roman',
+        'Trebuchet MS',
+        'Verdana',
+        'Dancing Script',
+        'Great Vibes',
+        'Pacifico',
+        'Satisfy',
+        'Allura',
+        'Brush Script MT',
+        'Monsieur La Doulaise',
+        'Tangerine',
+        'Alex Brush',
+        'Pinyon Script'
+      ],
+      fontSize: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72],
+      height: '400px',
+      width: '100%',
+      minHeight: '300px',
+      maxHeight: '800px',
+      callBackSave: function(contents) {
+        updatePreview(contents);
+        return contents;
+      },
+      callbacks: {
+        onChange: function(contents) {
+          console.log("SunEditor content changed");
+          // Update preview content directly with the HTML content from SunEditor
+          const preview = document.getElementById('preview');
+          if (preview) {
+            // Update content
+            const article = preview.querySelector('.blog-post');
+            if (!article) return;
+            
+            const bodyElement = article.querySelector('.preview-body');
+            if (bodyElement) {
+              bodyElement.innerHTML = contents || 'Post content preview will appear here...';
+              console.log("Updated preview body with new content");
+            }
+            
+            // Also update other elements to keep everything in sync
+            // Update title
+            const titleElement = article.querySelector('.preview-title');
+            const titleContent = document.getElementById('titleField') ? document.getElementById('titleField').innerHTML : '';
+            const titleFont = document.getElementById('titleFont') ? document.getElementById('titleFont').value : '';
+            
+            if (titleElement) {
+              titleElement.innerHTML = titleContent || 'Post Title';
+              if (titleFont) {
+                titleElement.style.fontFamily = titleFont;
+              }
+            }
+            
+            // Update featured image
+            const imageContainer = article.querySelector('.preview-featured-image-container');
+            const featuredImage = document.getElementById('image') ? document.getElementById('image').value : '';
+            
+            if (imageContainer) {
+              if (featuredImage) {
+                imageContainer.innerHTML = `<img src="${featuredImage}" alt="${titleContent}" class="preview-featured-image">`;
+              } else {
+                imageContainer.innerHTML = '';
+              }
+            }
+          }
+          
+          // For autosave
+          clearTimeout(autosaveTimeout);
+          showAutosaveStatus();
+          autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+        },
+        // Ensure preview updates after image insertion
+        onImageUpload: async function(files, info, uploadHandler) {
+          try {
+            const file = files[0];
+            const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            uploadHandler(url);
+            // No need to call updatePreview here as onChange will be triggered
+          } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Error uploading image. Please try again.');
+          }
+        },
+        // Add an onload callback to ensure the editor is ready
+        onLoad: function() {
+          console.log("SunEditor loaded");
+          // Initial preview update
+          const initialContent = this.getContents();
+          console.log("Initial content:", initialContent);
+          setTimeout(() => {
+            // Directly call the onChange handler with the initial content
+            this.onChange(initialContent);
+            updatePreview(initialContent);
+          }, 500);
+        }
+      }
+    });
+    
+    // After initialization, explicitly monitor the editor for changes
+    if (editor) {
+      console.log("Setting up additional event handler on editor");
+      
+      // Store the original onChange handler
+      const originalOnChange = editor.onChange;
+      
+      // Override with our custom handler that ensures the preview updates
+      editor.onChange = function(contents, core) {
+        console.log("Custom onChange handler called");
+        // Call the original handler if it exists
+        if (typeof originalOnChange === 'function') {
+          originalOnChange.call(this, contents, core);
+        }
+        
+        // Update the preview with the latest content
+        const preview = document.getElementById('preview');
+        if (preview) {
+          const article = preview.querySelector('.blog-post');
+          if (!article) return;
+          
+          const bodyElement = article.querySelector('.preview-body');
+          if (bodyElement) {
+            bodyElement.innerHTML = contents || 'Post content preview will appear here...';
+            console.log("Preview updated from custom handler");
+          }
+        }
+        
+        // Trigger autosave
+        clearTimeout(autosaveTimeout);
+        showAutosaveStatus();
+        autosaveTimeout = setTimeout(autosave, AUTOSAVE_DELAY);
+      };
+      
+      // Add direct event listener to the editor's internal elements
+      const editorElement = document.querySelector('.sun-editor-editable');
+      if (editorElement) {
+        editorElement.addEventListener('input', function() {
+          console.log("Editor content input event detected");
+          const currentContent = editor.getContents();
+          updatePreview(currentContent);
+        });
+        
+        editorElement.addEventListener('keyup', function() {
+          console.log("Editor keyup event detected");
+          const currentContent = editor.getContents();
+          updatePreview(currentContent);
+        });
+      }
+    }
+  }
+} 

@@ -1,71 +1,32 @@
 // Import necessary Firebase modules
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { auth } from "./firebase-config.js";
 
 // Define admin user ID for special privileges
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
+// Get DOM elements
+const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+const adminDropdownContent = document.getElementById("adminDropdownContent");
+const userAccountLink = document.getElementById("userAccountLink");
+const loginLink = document.getElementById("login-link");
+const logoutBtn = document.getElementById("logout-btn");
+const settingsIcon = document.getElementById("settingsIcon");
+
 // Initialize the page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  // Initially hide user account link until auth check completes
+  if (userAccountLink) userAccountLink.style.display = "none";
+  if (settingsIcon) settingsIcon.style.display = "none";
+  
+  // Set up dropdowns
+  setupDropdowns();
+  
+  // Set up logout button
+  setupLogout();
+  
   // Monitor user authentication state
-  onAuthStateChanged(auth, (user) => {
-    // If user is logged in
-    if (user) {
-      // Hide login button, show logout button and account link
-      document.getElementById("login-link").style.display = "none";
-      document.getElementById("logout-btn").style.display = "inline";
-      document.getElementById("userAccountLink").style.display = "inline";
-      
-      // Show settings icon
-      const settingsIcon = document.getElementById('settingsIcon');
-      if (settingsIcon) settingsIcon.style.display = 'flex';
-
-      // Check if user is admin
-      if (user.uid === adminUID) {
-        // Show admin dropdown button
-        document.getElementById("adminDropdownBtn").style.display = "inline";
-      } else {
-        // Hide admin dropdown button for regular users
-        document.getElementById("adminDropdownBtn").style.display = "none";
-      }
-    } else {
-      // If user is not logged in, show login button and hide user features
-      document.getElementById("login-link").style.display = "inline";
-      document.getElementById("logout-btn").style.display = "none";
-      document.getElementById("userAccountLink").style.display = "none";
-      document.getElementById("adminDropdownBtn").style.display = "none";
-      
-      // Hide settings icon
-      const settingsIcon = document.getElementById('settingsIcon');
-      if (settingsIcon) settingsIcon.style.display = 'none';
-    }
-  });
-
-  // Handle logout button click
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    auth.signOut().then(() => {
-      window.location.href = "index.html";
-    });
-  });
-
-  // Toggle dropdown menu on click
-  document.getElementById("adminDropdownBtn").addEventListener("click", function(e) {
-    e.preventDefault(); // Prevent default link behavior
-    this.classList.toggle("active");
-    document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
-  });
-
-  // Close dropdown when clicking outside
-  window.addEventListener("click", function(e) {
-    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
-      const dropdown = document.getElementById("adminDropdownContent");
-      const btn = document.getElementById("adminDropdownBtn");
-      if (dropdown.classList.contains("show-dropdown")) {
-        dropdown.classList.remove("show-dropdown");
-        btn.classList.remove("active");
-      }
-    }
-  });
+  onAuthStateChanged(auth, handleAuthStateChange);
 
   // Add smooth scrolling for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -98,4 +59,76 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('.about-card').forEach(card => {
     observer.observe(card);
   });
-}); 
+});
+
+// Handle authentication state changes
+function handleAuthStateChange(user) {
+  if (user) {
+    console.log("User is logged in:", user.email);
+    
+    // Update UI based on user role
+    if (loginLink) loginLink.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline";
+    if (userAccountLink) userAccountLink.style.display = "inline";
+    if (settingsIcon) settingsIcon.style.display = "flex";
+    
+    // Check if user is admin
+    const isAdmin = user.uid === adminUID;
+    
+    if (isAdmin && adminDropdownBtn) {
+      // Show admin dropdown button
+      adminDropdownBtn.style.display = "inline";
+    } else if (adminDropdownBtn) {
+      // Hide admin dropdown button for regular users
+      adminDropdownBtn.style.display = "none";
+    }
+  } else {
+    // If user is not logged in, show login button and hide user features
+    if (loginLink) loginLink.style.display = "inline";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (userAccountLink) userAccountLink.style.display = "none";
+    if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+    if (settingsIcon) settingsIcon.style.display = "none";
+  }
+}
+
+// Set up dropdowns
+function setupDropdowns() {
+  // Admin dropdown
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (adminDropdownContent) {
+        adminDropdownContent.classList.toggle("show-dropdown");
+        this.classList.toggle("active");
+      }
+    });
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener("click", function(e) {
+    if (adminDropdownBtn && adminDropdownContent && 
+        !e.target.matches('#adminDropdownBtn') && 
+        !e.target.matches('.dropdown-icon')) {
+      if (adminDropdownContent.classList.contains("show-dropdown")) {
+        adminDropdownContent.classList.remove("show-dropdown");
+        adminDropdownBtn.classList.remove("active");
+      }
+    }
+  });
+}
+
+// Set up logout
+function setupLogout() {
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function() {
+      signOut(auth).then(() => {
+        console.log("User signed out");
+        window.location.href = "index.html";
+      }).catch(error => {
+        console.error("Error signing out:", error);
+      });
+    });
+  }
+} 
