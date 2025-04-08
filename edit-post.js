@@ -695,66 +695,57 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle authentication state
+  // DOM elements for auth-related UI
+  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+  const userAccountLink = document.getElementById("userAccountLink");
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
-  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+  const settingsIcon = document.getElementById("settingsIcon");
 
-  if (loginLink && logoutBtn) {
-    onAuthStateChanged(auth, (user) => {
-      console.log("Auth state changed. Current user:", user ? user.uid : "No user");
+  // Initially hide user account link and settings gear icon
+  if (userAccountLink) userAccountLink.style.display = "none";
+  if (settingsIcon) settingsIcon.style.display = "none";
 
-      if (user) {
-        loginLink.style.display = "none";
-        logoutBtn.style.display = "inline";
-        
-        // Show admin dropdown only for admin user
-        if (user.uid === adminUID && adminDropdownBtn) {
-          adminDropdownBtn.style.display = "inline";
-        } else if (adminDropdownBtn) {
-          adminDropdownBtn.style.display = "none";
-        }
-        
-        // Load all posts for the sidebar
-        loadAllPosts().then(() => {
-          // If no specific post ID was provided, load the most recent post
-          if (!currentPostId && latestPostId) {
-            // Update the URL with the latest post ID without refreshing
-            const url = new URL(window.location);
-            url.searchParams.set('postId', latestPostId);
-            window.history.pushState({}, '', url);
-            
-            // Load the latest post
-            loadPostData(latestPostId);
-          } else if (currentPostId) {
-            // Load the specified post
-            loadPostData(currentPostId);
-          } else {
-            console.error("No posts found");
-          }
-        });
+  // Authentication state change handler
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is logged in
+      if (loginLink) loginLink.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "inline";
+      if (userAccountLink) userAccountLink.style.display = "inline";
+      if (settingsIcon) settingsIcon.style.display = "flex";
+
+      // Check if user is admin
+      if (user.uid === adminUID) {
+        // User is admin, show admin dropdown and editor features
+        if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+
+        // Initialize post editor functionality
+        initPostEditor();
       } else {
-        loginLink.style.display = "inline";
-        logoutBtn.style.display = "none";
-        if (adminDropdownBtn) {
-          adminDropdownBtn.style.display = "none";
-        }
-        window.location.href = "login.html";
+        // User is not admin, redirect to home
+        console.warn("Non-admin user attempted to access post editor");
+        window.location.href = "index.html";
       }
-    });
-  }
+    } else {
+      // User is not logged in, redirect to login
+      window.location.href = "login.html";
+    }
+  });
 
-  // Handle logout
+  // Set up logout functionality
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       signOut(auth).then(() => {
-        console.log("User signed out.");
+        console.log("User signed out");
         window.location.href = "index.html";
+      }).catch(error => {
+        console.error("Error signing out:", error);
       });
     });
   }
 
-  // Handle admin dropdown functionality
+  // Set up dropdown functionality
   if (adminDropdownBtn) {
     adminDropdownBtn.addEventListener("click", function(e) {
       e.preventDefault();
@@ -762,19 +753,22 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
       this.classList.toggle("active");
     });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener("click", function(e) {
-      if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
-        const dropdown = document.getElementById("adminDropdownContent");
-        const btn = document.getElementById("adminDropdownBtn");
-        if (dropdown && dropdown.classList.contains("show-dropdown")) {
-          dropdown.classList.remove("show-dropdown");
-          btn.classList.remove("active");
-        }
-      }
-    });
   }
+
+  // Close dropdowns when clicking outside
+  document.addEventListener("click", function(e) {
+    if (!e.target.matches(".admin-dropdown-btn")) {
+      const dropdowns = document.querySelectorAll(".admin-dropdown-content");
+      dropdowns.forEach(dropdown => {
+        if (dropdown.classList.contains("show-dropdown")) {
+          dropdown.classList.remove("show-dropdown");
+          
+          // Also remove active class from buttons
+          if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
+        }
+      });
+    }
+  });
 
   // Function to load all posts for the sidebar
   async function loadAllPosts() {
@@ -1048,6 +1042,28 @@ document.addEventListener("DOMContentLoaded", () => {
       previewOverlay.classList.remove('open');
       document.body.style.overflow = ''; // Restore scrolling
     }
+  }
+
+  // Function to initialize post editor functionality
+  function initPostEditor() {
+    // Load all posts for the sidebar
+    loadAllPosts().then(() => {
+      // If no specific post ID was provided, load the most recent post
+      if (!currentPostId && latestPostId) {
+        // Update the URL with the latest post ID without refreshing
+        const url = new URL(window.location);
+        url.searchParams.set('postId', latestPostId);
+        window.history.pushState({}, '', url);
+        
+        // Load the latest post
+        loadPostData(latestPostId);
+      } else if (currentPostId) {
+        // Load the specified post
+        loadPostData(currentPostId);
+      } else {
+        console.error("No posts found");
+      }
+    });
   }
 
   // Initialize
