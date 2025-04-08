@@ -37,29 +37,9 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 let allPosts = [];
 let editor = null; // SunEditor instance
 
-// DOM elements
-const userAccountLink = document.getElementById('userAccountLink');
-const loginLink = document.getElementById('login-link');
-const logoutBtn = document.getElementById('logout-btn');
-const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-const settingsIcon = document.getElementById('settingsIcon');
-
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
-
-  // Initially hide user account link and settings icon until auth check completes
-  if (userAccountLink) userAccountLink.style.display = 'none';
-  if (settingsIcon) settingsIcon.style.display = 'none';
-  
-  // Check auth state
-  onAuthStateChanged(auth, handleAuthStateChange);
-  
-  // Set up dropdowns
-  setupDropdowns();
-  
-  // Set up logout button
-  setupLogout();
 
   // Initialize elements
   const editPostForm = document.getElementById("editPostForm");
@@ -715,7 +695,149 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle sorting and rendering posts
+  // Handle authentication state
+  const loginLink = document.getElementById("login-link");
+  const logoutBtn = document.getElementById("logout-btn");
+  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+
+  if (loginLink && logoutBtn) {
+    onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed. Current user:", user ? user.uid : "No user");
+
+      if (user) {
+        loginLink.style.display = "none";
+        logoutBtn.style.display = "inline";
+        
+        // Show admin dropdown only for admin user
+        if (user.uid === adminUID && adminDropdownBtn) {
+          adminDropdownBtn.style.display = "inline";
+        } else if (adminDropdownBtn) {
+          adminDropdownBtn.style.display = "none";
+        }
+        
+        // Load all posts for the sidebar
+        loadAllPosts().then(() => {
+          // If no specific post ID was provided, load the most recent post
+          if (!currentPostId && latestPostId) {
+            // Update the URL with the latest post ID without refreshing
+            const url = new URL(window.location);
+            url.searchParams.set('postId', latestPostId);
+            window.history.pushState({}, '', url);
+            
+            // Load the latest post
+            loadPostData(latestPostId);
+          } else if (currentPostId) {
+            // Load the specified post
+            loadPostData(currentPostId);
+          } else {
+            console.error("No posts found");
+          }
+        });
+      } else {
+        loginLink.style.display = "inline";
+        logoutBtn.style.display = "none";
+        if (adminDropdownBtn) {
+          adminDropdownBtn.style.display = "none";
+        }
+        window.location.href = "login.html";
+      }
+    });
+  }
+
+  // Handle logout
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      signOut(auth).then(() => {
+        console.log("User signed out.");
+        window.location.href = "index.html";
+      });
+    });
+  }
+
+  // Handle admin dropdown functionality
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      this.classList.toggle("active");
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+        const dropdown = document.getElementById("adminDropdownContent");
+        const btn = document.getElementById("adminDropdownBtn");
+        if (dropdown && dropdown.classList.contains("show-dropdown")) {
+          dropdown.classList.remove("show-dropdown");
+          btn.classList.remove("active");
+        }
+      }
+    });
+  }
+
+  // Function to load all posts for the sidebar
+  async function loadAllPosts() {
+    try {
+      const postsRef = collection(db, "posts");
+      const q = query(postsRef, orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        if (postsList) {
+          postsList.innerHTML = '<div class="no-posts">No posts found</div>';
+        }
+        return;
+      }
+      
+      // Store posts for sorting
+      allPosts = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          title: data.title || 'Untitled Post',
+          createdAt: data.createdAt?.toDate() || new Date(),
+          commentCount: 0 // Will be populated if needed
+        };
+      });
+      
+      // Store the ID of the most recent post
+      if (allPosts.length > 0) {
+        latestPostId = allPosts[0].id;
+      }
+      
+      // Load comment counts for each post
+      await loadCommentCounts();
+      
+      // Initial sort by newest (default)
+      sortAndRenderPosts('newest');
+      
+    } catch (error) {
+      console.error("Error loading posts:", error);
+      if (postsList) {
+        postsList.innerHTML = '<div class="error">Error loading posts</div>';
+      }
+    }
+  }
+  
+  // Function to load comment counts for all posts
+  async function loadCommentCounts() {
+    try {
+      for (let post of allPosts) {
+        // For each post, get the comments collection
+        const commentsRef = collection(db, "posts", post.id, "comments");
+        const q = query(commentsRef);
+        const querySnapshot = await getDocs(q);
+        
+        // Store the comment count
+        post.commentCount = querySnapshot.size;
+      }
+    } catch (error) {
+      console.error("Error loading comment counts:", error);
+    }
+  }
+  
+  // Function to sort and render posts in the sidebar
   function sortAndRenderPosts(sortType) {
     if (!postsList) return;
     
@@ -932,161 +1054,4 @@ document.addEventListener("DOMContentLoaded", () => {
   setupTextFormatting();
   setupImageEditing();
   updateCharacterCount();
-});
-
-// Handle authentication state changes
-function handleAuthStateChange(user) {
-  if (user) {
-    console.log("User is logged in:", user.email);
-    
-    // Update UI based on user role
-    if (loginLink) loginLink.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'inline';
-    if (userAccountLink) userAccountLink.style.display = 'inline';
-    
-    // Check if user is admin
-    const isAdmin = user.uid === adminUID;
-    
-    if (isAdmin) {
-      // Show admin dropdown and editor container
-      if (adminDropdownBtn) adminDropdownBtn.style.display = 'inline';
-      if (settingsIcon) settingsIcon.style.display = 'flex';
-      
-      // Load posts for admin
-      loadAllPosts().then(() => {
-        // If no specific post ID was provided, load the most recent post
-        if (!currentPostId && latestPostId) {
-          // Update the URL with the latest post ID without refreshing
-          const url = new URL(window.location);
-          url.searchParams.set('postId', latestPostId);
-          window.history.pushState({}, '', url);
-          
-          // Load the latest post
-          loadPostData(latestPostId);
-        } else if (currentPostId) {
-          // Load the specified post
-          loadPostData(currentPostId);
-        } else {
-          console.error("No posts found");
-        }
-      });
-    } else {
-      // User is not admin, redirect to home page
-      console.log("Non-admin user attempted to access edit posts page");
-      alert("You do not have permission to access this page.");
-      window.location.href = 'index.html';
-    }
-  } else {
-    // User is not logged in, redirect to login page
-    console.log("User is not logged in, redirecting to login page");
-    window.location.href = 'login.html';
-  }
-}
-
-// Set up dropdowns
-function setupDropdowns() {
-  // Admin dropdown
-  if (adminDropdownBtn) {
-    adminDropdownBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
-      this.classList.toggle('active');
-    });
-  }
-  
-  // Close dropdowns when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!e.target.matches('.admin-dropdown-btn')) {
-      const dropdowns = document.querySelectorAll('.admin-dropdown-content');
-      dropdowns.forEach(dropdown => {
-        if (dropdown.classList.contains('show-dropdown')) {
-          dropdown.classList.remove('show-dropdown');
-          
-          // Also remove active class from buttons
-          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-        }
-      });
-    }
-  });
-}
-
-// Set up logout
-function setupLogout() {
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function() {
-      signOut(auth).then(() => {
-        console.log("User signed out");
-        window.location.href = "index.html";
-      }).catch(error => {
-        console.error("Error signing out:", error);
-      });
-    });
-  }
-}
-
-// Load posts function (rename existing function if needed)
-async function loadAllPosts() {
-  try {
-    const postsRef = collection(db, "posts");
-    const q = query(postsRef, orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      if (postsList) {
-        postsList.innerHTML = '<div class="no-posts">No posts found</div>';
-      }
-      return;
-    }
-    
-    // Store posts for sorting
-    allPosts = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        title: data.title || 'Untitled Post',
-        createdAt: data.createdAt?.toDate() || new Date(),
-        commentCount: 0 // Will be populated if needed
-      };
-    });
-    
-    // Store the ID of the most recent post
-    if (allPosts.length > 0) {
-      latestPostId = allPosts[0].id;
-    }
-    
-    // Load comment counts for each post
-    await loadCommentCounts();
-    
-    // Initial sort by newest (default)
-    sortAndRenderPosts('newest');
-    
-  } catch (error) {
-    console.error("Error loading posts:", error);
-    if (postsList) {
-      postsList.innerHTML = '<div class="error">Error loading posts</div>';
-    }
-  }
-}
-
-// Function to load comment counts for all posts
-async function loadCommentCounts() {
-  try {
-    for (let post of allPosts) {
-      // For each post, get the comments collection
-      const commentsRef = collection(db, "posts", post.id, "comments");
-      const q = query(commentsRef);
-      const querySnapshot = await getDocs(q);
-      
-      // Store the comment count
-      post.commentCount = querySnapshot.size;
-    }
-  } catch (error) {
-    console.error("Error loading comment counts:", error);
-  }
-}
-
-// Load posts function (rename existing function if needed)
-async function loadPosts() {
-  // Your existing code to load posts
-} 
+}); 
