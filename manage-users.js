@@ -195,12 +195,18 @@ async function loadUsers() {
           <strong>Role:</strong> <span class="user-role ${userData.isAdmin ? 'admin-role' : 'user-role'}">${userData.isAdmin ? 'Admin' : 'User'}</span>
         </div>
         <div class="user-actions">
-          <button onclick="window.showUserDetails('${user.uid}', ${JSON.stringify({...user, isAdmin: userData.isAdmin})})">View Details</button>
+          <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
           <button class="role-btn ${userData.isAdmin ? 'remove-admin' : 'make-admin'}" onclick="window.updateUserRole('${user.uid}', ${!userData.isAdmin})">${userData.isAdmin ? 'Remove Admin' : 'Make Admin'}</button>
           <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
         </div>
       `;
       userList.appendChild(li);
+      
+      // Add event listener directly to the button (avoids inline attributes with complex JSON)
+      const viewDetailsBtn = li.querySelector('.view-details-btn');
+      viewDetailsBtn.addEventListener('click', function() {
+        window.showUserDetails(user.uid, {...user, isAdmin: userData.isAdmin});
+      });
     });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -209,17 +215,38 @@ async function loadUsers() {
 }
 
 // Make functions available globally for onclick handlers
-window.showUserDetails = async function(userId, userData) {
+window.showUserDetails = async function(userId, userData = null) {
   currentUserId = userId;
   
-  // Get complete user data from Firestore since userData might not have all fields
   try {
+    // Always fetch the latest user data from Firestore
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
     
     if (userDoc.exists()) {
       const userFullData = userDoc.data();
       const commentsHtml = await loadUserComments(userId);
+      
+      // Get auth user data for email and status
+      let authUserData = { email: "Unknown", disabled: false };
+      if (userData && userData.email) {
+        authUserData = userData;
+      } else {
+        // If userData wasn't provided or was invalid, try to get it from the user list
+        const userItems = document.querySelectorAll('.user-item');
+        userItems.forEach(item => {
+          if (item.innerHTML.includes(userId)) {
+            // Extract email from the user item
+            const emailMatch = item.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
+            if (emailMatch && emailMatch[1]) {
+              authUserData.email = emailMatch[1].trim();
+            }
+            
+            // Extract status from the user item
+            authUserData.disabled = item.innerHTML.includes('Status:</strong> Disabled');
+          }
+        });
+      }
       
       // Format timestamps
       let createdAtDisplay = 'Unknown';
@@ -236,9 +263,9 @@ window.showUserDetails = async function(userId, userData) {
         <div class="user-details-container">
           <div class="user-basic-info">
             <h3>Basic Information</h3>
-            <p><strong>Email:</strong> ${userData.email || 'Not provided'}</p>
-            <p><strong>UID:</strong> ${userData.uid}</p>
-            <p><strong>Status:</strong> ${userData.disabled ? 'Disabled' : 'Active'}</p>
+            <p><strong>Email:</strong> ${authUserData.email || 'Not provided'}</p>
+            <p><strong>UID:</strong> ${userId}</p>
+            <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
             <p><strong>Role:</strong> <span class="user-role ${userFullData.isAdmin ? 'admin-role' : 'user-role'}">${userFullData.isAdmin ? 'Admin' : 'User'}</span></p>
           </div>
           
