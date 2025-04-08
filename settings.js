@@ -89,6 +89,10 @@ async function handleAuthStateChange(user) {
     if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
     if (userDropdownBtn) userDropdownBtn.style.display = 'inline';
     
+    // Show settings icon when user is logged in
+    const settingsIcon = document.getElementById('settingsIcon');
+    if (settingsIcon) settingsIcon.style.display = 'flex';
+    
     // Load user data
     await loadUserData();
 }
