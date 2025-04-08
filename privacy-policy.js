@@ -7,8 +7,10 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Get DOM elements
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+const userAccountLink = document.getElementById("userAccountLink");
 const loginLink = document.getElementById("login-link");
 const logoutBtn = document.getElementById("logout-btn");
+const settingsIcon = document.getElementById("settingsIcon");
 const recentPostsList = document.getElementById("recentPostsList");
 
 // Handle authentication state changes
@@ -17,6 +19,8 @@ onAuthStateChanged(auth, (user) => {
     // User is signed in
     loginLink.style.display = "none";
     logoutBtn.style.display = "inline";
+    userAccountLink.style.display = "inline";
+    settingsIcon.style.display = "flex";
 
     // Check if user is admin
     if (user.uid === adminUID) {
@@ -28,6 +32,8 @@ onAuthStateChanged(auth, (user) => {
     // User is signed out
     loginLink.style.display = "inline";
     logoutBtn.style.display = "none";
+    userAccountLink.style.display = "none";
+    settingsIcon.style.display = "none";
     adminDropdownBtn.style.display = "none";
   }
 });
@@ -75,25 +81,94 @@ async function loadRecentPosts() {
 
 // Initialize page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  console.log('Privacy Policy page loaded');
+  
+  // Initially hide user account link until auth check completes
+  if (userAccountLink) userAccountLink.style.display = 'none';
+  if (settingsIcon) settingsIcon.style.display = 'none';
+  
+  // Set up dropdown functionality
+  setupDropdowns();
+  
+  // Set up logout button
+  setupLogout();
+  
+  // Check authentication state
+  onAuthStateChanged(auth, handleAuthStateChange);
+  
   // Load recent posts
   loadRecentPosts();
-  
-  // Toggle dropdown menu on click
-  adminDropdownBtn.addEventListener("click", function(e) {
-    e.preventDefault(); // Prevent default link behavior
-    this.classList.toggle("active");
-    document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
-  });
+});
 
-  // Close dropdown when clicking outside
-  window.addEventListener("click", function(e) {
-    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
-      const dropdown = document.getElementById("adminDropdownContent");
-      const btn = document.getElementById("adminDropdownBtn");
-      if (dropdown.classList.contains("show-dropdown")) {
-        dropdown.classList.remove("show-dropdown");
-        btn.classList.remove("active");
-      }
+// Set up dropdowns
+function setupDropdowns() {
+  // Admin dropdown
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
+      this.classList.toggle('active');
+    });
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.matches('.admin-dropdown-btn')) {
+      const dropdowns = document.querySelectorAll('.admin-dropdown-content');
+      dropdowns.forEach(dropdown => {
+        if (dropdown.classList.contains('show-dropdown')) {
+          dropdown.classList.remove('show-dropdown');
+          
+          // Also remove active class from buttons
+          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+        }
+      });
     }
   });
-}); 
+}
+
+// Set up logout
+function setupLogout() {
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+}
+
+// Handle logout
+function handleLogout() {
+  signOut(auth).then(() => {
+    console.log('User signed out');
+    window.location.href = 'index.html';
+  }).catch(error => {
+    console.error('Error signing out:', error);
+  });
+}
+
+// Handle authentication state changes
+function handleAuthStateChange(user) {
+  if (user) {
+    console.log('User is logged in:', user.email);
+    
+    // Update UI based on user role
+    if (loginLink) loginLink.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'inline';
+    if (userAccountLink) userAccountLink.style.display = 'inline';
+    
+    // Show admin dropdown based on role
+    const isAdmin = user.uid === adminUID;
+    if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
+    
+    // Show settings icon when user is logged in
+    if (settingsIcon) settingsIcon.style.display = 'flex';
+  } else {
+    console.log('User is not logged in');
+    
+    // Update UI for logged out state
+    if (loginLink) loginLink.style.display = 'inline';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    if (userAccountLink) userAccountLink.style.display = 'none';
+    if (adminDropdownBtn) adminDropdownBtn.style.display = 'none';
+    if (settingsIcon) settingsIcon.style.display = 'none';
+  }
+} 
