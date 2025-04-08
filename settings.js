@@ -40,6 +40,9 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Settings page loaded');
     
+    // Initially hide user account link until auth check completes
+    if (userAccountLink) userAccountLink.style.display = 'none';
+    
     // Set up tab switching
     tabButtons.forEach(button => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
@@ -82,11 +85,11 @@ async function handleAuthStateChange(user) {
     // Update UI based on user role
     if (loginLink) loginLink.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'inline';
+    if (userAccountLink) userAccountLink.style.display = 'inline';
     
-    // Show admin dropdown or user account link based on role
+    // Show admin dropdown based on role
     const isAdmin = currentUser.uid === adminUID;
     if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
-    if (userAccountLink) userAccountLink.style.display = 'inline';
     
     // Show settings icon when user is logged in
     const settingsIcon = document.getElementById('settingsIcon');
