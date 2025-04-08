@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminDropdownBtn = document.getElementById('adminDropdownBtn');
   const loginLink = document.getElementById('login-link');
   const logoutBtn = document.getElementById('logout-btn');
+  const userAccountLink = document.getElementById('userAccountLink');
+  const settingsIcon = document.getElementById('settingsIcon');
+
+  // Initially hide user account link and settings icon until auth check completes
+  if (userAccountLink) userAccountLink.style.display = 'none';
+  if (settingsIcon) settingsIcon.style.display = 'none';
 
   // Handle authentication state
   onAuthStateChanged(auth, (user) => {
@@ -22,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // User is logged in
     if (loginLink) loginLink.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'inline';
+    if (userAccountLink) userAccountLink.style.display = 'inline';
+    if (settingsIcon) settingsIcon.style.display = 'flex';
 
     // Check if user is admin
     if (user.uid === adminUID) {

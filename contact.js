@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 // Import from firebase-config.js instead of defining config here
 import { auth, db } from './firebase-config.js';
@@ -11,11 +11,26 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 // Log to verify db is properly imported
 console.log("DB reference imported:", db ? "✅ Success" : "❌ Failed");
 
-// Handle contact form submission
-document.addEventListener('DOMContentLoaded', () => {
-  console.log("Contact form script loaded");
-  const contactForm = document.getElementById('contactForm');
+// DOM elements
+const contactForm = document.getElementById("contactForm");
+const nameInput = document.getElementById("name");
+const emailInput = document.getElementById("email");
+const messageInput = document.getElementById("message");
+const submitBtn = document.getElementById("submitBtn");
+const notification = document.getElementById("notification");
+const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+const userAccountLink = document.getElementById("userAccountLink");
+const loginLink = document.getElementById("login-link");
+const logoutBtn = document.getElementById("logout-btn");
+const settingsIcon = document.getElementById("settingsIcon");
+
+// Initialize page
+document.addEventListener("DOMContentLoaded", () => {
+  // Initially hide user account link and settings icon until auth check completes
+  if (userAccountLink) userAccountLink.style.display = "none";
+  if (settingsIcon) settingsIcon.style.display = "none";
   
+  // Setup form submission
   if (contactForm) {
     console.log("Contact form found in document");
     
@@ -31,166 +46,147 @@ document.addEventListener('DOMContentLoaded', () => {
     contactForm.parentNode.insertBefore(feedbackElement, contactForm.nextSibling);
     
     // Add submit event listener to the form
-    contactForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      console.log("Form submission started");
-      
-      // Disable form during submission
-      const submitButton = contactForm.querySelector('button[type="submit"]');
-      const originalButtonText = submitButton.textContent;
-      submitButton.disabled = true;
-      submitButton.textContent = 'Sending...';
-      
-      // Get form values
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const contactPreference = document.getElementById('contactPreference').value;
-      const subject = document.getElementById('subject').value.trim();
-      const message = document.getElementById('message').value.trim();
-      
-      // Simple client-side validation
-      if (!name || !email || !subject || !message || !contactPreference) {
-        showFeedback('Please fill in all required fields.', 'error');
-        submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
-        return;
-      }
-      
-      try {
-        console.log("Attempting to add document to Firestore");
-        
-        // Verify Firestore and collection path
-        if (!db) {
-          throw new Error("Firestore database reference is undefined");
-        }
-        
-        // Create a message object
-        const messageData = {
-          name,
-          email,
-          phone,
-          contactPreference,
-          subject,
-          message,
-          timestamp: serverTimestamp(),
-          status: 'new',
-          read: false,
-          // Don't include any auth-dependent fields here
-        };
-        
-        console.log("Message data prepared:", { ...messageData, timestamp: "serverTimestamp()" });
-        
-        // Add the contact form submission to Firestore
-        // The security rules should allow this for any user (auth or not)
-        const docRef = await addDoc(collection(db, 'contact_messages'), messageData);
-        console.log("Document written with ID: ", docRef.id);
-        
-        // Show success message
-        showFeedback('Thank you for your message! It has been sent to the admin dashboard, and I will get back to you soon.', 'success');
-        
-        // Clear the form
-        contactForm.reset();
-      } catch (error) {
-        console.error('Error submitting contact form:', error);
-        // Show more detailed error message
-        showFeedback(`Sorry, there was an error sending your message: ${error.message}. Please try again later.`, 'error');
-      } finally {
-        // Re-enable the submit button
-        submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
-      }
-    });
+    contactForm.addEventListener('submit', handleFormSubmit);
   }
   
-  // Function to show feedback to the user
-  function showFeedback(message, type) {
-    const feedbackElement = document.getElementById('form-feedback');
-    if (feedbackElement) {
-      feedbackElement.textContent = message;
-      feedbackElement.style.display = 'block';
-      
-      if (type === 'success') {
-        feedbackElement.style.backgroundColor = '#dff0d8';
-        feedbackElement.style.color = '#3c763d';
-        feedbackElement.style.border = '1px solid #d6e9c6';
-      } else if (type === 'error') {
-        feedbackElement.style.backgroundColor = '#f2dede';
-        feedbackElement.style.color = '#a94442';
-        feedbackElement.style.border = '1px solid #ebccd1';
-      }
-      
-      // Scroll to the feedback message
-      feedbackElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      // Clear the message after 5 seconds for success messages
-      if (type === 'success') {
-        setTimeout(() => {
-          feedbackElement.style.display = 'none';
-        }, 5000);
-      }
-    }
-  }
+  // Setup dropdowns
+  setupDropdowns();
   
-  // Handle authentication state
-  onAuthStateChanged(auth, (user) => {
-    const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-    const loginLink = document.getElementById('login-link');
-    const logoutBtn = document.getElementById('logout-btn');
-    
-    if (user) {
-      // User is signed in
-      loginLink.style.display = 'none';
-      logoutBtn.style.display = 'inline';
-      
-      // Check if user is admin
-      if (user.uid === adminUID) {
-        // Show admin dropdown button
-        adminDropdownBtn.style.display = 'inline';
-      } else {
-        // Hide admin dropdown button for regular users
-        adminDropdownBtn.style.display = 'none';
-      }
-    } else {
-      // User is signed out
-      loginLink.style.display = 'inline';
-      logoutBtn.style.display = 'none';
-      adminDropdownBtn.style.display = 'none';
-    }
-  });
+  // Setup logout button
+  setupLogout();
   
-  // Handle logout
-  const logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await auth.signOut();
-        window.location.href = 'index.html';
-      } catch (error) {
-        console.error('Error signing out:', error);
-      }
-    });
-  }
-  
-  // Toggle dropdown menu on click
-  const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-  if (adminDropdownBtn) {
-    adminDropdownBtn.addEventListener('click', function(e) {
-      e.preventDefault(); // Prevent default link behavior
-      this.classList.toggle('active');
-      document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
-    });
-  }
+  // Check authentication state
+  onAuthStateChanged(auth, handleAuthStateChange);
+});
 
-  // Close dropdown when clicking outside
-  window.addEventListener('click', function(e) {
-    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
-      const dropdown = document.getElementById('adminDropdownContent');
-      const btn = document.getElementById('adminDropdownBtn');
-      if (dropdown && dropdown.classList.contains('show-dropdown')) {
-        dropdown.classList.remove('show-dropdown');
-        btn.classList.remove('active');
-      }
+// Handle authentication state changes
+function handleAuthStateChange(user) {
+  if (user) {
+    console.log("User is logged in:", user.email);
+    
+    // Update UI based on user role
+    if (loginLink) loginLink.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline";
+    if (userAccountLink) userAccountLink.style.display = "inline";
+    
+    // Show admin dropdown based on role
+    const isAdmin = user.uid === adminUID;
+    if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? "inline" : "none";
+    
+    // Show settings icon when user is logged in
+    if (settingsIcon) settingsIcon.style.display = "flex";
+    
+    // If user is logged in, pre-fill name and email
+    if (nameInput && !nameInput.value) {
+      nameInput.value = user.displayName || "";
+    }
+    if (emailInput && !emailInput.value) {
+      emailInput.value = user.email || "";
+    }
+  } else {
+    console.log("User is not logged in");
+    
+    // Update UI for logged out state
+    if (loginLink) loginLink.style.display = "inline";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (userAccountLink) userAccountLink.style.display = "none";
+    if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+    if (settingsIcon) settingsIcon.style.display = "none";
+  }
+}
+
+// Set up dropdowns
+function setupDropdowns() {
+  // Admin dropdown
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      this.classList.toggle("active");
+    });
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener("click", function(e) {
+    if (!e.target.matches(".admin-dropdown-btn")) {
+      const dropdowns = document.querySelectorAll(".admin-dropdown-content");
+      dropdowns.forEach(dropdown => {
+        if (dropdown.classList.contains("show-dropdown")) {
+          dropdown.classList.remove("show-dropdown");
+          
+          // Also remove active class from buttons
+          if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
+        }
+      });
     }
   });
-}); 
+}
+
+// Set up logout
+function setupLogout() {
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogout);
+  }
+}
+
+// Handle logout
+function handleLogout() {
+  signOut(auth).then(() => {
+    console.log("User signed out");
+    window.location.href = "index.html";
+  }).catch(error => {
+    console.error("Error signing out:", error);
+  });
+}
+
+// Handle form submission
+async function handleFormSubmit(e) {
+  e.preventDefault();
+  
+  // Validate form
+  if (!nameInput.value || !emailInput.value || !messageInput.value) {
+    showNotification("Please fill out all fields.", "error");
+    return;
+  }
+  
+  // Disable submit button to prevent multiple submissions
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = "Sending...";
+  
+  try {
+    // Add document to contact_messages collection
+    await addDoc(collection(db, "contact_messages"), {
+      name: nameInput.value,
+      email: emailInput.value,
+      message: messageInput.value,
+      createdAt: serverTimestamp(),
+      read: false
+    });
+    
+    // Clear form
+    contactForm.reset();
+    
+    // Show success message
+    showNotification("Your message has been sent successfully! We'll get back to you soon.", "success");
+  } catch (error) {
+    console.error("Error sending message:", error);
+    showNotification("There was an error sending your message. Please try again later.", "error");
+  } finally {
+    // Re-enable submit button
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = "Send Message";
+  }
+}
+
+// Show notification
+function showNotification(message, type) {
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.style.display = "block";
+  
+  // Hide notification after 5 seconds
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 5000);
+} 
