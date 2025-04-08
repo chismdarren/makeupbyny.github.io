@@ -9,6 +9,8 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 const loginLink = document.getElementById("login-link");
 const logoutBtn = document.getElementById("logout-btn");
+const userAccountLink = document.getElementById("userAccountLink");
+const settingsIcon = document.getElementById("settingsIcon");
 const recentPostsList = document.getElementById("recentPostsList");
 
 // Handle authentication state changes
@@ -17,6 +19,10 @@ onAuthStateChanged(auth, (user) => {
     // User is signed in
     loginLink.style.display = "none";
     logoutBtn.style.display = "inline";
+    userAccountLink.style.display = "inline";
+    
+    // Show settings icon for logged in users
+    if (settingsIcon) settingsIcon.style.display = "flex";
 
     // Check if user is admin
     if (user.uid === adminUID) {
@@ -28,7 +34,11 @@ onAuthStateChanged(auth, (user) => {
     // User is signed out
     loginLink.style.display = "inline";
     logoutBtn.style.display = "none";
+    userAccountLink.style.display = "none";
     adminDropdownBtn.style.display = "none";
+    
+    // Hide settings icon for anonymous users
+    if (settingsIcon) settingsIcon.style.display = "none";
   }
 });
 
