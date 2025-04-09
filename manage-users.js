@@ -8,7 +8,9 @@ import {
   updateDoc, 
   query, 
   where,
-  getDoc
+  getDoc,
+  setDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // DOM elements
@@ -315,76 +317,40 @@ window.showUserDetails = async function(userId, userData = null) {
   }
 };
 
-window.updateUserRole = async function(userId, isAdmin) {
+async function updateUserRole(userId, newRole) {
   try {
-    // First update the UI to provide immediate feedback
-    // Find the list item containing this user by iterating through all user items
-    const userItems = document.querySelectorAll('.user-item');
-    let userItem = null;
-    userItems.forEach(item => {
-      if (item.innerHTML.includes(userId)) {
-        userItem = item;
-      }
-    });
-    
-    if (userItem) {
-      const roleSpan = userItem.querySelector('.user-role');
-      const roleButton = userItem.querySelector('.role-btn');
-      
-      if (roleSpan) {
-        roleSpan.textContent = isAdmin ? 'Admin' : 'User';
-        roleSpan.className = `user-role ${isAdmin ? 'admin-role' : 'user-role'}`;
-      }
-      
-      if (roleButton) {
-        roleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
-        roleButton.className = `role-btn ${isAdmin ? 'remove-admin' : 'make-admin'}`;
-      }
-    }
-    
-    // Update in Firestore
+    // First check if the user document exists
     const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, { isAdmin });
-    
-    // Show success message
-    const message = document.createElement('div');
-    message.className = 'success-message';
-    message.textContent = `User ${isAdmin ? 'promoted to admin' : 'removed from admin role'} successfully`;
-    message.style.position = 'fixed';
-    message.style.top = '20px';
-    message.style.left = '50%';
-    message.style.transform = 'translateX(-50%)';
-    message.style.backgroundColor = '#4CAF50';
-    message.style.color = 'white';
-    message.style.padding = '10px 20px';
-    message.style.borderRadius = '5px';
-    message.style.zIndex = '1000';
-    document.body.appendChild(message);
-    
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 3000);
-    
-    // If a modal is currently displayed, update it too
-    if (currentUserId === userId && modal.style.display === "block") {
-      const modalRoleText = Array.from(modalContent.querySelectorAll('p')).find(p => p.textContent.includes('Role'));
-      if (modalRoleText) {
-        modalRoleText.innerHTML = `<strong>Role:</strong> ${isAdmin ? 'Admin' : 'User'}`;
-      }
-      
-      const modalRoleButton = Array.from(modalContent.querySelectorAll('button')).find(btn => 
-        btn.textContent.includes('Admin'));
-      if (modalRoleButton) {
-        modalRoleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
-        modalRoleButton.onclick = function() { window.updateUserRole(userId, !isAdmin); };
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      // If user document doesn't exist, create it with the role
+      await setDoc(userRef, {
+        role: newRole,
+        createdAt: serverTimestamp()
+      });
+    } else {
+      // If user document exists, update the role
+      await updateDoc(userRef, {
+        role: newRole
+      });
+    }
+
+    // Update the UI to reflect the change
+    const userRow = document.querySelector(`[data-user-id="${userId}"]`);
+    if (userRow) {
+      const roleCell = userRow.querySelector('.user-role');
+      if (roleCell) {
+        roleCell.textContent = newRole;
       }
     }
+
+    showNotification(`User role updated to ${newRole}`, 'success');
   } catch (error) {
     console.error("Error updating user role:", error);
-    alert("Error updating user role: " + error.message);
+    showNotification("Error updating user role", 'error');
   }
-};
+}
 
 window.deleteUser = async function(uid) {
   if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
