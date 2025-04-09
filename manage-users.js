@@ -19,8 +19,18 @@ const closeBtn = document.getElementsByClassName("close")[0];
 const content = document.getElementById("content");
 let currentUserId = null;
 
-// Admin UID
-let adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+// Admin UID variable - no longer needed with the new approach
+// let adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+
+// Remove the initialize function since we're now using isSuperAdmin directly
+// async function initializeAdminUID() {
+//   adminUID = await getAdminUID();
+// }
+
+// No need to call initialize function anymore
+// initializeAdminUID();
+
+// Admin dropdown functionality
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 const loginLink = document.getElementById("login-link");
 const logoutBtn = document.getElementById("logout-btn");
@@ -30,14 +40,6 @@ const settingsIcon = document.getElementById("settingsIcon");
 // Initially hide account link and settings icon
 if (userAccountLink) userAccountLink.style.display = "none";
 if (settingsIcon) settingsIcon.style.display = "none";
-
-// Initialize admin UID
-async function initializeAdminUID() {
-  adminUID = await getAdminUID();
-}
-
-// Call initialize function
-initializeAdminUID();
 
 // Check authentication and admin status
 onAuthStateChanged(auth, async (user) => {
