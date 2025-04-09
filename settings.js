@@ -1,6 +1,6 @@
-import { auth, db } from './firebase-config.js';
+import { auth, db, isUserAdmin } from './firebase-config.js';
 import { 
-    onAuthStateChanged, 
+    onAuthStateChanged,
     signOut, 
     updatePassword, 
     reauthenticateWithCredential, 
@@ -88,8 +88,14 @@ async function handleAuthStateChange(user) {
     if (userAccountLink) userAccountLink.style.display = 'inline';
     
     // Show admin dropdown based on role
-    const isAdmin = currentUser.uid === adminUID;
-    if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
+    const adminStatus = await isUserAdmin(user);
+    if (adminStatus) {
+        document.querySelector('.admin-dropdown').style.display = 'block';
+        document.querySelector('.user-dropdown').style.display = 'none';
+    } else {
+        document.querySelector('.admin-dropdown').style.display = 'none';
+        document.querySelector('.user-dropdown').style.display = 'block';
+    }
     
     // Show settings icon when user is logged in
     const settingsIcon = document.getElementById('settingsIcon');

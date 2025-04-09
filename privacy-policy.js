@@ -1,6 +1,6 @@
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { auth, db } from "./firebase-config.js";
+import { auth, db, isUserAdmin } from "./firebase-config.js";
 
 // Define admin user ID - correct ID from other pages
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
@@ -14,8 +14,16 @@ const settingsIcon = document.getElementById("settingsIcon");
 const recentPostsList = document.getElementById("recentPostsList");
 
 // Handle authentication state changes
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
+    const adminStatus = await isUserAdmin(user);
+    if (adminStatus) {
+      document.querySelector('.admin-dropdown').style.display = 'block';
+      document.querySelector('.user-dropdown').style.display = 'none';
+    } else {
+      document.querySelector('.admin-dropdown').style.display = 'none';
+      document.querySelector('.user-dropdown').style.display = 'block';
+    }
     // User is signed in
     loginLink.style.display = "none";
     logoutBtn.style.display = "inline";
@@ -35,6 +43,7 @@ onAuthStateChanged(auth, (user) => {
     userAccountLink.style.display = "none";
     settingsIcon.style.display = "none";
     adminDropdownBtn.style.display = "none";
+    window.location.href = 'login.html';
   }
 });
 
