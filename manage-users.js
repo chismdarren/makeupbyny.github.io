@@ -8,9 +8,7 @@ import {
   updateDoc, 
   query, 
   where,
-  getDoc,
-  setDoc,
-  serverTimestamp
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // DOM elements
@@ -317,83 +315,74 @@ window.showUserDetails = async function(userId, userData = null) {
   }
 };
 
-// Add notification function
-function showNotification(message, type = 'info') {
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-  
-  // Style the notification
-  notification.style.position = 'fixed';
-  notification.style.top = '20px';
-  notification.style.left = '50%';
-  notification.style.transform = 'translateX(-50%)';
-  notification.style.padding = '10px 20px';
-  notification.style.borderRadius = '5px';
-  notification.style.zIndex = '1000';
-  notification.style.color = 'white';
-  notification.style.fontWeight = 'bold';
-  
-  // Set background color based on type
-  switch(type) {
-    case 'success':
-      notification.style.backgroundColor = '#4CAF50';
-      break;
-    case 'error':
-      notification.style.backgroundColor = '#f44336';
-      break;
-    case 'warning':
-      notification.style.backgroundColor = '#ff9800';
-      break;
-    default:
-      notification.style.backgroundColor = '#2196F3';
-  }
-  
-  document.body.appendChild(notification);
-  
-  // Remove notification after 3 seconds
-  setTimeout(() => {
-    notification.style.opacity = '0';
-    notification.style.transition = 'opacity 0.5s ease';
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 500);
-  }, 3000);
-}
-
-// Make updateUserRole available globally
-window.updateUserRole = async function(userId, newRole) {
+window.updateUserRole = async function(userId, isAdmin) {
   try {
-    // First check if the user document exists
-    const userRef = doc(db, "users", userId);
-    const userDoc = await getDoc(userRef);
-
-    if (!userDoc.exists()) {
-      // If user document doesn't exist, create it with the role
-      await setDoc(userRef, {
-        role: newRole,
-        createdAt: serverTimestamp()
-      });
-    } else {
-      // If user document exists, update the role
-      await updateDoc(userRef, {
-        role: newRole
-      });
-    }
-
-    // Update the UI to reflect the change
-    const userRow = document.querySelector(`[data-user-id="${userId}"]`);
-    if (userRow) {
-      const roleCell = userRow.querySelector('.user-role');
-      if (roleCell) {
-        roleCell.textContent = newRole;
+    // First update the UI to provide immediate feedback
+    // Find the list item containing this user by iterating through all user items
+    const userItems = document.querySelectorAll('.user-item');
+    let userItem = null;
+    userItems.forEach(item => {
+      if (item.innerHTML.includes(userId)) {
+        userItem = item;
+      }
+    });
+    
+    if (userItem) {
+      const roleSpan = userItem.querySelector('.user-role');
+      const roleButton = userItem.querySelector('.role-btn');
+      
+      if (roleSpan) {
+        roleSpan.textContent = isAdmin ? 'Admin' : 'User';
+        roleSpan.className = `user-role ${isAdmin ? 'admin-role' : 'user-role'}`;
+      }
+      
+      if (roleButton) {
+        roleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
+        roleButton.className = `role-btn ${isAdmin ? 'remove-admin' : 'make-admin'}`;
       }
     }
-
-    showNotification(`User role updated to ${newRole}`, 'success');
+    
+    // Update in Firestore
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, { isAdmin });
+    
+    // Show success message
+    const message = document.createElement('div');
+    message.className = 'success-message';
+    message.textContent = `User ${isAdmin ? 'promoted to admin' : 'removed from admin role'} successfully`;
+    message.style.position = 'fixed';
+    message.style.top = '20px';
+    message.style.left = '50%';
+    message.style.transform = 'translateX(-50%)';
+    message.style.backgroundColor = '#4CAF50';
+    message.style.color = 'white';
+    message.style.padding = '10px 20px';
+    message.style.borderRadius = '5px';
+    message.style.zIndex = '1000';
+    document.body.appendChild(message);
+    
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 3000);
+    
+    // If a modal is currently displayed, update it too
+    if (currentUserId === userId && modal.style.display === "block") {
+      const modalRoleText = Array.from(modalContent.querySelectorAll('p')).find(p => p.textContent.includes('Role'));
+      if (modalRoleText) {
+        modalRoleText.innerHTML = `<strong>Role:</strong> ${isAdmin ? 'Admin' : 'User'}`;
+      }
+      
+      const modalRoleButton = Array.from(modalContent.querySelectorAll('button')).find(btn => 
+        btn.textContent.includes('Admin'));
+      if (modalRoleButton) {
+        modalRoleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
+        modalRoleButton.onclick = function() { window.updateUserRole(userId, !isAdmin); };
+      }
+    }
   } catch (error) {
     console.error("Error updating user role:", error);
-    showNotification("Error updating user role", 'error');
+    alert("Error updating user role: " + error.message);
   }
 };
 
