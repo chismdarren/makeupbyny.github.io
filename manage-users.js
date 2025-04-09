@@ -317,7 +317,8 @@ window.showUserDetails = async function(userId, userData = null) {
   }
 };
 
-async function updateUserRole(userId, newRole) {
+// Make updateUserRole available globally
+window.updateUserRole = async function(userId, newRole) {
   try {
     // First check if the user document exists
     const userRef = doc(db, "users", userId);
@@ -350,7 +351,7 @@ async function updateUserRole(userId, newRole) {
     console.error("Error updating user role:", error);
     showNotification("Error updating user role", 'error');
   }
-}
+};
 
 window.deleteUser = async function(uid) {
   if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
