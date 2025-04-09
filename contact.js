@@ -3,7 +3,7 @@ import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.g
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 // Import from firebase-config.js instead of defining config here
-import { auth, db, isUserAdmin } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 
 // Define admin user ID - correct ID from other pages
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
@@ -56,46 +56,44 @@ document.addEventListener("DOMContentLoaded", () => {
   setupLogout();
   
   // Check authentication state
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const adminStatus = await isUserAdmin(user);
-      if (adminStatus) {
-        document.querySelector('.admin-dropdown').style.display = 'block';
-        document.querySelector('.user-dropdown').style.display = 'none';
-      } else {
-        document.querySelector('.admin-dropdown').style.display = 'none';
-        document.querySelector('.user-dropdown').style.display = 'block';
-      }
-      console.log("User is logged in:", user.email);
-      
-      // Update UI based on user role
-      if (loginLink) loginLink.style.display = "none";
-      if (logoutBtn) logoutBtn.style.display = "inline";
-      if (userAccountLink) userAccountLink.style.display = "inline";
-      
-      // Show settings icon when user is logged in
-      if (settingsIcon) settingsIcon.style.display = "flex";
-      
-      // If user is logged in, pre-fill name and email
-      if (nameInput && !nameInput.value) {
-        nameInput.value = user.displayName || "";
-      }
-      if (emailInput && !emailInput.value) {
-        emailInput.value = user.email || "";
-      }
-    } else {
-      console.log("User is not logged in");
-      
-      // Update UI for logged out state
-      if (loginLink) loginLink.style.display = "inline";
-      if (logoutBtn) logoutBtn.style.display = "none";
-      if (userAccountLink) userAccountLink.style.display = "none";
-      if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
-      if (settingsIcon) settingsIcon.style.display = "none";
-      window.location.href = 'login.html';
-    }
-  });
+  onAuthStateChanged(auth, handleAuthStateChange);
 });
+
+// Handle authentication state changes
+function handleAuthStateChange(user) {
+  if (user) {
+    console.log("User is logged in:", user.email);
+    
+    // Update UI based on user role
+    if (loginLink) loginLink.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline";
+    if (userAccountLink) userAccountLink.style.display = "inline";
+    
+    // Show admin dropdown based on role
+    const isAdmin = user.uid === adminUID;
+    if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? "inline" : "none";
+    
+    // Show settings icon when user is logged in
+    if (settingsIcon) settingsIcon.style.display = "flex";
+    
+    // If user is logged in, pre-fill name and email
+    if (nameInput && !nameInput.value) {
+      nameInput.value = user.displayName || "";
+    }
+    if (emailInput && !emailInput.value) {
+      emailInput.value = user.email || "";
+    }
+  } else {
+    console.log("User is not logged in");
+    
+    // Update UI for logged out state
+    if (loginLink) loginLink.style.display = "inline";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (userAccountLink) userAccountLink.style.display = "none";
+    if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+    if (settingsIcon) settingsIcon.style.display = "none";
+  }
+}
 
 // Set up dropdowns
 function setupDropdowns() {

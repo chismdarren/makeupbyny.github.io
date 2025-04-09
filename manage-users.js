@@ -1,5 +1,5 @@
 // Import auth and db from firebase-config.js
-import { auth, db, isSuperAdmin, updateSuperAdmins } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { 
   collection, 
@@ -19,18 +19,8 @@ const closeBtn = document.getElementsByClassName("close")[0];
 const content = document.getElementById("content");
 let currentUserId = null;
 
-// Admin UID variable - no longer needed with the new approach
-// let adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
-
-// Remove the initialize function since we're now using isSuperAdmin directly
-// async function initializeAdminUID() {
-//   adminUID = await getAdminUID();
-// }
-
-// No need to call initialize function anymore
-// initializeAdminUID();
-
-// Admin dropdown functionality
+// Admin UID
+const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 const loginLink = document.getElementById("login-link");
 const logoutBtn = document.getElementById("logout-btn");
@@ -50,11 +40,9 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Check if user is a super admin
-  const superAdminStatus = await isSuperAdmin(user);
-  if (!superAdminStatus) {
-    console.log("User is not a super admin, redirecting to home page");
-    content.innerHTML = '<div class="error-message">Access denied. Super Admin privileges required.</div>';
+  if (user.uid !== adminUID) {
+    console.log("User is not admin, redirecting to home page");
+    content.innerHTML = '<div class="error-message">Access denied. Admin privileges required.</div>';
     setTimeout(() => {
       window.location.href = "index.html";
     }, 2000);
@@ -68,7 +56,7 @@ onAuthStateChanged(auth, async (user) => {
   if (userAccountLink) userAccountLink.style.display = "inline";
   if (settingsIcon) settingsIcon.style.display = "flex";
 
-  console.log("User is super admin, loading users...");
+  console.log("User is admin, loading users...");
   // User is admin, load the users
   await loadUsers();
 });
@@ -197,11 +185,6 @@ async function loadUsers() {
       return;
     }
 
-    // Get the list of super admins
-    const configRef = doc(db, "config", "admin");
-    const configDoc = await getDoc(configRef);
-    const superAdmins = configDoc.exists() ? (configDoc.data().superAdmins || []) : [];
-
     // Loop through each user and create an HTML list item
     users.forEach(async user => {
       console.log("Processing user:", user.email);
@@ -210,9 +193,6 @@ async function loadUsers() {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       const userData = userDoc.exists() ? userDoc.data() : { isAdmin: false };
       
-      // Check if the user is a super admin
-      const isSuperAdminUser = superAdmins.includes(user.uid);
-      
       const li = document.createElement("li");
       li.className = "user-item";
       li.innerHTML = `
@@ -220,12 +200,11 @@ async function loadUsers() {
           <strong>Email:</strong> ${user.email} | 
           <strong>UID:</strong> ${user.uid} | 
           <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
-          <strong>Role:</strong> <span class="user-role ${userData.isAdmin ? 'admin-role' : 'user-role'}">${userData.isAdmin ? (isSuperAdminUser ? 'Super Admin' : 'Admin') : 'User'}</span>
+          <strong>Role:</strong> <span class="user-role ${userData.isAdmin ? 'admin-role' : 'user-role'}">${userData.isAdmin ? 'Admin' : 'User'}</span>
         </div>
         <div class="user-actions">
           <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
           <button class="role-btn ${userData.isAdmin ? 'remove-admin' : 'make-admin'}" onclick="window.updateUserRole('${user.uid}', ${!userData.isAdmin})">${userData.isAdmin ? 'Remove Admin' : 'Make Admin'}</button>
-          <button class="super-admin-btn ${isSuperAdminUser ? 'remove-super-admin' : 'make-super-admin'}" onclick="window.updateSuperAdminRole('${user.uid}', ${!isSuperAdminUser})">${isSuperAdminUser ? 'Remove Super Admin' : 'Make Super Admin'}</button>
           <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
         </div>
       `;
@@ -234,7 +213,7 @@ async function loadUsers() {
       // Add event listener directly to the button (avoids inline attributes with complex JSON)
       const viewDetailsBtn = li.querySelector('.view-details-btn');
       viewDetailsBtn.addEventListener('click', function() {
-        window.showUserDetails(user.uid, {...user, isAdmin: userData.isAdmin, isSuperAdmin: isSuperAdminUser});
+        window.showUserDetails(user.uid, {...user, isAdmin: userData.isAdmin});
       });
     });
   } catch (error) {
@@ -336,17 +315,71 @@ window.showUserDetails = async function(userId, userData = null) {
   }
 };
 
-// Update the updateUserRole function to handle regular admin role changes
-window.updateUserRole = async function(userId, makeAdmin) {
+window.updateUserRole = async function(userId, isAdmin) {
   try {
-    // Update the isAdmin field in the user document
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      isAdmin: makeAdmin
+    // First update the UI to provide immediate feedback
+    // Find the list item containing this user by iterating through all user items
+    const userItems = document.querySelectorAll('.user-item');
+    let userItem = null;
+    userItems.forEach(item => {
+      if (item.innerHTML.includes(userId)) {
+        userItem = item;
+      }
     });
-
-    // Reload users to reflect changes
-    await loadUsers();
+    
+    if (userItem) {
+      const roleSpan = userItem.querySelector('.user-role');
+      const roleButton = userItem.querySelector('.role-btn');
+      
+      if (roleSpan) {
+        roleSpan.textContent = isAdmin ? 'Admin' : 'User';
+        roleSpan.className = `user-role ${isAdmin ? 'admin-role' : 'user-role'}`;
+      }
+      
+      if (roleButton) {
+        roleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
+        roleButton.className = `role-btn ${isAdmin ? 'remove-admin' : 'make-admin'}`;
+      }
+    }
+    
+    // Update in Firestore
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, { isAdmin });
+    
+    // Show success message
+    const message = document.createElement('div');
+    message.className = 'success-message';
+    message.textContent = `User ${isAdmin ? 'promoted to admin' : 'removed from admin role'} successfully`;
+    message.style.position = 'fixed';
+    message.style.top = '20px';
+    message.style.left = '50%';
+    message.style.transform = 'translateX(-50%)';
+    message.style.backgroundColor = '#4CAF50';
+    message.style.color = 'white';
+    message.style.padding = '10px 20px';
+    message.style.borderRadius = '5px';
+    message.style.zIndex = '1000';
+    document.body.appendChild(message);
+    
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 3000);
+    
+    // If a modal is currently displayed, update it too
+    if (currentUserId === userId && modal.style.display === "block") {
+      const modalRoleText = Array.from(modalContent.querySelectorAll('p')).find(p => p.textContent.includes('Role'));
+      if (modalRoleText) {
+        modalRoleText.innerHTML = `<strong>Role:</strong> ${isAdmin ? 'Admin' : 'User'}`;
+      }
+      
+      const modalRoleButton = Array.from(modalContent.querySelectorAll('button')).find(btn => 
+        btn.textContent.includes('Admin'));
+      if (modalRoleButton) {
+        modalRoleButton.textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
+        modalRoleButton.onclick = function() { window.updateUserRole(userId, !isAdmin); };
+      }
+    }
   } catch (error) {
     console.error("Error updating user role:", error);
     alert("Error updating user role: " + error.message);
@@ -412,18 +445,4 @@ if (logoutBtn) {
       window.location.href = "index.html";
     });
   });
-}
-
-// Add function to update super admin role
-window.updateSuperAdminRole = async function(userId, makeSuperAdmin) {
-  try {
-    // Update the super admin list
-    await updateSuperAdmins(userId, makeSuperAdmin);
-    
-    // Reload users to reflect changes
-    await loadUsers();
-  } catch (error) {
-    console.error("Error updating super admin role:", error);
-    alert("Error updating super admin role: " + error.message);
-  }
-}; 
+} 
