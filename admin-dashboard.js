@@ -1,9 +1,6 @@
-import { db, auth } from './firebase-config.js';
+import { db, auth, isAdminUser } from './firebase-config.js';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-
-// Hardcoded admin UID
-const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 document.addEventListener('DOMContentLoaded', () => {
   // Get DOM elements
@@ -18,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (settingsIcon) settingsIcon.style.display = 'none';
 
   // Handle authentication state
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
       // Not logged in, redirect to login page
       window.location.href = 'login.html';
@@ -32,7 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (settingsIcon) settingsIcon.style.display = 'flex';
 
     // Check if user is admin
-    if (user.uid === adminUID) {
+    const isAdmin = await isAdminUser(user.uid);
+    if (isAdmin) {
       // User is admin, show admin dropdown menu
       if (adminDropdownBtn) adminDropdownBtn.style.display = 'inline';
       

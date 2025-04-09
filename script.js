@@ -1,6 +1,6 @@
 // Import Firebase Authentication functions and auth from firebase-config.js
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth } from "./firebase-config.js";
+import { auth, isAdminUser } from "./firebase-config.js";
 
 // Import Firestore functions including query and document update/delete functions
 import {
@@ -28,9 +28,6 @@ import {
 const db = getFirestore();
 const storage = getStorage();
 
-// Hardcoded admin UID (update if needed)
-const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
-
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
@@ -39,19 +36,35 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
   const createPostLink = document.getElementById("createPost");
+  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
 
-  if (loginLink && logoutBtn && createPostLink) {
-    onAuthStateChanged(auth, (user) => {
+  if (loginLink && logoutBtn) {
+    onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. Current user:", user ? user.uid : "No user");
 
       if (user) {
         loginLink.style.display = "none";
         logoutBtn.style.display = "block";
-        createPostLink.style.display = "inline";
+        if (createPostLink) createPostLink.style.display = "inline";
+        
+        // Check if user is an admin
+        const isAdmin = await isAdminUser(user.uid);
+        console.log("User admin status:", isAdmin);
+        
+        // Show admin dropdown if user is an admin
+        if (adminDropdownBtn) {
+          adminDropdownBtn.style.display = isAdmin ? "inline" : "none";
+        }
+        
+        // If we're on an admin page, load admin content
+        if (isAdmin) {
+          loadAdminContent();
+        }
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
-        createPostLink.style.display = "none";
+        if (createPostLink) createPostLink.style.display = "none";
+        if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
       }
     });
   }
@@ -117,46 +130,44 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===== Manage Posts Section =====
-  onAuthStateChanged(auth, async (user) => {
-    if (user && user.uid === adminUID) {
-      const postsListContainer = document.getElementById("postsList");
-      if (postsListContainer) {
-        try {
-          const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-          const querySnapshot = await getDocs(q);
-          postsListContainer.innerHTML = ""; // Clear existing content
+  async function loadAdminContent() {
+    const postsListContainer = document.getElementById("postsList");
+    if (postsListContainer) {
+      try {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        postsListContainer.innerHTML = ""; // Clear existing content
 
-          querySnapshot.forEach((docSnapshot) => {
-            const postData = docSnapshot.data();
-            const postWrapper = document.createElement("div");
-            postWrapper.classList.add("post-wrapper");
+        querySnapshot.forEach((docSnapshot) => {
+          const postData = docSnapshot.data();
+          const postWrapper = document.createElement("div");
+          postWrapper.classList.add("post-wrapper");
 
-            let imageHtml = postData.imageUrl
-              ? `<img src="${postData.imageUrl}" alt="${postData.title}" style="max-width:100%; height:auto;">`
-              : "";
+          let imageHtml = postData.imageUrl
+            ? `<img src="${postData.imageUrl}" alt="${postData.title}" style="max-width:100%; height:auto;">`
+            : "";
 
-            postWrapper.innerHTML = `
-              <div class="post-content">
-                <h3>${postData.title}</h3>
-                ${imageHtml}
-                <p>${postData.content.substring(0, 100)}...</p>
-              </div>
-              <div class="post-actions">
-                <button class="editBtn" data-id="${docSnapshot.id}">Edit</button>
-                <button class="deleteBtn" data-id="${docSnapshot.id}">Delete</button>
-                <button class="archiveBtn" data-id="${docSnapshot.id}">Archive</button>
-              </div>
-            `;
+          postWrapper.innerHTML = `
+            <div class="post-content">
+              <h3>${postData.title}</h3>
+              ${imageHtml}
+              <p>${postData.content.substring(0, 100)}...</p>
+            </div>
+            <div class="post-actions">
+              <button class="editBtn" data-id="${docSnapshot.id}">Edit</button>
+              <button class="deleteBtn" data-id="${docSnapshot.id}">Delete</button>
+              <button class="archiveBtn" data-id="${docSnapshot.id}">Archive</button>
+            </div>
+          `;
 
-            postsListContainer.appendChild(postWrapper);
-          });
-        } catch (error) {
-          console.error("Error fetching posts:", error);
-          postsListContainer.innerHTML = "<p>Error loading posts.</p>";
-        }
+          postsListContainer.appendChild(postWrapper);
+        });
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        postsListContainer.innerHTML = "<p>Error loading posts.</p>";
       }
     }
-  });
+  }
 
   // ===== Event Listeners for Post Actions =====
   const postsListContainer = document.getElementById("postsList");

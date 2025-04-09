@@ -60,6 +60,24 @@ export function isSuperAdmin(uid) {
   return superAdminUIDs.includes(uid);
 }
 
+// Check if user has admin privileges (either super admin or regular admin)
+export async function isAdminUser(uid) {
+  // First check if user is a super admin (fastest check)
+  if (isSuperAdmin(uid)) {
+    return true;
+  }
+  
+  // If not a super admin, check if they're a regular admin in Firestore
+  try {
+    const userRef = doc(db, "users", uid);
+    const userDoc = await getDoc(userRef);
+    return userDoc.exists() && userDoc.data().isAdmin === true;
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    return false;
+  }
+}
+
 // Function to create user document in Firestore
 export async function createUserDocument(user, additionalData = {}) {
   try {
