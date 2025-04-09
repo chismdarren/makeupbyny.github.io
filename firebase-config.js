@@ -19,6 +19,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Define super admin UIDs - initially just the original admin
+export const superAdminUIDs = ["yuoaYY14sINHaqtNK5EAz4nl8cc2"];
+
 console.log("✅ Firebase Initialized Successfully!");
 
 // Wait for the DOM to fully load before attaching event listeners
@@ -52,6 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Check if user is a super admin
+export function isSuperAdmin(uid) {
+  return superAdminUIDs.includes(uid);
+}
+
 // Function to create user document in Firestore
 export async function createUserDocument(user, additionalData = {}) {
   try {
@@ -68,7 +76,8 @@ export async function createUserDocument(user, additionalData = {}) {
         termsAccepted: additionalData.termsAccepted || false,
         termsAcceptedDate: additionalData.termsAcceptedDate || null,
         createdAt: serverTimestamp(),
-        isAdmin: user.uid === "yuoaYY14sINHaqtNK5EAz4nl8cc2" // Hardcoded Admin
+        isAdmin: isSuperAdmin(user.uid), // Set as admin if they're a super admin
+        isSuperAdmin: isSuperAdmin(user.uid) // New field to track super admin status
       });
       console.log("✅ User document created for:", user.email);
     }
