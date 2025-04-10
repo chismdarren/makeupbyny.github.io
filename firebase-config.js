@@ -1,7 +1,7 @@
 // Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -101,6 +101,7 @@ export async function createUserDocument(user, additionalData = {}) {
       // Check if user is a super admin
       const isSuperAdminUser = await isSuperAdmin(user.uid);
       
+      // Make sure we capture all fields from signup
       await setDoc(userRef, {
         email: user.email,
         firstName: additionalData.firstName || '',
@@ -115,20 +116,46 @@ export async function createUserDocument(user, additionalData = {}) {
       });
       console.log("✅ User document created for:", user.email);
     } else {
-      // If user document exists but additionalData is provided, update the document
-      // This helps ensure all fields are populated, even if they were missed during initial creation
+      // If the user document exists but we're getting new information,
+      // update it to ensure all fields are maintained
       if (Object.keys(additionalData).length > 0) {
-        // Filter out undefined or null values from additionalData
-        const validData = Object.entries(additionalData)
-          .filter(([_, value]) => value !== undefined && value !== null)
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {});
+        const userData = userDoc.data();
+        // Prepare update data by merging existing data with new data
+        const updateData = {};
         
-        if (Object.keys(validData).length > 0) {
-          await setDoc(userRef, validData, { merge: true });
-          console.log("✅ User document updated with additional data for:", user.email);
+        // Only update if data is provided and different from existing data
+        if (additionalData.firstName && additionalData.firstName !== userData.firstName) {
+          updateData.firstName = additionalData.firstName;
+        }
+        
+        if (additionalData.lastName && additionalData.lastName !== userData.lastName) {
+          updateData.lastName = additionalData.lastName;
+        }
+        
+        if (additionalData.username && additionalData.username !== userData.username) {
+          updateData.username = additionalData.username;
+        }
+        
+        if (additionalData.phoneNumber && additionalData.phoneNumber !== userData.phoneNumber) {
+          updateData.phoneNumber = additionalData.phoneNumber;
+        }
+        
+        if (additionalData.email && additionalData.email !== userData.email) {
+          updateData.email = additionalData.email;
+        }
+        
+        if (additionalData.termsAccepted !== undefined && additionalData.termsAccepted !== userData.termsAccepted) {
+          updateData.termsAccepted = additionalData.termsAccepted;
+        }
+        
+        if (additionalData.termsAcceptedDate && additionalData.termsAcceptedDate !== userData.termsAcceptedDate) {
+          updateData.termsAcceptedDate = additionalData.termsAcceptedDate;
+        }
+        
+        // Only update if we have data to update
+        if (Object.keys(updateData).length > 0) {
+          await updateDoc(userRef, updateData);
+          console.log("✅ User document updated with new data for:", user.email);
         }
       }
     }

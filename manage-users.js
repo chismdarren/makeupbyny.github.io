@@ -241,11 +241,27 @@ async function loadUsers() {
         phoneDisplay = userData.phoneNumber;
       }
       
+      // Format name for display
+      let nameDisplay = 'Not provided';
+      if (userData.firstName && userData.lastName) {
+        nameDisplay = `${userData.firstName} ${userData.lastName}`;
+      } else if (userData.firstName) {
+        nameDisplay = userData.firstName;
+      } else if (userData.lastName) {
+        nameDisplay = userData.lastName;
+      }
+      
+      // Include username if available
+      let usernameDisplay = '';
+      if (userData.username) {
+        usernameDisplay = ` (${userData.username})`;
+      }
+      
       const li = document.createElement("li");
       li.className = "user-item";
       li.innerHTML = `
         <div class="user-info">
-          <p><strong>Name:</strong> ${userData.firstName || ''} ${userData.lastName || ''} ${userData.username ? `(${userData.username})` : ''}</p>
+          <p><strong>Name:</strong> ${nameDisplay}${usernameDisplay}</p>
           <p><strong>Email:</strong> ${user.email} | <strong>Phone:</strong> ${phoneDisplay}</p>
           <p><strong>UID:</strong> ${user.uid} | <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
           <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
