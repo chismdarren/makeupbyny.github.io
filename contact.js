@@ -3,10 +3,7 @@ import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.g
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 // Import from firebase-config.js instead of defining config here
-import { auth, db } from './firebase-config.js';
-
-// Define admin user ID - correct ID from other pages
-const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+import { auth, db, isAdminUser } from './firebase-config.js';
 
 // Log to verify db is properly imported
 console.log("DB reference imported:", db ? "✅ Success" : "❌ Failed");
@@ -60,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Handle authentication state changes
-function handleAuthStateChange(user) {
+async function handleAuthStateChange(user) {
   if (user) {
     console.log("User is logged in:", user.email);
     
@@ -70,7 +67,7 @@ function handleAuthStateChange(user) {
     if (userAccountLink) userAccountLink.style.display = "inline";
     
     // Show admin dropdown based on role
-    const isAdmin = user.uid === adminUID;
+    const isAdmin = await isAdminUser(user.uid);
     if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? "inline" : "none";
     
     // Show settings icon when user is logged in

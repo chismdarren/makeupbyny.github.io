@@ -1,6 +1,8 @@
 // Import Firebase Authentication functions and auth from firebase-config.js
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth, app } from "./firebase-config.js";
+import { auth, isAdminUser } from "./firebase-config.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { firebaseConfig } from "./firebase-config.js";
 
 // Import Firestore functions
 import {
@@ -26,12 +28,10 @@ import {
   uploadBytesResumable
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
-// Initialize Firestore and Storage
+// Initialize Firebase app with config from firebase-config.js
+const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 const storage = getStorage(app, "makeupbyny-1.firebasestorage.app");
-
-// Hardcoded admin UID
-const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Initialize SunEditor
 let editor;
@@ -868,7 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const settingsIcon = document.getElementById('settingsIcon');
 
   if (loginLink && logoutBtn) {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. Current user:", user ? user.uid : "No user");
 
       if (user) {
@@ -876,11 +876,19 @@ document.addEventListener("DOMContentLoaded", () => {
         logoutBtn.style.display = "inline";
         if (createPostLink) createPostLink.style.display = "inline";
         
+        // Check if user is admin
+        const isAdmin = await isAdminUser(user.uid);
+        
         // Show admin dropdown only for admin user
-        if (user.uid === adminUID) {
+        if (isAdmin) {
           if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
         } else {
           if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+          
+          // Redirect non-admin users away from the editor
+          alert("Access denied. Admin privileges required.");
+          window.location.href = "index.html";
+          return;
         }
         
         // Load posts when user is logged in
