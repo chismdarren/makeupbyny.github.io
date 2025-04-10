@@ -227,7 +227,7 @@
 
     /* This class is toggled via JavaScript */
     .show-dropdown {
-      display: block;
+      display: block !important;
       opacity: 1;
       transform: translateY(0);
     }
@@ -515,6 +515,16 @@
     const loginLink = document.getElementById('login-link');
     const logoutBtn = document.getElementById('logout-btn');
     const settingsIcon = document.getElementById('settingsIcon');
+    
+    // Debug check for elements
+    console.log('Admin dropdown elements found:', {
+      adminDropdownBtn: !!adminDropdownBtn,
+      adminDropdownContent: !!adminDropdownContent,
+      userAccountLink: !!userAccountLink,
+      loginLink: !!loginLink,
+      logoutBtn: !!logoutBtn,
+      settingsIcon: !!settingsIcon
+    });
 
     // Check authentication state
     onAuthStateChanged(auth, async (user) => {
@@ -548,16 +558,18 @@
         e.stopPropagation();
         adminDropdownContent.classList.toggle('show-dropdown');
         this.classList.toggle('active');
+        console.log('Admin dropdown clicked, toggled class:', adminDropdownContent.classList.contains('show-dropdown'));
       });
     }
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-      if (!e.target.matches('.admin-dropdown-btn')) {
+      if (!e.target.matches('.admin-dropdown-btn') && !e.target.matches('.dropdown-icon')) {
         // Close admin dropdown
         if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
           adminDropdownContent.classList.remove('show-dropdown');
-          adminDropdownBtn.classList.remove('active');
+          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+          console.log('Closing admin dropdown from outside click');
         }
       }
     });
