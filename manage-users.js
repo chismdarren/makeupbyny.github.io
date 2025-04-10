@@ -235,14 +235,20 @@ async function loadUsers() {
         roleClass = 'admin-role';
       }
       
+      // Format phone number for display if available
+      let phoneDisplay = 'Not provided';
+      if (userData.phoneNumber) {
+        phoneDisplay = userData.phoneNumber;
+      }
+      
       const li = document.createElement("li");
       li.className = "user-item";
       li.innerHTML = `
         <div class="user-info">
-          <strong>Email:</strong> ${user.email} | 
-          <strong>UID:</strong> ${user.uid} | 
-          <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
-          <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+          <p><strong>Name:</strong> ${userData.firstName || ''} ${userData.lastName || ''} ${userData.username ? `(${userData.username})` : ''}</p>
+          <p><strong>Email:</strong> ${user.email} | <strong>Phone:</strong> ${phoneDisplay}</p>
+          <p><strong>UID:</strong> ${user.uid} | <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
+          <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
         </div>
         <div class="user-actions">
           <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
@@ -345,11 +351,14 @@ window.showUserDetails = async function(userId, userData = null) {
         roleClass = 'admin-role';
       }
       
+      // Make sure to display email from userFullData if available (prefer Firestore over Auth data)
+      const displayEmail = userFullData.email || authUserData.email || 'Not provided';
+      
       modalContent.innerHTML = `
         <div class="user-details-container">
           <div class="user-basic-info">
             <h3>Basic Information</h3>
-            <p><strong>Email:</strong> ${authUserData.email || 'Not provided'}</p>
+            <p><strong>Email:</strong> ${displayEmail}</p>
             <p><strong>UID:</strong> ${userId}</p>
             <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
             <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>

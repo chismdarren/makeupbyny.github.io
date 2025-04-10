@@ -119,8 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
         await createUserDocument(user, {
           firstName,
           lastName,
-          username,
+          username: usernameInput.value,
           phoneNumber,
+          email,
           termsAccepted: true,
           termsAcceptedDate: new Date().toISOString()
         });

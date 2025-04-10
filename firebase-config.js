@@ -114,9 +114,26 @@ export async function createUserDocument(user, additionalData = {}) {
         isSuperAdmin: isSuperAdminUser // New field to track super admin status
       });
       console.log("✅ User document created for:", user.email);
+    } else {
+      // If user document exists but additionalData is provided, update the document
+      // This helps ensure all fields are populated, even if they were missed during initial creation
+      if (Object.keys(additionalData).length > 0) {
+        // Filter out undefined or null values from additionalData
+        const validData = Object.entries(additionalData)
+          .filter(([_, value]) => value !== undefined && value !== null)
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {});
+        
+        if (Object.keys(validData).length > 0) {
+          await setDoc(userRef, validData, { merge: true });
+          console.log("✅ User document updated with additional data for:", user.email);
+        }
+      }
     }
   } catch (error) {
-    console.error("❌ Error creating user document:", error.message);
+    console.error("❌ Error creating/updating user document:", error.message);
   }
 }
 
