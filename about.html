@@ -226,8 +226,8 @@
     }
 
     /* This class is toggled via JavaScript */
-    .show-dropdown {
-      display: block !important;
+    .admin-dropdown-content.show-dropdown {
+      display: block;
       opacity: 1;
       transform: translateY(0);
     }
@@ -515,16 +515,6 @@
     const loginLink = document.getElementById('login-link');
     const logoutBtn = document.getElementById('logout-btn');
     const settingsIcon = document.getElementById('settingsIcon');
-    
-    // Debug check for elements
-    console.log('Admin dropdown elements found:', {
-      adminDropdownBtn: !!adminDropdownBtn,
-      adminDropdownContent: !!adminDropdownContent,
-      userAccountLink: !!userAccountLink,
-      loginLink: !!loginLink,
-      logoutBtn: !!logoutBtn,
-      settingsIcon: !!settingsIcon
-    });
 
     // Check authentication state
     onAuthStateChanged(auth, async (user) => {
@@ -538,7 +528,11 @@
         
         // Check if user is admin
         const isAdmin = await isAdminUser(user.uid);
-        if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
+        if (isAdmin && adminDropdownBtn) {
+          adminDropdownBtn.style.display = 'inline';
+        } else if (adminDropdownBtn) {
+          adminDropdownBtn.style.display = 'none';
+        }
       } else {
         // User is logged out
         if (loginLink) loginLink.style.display = 'inline';
@@ -558,18 +552,17 @@
         e.stopPropagation();
         adminDropdownContent.classList.toggle('show-dropdown');
         this.classList.toggle('active');
-        console.log('Admin dropdown clicked, toggled class:', adminDropdownContent.classList.contains('show-dropdown'));
       });
     }
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-      if (!e.target.matches('.admin-dropdown-btn') && !e.target.matches('.dropdown-icon')) {
+      // Check if the click was outside the admin dropdown
+      if (adminDropdownBtn && !adminDropdownBtn.contains(e.target)) {
         // Close admin dropdown
         if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
           adminDropdownContent.classList.remove('show-dropdown');
-          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-          console.log('Closing admin dropdown from outside click');
+          adminDropdownBtn.classList.remove('active');
         }
       }
     });
