@@ -114,5 +114,5 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// Export Firebase instances for use in other modules
-export { app, auth, db };
+// Export Firebase instances and config for use in other modules
+export { app, auth, db, firebaseConfig };
