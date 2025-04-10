@@ -232,13 +232,6 @@
       transform: translateY(0);
     }
 
-    /* Keep the more specific selector for additional styling */
-    .admin-dropdown-content.show-dropdown {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-    }
-
     /* Responsive adjustments for admin dropdown */
     @media (max-width: 768px) {
       .admin-dropdown-content {
@@ -535,15 +528,7 @@
         
         // Check if user is admin
         const isAdmin = await isAdminUser(user.uid);
-        console.log('User admin status:', isAdmin);
-        
-        if (isAdmin && adminDropdownBtn) {
-          console.log('Showing admin dropdown button');
-          adminDropdownBtn.style.display = 'inline';
-        } else if (adminDropdownBtn) {
-          console.log('Hiding admin dropdown button');
-          adminDropdownBtn.style.display = 'none';
-        }
+        if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
       } else {
         // User is logged out
         if (loginLink) loginLink.style.display = 'inline';
@@ -561,24 +546,16 @@
       adminDropdownBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        
-        // First add/remove show-dropdown class (for CSS that targets .show-dropdown)
-        adminDropdownContent.classList.toggle('show-dropdown');
-        
-        // Then add/remove active class on the button
         this.classList.toggle('active');
-        
-        console.log('Dropdown toggled, classes now:', adminDropdownContent.className);
+        adminDropdownContent.classList.toggle('show-dropdown');
       });
     }
 
     // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-      // Check if the click was outside the admin dropdown
-      if (adminDropdownBtn && !adminDropdownBtn.contains(e.target)) {
-        // Close admin dropdown if it's open
+    window.addEventListener('click', function(e) {
+      if (!e.target.matches('.admin-dropdown-btn') && !e.target.matches('.dropdown-icon')) {
+        // Close admin dropdown
         if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
-          console.log('Closing dropdown menu because click was outside');
           adminDropdownContent.classList.remove('show-dropdown');
           adminDropdownBtn.classList.remove('active');
         }
