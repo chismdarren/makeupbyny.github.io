@@ -110,10 +110,7 @@
 
   <script type="module">
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { auth } from "./firebase-config.js";
-
-    // Updated admin UID
-    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+    import { auth, isAdminUser } from "./firebase-config.js";
 
     console.log("Login script loaded");  // Debug log to confirm script load
 
@@ -123,11 +120,12 @@
       const password = document.getElementById("password").value;
 
       signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(async (userCredential) => {
           const user = userCredential.user;
           console.log("Logged in user UID:", user.uid);  // Debug: show UID in console
-          // Check if the logged-in user is the admin
-          if (user.uid === adminUID) {
+          // Check if the logged-in user is an admin
+          const isAdmin = await isAdminUser(user.uid);
+          if (isAdmin) {
             console.log("Admin login detected");  // Debug: admin branch
             alert("Admin login detected. Redirecting to admin dashboard.");
             window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
