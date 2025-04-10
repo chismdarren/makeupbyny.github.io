@@ -1,9 +1,6 @@
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { auth, db } from "./firebase-config.js";
-
-// Define admin user ID - correct ID from other pages
-const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+import { auth, db, isAdminUser } from "./firebase-config.js";
 
 // Get DOM elements
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
@@ -14,7 +11,7 @@ const settingsIcon = document.getElementById("settingsIcon");
 const recentPostsList = document.getElementById("recentPostsList");
 
 // Handle authentication state changes
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     // User is signed in
     loginLink.style.display = "none";
@@ -23,7 +20,8 @@ onAuthStateChanged(auth, (user) => {
     settingsIcon.style.display = "flex";
 
     // Check if user is admin
-    if (user.uid === adminUID) {
+    const isAdmin = await isAdminUser(user.uid);
+    if (isAdmin) {
       adminDropdownBtn.style.display = "inline";
     } else {
       adminDropdownBtn.style.display = "none";
@@ -93,9 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set up logout button
   setupLogout();
   
-  // Check authentication state
-  onAuthStateChanged(auth, handleAuthStateChange);
-  
   // Load recent posts
   loadRecentPosts();
 });
@@ -146,7 +141,7 @@ function handleLogout() {
 }
 
 // Handle authentication state changes
-function handleAuthStateChange(user) {
+async function handleAuthStateChange(user) {
   if (user) {
     console.log('User is logged in:', user.email);
     
@@ -156,7 +151,7 @@ function handleAuthStateChange(user) {
     if (userAccountLink) userAccountLink.style.display = 'inline';
     
     // Show admin dropdown based on role
-    const isAdmin = user.uid === adminUID;
+    const isAdmin = await isAdminUser(user.uid);
     if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
     
     // Show settings icon when user is logged in
