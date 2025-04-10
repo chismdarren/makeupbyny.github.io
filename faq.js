@@ -1,9 +1,6 @@
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { auth, db } from "./firebase-config.js";
-
-// Define admin user ID - correct ID from other pages
-const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+import { auth, db, isAdminUser } from "./firebase-config.js";
 
 // Get DOM elements
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
@@ -14,7 +11,7 @@ const settingsIcon = document.getElementById("settingsIcon");
 const recentPostsList = document.getElementById("recentPostsList");
 
 // Handle authentication state changes
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     // User is signed in
     loginLink.style.display = "none";
@@ -25,7 +22,8 @@ onAuthStateChanged(auth, (user) => {
     if (settingsIcon) settingsIcon.style.display = "flex";
 
     // Check if user is admin
-    if (user.uid === adminUID) {
+    const isAdmin = await isAdminUser(user.uid);
+    if (isAdmin) {
       adminDropdownBtn.style.display = "inline";
     } else {
       adminDropdownBtn.style.display = "none";

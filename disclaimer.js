@@ -1,14 +1,11 @@
 // Import necessary Firebase modules
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth } from "./firebase-config.js";
-
-// Define admin user ID for special privileges
-const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+import { auth, isAdminUser } from "./firebase-config.js";
 
 // Initialize the page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   // Monitor user authentication state
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     // If user is logged in
     if (user) {
       // Hide login button, show logout button and account link
@@ -21,7 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (settingsIcon) settingsIcon.style.display = 'flex';
 
       // Check if user is admin
-      if (user.uid === adminUID) {
+      const isAdmin = await isAdminUser(user.uid);
+      if (isAdmin) {
         // Show admin dropdown button
         document.getElementById("adminDropdownBtn").style.display = "inline";
       } else {

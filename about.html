@@ -505,7 +505,7 @@
   <!-- Firebase Integration -->
   <script type="module">
     // Import Firebase modules
-    import { auth } from './firebase-config.js';
+    import { auth, isAdminUser } from './firebase-config.js';
     import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
     // DOM elements
@@ -516,11 +516,8 @@
     const logoutBtn = document.getElementById('logout-btn');
     const settingsIcon = document.getElementById('settingsIcon');
 
-    // Hardcoded admin UID
-    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
-
     // Check authentication state
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       // User is logged in
       if (user) {
         // Update UI elements
@@ -530,7 +527,7 @@
         if (settingsIcon) settingsIcon.style.display = 'flex';
         
         // Check if user is admin
-        const isAdmin = user.uid === adminUID;
+        const isAdmin = await isAdminUser(user.uid);
         if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
       } else {
         // User is logged out
