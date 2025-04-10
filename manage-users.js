@@ -435,7 +435,7 @@ window.updateUserRole = async function(userId, isAdmin) {
 };
 
 // Add the Super Admin role update function
-window.updateSuperAdminRole = async function(userId, isSuperAdmin) {
+window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
   try {
     // Get current authenticated user
     const user = auth.currentUser;
@@ -445,7 +445,7 @@ window.updateSuperAdminRole = async function(userId, isSuperAdmin) {
     }
     
     // Prevent removing the last super admin
-    if (!isSuperAdmin && userId === user.uid) {
+    if (!makeUserSuperAdmin && userId === user.uid) {
       const superAdmins = [...superAdminUIDs];
       if (superAdmins.length <= 1) {
         alert("Cannot remove the last super admin. Promote another user to super admin first.");
@@ -467,8 +467,8 @@ window.updateSuperAdminRole = async function(userId, isSuperAdmin) {
       const userActions = userItem.querySelector('.user-actions');
       
       if (roleSpan) {
-        roleSpan.textContent = isSuperAdmin ? 'Super Admin' : 'Admin';
-        roleSpan.className = `user-role ${isSuperAdmin ? 'super-admin-role' : 'admin-role'}`;
+        roleSpan.textContent = makeUserSuperAdmin ? 'Super Admin' : 'Admin';
+        roleSpan.className = `user-role ${makeUserSuperAdmin ? 'super-admin-role' : 'admin-role'}`;
       }
       
       // Update action buttons
@@ -479,7 +479,7 @@ window.updateSuperAdminRole = async function(userId, isSuperAdmin) {
         // Insert new buttons after view details button
         const viewDetailsBtn = userActions.querySelector('.view-details-btn');
         if (viewDetailsBtn) {
-          if (isSuperAdmin) {
+          if (makeUserSuperAdmin) {
             const removeSuperAdminBtn = document.createElement('button');
             removeSuperAdminBtn.className = 'role-btn remove-super-admin';
             removeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, false);
@@ -507,16 +507,16 @@ window.updateSuperAdminRole = async function(userId, isSuperAdmin) {
     // Update in Firestore
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, { 
-      isSuperAdmin: isSuperAdmin,
+      isSuperAdmin: makeUserSuperAdmin,
       isAdmin: true // Super admins are also admins
     });
     
     // Update superAdminUIDs array
     let updated = false;
-    if (isSuperAdmin && !superAdminUIDs.includes(userId)) {
+    if (makeUserSuperAdmin && !superAdminUIDs.includes(userId)) {
       superAdminUIDs.push(userId);
       updated = true;
-    } else if (!isSuperAdmin && superAdminUIDs.includes(userId)) {
+    } else if (!makeUserSuperAdmin && superAdminUIDs.includes(userId)) {
       const index = superAdminUIDs.indexOf(userId);
       if (index > -1) {
         superAdminUIDs.splice(index, 1);
@@ -531,7 +531,7 @@ window.updateSuperAdminRole = async function(userId, isSuperAdmin) {
     // Show success message
     const message = document.createElement('div');
     message.className = 'success-message';
-    message.textContent = `User ${isSuperAdmin ? 'promoted to super admin' : 'removed from super admin role'} successfully`;
+    message.textContent = `User ${makeUserSuperAdmin ? 'promoted to super admin' : 'removed from super admin role'} successfully`;
     message.style.position = 'fixed';
     message.style.top = '20px';
     message.style.left = '50%';
@@ -550,7 +550,7 @@ window.updateSuperAdminRole = async function(userId, isSuperAdmin) {
     
     // If a modal is currently displayed, update it too
     if (currentUserId === userId && modal.style.display === "block") {
-      window.showUserDetails(userId, { uid: userId, isAdmin: true, isSuperAdmin: isSuperAdmin });
+      window.showUserDetails(userId, { uid: userId, isAdmin: true, isSuperAdmin: makeUserSuperAdmin });
     }
   } catch (error) {
     console.error("Error updating super admin role:", error);
