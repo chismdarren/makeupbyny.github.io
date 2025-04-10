@@ -1,6 +1,6 @@
 // Import Firebase Authentication functions and auth from firebase-config.js
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth, isAdminUser } from "./firebase-config.js";
+import { auth } from "./firebase-config.js";
 
 // Import Firestore functions
 import {
@@ -29,6 +29,9 @@ import {
 // Initialize Firestore and Storage
 const db = getFirestore();
 const storage = getStorage();
+
+// Hardcoded admin UID
+const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
 // Store posts data globally for sorting
 let allPosts = [];
@@ -704,7 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (settingsIcon) settingsIcon.style.display = "none";
 
   // Authentication state change handler
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, (user) => {
     if (user) {
       // User is logged in
       if (loginLink) loginLink.style.display = "none";
@@ -713,8 +716,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (settingsIcon) settingsIcon.style.display = "flex";
 
       // Check if user is admin
-      const isAdmin = await isAdminUser(user.uid);
-      if (isAdmin) {
+      if (user.uid === adminUID) {
         // User is admin, show admin dropdown and editor features
         if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
 
@@ -723,7 +725,6 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // User is not admin, redirect to home
         console.warn("Non-admin user attempted to access post editor");
-        alert("Access denied. Admin privileges required.");
         window.location.href = "index.html";
       }
     } else {
