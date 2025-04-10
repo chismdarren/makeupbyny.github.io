@@ -11,6 +11,34 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+// Synchronize superAdminUIDs with Firestore
+async function syncSuperAdmins() {
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("isSuperAdmin", "==", true));
+    const querySnapshot = await getDocs(q);
+    
+    // Get all super admin UIDs from Firestore
+    const firestoreSuperAdmins = [];
+    querySnapshot.forEach((doc) => {
+      firestoreSuperAdmins.push(doc.id);
+    });
+    
+    console.log("Firestore super admins:", firestoreSuperAdmins);
+    
+    // Add any new super admins to the array
+    firestoreSuperAdmins.forEach(uid => {
+      if (!superAdminUIDs.includes(uid)) {
+        superAdminUIDs.push(uid);
+      }
+    });
+    
+    console.log("Synchronized super admin list:", superAdminUIDs);
+  } catch (error) {
+    console.error("Error syncing super admins:", error);
+  }
+}
+
 // DOM elements
 const userList = document.getElementById("user-list");
 const modal = document.getElementById("userModal");
@@ -39,7 +67,11 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  if (!isSuperAdmin(user.uid)) {
+  // Sync super admins with Firestore first
+  await syncSuperAdmins();
+
+  const isUserSuperAdmin = await isSuperAdmin(user.uid);
+  if (!isUserSuperAdmin) {
     console.log("User is not super admin, redirecting to home page");
     content.innerHTML = '<div class="error-message">Access denied. Super Admin privileges required.</div>';
     setTimeout(() => {
@@ -439,7 +471,8 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
   try {
     // Get current authenticated user
     const user = auth.currentUser;
-    if (!user || !isSuperAdmin(user.uid)) {
+    const isCurrentUserSuperAdmin = await isSuperAdmin(user.uid);
+    if (!user || !isCurrentUserSuperAdmin) {
       alert("You need super admin privileges to manage super admins");
       return;
     }
@@ -447,7 +480,14 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
     // Prevent removing the last super admin
     if (!makeUserSuperAdmin && userId === user.uid) {
       const superAdmins = [...superAdminUIDs];
-      if (superAdmins.length <= 1) {
+      
+      // Also check Firestore for other super admins
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("isSuperAdmin", "==", true));
+      const superAdminDocs = await getDocs(q);
+      const superAdminCount = superAdminDocs.size;
+      
+      if (superAdminCount <= 1) {
         alert("Cannot remove the last super admin. Promote another user to super admin first.");
         return;
       }
@@ -546,6 +586,11 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
     // Remove the message after 3 seconds
     setTimeout(() => {
       document.body.removeChild(message);
+      
+      // After making a change to super admin status, refresh the page to update permissions
+      if (makeUserSuperAdmin || userId === user.uid) {
+        window.location.reload();
+      }
     }, 3000);
     
     // If a modal is currently displayed, update it too

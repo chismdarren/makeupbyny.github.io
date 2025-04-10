@@ -56,14 +56,27 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Check if user is a super admin
-export function isSuperAdmin(uid) {
-  return superAdminUIDs.includes(uid);
+export async function isSuperAdmin(uid) {
+  // First check the hardcoded list (for backward compatibility)
+  if (superAdminUIDs.includes(uid)) {
+    return true;
+  }
+  
+  // Then check if they have the isSuperAdmin flag in Firestore
+  try {
+    const userRef = doc(db, "users", uid);
+    const userDoc = await getDoc(userRef);
+    return userDoc.exists() && userDoc.data().isSuperAdmin === true;
+  } catch (error) {
+    console.error("Error checking super admin status:", error);
+    return false;
+  }
 }
 
 // Check if user has admin privileges (either super admin or regular admin)
 export async function isAdminUser(uid) {
-  // First check if user is a super admin (fastest check)
-  if (isSuperAdmin(uid)) {
+  // First check if user is a super admin
+  if (await isSuperAdmin(uid)) {
     return true;
   }
   
