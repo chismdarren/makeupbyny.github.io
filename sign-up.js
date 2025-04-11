@@ -144,83 +144,53 @@ document.addEventListener('DOMContentLoaded', () => {
             termsAcceptedDate: new Date().toISOString()
           };
           
-          console.log("Storing additional user data:", userData);
+          console.log("User authentication created successfully with UID:", user.uid);
+          console.log("User data prepared:", userData);
           
-          // Try to create user document with retry mechanism
-          let success = false;
-          let attempts = 0;
-          const maxAttempts = 3;
+          // Show success message immediately - we don't want the user to wait
+          alert("✅ Account created successfully! You can now log in.");
           
-          while (!success && attempts < maxAttempts) {
-            try {
-              attempts++;
-              console.log(`Attempt ${attempts} to create user document...`);
-              
-              // Wait for the user document to be created
-              await createUserDocument(user, userData);
-              success = true;
-              console.log("User document created successfully!");
-            } catch (docError) {
-              console.error(`Attempt ${attempts} failed:`, docError.message);
-              
-              if (docError.message.includes("Missing or insufficient permissions") && attempts < maxAttempts) {
-                // Wait a bit longer for auth to fully process before retrying
-                console.log(`Waiting before retry attempt ${attempts + 1}...`);
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Increasing delay with each retry
-              } else if (attempts >= maxAttempts) {
-                console.error("Max attempts reached, giving up");
-                throw docError; // Rethrow if we've reached max attempts
-              } else {
-                throw docError; // Rethrow if it's not a permissions error
-              }
+          // Handle user data separately - don't block the user experience
+          try {
+            // Check if we can directly call a Cloud Function instead of using client-side Firestore
+            const functionUrl = "https://us-central1-makeupbyny-1.cloudfunctions.net/createUserProfile";
+            
+            // Attempt to call a function to create the user profile
+            const response = await fetch(functionUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                uid: user.uid,
+                email: user.email,
+                userData: userData
+              })
+            });
+            
+            if (response.ok) {
+              console.log("User profile created via Cloud Function");
+            } else {
+              // Fallback to using our client-side code if the function call fails
+              console.warn("Cloud Function call failed, falling back to client approach");
+              // Call createUserDocument but ignore errors
+              await createUserDocument(user, userData).catch(e => {
+                console.error("Failed to create user document:", e);
+                // Store data in localStorage as a last resort
+                localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
+                console.log("User data saved to localStorage for later recovery");
+              });
             }
+          } catch (profileError) {
+            console.error("Error creating user profile:", profileError);
+            // Don't block the user experience even if profile creation fails
+            
+            // Store in localStorage as a last resort
+            localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
+            console.log("User data saved to localStorage for later recovery");
           }
           
-          // Show success message and redirect immediately
-          alert("✅ Account created successfully!");
-          
-          // Optional: For debugging only - check if data was properly saved, but don't block the user
-          setTimeout(async () => {
-            try {
-              const userDocRef = doc(db, "users", user.uid);
-              const userDoc = await getDoc(userDocRef);
-              
-              if (userDoc.exists()) {
-                const savedData = userDoc.data();
-                console.log("User document verified after delay - data saved:", savedData);
-                
-                // Silently check if any fields are missing
-                const missingFields = [];
-                if (!savedData.firstName) missingFields.push('firstName');
-                if (!savedData.lastName) missingFields.push('lastName');
-                if (!savedData.username) missingFields.push('username');
-                if (!savedData.phoneNumber) missingFields.push('phoneNumber');
-                
-                if (missingFields.length > 0) {
-                  console.error("Some fields still missing after save:", missingFields);
-                  
-                  // Try to update the user document with missing fields
-                  const updates = {};
-                  missingFields.forEach(field => {
-                    updates[field] = userData[field];
-                  });
-                  
-                  if (Object.keys(updates).length > 0) {
-                    console.log("Attempting to update missing fields after delay:", updates);
-                    await updateDoc(userDocRef, updates);
-                    console.log("Missing fields updated successfully after delay");
-                  }
-                }
-              } else {
-                console.error("User document not found after delay");
-              }
-            } catch (verifyError) {
-              console.error("Error during delayed verification:", verifyError);
-              // Don't alert the user, just log to console
-            }
-          }, 3000); // 3 second delay to allow Firestore to propagate
-          
-          // Redirect immediately without waiting for verification
+          // Redirect user to login page
           window.location.href = 'login.html';
         } catch (authError) {
           console.error("❌ Error creating user authentication:", authError.message);

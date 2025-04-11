@@ -111,8 +111,65 @@
   <script type="module">
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { auth, isAdminUser } from "./firebase-config.js";
+    import { doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { db } from "./firebase-config.js";
 
     console.log("Login script loaded");  // Debug log to confirm script load
+
+    // Function to recover user data from localStorage if present
+    async function recoverUserData(user) {
+      const pendingDataKey = `pendingUserData_${user.uid}`;
+      
+      // Check if we have pending data in localStorage
+      const pendingData = localStorage.getItem(pendingDataKey);
+      
+      if (pendingData) {
+        console.log("Found pending user data in localStorage:", pendingData);
+        try {
+          const userData = JSON.parse(pendingData);
+          
+          // Check if the user document exists in Firestore
+          const userRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userRef);
+          
+          if (userDoc.exists()) {
+            // Update existing document with pending data if fields are missing
+            const existingData = userDoc.data();
+            const updates = {};
+            
+            // Only update fields that don't already exist
+            if (!existingData.firstName && userData.firstName) updates.firstName = userData.firstName;
+            if (!existingData.lastName && userData.lastName) updates.lastName = userData.lastName;
+            if (!existingData.username && userData.username) updates.username = userData.username;
+            if (!existingData.phoneNumber && userData.phoneNumber) updates.phoneNumber = userData.phoneNumber;
+            
+            if (Object.keys(updates).length > 0) {
+              await updateDoc(userRef, updates);
+              console.log("Updated user document with recovered data:", updates);
+            }
+          } else {
+            // Create a new document with the pending data
+            await setDoc(userRef, {
+              email: user.email,
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              username: userData.username || '',
+              phoneNumber: userData.phoneNumber || '',
+              termsAccepted: userData.termsAccepted || false,
+              termsAcceptedDate: userData.termsAcceptedDate || null,
+              createdAt: new Date()
+            });
+            console.log("Created new user document with recovered data");
+          }
+          
+          // Remove the data from localStorage after successful recovery
+          localStorage.removeItem(pendingDataKey);
+          console.log("Recovered data and removed from localStorage");
+        } catch (error) {
+          console.error("Error recovering user data:", error);
+        }
+      }
+    }
 
     document.getElementById("login-form").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -123,6 +180,10 @@
         .then(async (userCredential) => {
           const user = userCredential.user;
           console.log("Logged in user UID:", user.uid);  // Debug: show UID in console
+          
+          // Try to recover any pending user data from signup
+          await recoverUserData(user);
+          
           // Check if the logged-in user is an admin
           const isAdmin = await isAdminUser(user.uid);
           if (isAdmin) {
