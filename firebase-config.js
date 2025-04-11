@@ -98,6 +98,9 @@ export async function createUserDocument(user, additionalData = {}) {
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
+      // Check if user is a super admin (await the result)
+      const isUserSuperAdmin = await isSuperAdmin(user.uid);
+      
       await setDoc(userRef, {
         email: user.email,
         firstName: additionalData.firstName || '',
@@ -107,8 +110,8 @@ export async function createUserDocument(user, additionalData = {}) {
         termsAccepted: additionalData.termsAccepted || false,
         termsAcceptedDate: additionalData.termsAcceptedDate || null,
         createdAt: serverTimestamp(),
-        isAdmin: isSuperAdmin(user.uid), // Set as admin if they're a super admin
-        isSuperAdmin: isSuperAdmin(user.uid) // New field to track super admin status
+        isAdmin: isUserSuperAdmin, // Set as admin if they're a super admin
+        isSuperAdmin: isUserSuperAdmin // New field to track super admin status
       });
       console.log("✅ User document created for:", user.email);
     }
@@ -118,10 +121,18 @@ export async function createUserDocument(user, additionalData = {}) {
 }
 
 // Listen for auth state changes to create user documents
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     console.log("📢 User detected:", user.email);
-    createUserDocument(user);
+    
+    // Check if user document already exists before creating it
+    const userRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      // Only create the document if it doesn't exist
+      await createUserDocument(user);
+    }
   } else {
     console.log("📢 No user signed in.");
   }

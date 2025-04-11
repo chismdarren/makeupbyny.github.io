@@ -8,7 +8,9 @@ import {
   updateDoc, 
   query, 
   where,
-  getDoc
+  getDoc,
+  setDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Synchronize superAdminUIDs with Firestore
@@ -326,6 +328,9 @@ window.showUserDetails = async function(userId, userData = null) {
         roleClass = 'admin-role';
       }
       
+      // Check if data appears to be missing
+      const hasMissingData = !userFullData.firstName || !userFullData.lastName || !userFullData.username || !userFullData.phoneNumber;
+      
       modalContent.innerHTML = `
         <div class="user-details-container">
           <div class="user-basic-info">
@@ -342,6 +347,7 @@ window.showUserDetails = async function(userId, userData = null) {
             <p><strong>Last Name:</strong> ${userFullData.lastName || 'Not provided'}</p>
             <p><strong>Username:</strong> ${userFullData.username || 'Not provided'}</p>
             <p><strong>Phone Number:</strong> ${userFullData.phoneNumber || 'Not provided'}</p>
+            ${hasMissingData ? '<button id="recover-user-data" class="recover-btn">Recover Missing Information</button>' : ''}
           </div>
           
           <div class="user-account-info">
@@ -368,6 +374,15 @@ window.showUserDetails = async function(userId, userData = null) {
           ${commentsHtml}
         </div>
       `;
+      
+      // Add event listener for the recover button if it exists
+      const recoverButton = document.getElementById('recover-user-data');
+      if (recoverButton) {
+        recoverButton.addEventListener('click', function() {
+          window.showRecoverOptions(userId, authUserData.email, userFullData);
+        });
+      }
+      
       modal.style.display = "block";
     } else {
       alert('User details not found');
@@ -375,6 +390,203 @@ window.showUserDetails = async function(userId, userData = null) {
   } catch (error) {
     console.error('Error loading user details:', error);
     alert('Error loading user details: ' + error.message);
+  }
+};
+
+// Function to show recovery options dialog
+window.showRecoverOptions = function(userId, email, userData) {
+  // Create recovery options dialog
+  const recoverDialog = document.createElement('div');
+  recoverDialog.id = 'recover-dialog';
+  recoverDialog.className = 'recover-dialog';
+  
+  // Determine which fields are missing
+  const missingFirstName = !userData.firstName;
+  const missingLastName = !userData.lastName;
+  const missingUsername = !userData.username;
+  const missingPhoneNumber = !userData.phoneNumber;
+  
+  // Generate suggested values
+  let suggestedFirstName = '';
+  let suggestedLastName = '';
+  let suggestedUsername = '';
+  
+  if (email) {
+    // Try to extract first name from email
+    const emailParts = email.split('@')[0];
+    
+    if (emailParts.includes('.')) {
+      suggestedFirstName = emailParts.split('.')[0];
+      // Try to get last name initial if available
+      if (emailParts.split('.').length > 1) {
+        suggestedLastName = emailParts.split('.')[1];
+      }
+    } else if (emailParts.includes('_')) {
+      suggestedFirstName = emailParts.split('_')[0];
+      // Try to get last name initial if available
+      if (emailParts.split('_').length > 1) {
+        suggestedLastName = emailParts.split('_')[1];
+      }
+    } else {
+      suggestedFirstName = emailParts;
+    }
+    
+    // Capitalize first letter
+    suggestedFirstName = suggestedFirstName.charAt(0).toUpperCase() + suggestedFirstName.slice(1).toLowerCase();
+    
+    if (suggestedLastName) {
+      suggestedLastName = suggestedLastName.charAt(0).toUpperCase() + suggestedLastName.slice(1).toLowerCase();
+    }
+  }
+  
+  // Generate the suggested username in the format "FirstName. LastInitial"
+  if (suggestedFirstName && suggestedLastName) {
+    suggestedUsername = `${suggestedFirstName}. ${suggestedLastName.charAt(0)}`;
+  } else if (suggestedFirstName) {
+    suggestedUsername = `${suggestedFirstName}. `;
+  } else if (email) {
+    suggestedUsername = email.split('@')[0];
+  }
+  
+  recoverDialog.innerHTML = `
+    <div class="recover-dialog-content">
+      <h3>Recover Missing Information</h3>
+      <p>Select which information to recover for this user:</p>
+      <form id="recover-form">
+        ${missingFirstName ? `
+          <div class="recover-field">
+            <input type="checkbox" id="recover-firstName" name="firstName" checked>
+            <label for="recover-firstName">First Name:</label>
+            <input type="text" id="firstName-value" value="${suggestedFirstName}" placeholder="Enter first name">
+          </div>
+        ` : ''}
+        
+        ${missingLastName ? `
+          <div class="recover-field">
+            <input type="checkbox" id="recover-lastName" name="lastName" checked>
+            <label for="recover-lastName">Last Name:</label>
+            <input type="text" id="lastName-value" value="${suggestedLastName}" placeholder="Enter last name">
+          </div>
+        ` : ''}
+        
+        ${missingUsername ? `
+          <div class="recover-field">
+            <input type="checkbox" id="recover-username" name="username" checked>
+            <label for="recover-username">Username:</label>
+            <input type="text" id="username-value" value="${suggestedUsername}" placeholder="Enter username">
+            <small>Format: FirstName. LastInitial (e.g., Ray. C)</small>
+          </div>
+        ` : ''}
+        
+        ${missingPhoneNumber ? `
+          <div class="recover-field">
+            <input type="checkbox" id="recover-phoneNumber" name="phoneNumber" checked>
+            <label for="recover-phoneNumber">Phone Number:</label>
+            <input type="text" id="phoneNumber-value" value="" placeholder="Enter phone number (e.g., 123-456-7890)">
+          </div>
+        ` : ''}
+        
+        ${!userData.termsAccepted ? `
+          <div class="recover-field">
+            <input type="checkbox" id="recover-terms" name="terms" checked>
+            <label for="recover-terms">Accept Terms:</label>
+            <span>Set as accepted</span>
+          </div>
+        ` : ''}
+        
+        <div class="recover-buttons">
+          <button type="button" id="recover-cancel" class="cancel-btn">Cancel</button>
+          <button type="button" id="recover-apply" class="apply-btn">Apply Changes</button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  // Add dialog to the document
+  document.body.appendChild(recoverDialog);
+  
+  // Update username when first or last name changes
+  const firstNameInput = document.getElementById('firstName-value');
+  const lastNameInput = document.getElementById('lastName-value');
+  const usernameInput = document.getElementById('username-value');
+  
+  if (firstNameInput && lastNameInput && usernameInput) {
+    const updateUsername = function() {
+      const firstName = firstNameInput.value.trim();
+      const lastName = lastNameInput.value.trim();
+      
+      if (firstName && lastName) {
+        // Format as "FirstName. LastInitial"
+        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        const lastInitial = lastName.charAt(0).toUpperCase();
+        usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
+      }
+    };
+    
+    firstNameInput.addEventListener('input', updateUsername);
+    lastNameInput.addEventListener('input', updateUsername);
+  }
+  
+  // Add event listeners
+  document.getElementById('recover-cancel').addEventListener('click', function() {
+    document.body.removeChild(recoverDialog);
+  });
+  
+  document.getElementById('recover-apply').addEventListener('click', function() {
+    const updates = {};
+    
+    // Get values from selected checkboxes
+    if (missingFirstName && document.getElementById('recover-firstName').checked) {
+      updates.firstName = document.getElementById('firstName-value').value.trim();
+    }
+    
+    if (missingLastName && document.getElementById('recover-lastName').checked) {
+      updates.lastName = document.getElementById('lastName-value').value.trim();
+    }
+    
+    if (missingUsername && document.getElementById('recover-username').checked) {
+      updates.username = document.getElementById('username-value').value.trim();
+    }
+    
+    if (missingPhoneNumber && document.getElementById('recover-phoneNumber').checked) {
+      updates.phoneNumber = document.getElementById('phoneNumber-value').value.trim();
+    }
+    
+    if (!userData.termsAccepted && document.getElementById('recover-terms')?.checked) {
+      updates.termsAccepted = true;
+      updates.termsAcceptedDate = new Date().toISOString();
+    }
+    
+    // Apply updates
+    window.applyUserDataRecovery(userId, updates);
+    
+    // Remove the dialog
+    document.body.removeChild(recoverDialog);
+  });
+  
+  // Position the dialog
+  recoverDialog.style.display = 'block';
+};
+
+// Function to apply user data recovery
+window.applyUserDataRecovery = async function(userId, updates) {
+  try {
+    // Only update if there are changes
+    if (Object.keys(updates).length > 0) {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, updates);
+      
+      // Show success message
+      alert(`User data recovered successfully. Updated fields: ${Object.keys(updates).join(', ')}`);
+      
+      // Refresh the modal
+      window.showUserDetails(userId);
+    } else {
+      alert('No changes selected for recovery.');
+    }
+  } catch (error) {
+    console.error('Error recovering user data:', error);
+    alert('Error recovering user data: ' + error.message);
   }
 };
 
