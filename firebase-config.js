@@ -94,60 +94,114 @@ export async function isAdminUser(uid) {
 // Function to create user document in Firestore
 export async function createUserDocument(user, additionalData = {}) {
   try {
+    if (!user || !user.uid) {
+      console.error("❌ Invalid user object:", user);
+      throw new Error("Invalid user object - missing UID");
+    }
+    
+    // Validate required data
+    console.log("Creating/updating user document for:", user.email, "with data:", additionalData);
+    
     const userRef = doc(db, "users", user.uid);
+    
+    // First check if user document already exists
     const userDoc = await getDoc(userRef);
-
+    
     // Check if user is a super admin (await the result)
     const isUserSuperAdmin = await isSuperAdmin(user.uid);
     
+    // Ensure all needed fields are present in a consistent format
+    const userData = {
+      email: user.email,
+      firstName: additionalData.firstName || '',
+      lastName: additionalData.lastName || '',
+      username: additionalData.username || '',
+      phoneNumber: additionalData.phoneNumber || '',
+      termsAccepted: additionalData.termsAccepted || false,
+      termsAcceptedDate: additionalData.termsAcceptedDate || null,
+      createdAt: serverTimestamp(),
+      isAdmin: isUserSuperAdmin, // Set as admin if they're a super admin
+      isSuperAdmin: isUserSuperAdmin // Super admin status
+    };
+    
     if (!userDoc.exists()) {
-      // Create new user document
-      console.log("Creating new user document with data:", additionalData);
+      // Document doesn't exist - create new user document
+      console.log("Creating new user document with data:", userData);
       
-      await setDoc(userRef, {
-        email: user.email,
-        firstName: additionalData.firstName || '',
-        lastName: additionalData.lastName || '',
-        username: additionalData.username || '',
-        phoneNumber: additionalData.phoneNumber || '',
-        termsAccepted: additionalData.termsAccepted || false,
-        termsAcceptedDate: additionalData.termsAcceptedDate || null,
-        createdAt: serverTimestamp(),
-        isAdmin: isUserSuperAdmin, // Set as admin if they're a super admin
-        isSuperAdmin: isUserSuperAdmin // New field to track super admin status
-      });
+      // Use setDoc with merge option to ensure all fields are written
+      await setDoc(userRef, userData, { merge: true });
       console.log("✅ User document created for:", user.email);
+      
+      // Verify document was created correctly
+      const verifyDoc = await getDoc(userRef);
+      if (verifyDoc.exists()) {
+        console.log("✓ Verified document exists after creation");
+      } else {
+        console.error("⚠️ Document was not found after creation attempt");
+      }
     } else {
-      // Document exists - only update missing fields without overwriting existing data
-      const userData = userDoc.data();
+      // Document exists - carefully update without overwriting existing data
+      const existingData = userDoc.data();
+      console.log("Found existing user document:", existingData);
+      
+      // Create updates object with only missing or new data
       const updates = {};
       
-      // Only update fields that are provided in additionalData and don't exist in userData
-      if (additionalData.firstName && !userData.firstName) updates.firstName = additionalData.firstName;
-      if (additionalData.lastName && !userData.lastName) updates.lastName = additionalData.lastName;
-      if (additionalData.username && !userData.username) updates.username = additionalData.username;
-      if (additionalData.phoneNumber && !userData.phoneNumber) updates.phoneNumber = additionalData.phoneNumber;
-      if (additionalData.termsAccepted && !userData.termsAccepted) {
+      // Check each field - prioritize new data from additionalData over empty existing fields
+      if (additionalData.firstName && (!existingData.firstName || existingData.firstName === '')) {
+        updates.firstName = additionalData.firstName;
+      }
+      
+      if (additionalData.lastName && (!existingData.lastName || existingData.lastName === '')) {
+        updates.lastName = additionalData.lastName;
+      }
+      
+      if (additionalData.username && (!existingData.username || existingData.username === '')) {
+        updates.username = additionalData.username;
+      }
+      
+      if (additionalData.phoneNumber && (!existingData.phoneNumber || existingData.phoneNumber === '')) {
+        updates.phoneNumber = additionalData.phoneNumber;
+      }
+      
+      if (additionalData.termsAccepted && !existingData.termsAccepted) {
         updates.termsAccepted = additionalData.termsAccepted;
         updates.termsAcceptedDate = additionalData.termsAcceptedDate || new Date().toISOString();
       }
       
-      // Only update if there are fields to update
+      // Always ensure email is current
+      if (user.email && (!existingData.email || existingData.email !== user.email)) {
+        updates.email = user.email;
+      }
+      
+      // Update admin status if needed
+      if (isUserSuperAdmin !== existingData.isSuperAdmin) {
+        updates.isSuperAdmin = isUserSuperAdmin;
+        updates.isAdmin = isUserSuperAdmin || existingData.isAdmin;
+      }
+      
+      // Apply updates if there are any
       if (Object.keys(updates).length > 0) {
-        console.log("Updating existing user document with new data:", updates);
+        console.log("Updating existing user document with data:", updates);
         await updateDoc(userRef, updates);
         console.log("✅ User document updated for:", user.email);
+      } else {
+        console.log("No updates needed for existing user document");
       }
     }
+    
+    // Return a success status
+    return { success: true, userId: user.uid };
   } catch (error) {
-    console.error("❌ Error creating/updating user document:", error.message);
+    console.error("❌ Error creating/updating user document:", error);
+    throw error; // Re-throw so calling code can handle it
   }
 }
 
 // Listen for auth state changes to create user documents
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    console.log("📢 User detected:", user.email);
+    console.log("📢 Auth state change - User detected:", user.email);
     
     try {
       // Check if user document already exists
@@ -155,24 +209,28 @@ onAuthStateChanged(auth, async (user) => {
       const userDoc = await getDoc(userRef);
       
       if (!userDoc.exists()) {
-        // User doesn't have a document yet, create it with default values
-        console.log("No existing document found for user, creating one");
-        await createUserDocument(user, {
-          // Default values
-          firstName: '',
-          lastName: '',
-          username: user.email ? user.email.split('@')[0] : '',
-          phoneNumber: '',
-          termsAccepted: false
+        // User doesn't have a document yet, create a minimal one
+        // This is a fallback only - the signup process should have created a complete document
+        console.log("Auth state change - No existing document found for user, creating a minimal one");
+        
+        // Only create minimal placeholder data - don't attempt to guess fields that should come from signup
+        await setDoc(userRef, {
+          email: user.email,
+          createdAt: serverTimestamp(),
+          // Don't set empty strings for fields that should be populated during signup
+          // This helps identify users that were created outside the normal signup flow
         });
+        
+        console.log("Auth state change - Created minimal user document");
       } else {
-        console.log("User document already exists for:", user.email);
+        // Document exists, don't modify it
+        console.log("Auth state change - User document already exists for:", user.email);
       }
     } catch (error) {
       console.error("Error handling auth state change:", error);
     }
   } else {
-    console.log("📢 No user signed in.");
+    console.log("📢 Auth state change - No user signed in");
   }
 });
 

@@ -234,30 +234,22 @@ async function loadUsers() {
         (async () => {
           console.log("Processing user:", user.email);
           
-          // Get user's admin status from Firestore
+          // Get user's data from Firestore
           const userRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userRef);
           
           let userData;
           if (userDoc.exists()) {
             userData = userDoc.data();
+            console.log(`User document found for ${user.email}:`, userData);
           } else {
-            // If no user document exists, create one with default values
-            console.log("Creating missing user document for:", user.email);
+            // If no user document exists, just use the auth data - don't create a document
+            console.log(`No Firestore document found for ${user.email}`);
             userData = {
               email: user.email,
-              firstName: '',
-              lastName: '',
-              username: user.email ? user.email.split('@')[0] : '',
-              phoneNumber: '',
               isAdmin: false,
-              isSuperAdmin: false,
-              termsAccepted: false,
-              createdAt: serverTimestamp()
+              isSuperAdmin: false
             };
-            
-            // Store the default data
-            await setDoc(userRef, userData);
           }
           
           // Get user role display
@@ -332,45 +324,39 @@ window.showUserDetails = async function(userId, userData = null) {
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
     
-    // If userData was not passed or userDoc doesn't exist, try to get basic data
+    // Setup default auth user data and user profile data
     let userFullData = {};
     let authUserData = { email: "Unknown", disabled: false };
     
+    // Use provided userData if available
     if (userData && userData.email) {
       authUserData = userData;
+      console.log("Using provided auth user data:", authUserData);
     }
     
     if (userDoc.exists()) {
       userFullData = userDoc.data();
-      console.log("User data retrieved from Firestore:", userFullData);
+      console.log("User document found in Firestore:", userFullData);
     } else {
       console.log("No Firestore document exists for user:", userId);
-      // Create a document with basic info if it doesn't exist
+      // Don't create a document - just display what we know from auth data
       userFullData = {
         email: authUserData.email,
-        firstName: '',
-        lastName: '',
-        username: authUserData.email ? authUserData.email.split('@')[0] : '',
-        phoneNumber: '',
         isAdmin: false,
-        isSuperAdmin: false,
-        termsAccepted: false,
-        createdAt: serverTimestamp()
+        isSuperAdmin: false
       };
-      
-      // Store the default data
-      await setDoc(userRef, userFullData);
-      console.log("Created default user document for:", authUserData.email);
     }
     
-    // If authUserData wasn't provided, try to extract from DOM
+    // If authUserData email is Unknown, try to extract from DOM
     if (authUserData.email === "Unknown") {
       const userItem = document.querySelector(`li[data-uid="${userId}"]`);
       if (userItem) {
         const emailMatch = userItem.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
         if (emailMatch && emailMatch[1]) {
           authUserData.email = emailMatch[1].trim();
-          userFullData.email = authUserData.email;
+          if (!userFullData.email) {
+            userFullData.email = authUserData.email;
+          }
         }
         
         authUserData.disabled = userItem.innerHTML.includes('Status:</strong> Disabled');
@@ -379,26 +365,34 @@ window.showUserDetails = async function(userId, userData = null) {
     
     const commentsHtml = await loadUserComments(userId);
     
-    // Format timestamps
+    // Format timestamps with robust handling
     let createdAtDisplay = 'Unknown';
     if (userFullData.createdAt) {
-      if (typeof userFullData.createdAt.toDate === 'function') {
-        createdAtDisplay = new Date(userFullData.createdAt.toDate()).toLocaleString();
-      } else if (userFullData.createdAt instanceof Date) {
-        createdAtDisplay = userFullData.createdAt.toLocaleString();
-      } else if (typeof userFullData.createdAt === 'string') {
-        createdAtDisplay = new Date(userFullData.createdAt).toLocaleString();
+      try {
+        if (typeof userFullData.createdAt.toDate === 'function') {
+          createdAtDisplay = new Date(userFullData.createdAt.toDate()).toLocaleString();
+        } else if (userFullData.createdAt instanceof Date) {
+          createdAtDisplay = userFullData.createdAt.toLocaleString();
+        } else if (typeof userFullData.createdAt === 'string') {
+          createdAtDisplay = new Date(userFullData.createdAt).toLocaleString();
+        }
+      } catch (e) {
+        console.error("Error formatting createdAt timestamp:", e);
       }
     }
     
     let termsAcceptedDateDisplay = 'Not accepted';
     if (userFullData.termsAcceptedDate) {
-      if (typeof userFullData.termsAcceptedDate === 'string') {
-        termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate).toLocaleString();
-      } else if (typeof userFullData.termsAcceptedDate.toDate === 'function') {
-        termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate.toDate()).toLocaleString();
-      } else if (userFullData.termsAcceptedDate instanceof Date) {
-        termsAcceptedDateDisplay = userFullData.termsAcceptedDate.toLocaleString();
+      try {
+        if (typeof userFullData.termsAcceptedDate === 'string') {
+          termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate).toLocaleString();
+        } else if (typeof userFullData.termsAcceptedDate.toDate === 'function') {
+          termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate.toDate()).toLocaleString();
+        } else if (userFullData.termsAcceptedDate instanceof Date) {
+          termsAcceptedDateDisplay = userFullData.termsAcceptedDate.toLocaleString();
+        }
+      } catch (e) {
+        console.error("Error formatting termsAcceptedDate timestamp:", e);
       }
     }
     
@@ -415,6 +409,7 @@ window.showUserDetails = async function(userId, userData = null) {
     
     // Check if data appears to be missing
     const hasMissingData = !userFullData.firstName || !userFullData.lastName || !userFullData.username || !userFullData.phoneNumber;
+    const userSignupComplete = userFullData.firstName && userFullData.lastName && userFullData.username && userFullData.phoneNumber;
     
     modalContent.innerHTML = `
       <div class="user-details-container">
@@ -428,11 +423,11 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-personal-info">
           <h3>Personal Information</h3>
+          ${!userSignupComplete ? '<p class="warning-message">⚠️ User signup data is incomplete. This user may need to complete registration.</p>' : ''}
           <p><strong>First Name:</strong> ${userFullData.firstName || 'Not provided'}</p>
           <p><strong>Last Name:</strong> ${userFullData.lastName || 'Not provided'}</p>
           <p><strong>Username:</strong> ${userFullData.username || 'Not provided'}</p>
           <p><strong>Phone Number:</strong> ${userFullData.phoneNumber || 'Not provided'}</p>
-          ${hasMissingData ? '<button id="recover-user-data" class="recover-btn">Recover Missing Information</button>' : ''}
         </div>
         
         <div class="user-account-info">
@@ -459,14 +454,6 @@ window.showUserDetails = async function(userId, userData = null) {
         ${commentsHtml}
       </div>
     `;
-    
-    // Add event listener for the recover button if it exists
-    const recoverButton = document.getElementById('recover-user-data');
-    if (recoverButton) {
-      recoverButton.addEventListener('click', function() {
-        window.showRecoverOptions(userId, authUserData.email || userFullData.email, userFullData);
-      });
-    }
     
     modal.style.display = "block";
   } catch (error) {

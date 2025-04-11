@@ -1,7 +1,7 @@
 // Import Firebase essentials from our config
 import { auth, db, createUserDocument } from './firebase-config.js';
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log("Sign-up form page loaded");
@@ -53,6 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const confirmPassword = confirmPasswordInput.value.trim();
       const agreeTerms = document.getElementById('agreeTerms').checked;
       
+      // Detailed validation and data logging
+      console.log("Signup form data:", { 
+        firstName, lastName, username, phoneNumber, email, agreeTerms 
+      });
+      
+      // Missing required fields check
+      if (!firstName || !lastName || !username || !phoneNumber || !email || !password) {
+        alert("All fields are required. Please complete the form.");
+        return;
+      }
+      
       // Check terms agreement
       if (!agreeTerms) {
         alert("You must agree to the Terms of Service and Privacy Policy to create an account");
@@ -79,12 +90,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       try {
+        // Format username properly to ensure "FirstName. LastInitial" format
+        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        const lastInitial = lastName.charAt(0).toUpperCase();
+        const formattedUsername = `${capitalizedFirstName}. ${lastInitial}`;
+        
         // Check if username already exists in database
         const usersRef = collection(db, "users");
-        const usernameQuery = query(usersRef, where("username", "==", username));
+        const usernameQuery = query(usersRef, where("username", "==", formattedUsername));
         const usernameSnapshot = await getDocs(usernameQuery);
         
-        let finalUsername = username;
+        let finalUsername = formattedUsername;
         
         if (!usernameSnapshot.empty) {
           // If username exists, try adding a number to make it unique
@@ -93,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
           
           while (!isUnique && counter <= 10) {
             // Format: "FirstName. LastInitial_1"
-            const newUsername = `${username}_${counter}`;
+            const newUsername = `${formattedUsername}_${counter}`;
             const newQuery = query(usersRef, where("username", "==", newUsername));
             const newSnapshot = await getDocs(newQuery);
             
             if (newSnapshot.empty) {
               isUnique = true;
               finalUsername = newUsername;
-              alert(`Username "${username}" already exists. We've changed it to "${newUsername}".`);
+              alert(`Username "${formattedUsername}" already exists. We've changed it to "${newUsername}".`);
             } else {
               counter++;
             }
@@ -118,20 +134,54 @@ document.addEventListener('DOMContentLoaded', () => {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
           
-          // Prepare user data
+          // Prepare user data - ensure all fields are trimmed and properly formatted
           const userData = {
-            firstName,
-            lastName,
-            username: finalUsername,
-            phoneNumber,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            username: finalUsername.trim(),
+            phoneNumber: phoneNumber.trim(),
             termsAccepted: true,
             termsAcceptedDate: new Date().toISOString()
           };
           
           console.log("Storing additional user data:", userData);
           
-          // Store additional user data
+          // Wait for the user document to be created and verify
           await createUserDocument(user, userData);
+          
+          // Double-check that user document was created properly
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const savedData = userDoc.data();
+            console.log("User document verified - data saved:", savedData);
+            
+            // Check if any fields are missing
+            const missingFields = [];
+            if (!savedData.firstName) missingFields.push('firstName');
+            if (!savedData.lastName) missingFields.push('lastName');
+            if (!savedData.username) missingFields.push('username');
+            if (!savedData.phoneNumber) missingFields.push('phoneNumber');
+            
+            if (missingFields.length > 0) {
+              console.error("Some fields are missing after save:", missingFields);
+              
+              // Try to update the user document with missing fields
+              const updates = {};
+              missingFields.forEach(field => {
+                updates[field] = userData[field];
+              });
+              
+              if (Object.keys(updates).length > 0) {
+                console.log("Attempting to update missing fields:", updates);
+                await updateDoc(userDocRef, updates);
+                console.log("Missing fields updated successfully");
+              }
+            }
+          } else {
+            console.error("User document not found after creation");
+          }
           
           // Show success message and redirect
           alert("✅ Account created successfully!");
