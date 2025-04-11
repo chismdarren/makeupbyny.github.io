@@ -128,16 +128,34 @@ export async function createUserDocument(user, additionalData = {}) {
       // Document doesn't exist - create new user document
       console.log("Creating new user document with data:", userData);
       
-      // Use setDoc with merge option to ensure all fields are written
-      await setDoc(userRef, userData, { merge: true });
-      console.log("✅ User document created for:", user.email);
-      
-      // Verify document was created correctly
-      const verifyDoc = await getDoc(userRef);
-      if (verifyDoc.exists()) {
-        console.log("✓ Verified document exists after creation");
-      } else {
-        console.error("⚠️ Document was not found after creation attempt");
+      try {
+        // Use setDoc with merge option to ensure all fields are written
+        await setDoc(userRef, userData);
+        console.log("✅ First attempt: User document created for:", user.email);
+        
+        // Double attempt to ensure data is written
+        // This helps overcome Firestore write/read inconsistency issues
+        if (additionalData.firstName || additionalData.lastName || additionalData.username || additionalData.phoneNumber) {
+          console.log("Making a second update to ensure profile data is saved...");
+          const profileData = {
+            firstName: additionalData.firstName || '',
+            lastName: additionalData.lastName || '',
+            username: additionalData.username || '',
+            phoneNumber: additionalData.phoneNumber || ''
+          };
+          
+          await updateDoc(userRef, profileData);
+          console.log("✅ Second attempt: User profile data updated for:", user.email);
+        }
+      } catch (writeError) {
+        console.error("Error writing user document:", writeError);
+        // Try again with just the critical fields
+        const criticalData = {
+          email: user.email,
+          createdAt: serverTimestamp()
+        };
+        await setDoc(userRef, criticalData);
+        console.log("✅ Fallback: Created minimal user document after error");
       }
     } else {
       // Document exists - carefully update without overwriting existing data

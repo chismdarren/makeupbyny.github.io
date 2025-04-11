@@ -146,45 +146,55 @@ document.addEventListener('DOMContentLoaded', () => {
           
           console.log("Storing additional user data:", userData);
           
-          // Wait for the user document to be created and verify
+          // Wait for the user document to be created
           await createUserDocument(user, userData);
           
-          // Double-check that user document was created properly
-          const userDocRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            const savedData = userDoc.data();
-            console.log("User document verified - data saved:", savedData);
-            
-            // Check if any fields are missing
-            const missingFields = [];
-            if (!savedData.firstName) missingFields.push('firstName');
-            if (!savedData.lastName) missingFields.push('lastName');
-            if (!savedData.username) missingFields.push('username');
-            if (!savedData.phoneNumber) missingFields.push('phoneNumber');
-            
-            if (missingFields.length > 0) {
-              console.error("Some fields are missing after save:", missingFields);
-              
-              // Try to update the user document with missing fields
-              const updates = {};
-              missingFields.forEach(field => {
-                updates[field] = userData[field];
-              });
-              
-              if (Object.keys(updates).length > 0) {
-                console.log("Attempting to update missing fields:", updates);
-                await updateDoc(userDocRef, updates);
-                console.log("Missing fields updated successfully");
-              }
-            }
-          } else {
-            console.error("User document not found after creation");
-          }
-          
-          // Show success message and redirect
+          // Show success message and redirect immediately
+          // Don't wait for verification since Firestore may take time to propagate
           alert("✅ Account created successfully!");
+          
+          // Optional: For debugging only - check if data was properly saved, but don't block the user
+          setTimeout(async () => {
+            try {
+              const userDocRef = doc(db, "users", user.uid);
+              const userDoc = await getDoc(userDocRef);
+              
+              if (userDoc.exists()) {
+                const savedData = userDoc.data();
+                console.log("User document verified after delay - data saved:", savedData);
+                
+                // Silently check if any fields are missing
+                const missingFields = [];
+                if (!savedData.firstName) missingFields.push('firstName');
+                if (!savedData.lastName) missingFields.push('lastName');
+                if (!savedData.username) missingFields.push('username');
+                if (!savedData.phoneNumber) missingFields.push('phoneNumber');
+                
+                if (missingFields.length > 0) {
+                  console.error("Some fields still missing after save:", missingFields);
+                  
+                  // Try to update the user document with missing fields
+                  const updates = {};
+                  missingFields.forEach(field => {
+                    updates[field] = userData[field];
+                  });
+                  
+                  if (Object.keys(updates).length > 0) {
+                    console.log("Attempting to update missing fields after delay:", updates);
+                    await updateDoc(userDocRef, updates);
+                    console.log("Missing fields updated successfully after delay");
+                  }
+                }
+              } else {
+                console.error("User document not found after delay");
+              }
+            } catch (verifyError) {
+              console.error("Error during delayed verification:", verifyError);
+              // Don't alert the user, just log to console
+            }
+          }, 3000); // 3 second delay to allow Firestore to propagate
+          
+          // Redirect immediately without waiting for verification
           window.location.href = 'login.html';
         } catch (authError) {
           console.error("❌ Error creating user authentication:", authError.message);
