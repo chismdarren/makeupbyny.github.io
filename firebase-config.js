@@ -102,13 +102,20 @@ export async function createUserDocument(user, additionalData = {}) {
     // Validate required data
     console.log("Creating/updating user document for:", user.email, "with data:", additionalData);
     
+    // Add a small delay to ensure Firebase Auth token is fully processed
+    // This helps prevent "Missing or insufficient permissions" errors
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     const userRef = doc(db, "users", user.uid);
     
     // First check if user document already exists
-    const userDoc = await getDoc(userRef);
+    const userDoc = await getDoc(userRef).catch(error => {
+      console.warn("Error checking if user document exists:", error.message);
+      return { exists: () => false }; // Return a mock doc that doesn't exist
+    });
     
     // Check if user is a super admin (await the result)
-    const isUserSuperAdmin = await isSuperAdmin(user.uid);
+    const isUserSuperAdmin = await isSuperAdmin(user.uid).catch(() => false);
     
     // Ensure all needed fields are present in a consistent format
     const userData = {
@@ -136,6 +143,9 @@ export async function createUserDocument(user, additionalData = {}) {
         // Double attempt to ensure data is written
         // This helps overcome Firestore write/read inconsistency issues
         if (additionalData.firstName || additionalData.lastName || additionalData.username || additionalData.phoneNumber) {
+          // Add a small delay before second attempt
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
           console.log("Making a second update to ensure profile data is saved...");
           const profileData = {
             firstName: additionalData.firstName || '',
@@ -149,13 +159,28 @@ export async function createUserDocument(user, additionalData = {}) {
         }
       } catch (writeError) {
         console.error("Error writing user document:", writeError);
+        
+        if (writeError.message.includes("Missing or insufficient permissions")) {
+          console.warn("Permission error detected. This usually happens if the Firestore security rules don't allow the operation.");
+          console.warn("Please update your Firestore security rules to allow this operation.");
+          throw writeError; // Rethrow so it can be handled by the caller's retry mechanism
+        }
+        
         // Try again with just the critical fields
-        const criticalData = {
-          email: user.email,
-          createdAt: serverTimestamp()
-        };
-        await setDoc(userRef, criticalData);
-        console.log("✅ Fallback: Created minimal user document after error");
+        try {
+          // Add a small delay before fallback attempt
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          const criticalData = {
+            email: user.email,
+            createdAt: serverTimestamp()
+          };
+          await setDoc(userRef, criticalData);
+          console.log("✅ Fallback: Created minimal user document after error");
+        } catch (fallbackError) {
+          console.error("Fallback creation also failed:", fallbackError);
+          throw fallbackError;
+        }
       }
     } else {
       // Document exists - carefully update without overwriting existing data
@@ -200,9 +225,20 @@ export async function createUserDocument(user, additionalData = {}) {
       
       // Apply updates if there are any
       if (Object.keys(updates).length > 0) {
-        console.log("Updating existing user document with data:", updates);
-        await updateDoc(userRef, updates);
-        console.log("✅ User document updated for:", user.email);
+        try {
+          console.log("Updating existing user document with data:", updates);
+          await updateDoc(userRef, updates);
+          console.log("✅ User document updated for:", user.email);
+        } catch (updateError) {
+          console.error("Error updating user document:", updateError);
+          
+          if (updateError.message.includes("Missing or insufficient permissions")) {
+            console.warn("Permission error detected during update. This usually happens if the Firestore security rules don't allow the operation.");
+            throw updateError; // Rethrow so it can be handled by the caller's retry mechanism
+          }
+          
+          throw updateError;
+        }
       } else {
         console.log("No updates needed for existing user document");
       }

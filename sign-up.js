@@ -146,11 +146,37 @@ document.addEventListener('DOMContentLoaded', () => {
           
           console.log("Storing additional user data:", userData);
           
-          // Wait for the user document to be created
-          await createUserDocument(user, userData);
+          // Try to create user document with retry mechanism
+          let success = false;
+          let attempts = 0;
+          const maxAttempts = 3;
+          
+          while (!success && attempts < maxAttempts) {
+            try {
+              attempts++;
+              console.log(`Attempt ${attempts} to create user document...`);
+              
+              // Wait for the user document to be created
+              await createUserDocument(user, userData);
+              success = true;
+              console.log("User document created successfully!");
+            } catch (docError) {
+              console.error(`Attempt ${attempts} failed:`, docError.message);
+              
+              if (docError.message.includes("Missing or insufficient permissions") && attempts < maxAttempts) {
+                // Wait a bit longer for auth to fully process before retrying
+                console.log(`Waiting before retry attempt ${attempts + 1}...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Increasing delay with each retry
+              } else if (attempts >= maxAttempts) {
+                console.error("Max attempts reached, giving up");
+                throw docError; // Rethrow if we've reached max attempts
+              } else {
+                throw docError; // Rethrow if it's not a permissions error
+              }
+            }
+          }
           
           // Show success message and redirect immediately
-          // Don't wait for verification since Firestore may take time to propagate
           alert("✅ Account created successfully!");
           
           // Optional: For debugging only - check if data was properly saved, but don't block the user
