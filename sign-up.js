@@ -84,21 +84,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const usernameQuery = query(usersRef, where("username", "==", username));
         const usernameSnapshot = await getDocs(usernameQuery);
         
+        let finalUsername = username;
+        
         if (!usernameSnapshot.empty) {
           // If username exists, try adding a number to make it unique
           let counter = 1;
           let isUnique = false;
-          let newUsername = '';
           
           while (!isUnique && counter <= 10) {
             // Format: "FirstName. LastInitial_1"
-            newUsername = `${username}_${counter}`;
+            const newUsername = `${username}_${counter}`;
             const newQuery = query(usersRef, where("username", "==", newUsername));
             const newSnapshot = await getDocs(newQuery);
             
             if (newSnapshot.empty) {
               isUnique = true;
-              usernameInput.value = newUsername;
+              finalUsername = newUsername;
               alert(`Username "${username}" already exists. We've changed it to "${newUsername}".`);
             } else {
               counter++;
@@ -112,25 +113,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Create the user
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // Store additional user data
-        await createUserDocument(user, {
-          firstName,
-          lastName,
-          username,
-          phoneNumber,
-          termsAccepted: true,
-          termsAcceptedDate: new Date().toISOString()
-        });
-        
-        // Show success message and redirect
-        alert("✅ Account created successfully!");
-        window.location.href = 'login.html';
-        
+        try {
+          console.log("Creating user account with email:", email);
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          
+          // Prepare user data
+          const userData = {
+            firstName,
+            lastName,
+            username: finalUsername,
+            phoneNumber,
+            termsAccepted: true,
+            termsAcceptedDate: new Date().toISOString()
+          };
+          
+          console.log("Storing additional user data:", userData);
+          
+          // Store additional user data
+          await createUserDocument(user, userData);
+          
+          // Show success message and redirect
+          alert("✅ Account created successfully!");
+          window.location.href = 'login.html';
+        } catch (authError) {
+          console.error("❌ Error creating user authentication:", authError.message);
+          alert("Error creating account: " + authError.message);
+        }
       } catch (error) {
-        console.error("❌ Error creating user:", error.message);
+        console.error("❌ Error in signup process:", error.message);
         alert("Error: " + error.message);
       }
     });

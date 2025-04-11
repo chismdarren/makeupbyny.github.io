@@ -218,54 +218,105 @@ async function loadUsers() {
       return;
     }
 
+    // Create a loading indicator
+    const loadingItem = document.createElement("li");
+    loadingItem.className = "user-item";
+    loadingItem.innerHTML = `<div class="user-info">Loading user data...</div>`;
+    userList.appendChild(loadingItem);
+
+    // Track promises for all user data fetching
+    const userDataPromises = [];
+
     // Loop through each user and create an HTML list item
-    users.forEach(async user => {
-      console.log("Processing user:", user.email);
-      
-      // Get user's admin status from Firestore
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const userData = userDoc.exists() ? userDoc.data() : { isAdmin: false, isSuperAdmin: false };
-      
-      // Get user role display
-      let roleDisplay = 'User';
-      let roleClass = 'user-role';
-      if (userData.isSuperAdmin) {
-        roleDisplay = 'Super Admin';
-        roleClass = 'super-admin-role';
-      } else if (userData.isAdmin) {
-        roleDisplay = 'Admin';
-        roleClass = 'admin-role';
-      }
-      
-      const li = document.createElement("li");
-      li.className = "user-item";
-      li.innerHTML = `
-        <div class="user-info">
-          <strong>Email:</strong> ${user.email} | 
-          <strong>UID:</strong> ${user.uid} | 
-          <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
-          <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
-        </div>
-        <div class="user-actions">
-          <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
-          ${userData.isSuperAdmin ? 
-            `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
-            userData.isAdmin ? 
-              `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
-               <button class="role-btn remove-admin" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
-              `<button class="role-btn make-admin" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
+    users.forEach(user => {
+      // Add the promise to our array
+      userDataPromises.push(
+        (async () => {
+          console.log("Processing user:", user.email);
+          
+          // Get user's admin status from Firestore
+          const userRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userRef);
+          
+          let userData;
+          if (userDoc.exists()) {
+            userData = userDoc.data();
+          } else {
+            // If no user document exists, create one with default values
+            console.log("Creating missing user document for:", user.email);
+            userData = {
+              email: user.email,
+              firstName: '',
+              lastName: '',
+              username: user.email ? user.email.split('@')[0] : '',
+              phoneNumber: '',
+              isAdmin: false,
+              isSuperAdmin: false,
+              termsAccepted: false,
+              createdAt: serverTimestamp()
+            };
+            
+            // Store the default data
+            await setDoc(userRef, userData);
           }
-          <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
-        </div>
-      `;
-      userList.appendChild(li);
+          
+          // Get user role display
+          let roleDisplay = 'User';
+          let roleClass = 'user-role';
+          if (userData.isSuperAdmin) {
+            roleDisplay = 'Super Admin';
+            roleClass = 'super-admin-role';
+          } else if (userData.isAdmin) {
+            roleDisplay = 'Admin';
+            roleClass = 'admin-role';
+          }
+          
+          const li = document.createElement("li");
+          li.className = "user-item";
+          li.setAttribute('data-uid', user.uid);
+          li.innerHTML = `
+            <div class="user-info">
+              <strong>Email:</strong> ${user.email} | 
+              <strong>UID:</strong> ${user.uid} | 
+              <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
+              <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+            </div>
+            <div class="user-actions">
+              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
+              ${userData.isSuperAdmin ? 
+                `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
+                userData.isAdmin ? 
+                  `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
+                   <button class="role-btn remove-admin" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
+                  `<button class="role-btn make-admin" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
+              }
+              <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
+            </div>
+          `;
+          
+          return { element: li, userData: {...userData, ...user, uid: user.uid} };
+        })()
+      );
+    });
+
+    // Wait for all users to be processed
+    const userResults = await Promise.all(userDataPromises);
+    
+    // Remove loading indicator
+    userList.innerHTML = "";
+    
+    // Append all user elements
+    userResults.forEach(result => {
+      userList.appendChild(result.element);
       
-      // Add event listener directly to the button (avoids inline attributes with complex JSON)
-      const viewDetailsBtn = li.querySelector('.view-details-btn');
+      // Add event listener directly to the button
+      const viewDetailsBtn = result.element.querySelector('.view-details-btn');
       viewDetailsBtn.addEventListener('click', function() {
-        window.showUserDetails(user.uid, {...user, isAdmin: userData.isAdmin, isSuperAdmin: userData.isSuperAdmin});
+        window.showUserDetails(result.userData.uid, result.userData);
       });
     });
+    
+    console.log("All users loaded successfully");
   } catch (error) {
     console.error("Error fetching users:", error);
     userList.innerHTML = '<li class="user-item">Error loading users.</li>';
@@ -281,112 +332,143 @@ window.showUserDetails = async function(userId, userData = null) {
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
     
-    if (userDoc.exists()) {
-      const userFullData = userDoc.data();
-      const commentsHtml = await loadUserComments(userId);
-      
-      // Get auth user data for email and status
-      let authUserData = { email: "Unknown", disabled: false };
-      if (userData && userData.email) {
-        authUserData = userData;
-      } else {
-        // If userData wasn't provided or was invalid, try to get it from the user list
-        const userItems = document.querySelectorAll('.user-item');
-        userItems.forEach(item => {
-          if (item.innerHTML.includes(userId)) {
-            // Extract email from the user item
-            const emailMatch = item.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
-            if (emailMatch && emailMatch[1]) {
-              authUserData.email = emailMatch[1].trim();
-            }
-            
-            // Extract status from the user item
-            authUserData.disabled = item.innerHTML.includes('Status:</strong> Disabled');
-          }
-        });
-      }
-      
-      // Format timestamps
-      let createdAtDisplay = 'Unknown';
-      if (userFullData.createdAt) {
-        createdAtDisplay = new Date(userFullData.createdAt.toDate()).toLocaleString();
-      }
-      
-      let termsAcceptedDateDisplay = 'Not accepted';
-      if (userFullData.termsAcceptedDate) {
-        termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate).toLocaleString();
-      }
-      
-      // Get user role display
-      let roleDisplay = 'User';
-      let roleClass = 'user-role';
-      if (userFullData.isSuperAdmin) {
-        roleDisplay = 'Super Admin';
-        roleClass = 'super-admin-role';
-      } else if (userFullData.isAdmin) {
-        roleDisplay = 'Admin';
-        roleClass = 'admin-role';
-      }
-      
-      // Check if data appears to be missing
-      const hasMissingData = !userFullData.firstName || !userFullData.lastName || !userFullData.username || !userFullData.phoneNumber;
-      
-      modalContent.innerHTML = `
-        <div class="user-details-container">
-          <div class="user-basic-info">
-            <h3>Basic Information</h3>
-            <p><strong>Email:</strong> ${authUserData.email || 'Not provided'}</p>
-            <p><strong>UID:</strong> ${userId}</p>
-            <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
-            <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
-          </div>
-          
-          <div class="user-personal-info">
-            <h3>Personal Information</h3>
-            <p><strong>First Name:</strong> ${userFullData.firstName || 'Not provided'}</p>
-            <p><strong>Last Name:</strong> ${userFullData.lastName || 'Not provided'}</p>
-            <p><strong>Username:</strong> ${userFullData.username || 'Not provided'}</p>
-            <p><strong>Phone Number:</strong> ${userFullData.phoneNumber || 'Not provided'}</p>
-            ${hasMissingData ? '<button id="recover-user-data" class="recover-btn">Recover Missing Information</button>' : ''}
-          </div>
-          
-          <div class="user-account-info">
-            <h3>Account Information</h3>
-            <p><strong>Account Created:</strong> ${createdAtDisplay}</p>
-            <p><strong>Terms & Policy Accepted:</strong> ${userFullData.termsAccepted ? 'Yes' : 'No'}</p>
-            <p><strong>Acceptance Date:</strong> ${termsAcceptedDateDisplay}</p>
-          </div>
-          
-          <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-            <h3>User Management</h3>
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-              ${userFullData.isSuperAdmin ? 
-                `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
-                userFullData.isAdmin ? 
-                  `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${userId}', true)">Make Super Admin</button>
-                   <button class="role-btn remove-admin" onclick="window.updateUserRole('${userId}', false)">Remove Admin</button>` :
-                  `<button class="role-btn make-admin" onclick="window.updateUserRole('${userId}', true)">Make Admin</button>`
-              }
-              <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
-            </div>
-          </div>
-          
-          ${commentsHtml}
-        </div>
-      `;
-      
-      // Add event listener for the recover button if it exists
-      const recoverButton = document.getElementById('recover-user-data');
-      if (recoverButton) {
-        recoverButton.addEventListener('click', function() {
-          window.showRecoverOptions(userId, authUserData.email, userFullData);
-        });
-      }
-      
-      modal.style.display = "block";
-    } else {
-      alert('User details not found');
+    // If userData was not passed or userDoc doesn't exist, try to get basic data
+    let userFullData = {};
+    let authUserData = { email: "Unknown", disabled: false };
+    
+    if (userData && userData.email) {
+      authUserData = userData;
     }
+    
+    if (userDoc.exists()) {
+      userFullData = userDoc.data();
+      console.log("User data retrieved from Firestore:", userFullData);
+    } else {
+      console.log("No Firestore document exists for user:", userId);
+      // Create a document with basic info if it doesn't exist
+      userFullData = {
+        email: authUserData.email,
+        firstName: '',
+        lastName: '',
+        username: authUserData.email ? authUserData.email.split('@')[0] : '',
+        phoneNumber: '',
+        isAdmin: false,
+        isSuperAdmin: false,
+        termsAccepted: false,
+        createdAt: serverTimestamp()
+      };
+      
+      // Store the default data
+      await setDoc(userRef, userFullData);
+      console.log("Created default user document for:", authUserData.email);
+    }
+    
+    // If authUserData wasn't provided, try to extract from DOM
+    if (authUserData.email === "Unknown") {
+      const userItem = document.querySelector(`li[data-uid="${userId}"]`);
+      if (userItem) {
+        const emailMatch = userItem.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
+        if (emailMatch && emailMatch[1]) {
+          authUserData.email = emailMatch[1].trim();
+          userFullData.email = authUserData.email;
+        }
+        
+        authUserData.disabled = userItem.innerHTML.includes('Status:</strong> Disabled');
+      }
+    }
+    
+    const commentsHtml = await loadUserComments(userId);
+    
+    // Format timestamps
+    let createdAtDisplay = 'Unknown';
+    if (userFullData.createdAt) {
+      if (typeof userFullData.createdAt.toDate === 'function') {
+        createdAtDisplay = new Date(userFullData.createdAt.toDate()).toLocaleString();
+      } else if (userFullData.createdAt instanceof Date) {
+        createdAtDisplay = userFullData.createdAt.toLocaleString();
+      } else if (typeof userFullData.createdAt === 'string') {
+        createdAtDisplay = new Date(userFullData.createdAt).toLocaleString();
+      }
+    }
+    
+    let termsAcceptedDateDisplay = 'Not accepted';
+    if (userFullData.termsAcceptedDate) {
+      if (typeof userFullData.termsAcceptedDate === 'string') {
+        termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate).toLocaleString();
+      } else if (typeof userFullData.termsAcceptedDate.toDate === 'function') {
+        termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate.toDate()).toLocaleString();
+      } else if (userFullData.termsAcceptedDate instanceof Date) {
+        termsAcceptedDateDisplay = userFullData.termsAcceptedDate.toLocaleString();
+      }
+    }
+    
+    // Get user role display
+    let roleDisplay = 'User';
+    let roleClass = 'user-role';
+    if (userFullData.isSuperAdmin) {
+      roleDisplay = 'Super Admin';
+      roleClass = 'super-admin-role';
+    } else if (userFullData.isAdmin) {
+      roleDisplay = 'Admin';
+      roleClass = 'admin-role';
+    }
+    
+    // Check if data appears to be missing
+    const hasMissingData = !userFullData.firstName || !userFullData.lastName || !userFullData.username || !userFullData.phoneNumber;
+    
+    modalContent.innerHTML = `
+      <div class="user-details-container">
+        <div class="user-basic-info">
+          <h3>Basic Information</h3>
+          <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
+          <p><strong>UID:</strong> ${userId}</p>
+          <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
+          <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
+        </div>
+        
+        <div class="user-personal-info">
+          <h3>Personal Information</h3>
+          <p><strong>First Name:</strong> ${userFullData.firstName || 'Not provided'}</p>
+          <p><strong>Last Name:</strong> ${userFullData.lastName || 'Not provided'}</p>
+          <p><strong>Username:</strong> ${userFullData.username || 'Not provided'}</p>
+          <p><strong>Phone Number:</strong> ${userFullData.phoneNumber || 'Not provided'}</p>
+          ${hasMissingData ? '<button id="recover-user-data" class="recover-btn">Recover Missing Information</button>' : ''}
+        </div>
+        
+        <div class="user-account-info">
+          <h3>Account Information</h3>
+          <p><strong>Account Created:</strong> ${createdAtDisplay}</p>
+          <p><strong>Terms & Policy Accepted:</strong> ${userFullData.termsAccepted ? 'Yes' : 'No'}</p>
+          <p><strong>Acceptance Date:</strong> ${termsAcceptedDateDisplay}</p>
+        </div>
+        
+        <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+          <h3>User Management</h3>
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            ${userFullData.isSuperAdmin ? 
+              `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
+              userFullData.isAdmin ? 
+                `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${userId}', true)">Make Super Admin</button>
+                 <button class="role-btn remove-admin" onclick="window.updateUserRole('${userId}', false)">Remove Admin</button>` :
+                `<button class="role-btn make-admin" onclick="window.updateUserRole('${userId}', true)">Make Admin</button>`
+            }
+            <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
+          </div>
+        </div>
+        
+        ${commentsHtml}
+      </div>
+    `;
+    
+    // Add event listener for the recover button if it exists
+    const recoverButton = document.getElementById('recover-user-data');
+    if (recoverButton) {
+      recoverButton.addEventListener('click', function() {
+        window.showRecoverOptions(userId, authUserData.email || userFullData.email, userFullData);
+      });
+    }
+    
+    modal.style.display = "block";
   } catch (error) {
     console.error('Error loading user details:', error);
     alert('Error loading user details: ' + error.message);
@@ -409,7 +491,6 @@ window.showRecoverOptions = function(userId, email, userData) {
   // Generate suggested values
   let suggestedFirstName = '';
   let suggestedLastName = '';
-  let suggestedUsername = '';
   
   if (email) {
     // Try to extract first name from email
@@ -439,12 +520,17 @@ window.showRecoverOptions = function(userId, email, userData) {
     }
   }
   
-  // Generate the suggested username in the format "FirstName. LastInitial"
+  // Always generate the username in the correct format
+  let suggestedUsername = '';
+  
   if (suggestedFirstName && suggestedLastName) {
+    // Format: "FirstName. LastInitial"
     suggestedUsername = `${suggestedFirstName}. ${suggestedLastName.charAt(0)}`;
   } else if (suggestedFirstName) {
+    // If we only have first name, just add the dot and space
     suggestedUsername = `${suggestedFirstName}. `;
   } else if (email) {
+    // Fallback to email
     suggestedUsername = email.split('@')[0];
   }
   
@@ -466,6 +552,7 @@ window.showRecoverOptions = function(userId, email, userData) {
             <input type="checkbox" id="recover-lastName" name="lastName" checked>
             <label for="recover-lastName">Last Name:</label>
             <input type="text" id="lastName-value" value="${suggestedLastName}" placeholder="Enter last name">
+            <small>Even a single letter is fine; only the first letter will be used in the username</small>
           </div>
         ` : ''}
         
@@ -474,7 +561,7 @@ window.showRecoverOptions = function(userId, email, userData) {
             <input type="checkbox" id="recover-username" name="username" checked>
             <label for="recover-username">Username:</label>
             <input type="text" id="username-value" value="${suggestedUsername}" placeholder="Enter username">
-            <small>Format: FirstName. LastInitial (e.g., Ray. C)</small>
+            <small>Will be automatically formatted as "FirstName. LastInitial" (e.g., "Ray. C")</small>
           </div>
         ` : ''}
         
@@ -515,16 +602,31 @@ window.showRecoverOptions = function(userId, email, userData) {
       const firstName = firstNameInput.value.trim();
       const lastName = lastNameInput.value.trim();
       
-      if (firstName && lastName) {
-        // Format as "FirstName. LastInitial"
+      if (firstName) {
+        // Capitalize first letter of first name
         const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-        const lastInitial = lastName.charAt(0).toUpperCase();
-        usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
+        
+        if (lastName) {
+          // Format as "FirstName. LastInitial"
+          const lastInitial = lastName.charAt(0).toUpperCase();
+          usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
+        } else {
+          // If we only have first name, use with a dot and space
+          usernameInput.value = `${capitalizedFirstName}. `;
+        }
       }
     };
     
     firstNameInput.addEventListener('input', updateUsername);
     lastNameInput.addEventListener('input', updateUsername);
+  }
+  
+  // Disable username editing - only auto-generated based on first/last name
+  if (usernameInput) {
+    usernameInput.addEventListener('focus', function() {
+      this.blur();
+      alert('Username is automatically generated from First Name and Last Name to maintain the required format.');
+    });
   }
   
   // Add event listeners
@@ -537,19 +639,43 @@ window.showRecoverOptions = function(userId, email, userData) {
     
     // Get values from selected checkboxes
     if (missingFirstName && document.getElementById('recover-firstName').checked) {
-      updates.firstName = document.getElementById('firstName-value').value.trim();
+      const firstName = document.getElementById('firstName-value').value.trim();
+      if (firstName) {
+        updates.firstName = firstName;
+      }
     }
     
     if (missingLastName && document.getElementById('recover-lastName').checked) {
-      updates.lastName = document.getElementById('lastName-value').value.trim();
+      const lastName = document.getElementById('lastName-value').value.trim();
+      if (lastName) {
+        updates.lastName = lastName;
+      }
     }
     
-    if (missingUsername && document.getElementById('recover-username').checked) {
+    // Generate username with the correct format if either first or last name was updated
+    if ((updates.firstName || updates.lastName) && document.getElementById('recover-username')?.checked) {
+      const firstName = updates.firstName || userData.firstName || '';
+      const lastName = updates.lastName || userData.lastName || '';
+      
+      if (firstName) {
+        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        
+        if (lastName) {
+          const lastInitial = lastName.charAt(0).toUpperCase();
+          updates.username = `${capitalizedFirstName}. ${lastInitial}`;
+        } else {
+          updates.username = `${capitalizedFirstName}. `;
+        }
+      }
+    } else if (missingUsername && document.getElementById('recover-username')?.checked) {
       updates.username = document.getElementById('username-value').value.trim();
     }
     
     if (missingPhoneNumber && document.getElementById('recover-phoneNumber').checked) {
-      updates.phoneNumber = document.getElementById('phoneNumber-value').value.trim();
+      const phoneNumber = document.getElementById('phoneNumber-value').value.trim();
+      if (phoneNumber) {
+        updates.phoneNumber = phoneNumber;
+      }
     }
     
     if (!userData.termsAccepted && document.getElementById('recover-terms')?.checked) {

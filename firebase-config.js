@@ -1,7 +1,7 @@
 // Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -97,9 +97,12 @@ export async function createUserDocument(user, additionalData = {}) {
     const userRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userRef);
 
+    // Check if user is a super admin (await the result)
+    const isUserSuperAdmin = await isSuperAdmin(user.uid);
+    
     if (!userDoc.exists()) {
-      // Check if user is a super admin (await the result)
-      const isUserSuperAdmin = await isSuperAdmin(user.uid);
+      // Create new user document
+      console.log("Creating new user document with data:", additionalData);
       
       await setDoc(userRef, {
         email: user.email,
@@ -114,9 +117,30 @@ export async function createUserDocument(user, additionalData = {}) {
         isSuperAdmin: isUserSuperAdmin // New field to track super admin status
       });
       console.log("✅ User document created for:", user.email);
+    } else {
+      // Document exists - only update missing fields without overwriting existing data
+      const userData = userDoc.data();
+      const updates = {};
+      
+      // Only update fields that are provided in additionalData and don't exist in userData
+      if (additionalData.firstName && !userData.firstName) updates.firstName = additionalData.firstName;
+      if (additionalData.lastName && !userData.lastName) updates.lastName = additionalData.lastName;
+      if (additionalData.username && !userData.username) updates.username = additionalData.username;
+      if (additionalData.phoneNumber && !userData.phoneNumber) updates.phoneNumber = additionalData.phoneNumber;
+      if (additionalData.termsAccepted && !userData.termsAccepted) {
+        updates.termsAccepted = additionalData.termsAccepted;
+        updates.termsAcceptedDate = additionalData.termsAcceptedDate || new Date().toISOString();
+      }
+      
+      // Only update if there are fields to update
+      if (Object.keys(updates).length > 0) {
+        console.log("Updating existing user document with new data:", updates);
+        await updateDoc(userRef, updates);
+        console.log("✅ User document updated for:", user.email);
+      }
     }
   } catch (error) {
-    console.error("❌ Error creating user document:", error.message);
+    console.error("❌ Error creating/updating user document:", error.message);
   }
 }
 
@@ -125,13 +149,27 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     console.log("📢 User detected:", user.email);
     
-    // Check if user document already exists before creating it
-    const userRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userRef);
-    
-    if (!userDoc.exists()) {
-      // Only create the document if it doesn't exist
-      await createUserDocument(user);
+    try {
+      // Check if user document already exists
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        // User doesn't have a document yet, create it with default values
+        console.log("No existing document found for user, creating one");
+        await createUserDocument(user, {
+          // Default values
+          firstName: '',
+          lastName: '',
+          username: user.email ? user.email.split('@')[0] : '',
+          phoneNumber: '',
+          termsAccepted: false
+        });
+      } else {
+        console.log("User document already exists for:", user.email);
+      }
+    } catch (error) {
+      console.error("Error handling auth state change:", error);
     }
   } else {
     console.log("📢 No user signed in.");
