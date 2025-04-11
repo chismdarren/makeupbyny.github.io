@@ -115,16 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        // Get the final username (which might have been updated if there was a duplicate)
-        const finalUsername = usernameInput.value.trim();
-        
-        // Store additional user data - make sure to include ALL user details
+        // Store additional user data
         await createUserDocument(user, {
           firstName,
           lastName,
-          username: finalUsername,
+          username,
           phoneNumber,
-          email, // Explicitly include email to ensure it's stored in Firestore
           termsAccepted: true,
           termsAcceptedDate: new Date().toISOString()
         });

@@ -744,7 +744,7 @@
     const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
     // Check authentication state
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in
         document.getElementById("login-link").style.display = "none";
@@ -756,95 +756,11 @@
         } else {
           document.getElementById("adminDashboard").style.display = "none";
         }
-        
-        // Auto-fill comment form with user data
-        try {
-          const userRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userRef);
-          
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const nameField = document.getElementById("name");
-            const emailField = document.getElementById("email");
-            
-            // Set values from Firestore data
-            if (nameField) {
-              // Use username first, then full name, then first name
-              if (userData.username) {
-                nameField.value = userData.username;
-              } else if (userData.firstName && userData.lastName) {
-                nameField.value = `${userData.firstName} ${userData.lastName}`.trim();
-              } else if (userData.firstName) {
-                nameField.value = userData.firstName;
-              }
-              
-              if (nameField.value) {
-                nameField.readOnly = true;
-                
-                // Update avatar initial
-                const avatarInitial = document.getElementById("avatarInitial");
-                if (avatarInitial) {
-                  avatarInitial.textContent = nameField.value.charAt(0).toUpperCase();
-                }
-              }
-            }
-            
-            if (emailField) {
-              // Use Firestore email first, then Auth email
-              if (userData.email) {
-                emailField.value = userData.email;
-              } else if (user.email) {
-                emailField.value = user.email;
-              }
-              
-              if (emailField.value) {
-                emailField.readOnly = true;
-              }
-            }
-            
-            // Add a message above the form to show logged-in status
-            const commentForm = document.getElementById("commentForm");
-            if (commentForm && nameField.value && emailField.value) {
-              const loggedInMsg = document.createElement("div");
-              loggedInMsg.className = "logged-in-message";
-              loggedInMsg.innerHTML = `<p>Commenting as <strong>${nameField.value}</strong> (${emailField.value})</p>`;
-              loggedInMsg.style.backgroundColor = "#f8f8f8";
-              loggedInMsg.style.padding = "10px";
-              loggedInMsg.style.marginBottom = "15px";
-              loggedInMsg.style.borderRadius = "4px";
-              loggedInMsg.style.fontSize = "0.9em";
-              
-              // Remove existing message if present
-              const existingMsg = document.querySelector(".logged-in-message");
-              if (existingMsg) {
-                existingMsg.parentNode.removeChild(existingMsg);
-              }
-              
-              // Add the message before the form
-              commentForm.parentNode.insertBefore(loggedInMsg, commentForm);
-            }
-          }
-        } catch (error) {
-          console.error("Error getting user data:", error);
-        }
       } else {
         // User is signed out
         document.getElementById("login-link").style.display = "inline";
         document.getElementById("logout-btn").style.display = "none";
         document.getElementById("adminDashboard").style.display = "none";
-        
-        // Make sure form fields are editable
-        const nameField = document.getElementById("name");
-        const emailField = document.getElementById("email");
-        
-        if (nameField) nameField.readOnly = false;
-        if (emailField) emailField.readOnly = false;
-        
-        // Remove the logged-in message if it exists
-        const loggedInMsg = document.querySelector(".logged-in-message");
-        if (loggedInMsg) {
-          loggedInMsg.parentNode.removeChild(loggedInMsg);
-        }
       }
     });
 
@@ -963,7 +879,6 @@
               email: commenterEmail,
               avatarUrl: avatarUrl,
               createdAt: serverTimestamp(),
-              userId: auth.currentUser ? auth.currentUser.uid : null, // Store user ID if logged in
             });
 
             alert("Comment submitted!");
@@ -1254,40 +1169,8 @@
       let email = document.getElementById('email').value;
       
       if (!name || !email) {
-        // Check if user is logged in
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          try {
-            // Get user data from Firestore
-            const userRef = doc(db, "users", currentUser.uid);
-            const userDoc = await getDoc(userRef);
-            
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              if (userData.username) {
-                name = userData.username;
-              } else if (userData.firstName) {
-                name = `${userData.firstName} ${userData.lastName || ''}`.trim();
-              }
-              
-              if (userData.email) {
-                email = userData.email;
-              } else if (currentUser.email) {
-                email = currentUser.email;
-              }
-            } else if (currentUser.email) {
-              // If no Firestore data, fallback to auth data
-              email = currentUser.email;
-              name = email.split('@')[0]; // Use part of email as name
-            }
-          } catch (error) {
-            console.error("Error getting user data for reply:", error);
-          }
-        }
-        
-        // If still no name/email, prompt user
-        if (!name) name = prompt('Please enter your name');
-        if (!email) email = prompt('Please enter your email');
+        name = prompt('Please enter your name');
+        email = prompt('Please enter your email');
         
         if (!name || !email) {
           alert('Name and email are required to submit a reply');
@@ -1315,7 +1198,6 @@
           email: email,
           parentId: parentId,
           createdAt: serverTimestamp(),
-          userId: auth.currentUser ? auth.currentUser.uid : null, // Store user ID if logged in
         });
         
         // Hide the reply form

@@ -1,7 +1,7 @@
 // Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -98,10 +98,6 @@ export async function createUserDocument(user, additionalData = {}) {
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
-      // Check if user is a super admin
-      const isSuperAdminUser = await isSuperAdmin(user.uid);
-      
-      // Make sure we capture all fields from signup
       await setDoc(userRef, {
         email: user.email,
         firstName: additionalData.firstName || '',
@@ -111,64 +107,21 @@ export async function createUserDocument(user, additionalData = {}) {
         termsAccepted: additionalData.termsAccepted || false,
         termsAcceptedDate: additionalData.termsAcceptedDate || null,
         createdAt: serverTimestamp(),
-        isAdmin: isSuperAdminUser, // Set as admin if they're a super admin
-        isSuperAdmin: isSuperAdminUser // New field to track super admin status
+        isAdmin: isSuperAdmin(user.uid), // Set as admin if they're a super admin
+        isSuperAdmin: isSuperAdmin(user.uid) // New field to track super admin status
       });
       console.log("✅ User document created for:", user.email);
-    } else {
-      // If the user document exists but we're getting new information,
-      // update it to ensure all fields are maintained
-      if (Object.keys(additionalData).length > 0) {
-        const userData = userDoc.data();
-        // Prepare update data by merging existing data with new data
-        const updateData = {};
-        
-        // Only update if data is provided and different from existing data
-        if (additionalData.firstName && additionalData.firstName !== userData.firstName) {
-          updateData.firstName = additionalData.firstName;
-        }
-        
-        if (additionalData.lastName && additionalData.lastName !== userData.lastName) {
-          updateData.lastName = additionalData.lastName;
-        }
-        
-        if (additionalData.username && additionalData.username !== userData.username) {
-          updateData.username = additionalData.username;
-        }
-        
-        if (additionalData.phoneNumber && additionalData.phoneNumber !== userData.phoneNumber) {
-          updateData.phoneNumber = additionalData.phoneNumber;
-        }
-        
-        if (additionalData.email && additionalData.email !== userData.email) {
-          updateData.email = additionalData.email;
-        }
-        
-        if (additionalData.termsAccepted !== undefined && additionalData.termsAccepted !== userData.termsAccepted) {
-          updateData.termsAccepted = additionalData.termsAccepted;
-        }
-        
-        if (additionalData.termsAcceptedDate && additionalData.termsAcceptedDate !== userData.termsAcceptedDate) {
-          updateData.termsAcceptedDate = additionalData.termsAcceptedDate;
-        }
-        
-        // Only update if we have data to update
-        if (Object.keys(updateData).length > 0) {
-          await updateDoc(userRef, updateData);
-          console.log("✅ User document updated with new data for:", user.email);
-        }
-      }
     }
   } catch (error) {
-    console.error("❌ Error creating/updating user document:", error.message);
+    console.error("❌ Error creating user document:", error.message);
   }
 }
 
 // Listen for auth state changes to create user documents
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("📢 User detected:", user.email);
-    await createUserDocument(user);
+    createUserDocument(user);
   } else {
     console.log("📢 No user signed in.");
   }

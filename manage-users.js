@@ -235,36 +235,14 @@ async function loadUsers() {
         roleClass = 'admin-role';
       }
       
-      // Format phone number for display if available
-      let phoneDisplay = 'Not provided';
-      if (userData.phoneNumber) {
-        phoneDisplay = userData.phoneNumber;
-      }
-      
-      // Format name for display
-      let nameDisplay = 'Not provided';
-      if (userData.firstName && userData.lastName) {
-        nameDisplay = `${userData.firstName} ${userData.lastName}`;
-      } else if (userData.firstName) {
-        nameDisplay = userData.firstName;
-      } else if (userData.lastName) {
-        nameDisplay = userData.lastName;
-      }
-      
-      // Include username if available
-      let usernameDisplay = '';
-      if (userData.username) {
-        usernameDisplay = ` (${userData.username})`;
-      }
-      
       const li = document.createElement("li");
       li.className = "user-item";
       li.innerHTML = `
         <div class="user-info">
-          <p><strong>Name:</strong> ${nameDisplay}${usernameDisplay}</p>
-          <p><strong>Email:</strong> ${user.email} | <strong>Phone:</strong> ${phoneDisplay}</p>
-          <p><strong>UID:</strong> ${user.uid} | <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
-          <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
+          <strong>Email:</strong> ${user.email} | 
+          <strong>UID:</strong> ${user.uid} | 
+          <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
+          <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
         </div>
         <div class="user-actions">
           <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
@@ -297,17 +275,12 @@ window.showUserDetails = async function(userId, userData = null) {
   currentUserId = userId;
   
   try {
-    console.log("Showing details for user:", userId);
-    
     // Always fetch the latest user data from Firestore
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
     
     if (userDoc.exists()) {
-      console.log("User document exists in Firestore");
       const userFullData = userDoc.data();
-      console.log("User data:", userFullData);
-      
       const commentsHtml = await loadUserComments(userId);
       
       // Get auth user data for email and status
@@ -331,29 +304,15 @@ window.showUserDetails = async function(userId, userData = null) {
         });
       }
       
-      // Format timestamps with proper null checks
+      // Format timestamps
       let createdAtDisplay = 'Unknown';
       if (userFullData.createdAt) {
-        try {
-          createdAtDisplay = userFullData.createdAt.toDate ? 
-            new Date(userFullData.createdAt.toDate()).toLocaleString() : 
-            new Date(userFullData.createdAt).toLocaleString();
-        } catch (e) {
-          console.error("Error formatting createdAt:", e);
-          createdAtDisplay = 'Invalid date format';
-        }
+        createdAtDisplay = new Date(userFullData.createdAt.toDate()).toLocaleString();
       }
       
       let termsAcceptedDateDisplay = 'Not accepted';
       if (userFullData.termsAcceptedDate) {
-        try {
-          termsAcceptedDateDisplay = userFullData.termsAcceptedDate.toDate ? 
-            new Date(userFullData.termsAcceptedDate.toDate()).toLocaleString() : 
-            new Date(userFullData.termsAcceptedDate).toLocaleString();
-        } catch (e) {
-          console.error("Error formatting termsAcceptedDate:", e);
-          termsAcceptedDateDisplay = 'Invalid date format';
-        }
+        termsAcceptedDateDisplay = new Date(userFullData.termsAcceptedDate).toLocaleString();
       }
       
       // Get user role display
@@ -367,14 +326,11 @@ window.showUserDetails = async function(userId, userData = null) {
         roleClass = 'admin-role';
       }
       
-      // Make sure to display email from userFullData if available (prefer Firestore over Auth data)
-      const displayEmail = userFullData.email || authUserData.email || 'Not provided';
-      
       modalContent.innerHTML = `
         <div class="user-details-container">
           <div class="user-basic-info">
             <h3>Basic Information</h3>
-            <p><strong>Email:</strong> ${displayEmail}</p>
+            <p><strong>Email:</strong> ${authUserData.email || 'Not provided'}</p>
             <p><strong>UID:</strong> ${userId}</p>
             <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
             <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
@@ -414,34 +370,7 @@ window.showUserDetails = async function(userId, userData = null) {
       `;
       modal.style.display = "block";
     } else {
-      console.error(`User document for ID ${userId} not found in Firestore`);
-      
-      // If we don't have Firestore data but have auth data, show a simplified view
-      if (userData && userData.email) {
-        modalContent.innerHTML = `
-          <div class="user-details-container">
-            <div class="user-basic-info">
-              <h3>Basic Information</h3>
-              <p><strong>Email:</strong> ${userData.email || 'Not provided'}</p>
-              <p><strong>UID:</strong> ${userId}</p>
-              <p><strong>Status:</strong> ${userData.disabled ? 'Disabled' : 'Active'}</p>
-              <p><strong>Role:</strong> <span class="user-role">User</span></p>
-              <p style="color: #e74c3c; margin-top: 20px;"><strong>Note:</strong> This user account exists in Firebase Authentication but has no Firestore document. Some user data may be incomplete.</p>
-            </div>
-            
-            <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-              <h3>User Management</h3>
-              <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="role-btn make-admin" onclick="window.updateUserRole('${userId}', true)">Make Admin</button>
-                <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
-              </div>
-            </div>
-          </div>
-        `;
-        modal.style.display = "block";
-      } else {
-        alert('User details not found in Firestore or Authentication');
-      }
+      alert('User details not found');
     }
   } catch (error) {
     console.error('Error loading user details:', error);
