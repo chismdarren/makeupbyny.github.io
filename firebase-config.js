@@ -217,10 +217,11 @@ export async function createUserDocument(user, additionalData = {}) {
         updates.email = user.email;
       }
       
-      // Update admin status if needed
+      // Update admin status if needed - FIXED to prevent undefined values
       if (isUserSuperAdmin !== existingData.isSuperAdmin) {
         updates.isSuperAdmin = isUserSuperAdmin;
-        updates.isAdmin = isUserSuperAdmin || existingData.isAdmin;
+        // Make sure isAdmin is never undefined
+        updates.isAdmin = isUserSuperAdmin || (existingData.isAdmin === true);
       }
       
       // Apply updates if there are any
@@ -260,7 +261,10 @@ onAuthStateChanged(auth, async (user) => {
     try {
       // Check if user document already exists
       const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef);
+      const userDoc = await getDoc(userRef).catch(err => {
+        console.error("Error checking for user document:", err);
+        return { exists: () => false };
+      });
       
       if (!userDoc.exists()) {
         // User doesn't have a document yet, create a minimal one
@@ -268,17 +272,47 @@ onAuthStateChanged(auth, async (user) => {
         console.log("Auth state change - No existing document found for user, creating a minimal one");
         
         // Only create minimal placeholder data - don't attempt to guess fields that should come from signup
-        await setDoc(userRef, {
+        const minimalUserData = {
           email: user.email,
           createdAt: serverTimestamp(),
-          // Don't set empty strings for fields that should be populated during signup
-          // This helps identify users that were created outside the normal signup flow
-        });
+          // Set boolean fields to false explicitly to avoid undefined values
+          isAdmin: false,
+          isSuperAdmin: false,
+          termsAccepted: false
+        };
         
-        console.log("Auth state change - Created minimal user document");
+        try {
+          await setDoc(userRef, minimalUserData);
+          console.log("Auth state change - Created minimal user document");
+        } catch (writeError) {
+          console.error("Error creating minimal user document:", writeError);
+        }
       } else {
-        // Document exists, don't modify it
-        console.log("Auth state change - User document already exists for:", user.email);
+        // Document exists, check if it needs basic updates
+        console.log("Found existing user document:", userDoc.data());
+        
+        // Check if any critical boolean fields are missing or undefined
+        const data = userDoc.data();
+        const updates = {};
+        
+        // Ensure boolean fields are never undefined
+        if (data.isAdmin === undefined) updates.isAdmin = false;
+        if (data.isSuperAdmin === undefined) updates.isSuperAdmin = false;
+        if (data.termsAccepted === undefined) updates.termsAccepted = false;
+        
+        // Make sure email is set
+        if (!data.email && user.email) updates.email = user.email;
+        
+        // Only update if needed
+        if (Object.keys(updates).length > 0) {
+          try {
+            console.log("Updating existing user document with data:", updates);
+            await updateDoc(userRef, updates);
+            console.log("✅ User document updated with missing fields");
+          } catch (updateError) {
+            console.error("Error updating user document:", updateError);
+          }
+        }
       }
     } catch (error) {
       console.error("Error handling auth state change:", error);

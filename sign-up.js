@@ -147,48 +147,53 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log("User authentication created successfully with UID:", user.uid);
           console.log("User data prepared:", userData);
           
+          // ALWAYS save the user data to localStorage as a reliable fallback
+          localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
+          console.log("User data saved to localStorage for reliability");
+          
           // Show success message immediately - we don't want the user to wait
           alert("✅ Account created successfully! You can now log in.");
           
-          // Handle user data separately - don't block the user experience
-          try {
-            // Check if we can directly call a Cloud Function instead of using client-side Firestore
-            const functionUrl = "https://us-central1-makeupbyny-1.cloudfunctions.net/createUserProfile";
-            
-            // Attempt to call a function to create the user profile
-            const response = await fetch(functionUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                uid: user.uid,
-                email: user.email,
-                userData: userData
-              })
-            });
-            
-            if (response.ok) {
-              console.log("User profile created via Cloud Function");
-            } else {
-              // Fallback to using our client-side code if the function call fails
-              console.warn("Cloud Function call failed, falling back to client approach");
-              // Call createUserDocument but ignore errors
-              await createUserDocument(user, userData).catch(e => {
-                console.error("Failed to create user document:", e);
-                // Store data in localStorage as a last resort
-                localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
-                console.log("User data saved to localStorage for later recovery");
+          // Try to save data to Firestore, but don't wait for it or let errors block the user
+          setTimeout(async () => {
+            try {
+              // Try the Cloud Function approach first
+              console.log("Attempting to call Cloud Function to create user profile...");
+              const functionUrl = "https://us-central1-makeupbyny-1.cloudfunctions.net/createUserProfile";
+              
+              // Attempt to call a function to create the user profile
+              const response = await fetch(functionUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  uid: user.uid,
+                  email: user.email,
+                  userData: userData
+                })
               });
+              
+              if (response.ok) {
+                console.log("User profile created via Cloud Function successfully");
+                // Data successfully saved, we could remove from localStorage but let's keep it for the login recovery anyway
+              } else {
+                console.warn("Cloud Function call failed, response:", await response.text());
+                throw new Error("Cloud Function failed with status: " + response.status);
+              }
+            } catch (profileError) {
+              console.warn("Cloud Function approach failed, trying client-side approach", profileError);
+              
+              try {
+                // Try client-side approach as fallback
+                await createUserDocument(user, userData);
+                console.log("User profile created via client-side approach successfully");
+              } catch (clientError) {
+                console.error("Both Cloud Function and client-side approaches failed:", clientError);
+                console.log("Relying on localStorage recovery during next login");
+              }
             }
-          } catch (profileError) {
-            console.error("Error creating user profile:", profileError);
-            // Don't block the user experience even if profile creation fails
-            
-            // Store in localStorage as a last resort
-            localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
-            console.log("User data saved to localStorage for later recovery");
-          }
+          }, 500); // Small delay to not block the main thread
           
           // Redirect user to login page
           window.location.href = 'login.html';
