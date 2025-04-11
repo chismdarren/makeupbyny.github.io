@@ -95,112 +95,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastInitial = lastName.charAt(0).toUpperCase();
         const formattedUsername = `${capitalizedFirstName}. ${lastInitial}`;
         
-        // Check if username already exists in database
-        const usersRef = collection(db, "users");
-        const usernameQuery = query(usersRef, where("username", "==", formattedUsername));
-        const usernameSnapshot = await getDocs(usernameQuery);
+        // Prepare user data to save
+        const userData = {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          username: formattedUsername,
+          phoneNumber: phoneNumber.trim(),
+          termsAccepted: true,
+          termsAcceptedDate: new Date().toISOString()
+        };
         
-        let finalUsername = formattedUsername;
+        // Create the user account with Firebase Authentication
+        console.log("Creating user authentication account with email:", email);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
         
-        if (!usernameSnapshot.empty) {
-          // If username exists, try adding a number to make it unique
-          let counter = 1;
-          let isUnique = false;
-          
-          while (!isUnique && counter <= 10) {
-            // Format: "FirstName. LastInitial_1"
-            const newUsername = `${formattedUsername}_${counter}`;
-            const newQuery = query(usersRef, where("username", "==", newUsername));
-            const newSnapshot = await getDocs(newQuery);
-            
-            if (newSnapshot.empty) {
-              isUnique = true;
-              finalUsername = newUsername;
-              alert(`Username "${formattedUsername}" already exists. We've changed it to "${newUsername}".`);
-            } else {
-              counter++;
-            }
-          }
-          
-          if (!isUnique) {
-            alert("Username already exists. Please try different names.");
-            return;
-          }
-        }
+        console.log("Authentication account created successfully. UID:", user.uid);
         
-        // Create the user
+        // Save the user data to Firestore using the createUserDocument function
         try {
-          console.log("Creating user account with email:", email);
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
+          console.log("Saving user data to Firestore:", userData);
+          await createUserDocument(user, userData);
+          console.log("User data saved successfully to Firestore");
+        } catch (firestoreError) {
+          console.error("Error saving user data to Firestore:", firestoreError);
           
-          // Prepare user data - ensure all fields are trimmed and properly formatted
-          const userData = {
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            username: finalUsername.trim(),
-            phoneNumber: phoneNumber.trim(),
-            termsAccepted: true,
-            termsAcceptedDate: new Date().toISOString()
-          };
-          
-          console.log("User authentication created successfully with UID:", user.uid);
-          console.log("User data prepared:", userData);
-          
-          // ALWAYS save the user data to localStorage as a reliable fallback
+          // Fallback: Save to localStorage if Firestore save fails
           localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
-          console.log("User data saved to localStorage for reliability");
-          
-          // Show success message immediately - we don't want the user to wait
-          alert("✅ Account created successfully! You can now log in.");
-          
-          // Try to save data to Firestore, but don't wait for it or let errors block the user
-          setTimeout(async () => {
-            try {
-              // Try the Cloud Function approach first
-              console.log("Attempting to call Cloud Function to create user profile...");
-              const functionUrl = "https://us-central1-makeupbyny-1.cloudfunctions.net/createUserProfile";
-              
-              // Attempt to call a function to create the user profile
-              const response = await fetch(functionUrl, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  uid: user.uid,
-                  email: user.email,
-                  userData: userData
-                })
-              });
-              
-              if (response.ok) {
-                console.log("User profile created via Cloud Function successfully");
-                // Data successfully saved, we could remove from localStorage but let's keep it for the login recovery anyway
-              } else {
-                console.warn("Cloud Function call failed, response:", await response.text());
-                throw new Error("Cloud Function failed with status: " + response.status);
-              }
-            } catch (profileError) {
-              console.warn("Cloud Function approach failed, trying client-side approach", profileError);
-              
-              try {
-                // Try client-side approach as fallback
-                await createUserDocument(user, userData);
-                console.log("User profile created via client-side approach successfully");
-              } catch (clientError) {
-                console.error("Both Cloud Function and client-side approaches failed:", clientError);
-                console.log("Relying on localStorage recovery during next login");
-              }
-            }
-          }, 500); // Small delay to not block the main thread
-          
-          // Redirect user to login page
-          window.location.href = 'login.html';
-        } catch (authError) {
-          console.error("❌ Error creating user authentication:", authError.message);
-          alert("Error creating account: " + authError.message);
+          console.log("User data saved to localStorage as fallback");
         }
+        
+        // Show success message
+        alert("✅ Account created successfully! You will now be redirected to the login page.");
+        
+        // Navigate to login page
+        window.location.href = "login.html";
+        
       } catch (error) {
         console.error("❌ Error in signup process:", error.message);
         alert("Error: " + error.message);
