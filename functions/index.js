@@ -9,7 +9,7 @@ admin.initializeApp();
 const corsHandler = cors({
   origin: "https://chismdarren.github.io",
   methods: "GET, OPTIONS",
-  allowedHeaders: "Content-Type",
+  allowedHeaders: "Content-Type, Accept",
   credentials: true, // ✅ Allow credentials
 });
 
@@ -21,11 +21,17 @@ exports.listAllAuthUsers = functions.https.onRequest((req, res) => {
       if (req.method === "OPTIONS") {
         res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
         res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-        res.set("Access-Control-Allow-Headers", "Content-Type");
+        res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
         res.set("Access-Control-Allow-Credentials", "true");
         res.status(204).send(""); // ✅ Send empty response for preflight request
         return;
       }
+
+      // Always set CORS headers for the actual request as well
+      res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+      res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+      res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.set("Access-Control-Allow-Credentials", "true");
 
       // Fetch up to 1000 users
       const listUsersResult = await admin.auth().listUsers(1000);
@@ -37,12 +43,6 @@ exports.listAllAuthUsers = functions.https.onRequest((req, res) => {
         displayName: userRecord.displayName || "",
         disabled: userRecord.disabled,
       }));
-
-      // ✅ Set proper CORS headers on the response
-      res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
-      res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-      res.set("Access-Control-Allow-Headers", "Content-Type");
-      res.set("Access-Control-Allow-Credentials", "true");
 
       return res.status(200).json(users);
     } catch (error) {
@@ -56,9 +56,9 @@ exports.listAllAuthUsers = functions.https.onRequest((req, res) => {
 exports.createUserProfile = functions.https.onRequest((req, res) => {
   // Updated CORS handler for POST method
   const profileCorsHandler = cors({
-    origin: true, // Allow any origin for testing
+    origin: "https://chismdarren.github.io", // Specifically allow the GitHub Pages domain
     methods: "POST, OPTIONS",
-    allowedHeaders: "Content-Type",
+    allowedHeaders: "Content-Type, Accept", 
     credentials: true,
   });
 
@@ -66,13 +66,19 @@ exports.createUserProfile = functions.https.onRequest((req, res) => {
     try {
       // Handle preflight request (OPTIONS request)
       if (req.method === "OPTIONS") {
-        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
         res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-        res.set("Access-Control-Allow-Headers", "Content-Type");
+        res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
         res.set("Access-Control-Allow-Credentials", "true");
         res.status(204).send("");
         return;
       }
+
+      // Always set CORS headers for the actual request as well
+      res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+      res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+      res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.set("Access-Control-Allow-Credentials", "true");
 
       // Check if the request method is POST
       if (req.method !== "POST") {
@@ -179,9 +185,9 @@ exports.createUserProfile = functions.https.onRequest((req, res) => {
 exports.deleteUser = functions.https.onRequest((req, res) => {
   // Set up CORS handler for DELETE and OPTIONS methods
   const deleteCorsHandler = cors({
-    origin: true, // Allow any origin for testing
+    origin: "https://chismdarren.github.io", // Specifically allow the GitHub Pages domain
     methods: "DELETE, OPTIONS",
-    allowedHeaders: "Content-Type",
+    allowedHeaders: "Content-Type, Accept",
     credentials: true,
   });
 
@@ -189,13 +195,19 @@ exports.deleteUser = functions.https.onRequest((req, res) => {
     try {
       // Handle preflight request (OPTIONS request)
       if (req.method === "OPTIONS") {
-        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
         res.set("Access-Control-Allow-Methods", "DELETE, OPTIONS");
-        res.set("Access-Control-Allow-Headers", "Content-Type");
+        res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
         res.set("Access-Control-Allow-Credentials", "true");
         res.status(204).send("");
         return;
       }
+
+      // Always set CORS headers for the actual request as well
+      res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+      res.set("Access-Control-Allow-Methods", "DELETE, OPTIONS");
+      res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.set("Access-Control-Allow-Credentials", "true");
 
       // Check if the request method is DELETE
       if (req.method !== "DELETE") {
@@ -239,11 +251,6 @@ exports.deleteUser = functions.https.onRequest((req, res) => {
         // Delete user document from Firestore
         await admin.firestore().collection("users").doc(uid).delete();
         console.log(`User document deleted from Firestore: ${uid}`);
-        
-        // Also look for any associated localStorage data that might need to be cleaned up
-        const pendingDataKey = `pendingUserData_${uid}`;
-        // Note: we can't directly access localStorage from a Cloud Function,
-        // but this would be handled on the client side
       } catch (firestoreError) {
         console.error("Error deleting user document from Firestore:", firestoreError);
         // Continue with auth deletion even if Firestore deletion fails
@@ -285,9 +292,9 @@ exports.deleteUser = functions.https.onRequest((req, res) => {
 exports.generatePasswordResetLink = functions.https.onRequest((req, res) => {
   // Set up CORS handler for GET and OPTIONS methods
   const passwordResetCorsHandler = cors({
-    origin: true, // Allow any origin for testing
+    origin: "https://chismdarren.github.io", // Specifically allow the GitHub Pages domain
     methods: "GET, OPTIONS",
-    allowedHeaders: "Content-Type",
+    allowedHeaders: "Content-Type, Accept",
     credentials: true,
   });
 
@@ -295,14 +302,20 @@ exports.generatePasswordResetLink = functions.https.onRequest((req, res) => {
     try {
       // Handle preflight request (OPTIONS request)
       if (req.method === "OPTIONS") {
-        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
         res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-        res.set("Access-Control-Allow-Headers", "Content-Type");
+        res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
         res.set("Access-Control-Allow-Credentials", "true");
         res.status(204).send("");
         return;
       }
 
+      // Always set CORS headers for the actual request as well
+      res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+      res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+      res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.set("Access-Control-Allow-Credentials", "true");
+      
       // Check if the request method is GET
       if (req.method !== "GET") {
         return res.status(405).json({ error: "Method not allowed" });
