@@ -58,63 +58,60 @@ const passwordManagementStyles = `
   
   /* User stats dashboard */
   .user-stats-dashboard {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 20px;
-    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    padding: 10px;
+    margin-bottom: 15px;
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 10px;
+    font-size: 12px;
   }
   
   .stat-card {
     flex: 1;
-    min-width: 200px;
-    padding: 15px;
-    border-radius: 6px;
+    min-width: 100px;
+    padding: 8px;
+    border-radius: 4px;
     text-align: center;
-    transition: transform 0.3s;
-  }
-  
-  .stat-card:hover {
-    transform: translateY(-5px);
+    border-left: 2px solid #eee;
   }
   
   .stat-card.active-users {
-    background-color: #e3f2fd;
-    border-left: 4px solid #2196F3;
+    background-color: #f8f9fa;
+    border-left-color: #2196F3;
   }
   
   .stat-card.super-admins {
-    background-color: #e8f5e9;
-    border-left: 4px solid #4CAF50;
+    background-color: #f8f9fa;
+    border-left-color: #4CAF50;
   }
   
   .stat-card.admins {
-    background-color: #fff3e0;
-    border-left: 4px solid #FF9800;
+    background-color: #f8f9fa;
+    border-left-color: #FF9800;
   }
   
   .stat-card.disabled-users {
-    background-color: #ffebee;
-    border-left: 4px solid #f44336;
+    background-color: #f8f9fa;
+    border-left-color: #f44336;
   }
   
   .stat-number {
-    font-size: 28px;
+    font-size: 18px;
     font-weight: bold;
-    margin: 10px 0;
+    margin: 3px 0;
   }
   
   .stat-label {
     color: #666;
-    font-size: 14px;
+    font-size: 11px;
   }
   
   .stat-icon {
-    font-size: 24px;
-    margin-bottom: 10px;
+    font-size: 14px;
+    margin-bottom: 3px;
   }
   
   /* Filtering styles */
@@ -219,7 +216,7 @@ const passwordManagementStyles = `
   }
 `;
 
-// Add the styles to the document head
+// Initialize stats dashboard and filters after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   // Add the styles to the document head
   const styleElement = document.createElement('style');
@@ -228,9 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   console.log("Manage Users page loaded - styles initialized");
   
-  // Initialize stats dashboard and filters after DOM is loaded
-  initializeUserStatsDashboard();
+  // Initialize filters first, then stats dashboard
   initializeFilters();
+  initializeUserStatsDashboard();
 });
 
 // Initialize user stats dashboard
@@ -264,8 +261,15 @@ function initializeUserStatsDashboard() {
     </div>
   `;
   
-  // Insert dashboard at the top of the content
-  content.insertBefore(dashboardContainer, content.firstChild);
+  // Check if there's a filter container to insert the dashboard after
+  const filterContainer = document.querySelector('.filter-container');
+  if (filterContainer) {
+    // Insert after the filter container
+    filterContainer.after(dashboardContainer);
+  } else {
+    // Insert at the top of the content as a fallback
+    content.insertBefore(dashboardContainer, content.firstChild);
+  }
 }
 
 // Update user statistics based on loaded user data
@@ -1179,6 +1183,15 @@ window.showUserDetails = async function(userId, userData = null) {
     // Check if data appears to be missing
     const hasMissingData = !userFullData.firstName || !userFullData.lastName || !userFullData.username || !userFullData.phoneNumber;
     const userSignupComplete = userFullData.firstName && userFullData.lastName && userFullData.username && userFullData.phoneNumber;
+
+    // Create toggle user status button
+    const isUserDisabled = authUserData.disabled;
+    const statusButtonClass = isUserDisabled ? 'action-btn enable-btn' : 'action-btn disable-btn';
+    const statusButtonText = isUserDisabled ? 'Enable User' : 'Disable User';
+    const statusButtonStyle = isUserDisabled ? 'background-color: #4CAF50;' : 'background-color: #f44336;';
+    
+    // Create the toggle status button
+    const toggleStatusButton = `<button id="toggle-user-status" class="${statusButtonClass}" style="${statusButtonStyle}" onclick="window.toggleUserStatus('${userId}', '${isUserDisabled ? 'disabled' : 'active'}')">${statusButtonText}</button>`;
     
     modalContent.innerHTML = `
       <div class="user-details-container">
@@ -1186,7 +1199,7 @@ window.showUserDetails = async function(userId, userData = null) {
           <h3>Basic Information</h3>
           <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
           <p><strong>UID:</strong> ${userId}</p>
-          <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
+          <p><strong>Status:</strong> <span id="user-status-display">${authUserData.disabled ? 'Disabled' : 'Active'}</span></p>
           <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
         </div>
         
@@ -1215,7 +1228,7 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
           <h3>User Management</h3>
-          <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
             ${userFullData.isSuperAdmin ? 
               `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
               userFullData.isAdmin ? 
@@ -1223,6 +1236,7 @@ window.showUserDetails = async function(userId, userData = null) {
                  <button class="role-btn remove-admin" onclick="window.updateUserRole('${userId}', false)">Remove Admin</button>` :
                 `<button class="role-btn make-admin" onclick="window.updateUserRole('${userId}', true)">Make Admin</button>`
             }
+            ${toggleStatusButton}
             <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
           </div>
         </div>
@@ -2120,5 +2134,100 @@ window.generatePasswordResetLink = async function(userId) {
     } else {
       alert('Error generating password reset link: ' + error.message);
     }
+  }
+};
+
+// Add the user status toggle function
+window.toggleUserStatus = async function(userId, currentStatus) {
+  // Confirm the action
+  const action = currentStatus === 'disabled' ? 'enable' : 'disable';
+  const confirmText = `Are you sure you want to ${action} this user?`;
+  
+  if (!confirm(confirmText)) return;
+  
+  try {
+    // Show loading indicator
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'loading-message';
+    loadingMessage.textContent = `${action.charAt(0).toUpperCase() + action.slice(1)}ing user...`;
+    loadingMessage.style.position = 'fixed';
+    loadingMessage.style.top = '20px';
+    loadingMessage.style.left = '50%';
+    loadingMessage.style.transform = 'translateX(-50%)';
+    loadingMessage.style.backgroundColor = '#2196F3';
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '10px 20px';
+    loadingMessage.style.borderRadius = '5px';
+    loadingMessage.style.zIndex = '1000';
+    document.body.appendChild(loadingMessage);
+    
+    // Call Firebase Admin SDK function via our Cloud Function
+    const adminUid = auth.currentUser.uid;
+    
+    // Fetch using Firebase Admin SDK (through our Cloud Function)
+    const response = await fetch("https://us-central1-makeupbyny-1.cloudfunctions.net/toggleUserStatus", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        uid: userId,
+        disabled: currentStatus === 'active',
+        adminUid: adminUid
+      })
+    });
+    
+    // Remove loading indicator
+    document.body.removeChild(loadingMessage);
+    
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(errorData || `HTTP error: ${response.status}`);
+    }
+    
+    // Show success message
+    const successMessage = document.createElement('div');
+    successMessage.className = 'success-message';
+    successMessage.textContent = `User ${action}d successfully`;
+    successMessage.style.position = 'fixed';
+    successMessage.style.top = '20px';
+    successMessage.style.left = '50%';
+    successMessage.style.transform = 'translateX(-50%)';
+    successMessage.style.backgroundColor = '#4CAF50';
+    successMessage.style.color = 'white';
+    successMessage.style.padding = '10px 20px';
+    successMessage.style.borderRadius = '5px';
+    successMessage.style.zIndex = '1000';
+    document.body.appendChild(successMessage);
+    
+    // Remove the message after 3 seconds and reload to see the changes
+    setTimeout(() => {
+      document.body.removeChild(successMessage);
+      window.location.reload(); // Reload to see the updated data
+    }, 3000);
+    
+  } catch (error) {
+    console.error(`Error ${action}ing user:`, error);
+    
+    // Show error message
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'error-message';
+    errorMessage.textContent = `Error ${action}ing user: ${error.message}`;
+    errorMessage.style.position = 'fixed';
+    errorMessage.style.top = '20px';
+    errorMessage.style.left = '50%';
+    errorMessage.style.transform = 'translateX(-50%)';
+    errorMessage.style.backgroundColor = '#F44336';
+    errorMessage.style.color = 'white';
+    errorMessage.style.padding = '10px 20px';
+    errorMessage.style.borderRadius = '5px';
+    errorMessage.style.zIndex = '1000';
+    document.body.appendChild(errorMessage);
+    
+    // Remove the error message after 5 seconds
+    setTimeout(() => {
+      document.body.removeChild(errorMessage);
+    }, 5000);
   }
 }; 
