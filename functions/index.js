@@ -174,3 +174,198 @@ exports.createUserProfile = functions.https.onRequest((req, res) => {
     }
   });
 });
+
+// Cloud Function to delete a user from both Auth and Firestore
+exports.deleteUser = functions.https.onRequest((req, res) => {
+  // Set up CORS handler for DELETE and OPTIONS methods
+  const deleteCorsHandler = cors({
+    origin: true, // Allow any origin for testing
+    methods: "DELETE, OPTIONS",
+    allowedHeaders: "Content-Type",
+    credentials: true,
+  });
+
+  return deleteCorsHandler(req, res, async () => {
+    try {
+      // Handle preflight request (OPTIONS request)
+      if (req.method === "OPTIONS") {
+        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Access-Control-Allow-Methods", "DELETE, OPTIONS");
+        res.set("Access-Control-Allow-Headers", "Content-Type");
+        res.set("Access-Control-Allow-Credentials", "true");
+        res.status(204).send("");
+        return;
+      }
+
+      // Check if the request method is DELETE
+      if (req.method !== "DELETE") {
+        return res.status(405).json({ error: "Method not allowed" });
+      }
+
+      // Get user ID from request
+      const uid = req.query.uid;
+      
+      if (!uid) {
+        return res.status(400).json({ error: "Missing required parameter: uid" });
+      }
+
+      console.log(`Attempting to delete user with UID: ${uid}`);
+
+      // First check if we're trying to delete a super admin
+      try {
+        const userRef = admin.firestore().collection("users").doc(uid);
+        const userDoc = await userRef.get();
+        
+        if (userDoc.exists && userDoc.data().isSuperAdmin) {
+          // Count how many super admins we have
+          const superAdminsQuery = await admin.firestore()
+            .collection("users")
+            .where("isSuperAdmin", "==", true)
+            .get();
+          
+          if (superAdminsQuery.size <= 1) {
+            return res.status(403).json({ 
+              error: "Cannot delete the last super admin. Promote another user to super admin first." 
+            });
+          }
+        }
+      } catch (checkError) {
+        console.error("Error checking user super admin status:", checkError);
+        // Continue with deletion even if check fails
+      }
+
+      // Delete user data from Firestore first
+      try {
+        // Delete user document from Firestore
+        await admin.firestore().collection("users").doc(uid).delete();
+        console.log(`User document deleted from Firestore: ${uid}`);
+        
+        // Also look for any associated localStorage data that might need to be cleaned up
+        const pendingDataKey = `pendingUserData_${uid}`;
+        // Note: we can't directly access localStorage from a Cloud Function,
+        // but this would be handled on the client side
+      } catch (firestoreError) {
+        console.error("Error deleting user document from Firestore:", firestoreError);
+        // Continue with auth deletion even if Firestore deletion fails
+      }
+
+      // Delete user from Firebase Authentication
+      try {
+        await admin.auth().deleteUser(uid);
+        console.log(`User deleted from Firebase Auth: ${uid}`);
+        
+        return res.status(200).json({ 
+          success: true, 
+          message: "User deleted successfully from both Auth and Firestore" 
+        });
+      } catch (authError) {
+        console.error("Error deleting user from Firebase Auth:", authError);
+        
+        if (authError.code === 'auth/user-not-found') {
+          // If user wasn't found in Auth but we already deleted from Firestore, consider it a success
+          return res.status(200).json({ 
+            success: true, 
+            message: "User deleted from Firestore. User not found in Auth." 
+          });
+        }
+        
+        return res.status(500).json({ 
+          error: "Error deleting user from Firebase Auth", 
+          details: authError.message 
+        });
+      }
+    } catch (error) {
+      console.error("Error in deleteUser function:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+});
+
+// Cloud Function to generate a password reset link for admin use
+exports.generatePasswordResetLink = functions.https.onRequest((req, res) => {
+  // Set up CORS handler for GET and OPTIONS methods
+  const passwordResetCorsHandler = cors({
+    origin: true, // Allow any origin for testing
+    methods: "GET, OPTIONS",
+    allowedHeaders: "Content-Type",
+    credentials: true,
+  });
+
+  return passwordResetCorsHandler(req, res, async () => {
+    try {
+      // Handle preflight request (OPTIONS request)
+      if (req.method === "OPTIONS") {
+        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.set("Access-Control-Allow-Headers", "Content-Type");
+        res.set("Access-Control-Allow-Credentials", "true");
+        res.status(204).send("");
+        return;
+      }
+
+      // Check if the request method is GET
+      if (req.method !== "GET") {
+        return res.status(405).json({ error: "Method not allowed" });
+      }
+
+      // Get user ID and admin ID from request
+      const uid = req.query.uid;
+      const adminId = req.query.adminId;
+      
+      if (!uid) {
+        return res.status(400).json({ error: "Missing required parameter: uid" });
+      }
+
+      // Verify the requester is a super admin
+      try {
+        // First check if admin is in the hardcoded super admin list
+        const superAdminUIDs = ["yuoaYY14sINHaqtNK5EAz4nl8cc2"]; // Same as in other functions
+        let isSuperAdmin = superAdminUIDs.includes(adminId);
+        
+        // If not found in hardcoded list, check Firestore
+        if (!isSuperAdmin && adminId) {
+          const adminRef = admin.firestore().collection("users").doc(adminId);
+          const adminDoc = await adminRef.get();
+          if (adminDoc.exists && adminDoc.data().isSuperAdmin === true) {
+            isSuperAdmin = true;
+          }
+        }
+        
+        if (!isSuperAdmin) {
+          return res.status(403).json({ error: "Unauthorized. Super Admin privileges required." });
+        }
+      } catch (authError) {
+        console.error("Error checking admin permissions:", authError);
+        return res.status(500).json({ error: "Error verifying admin permissions" });
+      }
+      
+      // Get user email
+      try {
+        const userRecord = await admin.auth().getUser(uid);
+        const email = userRecord.email;
+        
+        if (!email) {
+          return res.status(400).json({ error: "User does not have an email address" });
+        }
+        
+        // Generate a password reset link
+        const resetLink = await admin.auth().generatePasswordResetLink(email);
+        
+        return res.status(200).json({
+          success: true,
+          email: email,
+          resetLink: resetLink
+        });
+      } catch (error) {
+        console.error("Error generating password reset link:", error);
+        return res.status(500).json({
+          error: "Error generating password reset link",
+          details: error.message
+        });
+      }
+    } catch (error) {
+      console.error("Error in generatePasswordResetLink function:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+});
