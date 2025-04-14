@@ -212,17 +212,20 @@ exports.deleteUser = functions.https.onRequest((req, res) => {
       // Check if the request method is DELETE or POST with _method=DELETE
       const isDeleteMethod = 
         req.method === "DELETE" || 
-        (req.method === "POST" && req.body._method === "DELETE");
+        (req.method === "POST" && req.body && req.body._method === "DELETE");
       
       if (!isDeleteMethod) {
         return res.status(405).json({ error: "Method not allowed" });
       }
 
-      // Get user ID from request
-      const uid = req.query.uid;
+      // Get user ID from request (from query OR body)
+      const uid = req.query.uid || (req.body ? req.body.uid : null);
       
       if (!uid) {
-        return res.status(400).json({ error: "Missing required parameter: uid" });
+        return res.status(400).json({ 
+          error: "Missing required parameter: uid",
+          details: "The user ID must be provided either as a query parameter (?uid=xyz) or in the request body"
+        });
       }
 
       console.log(`Attempting to delete user with UID: ${uid}`);

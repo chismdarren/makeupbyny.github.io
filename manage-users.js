@@ -1021,29 +1021,40 @@ window.deleteUser = async function(uid) {
         console.warn("Could not delete user from Firestore directly:", firestoreError);
       }
       
-      // Step 2: Try both API approaches
+      // Step 2: Try the recently deployed Cloud Function
       let deleteSuccess = false;
       
-      // First, try direct fetch with no-cors mode as fallback
       try {
-        const response = await fetch(`https://us-central1-makeupbyny-1.cloudfunctions.net/deleteUser?uid=${uid}`, {
+        // Direct method using fetch
+        const response = await fetch(`https://deleteuser-lkkilrnjsq-uc.a.run.app`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ _method: 'DELETE' }),
-          mode: 'no-cors' // This won't give us a readable response but might work
+          body: JSON.stringify({ 
+            _method: 'DELETE',
+            uid: uid
+          })
         });
         
-        console.log("Delete request sent with no-cors mode");
-        deleteSuccess = true; // Assume success since we can't check response with no-cors
+        // Log response status for debugging
+        console.log("Cloud Function response status:", response.status);
+        
+        if (response.ok) {
+          const responseData = await response.json();
+          console.log("Delete response:", responseData);
+          deleteSuccess = true;
+        } else {
+          console.warn("Delete request failed with status:", response.status);
+          const errorText = await response.text();
+          console.warn("Error response:", errorText);
+        }
       } catch (fetchError) {
-        console.warn("Error with no-cors fetch request:", fetchError);
-      }
-      
-      // If first approach couldn't be confirmed, try using a form in a hidden iframe
-      if (!deleteSuccess) {
+        console.warn("Error calling deleteUser function:", fetchError);
+        
+        // Fallback method using a form
         try {
+          console.log("Trying form-based approach as fallback");
           const iframe = document.createElement('iframe');
           iframe.name = 'deleteframe';
           iframe.style.display = 'none';
@@ -1051,9 +1062,16 @@ window.deleteUser = async function(uid) {
           
           // Create a form that will make the request
           const form = document.createElement('form');
-          form.action = `https://us-central1-makeupbyny-1.cloudfunctions.net/deleteUser?uid=${uid}`;
+          form.action = `https://deleteuser-lkkilrnjsq-uc.a.run.app`;
           form.method = 'POST'; 
           form.target = 'deleteframe';
+          
+          // Add uid as a field
+          const uidField = document.createElement('input');
+          uidField.type = 'hidden';
+          uidField.name = 'uid';
+          uidField.value = uid;
+          form.appendChild(uidField);
           
           // Add a hidden field to indicate this should be a DELETE operation
           const methodField = document.createElement('input');
