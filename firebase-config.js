@@ -131,31 +131,39 @@ export async function createUserDocument(user, additionalData = {}) {
       isSuperAdmin: isUserSuperAdmin // Super admin status
     };
     
+    // Save all registration data, whether creating or updating
+    // Check if we have all the required signup fields in additionalData
+    const hasAllRequiredFields = additionalData.firstName && 
+                               additionalData.lastName && 
+                               additionalData.username && 
+                               additionalData.phoneNumber;
+    
     if (!userDoc.exists()) {
       // Document doesn't exist - create new user document
       console.log("Creating new user document with data:", userData);
       
       try {
-        // Use setDoc with merge option to ensure all fields are written
-        await setDoc(userRef, userData);
+        // Always use merge to make sure we don't overwrite existing data
+        await setDoc(userRef, userData, { merge: true });
         console.log("✅ First attempt: User document created for:", user.email);
         
-        // Double attempt to ensure data is written
-        // This helps overcome Firestore write/read inconsistency issues
-        if (additionalData.firstName || additionalData.lastName || additionalData.username || additionalData.phoneNumber) {
+        // If we have complete registration data, make a second attempt to ensure it's saved
+        if (hasAllRequiredFields) {
           // Add a small delay before second attempt
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 500));
           
-          console.log("Making a second update to ensure profile data is saved...");
-          const profileData = {
-            firstName: additionalData.firstName || '',
-            lastName: additionalData.lastName || '',
-            username: additionalData.username || '',
-            phoneNumber: additionalData.phoneNumber || ''
+          console.log("Making a second update to ensure complete profile data is saved...");
+          const completeProfileData = {
+            firstName: additionalData.firstName,
+            lastName: additionalData.lastName,
+            username: additionalData.username,
+            phoneNumber: additionalData.phoneNumber,
+            termsAccepted: additionalData.termsAccepted || false,
+            termsAcceptedDate: additionalData.termsAcceptedDate || null
           };
           
-          await updateDoc(userRef, profileData);
-          console.log("✅ Second attempt: User profile data updated for:", user.email);
+          await updateDoc(userRef, completeProfileData);
+          console.log("✅ Second attempt: Complete user profile data updated for:", user.email);
         }
       } catch (writeError) {
         console.error("Error writing user document:", writeError);
@@ -163,6 +171,20 @@ export async function createUserDocument(user, additionalData = {}) {
         if (writeError.message.includes("Missing or insufficient permissions")) {
           console.warn("Permission error detected. This usually happens if the Firestore security rules don't allow the operation.");
           console.warn("Please update your Firestore security rules to allow this operation.");
+          
+          // Save data to localStorage for recovery during next login
+          if (hasAllRequiredFields) {
+            console.log("Saving user data to localStorage for recovery during next login");
+            localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify({
+              firstName: additionalData.firstName,
+              lastName: additionalData.lastName,
+              username: additionalData.username,
+              phoneNumber: additionalData.phoneNumber,
+              termsAccepted: additionalData.termsAccepted || false,
+              termsAcceptedDate: additionalData.termsAcceptedDate || null
+            }));
+          }
+          
           throw writeError; // Rethrow so it can be handled by the caller's retry mechanism
         }
         
@@ -177,39 +199,63 @@ export async function createUserDocument(user, additionalData = {}) {
           };
           await setDoc(userRef, criticalData);
           console.log("✅ Fallback: Created minimal user document after error");
+          
+          // Save complete data to localStorage for recovery during next login
+          if (hasAllRequiredFields) {
+            console.log("Saving complete user data to localStorage for recovery during next login");
+            localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify({
+              firstName: additionalData.firstName,
+              lastName: additionalData.lastName,
+              username: additionalData.username,
+              phoneNumber: additionalData.phoneNumber,
+              termsAccepted: additionalData.termsAccepted || false,
+              termsAcceptedDate: additionalData.termsAcceptedDate || null
+            }));
+          }
         } catch (fallbackError) {
           console.error("Fallback creation also failed:", fallbackError);
           throw fallbackError;
         }
       }
     } else {
-      // Document exists - carefully update without overwriting existing data
+      // Document exists - update with all required fields from additionalData
       const existingData = userDoc.data();
       console.log("Found existing user document:", existingData);
       
-      // Create updates object with only missing or new data
+      // Create updates object - ensure all required fields are present
       const updates = {};
       
-      // Check each field - prioritize new data from additionalData over empty existing fields
-      if (additionalData.firstName && (!existingData.firstName || existingData.firstName === '')) {
-        updates.firstName = additionalData.firstName;
-      }
-      
-      if (additionalData.lastName && (!existingData.lastName || existingData.lastName === '')) {
-        updates.lastName = additionalData.lastName;
-      }
-      
-      if (additionalData.username && (!existingData.username || existingData.username === '')) {
-        updates.username = additionalData.username;
-      }
-      
-      if (additionalData.phoneNumber && (!existingData.phoneNumber || existingData.phoneNumber === '')) {
-        updates.phoneNumber = additionalData.phoneNumber;
-      }
-      
-      if (additionalData.termsAccepted && !existingData.termsAccepted) {
-        updates.termsAccepted = additionalData.termsAccepted;
-        updates.termsAcceptedDate = additionalData.termsAcceptedDate || new Date().toISOString();
+      // For sign-up data, we want to populate all fields even if they exist but are empty
+      if (hasAllRequiredFields) {
+        // This is likely a sign-up operation, so ensure all fields are updated
+        if (additionalData.firstName) updates.firstName = additionalData.firstName;
+        if (additionalData.lastName) updates.lastName = additionalData.lastName;
+        if (additionalData.username) updates.username = additionalData.username;
+        if (additionalData.phoneNumber) updates.phoneNumber = additionalData.phoneNumber;
+        if (additionalData.termsAccepted) updates.termsAccepted = additionalData.termsAccepted;
+        if (additionalData.termsAcceptedDate) updates.termsAcceptedDate = additionalData.termsAcceptedDate;
+      } else {
+        // This is likely an update operation, so only update missing fields
+        if (additionalData.firstName && (!existingData.firstName || existingData.firstName === '')) {
+          updates.firstName = additionalData.firstName;
+        }
+        
+        if (additionalData.lastName && (!existingData.lastName || existingData.lastName === '')) {
+          updates.lastName = additionalData.lastName;
+        }
+        
+        if (additionalData.username && (!existingData.username || existingData.username === '')) {
+          updates.username = additionalData.username;
+        }
+        
+        if (additionalData.phoneNumber && (!existingData.phoneNumber || existingData.phoneNumber === '')) {
+          updates.phoneNumber = additionalData.phoneNumber;
+        }
+        
+        if (additionalData.termsAccepted && !existingData.termsAccepted) {
+          updates.termsAccepted = additionalData.termsAccepted;
+          updates.termsAcceptedDate = additionalData.termsAcceptedDate || new Date().toISOString();
+        }
       }
       
       // Always ensure email is current
@@ -235,6 +281,20 @@ export async function createUserDocument(user, additionalData = {}) {
           
           if (updateError.message.includes("Missing or insufficient permissions")) {
             console.warn("Permission error detected during update. This usually happens if the Firestore security rules don't allow the operation.");
+            
+            // Save data to localStorage for recovery during next login if we have all required fields
+            if (hasAllRequiredFields) {
+              console.log("Saving user data to localStorage for recovery during next login");
+              localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify({
+                firstName: additionalData.firstName,
+                lastName: additionalData.lastName,
+                username: additionalData.username,
+                phoneNumber: additionalData.phoneNumber,
+                termsAccepted: additionalData.termsAccepted || false,
+                termsAcceptedDate: additionalData.termsAcceptedDate || null
+              }));
+            }
+            
             throw updateError; // Rethrow so it can be handled by the caller's retry mechanism
           }
           

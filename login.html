@@ -137,18 +137,67 @@
             const existingData = userDoc.data();
             const updates = {};
             
-            // Only update fields that don't already exist
-            if (!existingData.firstName && userData.firstName) updates.firstName = userData.firstName;
-            if (!existingData.lastName && userData.lastName) updates.lastName = userData.lastName;
-            if (!existingData.username && userData.username) updates.username = userData.username;
-            if (!existingData.phoneNumber && userData.phoneNumber) updates.phoneNumber = userData.phoneNumber;
+            // Always update fields from pending data, overriding existing empty fields
+            if (userData.firstName && (!existingData.firstName || existingData.firstName === '')) {
+              updates.firstName = userData.firstName;
+            }
+            
+            if (userData.lastName && (!existingData.lastName || existingData.lastName === '')) {
+              updates.lastName = userData.lastName;
+            }
+            
+            if (userData.username && (!existingData.username || existingData.username === '')) {
+              updates.username = userData.username;
+            }
+            
+            if (userData.phoneNumber && (!existingData.phoneNumber || existingData.phoneNumber === '')) {
+              updates.phoneNumber = userData.phoneNumber;
+            }
+            
+            if (userData.termsAccepted && !existingData.termsAccepted) {
+              updates.termsAccepted = userData.termsAccepted;
+              updates.termsAcceptedDate = userData.termsAcceptedDate || new Date().toISOString();
+            }
             
             if (Object.keys(updates).length > 0) {
+              console.log("Applying recovered data to user document:", updates);
               await updateDoc(userRef, updates);
-              console.log("Updated user document with recovered data:", updates);
+              console.log("Updated user document with recovered data successfully");
+              
+              // Make a second attempt to ensure data is properly saved
+              await new Promise(resolve => setTimeout(resolve, 500));
+              const verifyDoc = await getDoc(userRef);
+              const verifyData = verifyDoc.data();
+              
+              // Check if data was actually saved
+              let missingFields = [];
+              if (!verifyData.firstName || verifyData.firstName === '') missingFields.push('firstName');
+              if (!verifyData.lastName || verifyData.lastName === '') missingFields.push('lastName');
+              if (!verifyData.username || verifyData.username === '') missingFields.push('username');
+              if (!verifyData.phoneNumber || verifyData.phoneNumber === '') missingFields.push('phoneNumber');
+              
+              if (missingFields.length > 0) {
+                console.warn("Data recovery verification failed. Still missing fields:", missingFields);
+                // Try one more time with forceful update
+                const forceUpdates = {};
+                missingFields.forEach(field => {
+                  if (userData[field]) forceUpdates[field] = userData[field];
+                });
+                
+                if (Object.keys(forceUpdates).length > 0) {
+                  console.log("Forcing update of missing fields:", forceUpdates);
+                  await updateDoc(userRef, forceUpdates);
+                  console.log("Forced update completed");
+                }
+              } else {
+                console.log("Data recovery verification confirmed all fields are present");
+              }
+            } else {
+              console.log("No updates needed - user document already has all required data");
             }
           } else {
             // Create a new document with the pending data
+            console.log("Creating new user document with recovered data");
             await setDoc(userRef, {
               email: user.email,
               firstName: userData.firstName || '',
@@ -157,7 +206,9 @@
               phoneNumber: userData.phoneNumber || '',
               termsAccepted: userData.termsAccepted || false,
               termsAcceptedDate: userData.termsAcceptedDate || null,
-              createdAt: new Date()
+              createdAt: new Date().toISOString(),
+              isAdmin: false,
+              isSuperAdmin: false
             });
             console.log("Created new user document with recovered data");
           }
@@ -167,7 +218,11 @@
           console.log("Recovered data and removed from localStorage");
         } catch (error) {
           console.error("Error recovering user data:", error);
+          // Keep the data in localStorage for another attempt
+          console.log("Keeping data in localStorage for another recovery attempt");
         }
+      } else {
+        console.log("No pending user data found in localStorage");
       }
     }
 

@@ -112,21 +112,67 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log("Authentication account created successfully. UID:", user.uid);
         
+        // Save user data to localStorage first as a safety measure
+        console.log("Saving user data to localStorage as a backup");
+        localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
+        
         // Save the user data to Firestore using the createUserDocument function
+        let firestoreSaveSuccess = false;
         try {
           console.log("Saving user data to Firestore:", userData);
           await createUserDocument(user, userData);
           console.log("User data saved successfully to Firestore");
+          firestoreSaveSuccess = true;
+          
+          // Double-check that the data was actually saved properly
+          const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+          const { db } = await import("./firebase-config.js");
+          
+          console.log("Verifying user data was saved correctly");
+          const userRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userRef);
+          
+          if (userDoc.exists()) {
+            const savedData = userDoc.data();
+            console.log("Retrieved saved user data:", savedData);
+            
+            // Check if all fields were saved properly
+            const requiredFields = ['firstName', 'lastName', 'username', 'phoneNumber'];
+            const missingFields = [];
+            
+            requiredFields.forEach(field => {
+              if (!savedData[field] || savedData[field] === '') {
+                missingFields.push(field);
+              }
+            });
+            
+            if (missingFields.length > 0) {
+              console.warn("Some required fields are missing or empty:", missingFields);
+              firestoreSaveSuccess = false;
+              throw new Error(`Data was not saved completely. Missing fields: ${missingFields.join(', ')}`);
+            } else {
+              console.log("All required fields were saved correctly");
+              // Now that we're sure data is saved, we can remove the localStorage backup
+              localStorage.removeItem(`pendingUserData_${user.uid}`);
+            }
+          } else {
+            console.warn("User document doesn't exist after save attempt");
+            firestoreSaveSuccess = false;
+            throw new Error("User document doesn't exist after save attempt");
+          }
         } catch (firestoreError) {
           console.error("Error saving user data to Firestore:", firestoreError);
           
-          // Fallback: Save to localStorage if Firestore save fails
-          localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
-          console.log("User data saved to localStorage as fallback");
+          // We already saved to localStorage above as a backup
+          console.log("User data was already saved to localStorage as fallback");
         }
         
-        // Show success message
-        alert("✅ Account created successfully! You will now be redirected to the login page.");
+        // Show success message based on save status
+        if (firestoreSaveSuccess) {
+          alert("✅ Account created successfully! You will now be redirected to the login page.");
+        } else {
+          alert("✅ Account created, but there was an issue saving some of your information. It will be recovered when you log in.");
+        }
         
         // Navigate to login page
         window.location.href = "login.html";
