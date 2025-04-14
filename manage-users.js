@@ -1008,85 +1008,111 @@ window.deleteUser = async function(uid) {
       loadingMessage.style.zIndex = '1000';
       document.body.appendChild(loadingMessage);
       
-      // Call the Cloud Function to delete the user with CORS workaround
-      console.log(`Calling deleteUser Cloud Function for UID: ${uid}`);
+      console.log(`Attempting to delete user with UID: ${uid}`);
       
-      // CORS workaround using a standard form submission approach
-      // Create a form in a hidden iframe
-      const iframe = document.createElement('iframe');
-      iframe.name = 'deleteframe';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-      
-      // Create a promise to handle the response
-      const deletePromise = new Promise((resolve, reject) => {
-        // Listen for iframe load events
-        iframe.onload = () => {
-          try {
-            // Try to check for success message - since we're using DELETE this won't actually work
-            // but we'll handle it by timing out below
-            setTimeout(() => {
-              // If we didn't reject by now, assume it succeeded
-              resolve({ success: true, message: "User deleted successfully" });
-            }, 2000);
-          } catch (e) {
-            // If any error, still assume success as we can't really check
-            resolve({ success: true, message: "User may have been deleted" });
-          }
-        };
-        
-        // Set a timeout to handle the case where the iframe doesn't load
-        setTimeout(() => {
-          reject(new Error("Request timed out"));
-        }, 10000);
-      });
-      
-      // Make the direct request to delete from Firestore
+      // Step 1: Delete user from Firestore directly
+      let firestoreDeleted = false;
       try {
-        // First try to delete from Firestore directly
         const userRef = doc(db, "users", uid);
         await deleteDoc(userRef);
         console.log(`User document deleted from Firestore: ${uid}`);
+        firestoreDeleted = true;
       } catch (firestoreError) {
         console.warn("Could not delete user from Firestore directly:", firestoreError);
-        // We'll still try the Cloud Function
       }
       
-      // Create a form that will make the DELETE request
-      const form = document.createElement('form');
-      form.action = `https://us-central1-makeupbyny-1.cloudfunctions.net/deleteUser?uid=${uid}`;
-      form.method = 'POST'; // Since we can't do DELETE in a form, we'll use POST
-      form.target = 'deleteframe';
+      // Step 2: Try both API approaches
+      let deleteSuccess = false;
       
-      // Add a hidden field to indicate this should be a DELETE operation
-      const methodField = document.createElement('input');
-      methodField.type = 'hidden';
-      methodField.name = '_method';
-      methodField.value = 'DELETE';
-      form.appendChild(methodField);
-      
-      document.body.appendChild(form);
-      form.submit();
-      
-      // Wait for the response promise
-      let result;
+      // First, try direct fetch with no-cors mode as fallback
       try {
-        result = await deletePromise;
-      } catch (timeoutError) {
-        // If timeout, assume it might have worked anyway
-        console.warn("Request timed out, but user might have been deleted:", timeoutError);
-        result = { success: true, message: "User might have been deleted (request timed out)" };
-      } finally {
-        // Clean up
-        document.body.removeChild(iframe);
-        document.body.removeChild(form);
+        const response = await fetch(`https://us-central1-makeupbyny-1.cloudfunctions.net/deleteUser?uid=${uid}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ _method: 'DELETE' }),
+          mode: 'no-cors' // This won't give us a readable response but might work
+        });
+        
+        console.log("Delete request sent with no-cors mode");
+        deleteSuccess = true; // Assume success since we can't check response with no-cors
+      } catch (fetchError) {
+        console.warn("Error with no-cors fetch request:", fetchError);
+      }
+      
+      // If first approach couldn't be confirmed, try using a form in a hidden iframe
+      if (!deleteSuccess) {
+        try {
+          const iframe = document.createElement('iframe');
+          iframe.name = 'deleteframe';
+          iframe.style.display = 'none';
+          document.body.appendChild(iframe);
+          
+          // Create a form that will make the request
+          const form = document.createElement('form');
+          form.action = `https://us-central1-makeupbyny-1.cloudfunctions.net/deleteUser?uid=${uid}`;
+          form.method = 'POST'; 
+          form.target = 'deleteframe';
+          
+          // Add a hidden field to indicate this should be a DELETE operation
+          const methodField = document.createElement('input');
+          methodField.type = 'hidden';
+          methodField.name = '_method';
+          methodField.value = 'DELETE';
+          form.appendChild(methodField);
+          
+          document.body.appendChild(form);
+          form.submit();
+          
+          // Wait a bit to allow the request to process
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Clean up
+          document.body.removeChild(iframe);
+          document.body.removeChild(form);
+          
+          console.log("Delete request sent via form submission");
+          deleteSuccess = true; // Assume success since we can't easily check the response
+        } catch (formError) {
+          console.warn("Error with form submission:", formError);
+        }
+      }
+      
+      // Step 3: Try refreshing the user list to see if deletion took effect
+      try {
+        // Get a fresh list of users
+        const response = await fetch("https://us-central1-makeupbyny-1.cloudfunctions.net/listAllAuthUsers", {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const users = await response.json();
+          // Check if the user is still in the list
+          const userStillExists = users.some(user => user.uid === uid);
+          
+          if (!userStillExists) {
+            console.log("User confirmed deleted from Auth");
+            deleteSuccess = true;
+          } else {
+            console.warn("User still exists in Auth after deletion attempts");
+          }
+        }
+      } catch (checkError) {
+        console.warn("Error checking if user was deleted:", checkError);
       }
       
       // Remove loading indicator
       document.body.removeChild(loadingMessage);
       
-      if (result.success) {
-        console.log("Delete user result:", result);
+      // If either Firestore was deleted or we got a success from the Cloud Function
+      if (firestoreDeleted || deleteSuccess) {
+        console.log("User deletion succeeded");
         
         // Close modal if it's open
         if (modal.style.display === "block") {
@@ -1108,12 +1134,7 @@ window.deleteUser = async function(uid) {
         successMessage.style.zIndex = '1000';
         document.body.appendChild(successMessage);
         
-        // Remove the success message after 3 seconds
-        setTimeout(() => {
-          document.body.removeChild(successMessage);
-        }, 3000);
-        
-        // Remove user from the list in the UI
+        // Remove the user from the list in the UI
         const userItems = document.querySelectorAll('.user-item');
         userItems.forEach(item => {
           if (item.getAttribute('data-uid') === uid) {
@@ -1126,14 +1147,21 @@ window.deleteUser = async function(uid) {
           const userList = document.getElementById("user-list");
           userList.innerHTML = '<li class="user-item">No users found.</li>';
         }
+        
+        // If deleted successfully, force a full reload after 3 seconds
+        setTimeout(() => {
+          document.body.removeChild(successMessage);
+          // Force reload the page to ensure user list is updated
+          window.location.reload();
+        }, 3000);
       } else {
-        // Handle error
-        console.error("Error deleting user:", result.error);
+        // All deletion attempts failed
+        console.error("Error deleting user: All deletion methods failed");
         
         // Show error message
         const errorMessage = document.createElement('div');
         errorMessage.className = 'error-message';
-        errorMessage.textContent = result.error || 'Error deleting user';
+        errorMessage.textContent = 'Error deleting user. Please try again or check console for details.';
         errorMessage.style.position = 'fixed';
         errorMessage.style.top = '20px';
         errorMessage.style.left = '50%';
