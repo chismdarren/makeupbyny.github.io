@@ -55,6 +55,168 @@ const passwordManagementStyles = `
   #password-reset-result button:hover {
     background-color: #e7e7e7;
   }
+  
+  /* User stats dashboard */
+  .user-stats-dashboard {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .stat-card {
+    flex: 1;
+    min-width: 200px;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+    transition: transform 0.3s;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stat-card.active-users {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196F3;
+  }
+  
+  .stat-card.super-admins {
+    background-color: #e8f5e9;
+    border-left: 4px solid #4CAF50;
+  }
+  
+  .stat-card.admins {
+    background-color: #fff3e0;
+    border-left: 4px solid #FF9800;
+  }
+  
+  .stat-card.disabled-users {
+    background-color: #ffebee;
+    border-left: 4px solid #f44336;
+  }
+  
+  .stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+  
+  .stat-label {
+    color: #666;
+    font-size: 14px;
+  }
+  
+  .stat-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  /* Filtering styles */
+  .filter-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+  }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-box {
+    flex: 2;
+    min-width: 300px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .filter-options {
+    display: flex;
+    gap: 10px;
+  }
+
+  .filter-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .filter-stats {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .filter-clear {
+    background-color: transparent;
+    border: none;
+    color: #2196F3;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    font-size: 14px;
+  }
+
+  .sort-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sort-group select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+  }
+
+  .highlight {
+    background-color: #ffeb3b;
+    padding: 0 2px;
+  }
+
+  /* Add animation for showing/hiding user items */
+  .user-item {
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .user-item.hidden {
+    display: none;
+    opacity: 0;
+  }
+
+  .user-item.visible {
+    display: block;
+    opacity: 1;
+  }
 `;
 
 // Add the styles to the document head
@@ -65,7 +227,543 @@ document.addEventListener('DOMContentLoaded', () => {
   document.head.appendChild(styleElement);
   
   console.log("Manage Users page loaded - styles initialized");
+  
+  // Initialize stats dashboard and filters after DOM is loaded
+  initializeUserStatsDashboard();
+  initializeFilters();
 });
+
+// Initialize user stats dashboard
+function initializeUserStatsDashboard() {
+  const content = document.getElementById("content");
+  if (!content) return;
+  
+  // Create stats dashboard UI
+  const dashboardContainer = document.createElement('div');
+  dashboardContainer.className = 'user-stats-dashboard';
+  dashboardContainer.innerHTML = `
+    <div class="stat-card active-users">
+      <div class="stat-icon">👥</div>
+      <div class="stat-number" id="active-users-count">-</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-card super-admins">
+      <div class="stat-icon">🔑</div>
+      <div class="stat-number" id="super-admin-count">-</div>
+      <div class="stat-label">Super Admins</div>
+    </div>
+    <div class="stat-card admins">
+      <div class="stat-icon">⚙️</div>
+      <div class="stat-number" id="admin-count">-</div>
+      <div class="stat-label">Admins</div>
+    </div>
+    <div class="stat-card disabled-users">
+      <div class="stat-icon">🚫</div>
+      <div class="stat-number" id="disabled-users-count">-</div>
+      <div class="stat-label">Disabled Users</div>
+    </div>
+  `;
+  
+  // Insert dashboard at the top of the content
+  content.insertBefore(dashboardContainer, content.firstChild);
+}
+
+// Update user statistics based on loaded user data
+function updateUserStatistics(users) {
+  // Initialize counts
+  let activeUserCount = 0;
+  let superAdminCount = 0;
+  let adminCount = 0;
+  let disabledUserCount = 0;
+  
+  // Process users from the API
+  const processedUsers = [];
+  
+  // First pass: count disabled/active users from auth data
+  users.forEach(user => {
+    if (user.disabled) {
+      disabledUserCount++;
+    } else {
+      activeUserCount++;
+    }
+    
+    // Store simplified user data for second pass
+    processedUsers.push({
+      uid: user.uid,
+      email: user.email,
+      disabled: user.disabled,
+      isAdmin: false,
+      isSuperAdmin: false
+    });
+  });
+  
+  // Second pass: fetch role information from Firestore and update admin counts
+  // This is an async operation, but we'll update the UI as soon as we have the basic counts
+  setTimeout(async () => {
+    try {
+      // Get admin and super admin counts from Firestore
+      const usersRef = collection(db, "users");
+      
+      // Query for super admins
+      const superAdminQuery = query(usersRef, where("isSuperAdmin", "==", true));
+      const superAdminSnapshot = await getDocs(superAdminQuery);
+      const superAdminUids = new Set();
+      
+      superAdminSnapshot.forEach(doc => {
+        superAdminUids.add(doc.id);
+        // Update the user in our processed array
+        const userIndex = processedUsers.findIndex(u => u.uid === doc.id);
+        if (userIndex !== -1) {
+          processedUsers[userIndex].isSuperAdmin = true;
+          processedUsers[userIndex].isAdmin = true; // Super admins are also admins
+        }
+      });
+      
+      // Query for regular admins (exclude super admins)
+      const adminQuery = query(usersRef, where("isAdmin", "==", true));
+      const adminSnapshot = await getDocs(adminQuery);
+      
+      adminSnapshot.forEach(doc => {
+        // Don't double-count super admins
+        if (!superAdminUids.has(doc.id)) {
+          // Update the user in our processed array
+          const userIndex = processedUsers.findIndex(u => u.uid === doc.id);
+          if (userIndex !== -1) {
+            processedUsers[userIndex].isAdmin = true;
+          }
+        }
+      });
+      
+      // Recalculate counts based on the updated data
+      superAdminCount = superAdminUids.size;
+      
+      // Count regular admins (not super admins)
+      adminCount = 0;
+      processedUsers.forEach(user => {
+        if (user.isAdmin && !user.isSuperAdmin) {
+          adminCount++;
+        }
+      });
+      
+      // Update the dashboard with the refined counts
+      const superAdminElement = document.getElementById('super-admin-count');
+      const adminElement = document.getElementById('admin-count');
+      
+      if (superAdminElement) superAdminElement.textContent = superAdminCount;
+      if (adminElement) adminElement.textContent = adminCount;
+    } catch (error) {
+      console.error("Error getting admin counts:", error);
+    }
+  }, 0);
+  
+  // Update the dashboard with the initial counts
+  const activeUsersElement = document.getElementById('active-users-count');
+  const superAdminElement = document.getElementById('super-admin-count');
+  const adminElement = document.getElementById('admin-count');
+  const disabledUsersElement = document.getElementById('disabled-users-count');
+  
+  if (activeUsersElement) activeUsersElement.textContent = activeUserCount;
+  if (superAdminElement) superAdminElement.textContent = '...'; // Will be updated after Firestore query
+  if (adminElement) adminElement.textContent = '...'; // Will be updated after Firestore query
+  if (disabledUsersElement) disabledUsersElement.textContent = disabledUserCount;
+}
+
+// Initialize filtering functionality
+function initializeFilters() {
+  const content = document.getElementById("content");
+  if (!content) return;
+  
+  // Create filter UI
+  const filterContainer = document.createElement('div');
+  filterContainer.className = 'filter-container';
+  filterContainer.innerHTML = `
+    <div class="filter-row">
+      <div class="search-box">
+        <input type="text" id="user-search" placeholder="Search by email, name, or UID...">
+      </div>
+      <div class="filter-group">
+        <label>Filter by Role:</label>
+        <div class="filter-options">
+          <div class="filter-option">
+            <input type="checkbox" id="filter-all" checked>
+            <label for="filter-all">All</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-super-admin">
+            <label for="filter-super-admin">Super Admin</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-admin">
+            <label for="filter-admin">Admin</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-regular">
+            <label for="filter-regular">Regular User</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Filter by Status:</label>
+        <div class="filter-options">
+          <div class="filter-option">
+            <input type="checkbox" id="filter-status-all" checked>
+            <label for="filter-status-all">All</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-active">
+            <label for="filter-active">Active</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-disabled">
+            <label for="filter-disabled">Disabled</label>
+          </div>
+        </div>
+      </div>
+      <div class="sort-group">
+        <label for="sort-users">Sort by:</label>
+        <select id="sort-users">
+          <option value="email-asc">Email (A-Z)</option>
+          <option value="email-desc">Email (Z-A)</option>
+          <option value="role-asc">Role (User → Admin)</option>
+          <option value="role-desc">Role (Admin → User)</option>
+          <option value="status-active">Status (Active first)</option>
+          <option value="status-disabled">Status (Disabled first)</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-stats">
+        Showing <span id="filtered-count">0</span> of <span id="total-count">0</span> users
+        <button class="filter-clear" id="clear-filters">Clear Filters</button>
+      </div>
+    </div>
+  `;
+  
+  // Insert filter container before the user list
+  const userListContainer = document.querySelector(".user-list-container");
+  if (userListContainer) {
+    content.insertBefore(filterContainer, userListContainer);
+  } else {
+    // If the container doesn't exist yet, append it to content
+    content.appendChild(filterContainer);
+  }
+  
+  // Add event listeners after creating the elements
+  setupFilterEventListeners();
+}
+
+// Setup event listeners for filters
+function setupFilterEventListeners() {
+  // Search input
+  const searchInput = document.getElementById('user-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilters);
+  }
+  
+  // Role filter checkboxes
+  const filterAll = document.getElementById('filter-all');
+  const filterSuperAdmin = document.getElementById('filter-super-admin');
+  const filterAdmin = document.getElementById('filter-admin');
+  const filterRegular = document.getElementById('filter-regular');
+  
+  // Status filter checkboxes
+  const filterStatusAll = document.getElementById('filter-status-all');
+  const filterActive = document.getElementById('filter-active');
+  const filterDisabled = document.getElementById('filter-disabled');
+  
+  // Sort dropdown
+  const sortSelect = document.getElementById('sort-users');
+  
+  // Clear filters button
+  const clearFiltersBtn = document.getElementById('clear-filters');
+  
+  // Role filter logic
+  if (filterAll) {
+    filterAll.addEventListener('change', function() {
+      if (this.checked) {
+        // If "All" is checked, uncheck others
+        if (filterSuperAdmin) filterSuperAdmin.checked = false;
+        if (filterAdmin) filterAdmin.checked = false;
+        if (filterRegular) filterRegular.checked = false;
+      } else {
+        // If "All" is unchecked and no other is checked, check it again
+        if (filterSuperAdmin && filterAdmin && filterRegular && 
+            !filterSuperAdmin.checked && !filterAdmin.checked && !filterRegular.checked) {
+          this.checked = true;
+        }
+      }
+      applyFilters();
+    });
+  }
+  
+  // When any role filter other than "All" is checked
+  [filterSuperAdmin, filterAdmin, filterRegular].forEach(checkbox => {
+    if (checkbox) {
+      checkbox.addEventListener('change', function() {
+        if (this.checked) {
+          // If any specific role is checked, uncheck "All"
+          if (filterAll) filterAll.checked = false;
+        } else {
+          // If all specific roles are unchecked, check "All"
+          if (filterAll && filterSuperAdmin && filterAdmin && filterRegular && 
+              !filterSuperAdmin.checked && !filterAdmin.checked && !filterRegular.checked) {
+            filterAll.checked = true;
+          }
+        }
+        applyFilters();
+      });
+    }
+  });
+  
+  // Status filter logic
+  if (filterStatusAll) {
+    filterStatusAll.addEventListener('change', function() {
+      if (this.checked) {
+        // If "All" is checked, uncheck others
+        if (filterActive) filterActive.checked = false;
+        if (filterDisabled) filterDisabled.checked = false;
+      } else {
+        // If "All" is unchecked and no other is checked, check it again
+        if (filterActive && filterDisabled && !filterActive.checked && !filterDisabled.checked) {
+          this.checked = true;
+        }
+      }
+      applyFilters();
+    });
+  }
+  
+  // When any status filter other than "All" is checked
+  [filterActive, filterDisabled].forEach(checkbox => {
+    if (checkbox) {
+      checkbox.addEventListener('change', function() {
+        if (this.checked) {
+          // If any specific status is checked, uncheck "All"
+          if (filterStatusAll) filterStatusAll.checked = false;
+        } else {
+          // If all specific statuses are unchecked, check "All"
+          if (filterStatusAll && filterActive && filterDisabled && 
+              !filterActive.checked && !filterDisabled.checked) {
+            filterStatusAll.checked = true;
+          }
+        }
+        applyFilters();
+      });
+    }
+  });
+  
+  // Add sort event listener
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function() {
+      applyFilters();
+    });
+  }
+  
+  // Clear filters button
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', function() {
+      if (searchInput) searchInput.value = '';
+      if (filterAll) filterAll.checked = true;
+      if (filterSuperAdmin) filterSuperAdmin.checked = false;
+      if (filterAdmin) filterAdmin.checked = false;
+      if (filterRegular) filterRegular.checked = false;
+      if (filterStatusAll) filterStatusAll.checked = true;
+      if (filterActive) filterActive.checked = false;
+      if (filterDisabled) filterDisabled.checked = false;
+      if (sortSelect) sortSelect.value = 'email-asc';
+      applyFilters();
+    });
+  }
+}
+
+// Apply filters to the user list
+function applyFilters() {
+  const userItems = document.querySelectorAll('.user-item');
+  const searchInput = document.getElementById('user-search');
+  const filterAll = document.getElementById('filter-all');
+  const filterSuperAdmin = document.getElementById('filter-super-admin');
+  const filterAdmin = document.getElementById('filter-admin');
+  const filterRegular = document.getElementById('filter-regular');
+  const filterStatusAll = document.getElementById('filter-status-all');
+  const filterActive = document.getElementById('filter-active');
+  const filterDisabled = document.getElementById('filter-disabled');
+  const sortSelect = document.getElementById('sort-users');
+  
+  // Get search term
+  const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+  
+  // Collect all visible users to sort them later
+  const visibleUsers = [];
+  let totalCount = 0;
+  
+  userItems.forEach(item => {
+    // Skip the "No users found" message or no-results message
+    if (item.textContent.includes('No users found.') || item.classList.contains('no-results-message')) {
+      return;
+    }
+    
+    totalCount++;
+    
+    // Get the item's text content
+    const userInfo = item.querySelector('.user-info').textContent.toLowerCase();
+    
+    // Check if the item matches the search term
+    const matchesSearch = !searchTerm || userInfo.includes(searchTerm);
+    
+    // Check if the item matches the role filter
+    let matchesRole = false;
+    
+    // Get role information
+    const isSuperAdmin = item.querySelector('.super-admin-role') !== null;
+    const isAdmin = (item.querySelector('.admin-role') !== null) && !isSuperAdmin;
+    const isRegularUser = (item.querySelector('.user-role') !== null) && !isSuperAdmin && !isAdmin;
+    
+    if (filterAll && filterAll.checked) {
+      matchesRole = true;
+    } else {
+      if ((filterSuperAdmin && filterSuperAdmin.checked && isSuperAdmin) ||
+          (filterAdmin && filterAdmin.checked && isAdmin) ||
+          (filterRegular && filterRegular.checked && isRegularUser)) {
+        matchesRole = true;
+      }
+    }
+    
+    // Check if the item matches the status filter
+    let matchesStatus = false;
+    
+    // Get status information
+    const isActive = userInfo.includes('status:</strong> active');
+    const isDisabled = userInfo.includes('status:</strong> disabled');
+    
+    if (filterStatusAll && filterStatusAll.checked) {
+      matchesStatus = true;
+    } else {
+      if ((filterActive && filterActive.checked && isActive) ||
+          (filterDisabled && filterDisabled.checked && isDisabled)) {
+        matchesStatus = true;
+      }
+    }
+    
+    // Apply filter
+    const isVisible = matchesSearch && matchesRole && matchesStatus;
+    
+    if (isVisible) {
+      // Get the email for sorting
+      const emailMatch = userInfo.match(/email:<\/strong> ([^|]+)/i);
+      const email = emailMatch ? emailMatch[1].trim().toLowerCase() : '';
+      
+      // Add to visible users array with metadata for sorting
+      visibleUsers.push({
+        element: item,
+        email: email,
+        isSuperAdmin: isSuperAdmin,
+        isAdmin: isAdmin,
+        isRegularUser: isRegularUser,
+        isActive: isActive,
+        isDisabled: isDisabled
+      });
+      
+      // If search term exists, highlight matches
+      if (searchTerm) {
+        // First remove any existing highlights
+        const highlighted = item.innerHTML;
+        const cleaned = highlighted.replace(/<span class="highlight">|<\/span>/g, '');
+        item.innerHTML = cleaned;
+        
+        // Then add new highlights
+        if (searchTerm.trim() !== '') {
+          const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+          item.innerHTML = item.innerHTML.replace(regex, match => `<span class="highlight">${match}</span>`);
+        }
+      }
+    } else {
+      // Hide non-matching items
+      item.classList.add('hidden');
+      item.classList.remove('visible');
+    }
+  });
+  
+  // Sort the visible users based on selected sorting option
+  if (sortSelect) {
+    const sortBy = sortSelect.value;
+    
+    visibleUsers.sort((a, b) => {
+      switch(sortBy) {
+        case 'email-asc':
+          return a.email.localeCompare(b.email);
+        case 'email-desc':
+          return b.email.localeCompare(a.email);
+        case 'role-asc':
+          // Role order: Regular User (lowest) -> Admin -> Super Admin (highest)
+          const roleValueA = a.isSuperAdmin ? 3 : a.isAdmin ? 2 : 1;
+          const roleValueB = b.isSuperAdmin ? 3 : b.isAdmin ? 2 : 1;
+          return roleValueA - roleValueB;
+        case 'role-desc':
+          // Role order: Super Admin (highest) -> Admin -> Regular User (lowest)
+          const roleValueDescA = a.isSuperAdmin ? 3 : a.isAdmin ? 2 : 1;
+          const roleValueDescB = b.isSuperAdmin ? 3 : b.isAdmin ? 2 : 1;
+          return roleValueDescB - roleValueDescA;
+        case 'status-active':
+          return a.isActive && !b.isActive ? -1 : !a.isActive && b.isActive ? 1 : 0;
+        case 'status-disabled':
+          return a.isDisabled && !b.isDisabled ? -1 : !a.isDisabled && b.isDisabled ? 1 : 0;
+        default:
+          return 0;
+      }
+    });
+  }
+  
+  // Update the DOM order based on sorted results
+  const userList = document.getElementById("user-list");
+  if (userList) {
+    // First hide all user items
+    userItems.forEach(item => {
+      item.style.display = 'none';
+    });
+    
+    // Then append the visible items in sorted order
+    visibleUsers.forEach((userData, index) => {
+      userList.appendChild(userData.element);
+      userData.element.classList.remove('hidden');
+      userData.element.classList.add('visible');
+      userData.element.style.display = 'block';
+    });
+    
+    // Show "No users found" message if all are filtered out
+    if (visibleUsers.length === 0 && totalCount > 0) {
+      // Check if the no-results message already exists
+      let noResultsMessage = document.querySelector('.no-results-message');
+      
+      if (!noResultsMessage) {
+        noResultsMessage = document.createElement('li');
+        noResultsMessage.className = 'user-item no-results-message';
+        noResultsMessage.innerHTML = '<div class="user-info">No users match the current filters.</div>';
+        userList.appendChild(noResultsMessage);
+      } else {
+        noResultsMessage.style.display = 'block';
+      }
+    } else {
+      // Hide the no-results message if there are visible items
+      const noResultsMessage = document.querySelector('.no-results-message');
+      if (noResultsMessage) {
+        noResultsMessage.style.display = 'none';
+      }
+    }
+  }
+  
+  // Update counter
+  const filteredCountElement = document.getElementById('filtered-count');
+  const totalCountElement = document.getElementById('total-count');
+  
+  if (filteredCountElement) {
+    filteredCountElement.textContent = visibleUsers.length;
+  }
+  
+  if (totalCountElement) {
+    totalCountElement.textContent = totalCount;
+  }
+}
 
 // Synchronize superAdminUIDs with Firestore
 async function syncSuperAdmins() {
@@ -263,12 +961,19 @@ async function loadUsers() {
     const users = await response.json();
     console.log("Users received:", users.length);
 
+    // Update user statistics dashboard
+    updateUserStatistics(users);
+
     userList.innerHTML = ""; // Clear existing list
 
     // Check if there are users
     if (users.length === 0) {
       console.log("No users found");
       userList.innerHTML = '<li class="user-item">No users found.</li>';
+      
+      // Update filter counts
+      document.getElementById('filtered-count').textContent = "0";
+      document.getElementById('total-count').textContent = "0";
       return;
     }
 
@@ -362,10 +1067,20 @@ async function loadUsers() {
       });
     });
     
+    // Apply filters after loading users
+    applyFilters();
+    
     console.log("All users loaded successfully");
   } catch (error) {
     console.error("Error fetching users:", error);
     userList.innerHTML = '<li class="user-item">Error loading users.</li>';
+    
+    // Update filter counts in case of error
+    const filteredCountElement = document.getElementById('filtered-count');
+    const totalCountElement = document.getElementById('total-count');
+    
+    if (filteredCountElement) filteredCountElement.textContent = "0";
+    if (totalCountElement) totalCountElement.textContent = "0";
   }
 }
 
