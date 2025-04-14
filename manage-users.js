@@ -55,718 +55,276 @@ const passwordManagementStyles = `
   #password-reset-result button:hover {
     background-color: #e7e7e7;
   }
-  
-  /* User stats dashboard */
-  .user-stats-dashboard {
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    padding: 10px;
-    margin-bottom: 15px;
+`;
+
+// Add styles for filtering
+const filterStyles = `
+  .filter-section {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    font-size: 12px;
-  }
-  
-  .stat-card {
-    flex: 1;
-    min-width: 100px;
-    padding: 8px;
-    border-radius: 4px;
-    text-align: center;
-    border-left: 2px solid #eee;
-  }
-  
-  .stat-card.active-users {
-    background-color: #f8f9fa;
-    border-left-color: #2196F3;
-  }
-  
-  .stat-card.super-admins {
-    background-color: #f8f9fa;
-    border-left-color: #4CAF50;
-  }
-  
-  .stat-card.admins {
-    background-color: #f8f9fa;
-    border-left-color: #FF9800;
-  }
-  
-  .stat-card.disabled-users {
-    background-color: #f8f9fa;
-    border-left-color: #f44336;
-  }
-  
-  .stat-number {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 3px 0;
-  }
-  
-  .stat-label {
-    color: #666;
-    font-size: 11px;
-  }
-  
-  .stat-icon {
-    font-size: 14px;
-    margin-bottom: 3px;
-  }
-  
-  /* Filtering styles */
-  .filter-container {
     margin-bottom: 20px;
     padding: 15px;
     background-color: #f8f9fa;
     border-radius: 5px;
     border: 1px solid #e9ecef;
   }
-
-  .filter-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 10px;
-    align-items: center;
-  }
-
+  
   .filter-group {
-    flex: 1;
-    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-
-  .search-box {
-    flex: 2;
-    min-width: 300px;
-  }
-
-  .search-box input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-
-  .filter-group label {
-    display: block;
-    margin-bottom: 5px;
+  
+  .filter-label {
     font-weight: bold;
+    white-space: nowrap;
   }
-
-  .filter-options {
-    display: flex;
-    gap: 10px;
-  }
-
-  .filter-option {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .filter-stats {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #666;
-  }
-
-  .filter-clear {
-    background-color: transparent;
-    border: none;
-    color: #2196F3;
-    cursor: pointer;
-    text-decoration: underline;
-    padding: 0;
-    font-size: 14px;
-  }
-
-  .sort-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .sort-group select {
+  
+  .filter-control {
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid #ced4da;
     border-radius: 4px;
-    background-color: white;
+    min-width: 120px;
   }
-
-  .highlight {
-    background-color: #ffeb3b;
-    padding: 0 2px;
+  
+  .reset-filters {
+    padding: 8px 16px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
   }
-
-  /* Add animation for showing/hiding user items */
-  .user-item {
-    transition: opacity 0.3s ease-in-out;
+  
+  .reset-filters:hover {
+    background-color: #5a6268;
   }
-
-  .user-item.hidden {
-    display: none;
-    opacity: 0;
-  }
-
-  .user-item.visible {
-    display: block;
-    opacity: 1;
+  
+  .user-count {
+    margin-left: 10px;
+    font-style: italic;
+    color: #6c757d;
   }
 `;
 
-// Initialize stats dashboard and filters after DOM is loaded
+// Add the styles to the document head
 document.addEventListener('DOMContentLoaded', () => {
   // Add the styles to the document head
   const styleElement = document.createElement('style');
-  styleElement.textContent = passwordManagementStyles;
+  styleElement.textContent = passwordManagementStyles + filterStyles;
   document.head.appendChild(styleElement);
   
   console.log("Manage Users page loaded - styles initialized");
   
-  // Initialize filters first, then stats dashboard
+  // Initialize filters after page loads
   initializeFilters();
-  initializeUserStatsDashboard();
 });
 
-// Initialize user stats dashboard
-function initializeUserStatsDashboard() {
-  const content = document.getElementById("content");
-  if (!content) return;
-  
-  // Create stats dashboard UI
-  const dashboardContainer = document.createElement('div');
-  dashboardContainer.className = 'user-stats-dashboard';
-  dashboardContainer.innerHTML = `
-    <div class="stat-card active-users">
-      <div class="stat-icon">👥</div>
-      <div class="stat-number" id="active-users-count">-</div>
-      <div class="stat-label">Active Users</div>
-    </div>
-    <div class="stat-card super-admins">
-      <div class="stat-icon">🔑</div>
-      <div class="stat-number" id="super-admin-count">-</div>
-      <div class="stat-label">Super Admins</div>
-    </div>
-    <div class="stat-card admins">
-      <div class="stat-icon">⚙️</div>
-      <div class="stat-number" id="admin-count">-</div>
-      <div class="stat-label">Admins</div>
-    </div>
-    <div class="stat-card disabled-users">
-      <div class="stat-icon">🚫</div>
-      <div class="stat-number" id="disabled-users-count">-</div>
-      <div class="stat-label">Disabled Users</div>
-    </div>
-  `;
-  
-  // Check if there's a filter container to insert the dashboard after
-  const filterContainer = document.querySelector('.filter-container');
-  if (filterContainer) {
-    // Insert after the filter container
-    filterContainer.after(dashboardContainer);
-  } else {
-    // Insert at the top of the content as a fallback
-    content.insertBefore(dashboardContainer, content.firstChild);
-  }
-}
+// Global variable to store all users for filtering
+let allUsers = [];
 
-// Update user statistics based on loaded user data
-function updateUserStatistics(users) {
-  // Initialize counts
-  let activeUserCount = 0;
-  let superAdminCount = 0;
-  let adminCount = 0;
-  let disabledUserCount = 0;
-  
-  // Process users from the API
-  const processedUsers = [];
-  
-  // First pass: count disabled/active users from auth data
-  users.forEach(user => {
-    if (user.disabled) {
-      disabledUserCount++;
-    } else {
-      activeUserCount++;
-    }
-    
-    // Store simplified user data for second pass
-    processedUsers.push({
-      uid: user.uid,
-      email: user.email,
-      disabled: user.disabled,
-      isAdmin: false,
-      isSuperAdmin: false
-    });
-  });
-  
-  // Second pass: fetch role information from Firestore and update admin counts
-  // This is an async operation, but we'll update the UI as soon as we have the basic counts
-  setTimeout(async () => {
-    try {
-      // Get admin and super admin counts from Firestore
-      const usersRef = collection(db, "users");
-      
-      // Query for super admins
-      const superAdminQuery = query(usersRef, where("isSuperAdmin", "==", true));
-      const superAdminSnapshot = await getDocs(superAdminQuery);
-      const superAdminUids = new Set();
-      
-      superAdminSnapshot.forEach(doc => {
-        superAdminUids.add(doc.id);
-        // Update the user in our processed array
-        const userIndex = processedUsers.findIndex(u => u.uid === doc.id);
-        if (userIndex !== -1) {
-          processedUsers[userIndex].isSuperAdmin = true;
-          processedUsers[userIndex].isAdmin = true; // Super admins are also admins
-        }
-      });
-      
-      // Query for regular admins (exclude super admins)
-      const adminQuery = query(usersRef, where("isAdmin", "==", true));
-      const adminSnapshot = await getDocs(adminQuery);
-      
-      adminSnapshot.forEach(doc => {
-        // Don't double-count super admins
-        if (!superAdminUids.has(doc.id)) {
-          // Update the user in our processed array
-          const userIndex = processedUsers.findIndex(u => u.uid === doc.id);
-          if (userIndex !== -1) {
-            processedUsers[userIndex].isAdmin = true;
-          }
-        }
-      });
-      
-      // Recalculate counts based on the updated data
-      superAdminCount = superAdminUids.size;
-      
-      // Count regular admins (not super admins)
-      adminCount = 0;
-      processedUsers.forEach(user => {
-        if (user.isAdmin && !user.isSuperAdmin) {
-          adminCount++;
-        }
-      });
-      
-      // Update the dashboard with the refined counts
-      const superAdminElement = document.getElementById('super-admin-count');
-      const adminElement = document.getElementById('admin-count');
-      
-      if (superAdminElement) superAdminElement.textContent = superAdminCount;
-      if (adminElement) adminElement.textContent = adminCount;
-    } catch (error) {
-      console.error("Error getting admin counts:", error);
-    }
-  }, 0);
-  
-  // Update the dashboard with the initial counts
-  const activeUsersElement = document.getElementById('active-users-count');
-  const superAdminElement = document.getElementById('super-admin-count');
-  const adminElement = document.getElementById('admin-count');
-  const disabledUsersElement = document.getElementById('disabled-users-count');
-  
-  if (activeUsersElement) activeUsersElement.textContent = activeUserCount;
-  if (superAdminElement) superAdminElement.textContent = '...'; // Will be updated after Firestore query
-  if (adminElement) adminElement.textContent = '...'; // Will be updated after Firestore query
-  if (disabledUsersElement) disabledUsersElement.textContent = disabledUserCount;
-}
-
-// Initialize filtering functionality
+// Initialize filter UI
 function initializeFilters() {
-  const content = document.getElementById("content");
-  if (!content) return;
-  
-  // Create filter UI
+  // Create filter container
   const filterContainer = document.createElement('div');
-  filterContainer.className = 'filter-container';
+  filterContainer.className = 'filter-section';
   filterContainer.innerHTML = `
-    <div class="filter-row">
-      <div class="search-box">
-        <input type="text" id="user-search" placeholder="Search by email, name, or UID...">
-      </div>
-      <div class="filter-group">
-        <label>Filter by Role:</label>
-        <div class="filter-options">
-          <div class="filter-option">
-            <input type="checkbox" id="filter-all" checked>
-            <label for="filter-all">All</label>
-          </div>
-          <div class="filter-option">
-            <input type="checkbox" id="filter-super-admin">
-            <label for="filter-super-admin">Super Admin</label>
-          </div>
-          <div class="filter-option">
-            <input type="checkbox" id="filter-admin">
-            <label for="filter-admin">Admin</label>
-          </div>
-          <div class="filter-option">
-            <input type="checkbox" id="filter-regular">
-            <label for="filter-regular">Regular User</label>
-          </div>
-        </div>
-      </div>
+    <div class="filter-group">
+      <span class="filter-label">Sort By:</span>
+      <select id="sort-by" class="filter-control">
+        <option value="email">Email</option>
+        <option value="status">Status</option>
+        <option value="role">Role</option>
+        <option value="date">Date Created</option>
+      </select>
     </div>
-    <div class="filter-row">
-      <div class="filter-group">
-        <label>Filter by Status:</label>
-        <div class="filter-options">
-          <div class="filter-option">
-            <input type="checkbox" id="filter-status-all" checked>
-            <label for="filter-status-all">All</label>
-          </div>
-          <div class="filter-option">
-            <input type="checkbox" id="filter-active">
-            <label for="filter-active">Active</label>
-          </div>
-          <div class="filter-option">
-            <input type="checkbox" id="filter-disabled">
-            <label for="filter-disabled">Disabled</label>
-          </div>
-        </div>
-      </div>
-      <div class="sort-group">
-        <label for="sort-users">Sort by:</label>
-        <select id="sort-users">
-          <option value="email-asc">Email (A-Z)</option>
-          <option value="email-desc">Email (Z-A)</option>
-          <option value="role-asc">Role (User → Admin)</option>
-          <option value="role-desc">Role (Admin → User)</option>
-          <option value="status-active">Status (Active first)</option>
-          <option value="status-disabled">Status (Disabled first)</option>
-        </select>
-      </div>
+    <div class="filter-group">
+      <span class="filter-label">Direction:</span>
+      <select id="sort-direction" class="filter-control">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
     </div>
-    <div class="filter-row">
-      <div class="filter-stats">
-        Showing <span id="filtered-count">0</span> of <span id="total-count">0</span> users
-        <button class="filter-clear" id="clear-filters">Clear Filters</button>
-      </div>
+    <div class="filter-group">
+      <span class="filter-label">Status:</span>
+      <select id="filter-status" class="filter-control">
+        <option value="all">All</option>
+        <option value="active">Active</option>
+        <option value="disabled">Disabled</option>
+      </select>
     </div>
+    <div class="filter-group">
+      <span class="filter-label">Role:</span>
+      <select id="filter-role" class="filter-control">
+        <option value="all">All</option>
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+        <option value="superadmin">Super Admin</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Search:</span>
+      <input type="text" id="search-input" class="filter-control" placeholder="Email or name...">
+    </div>
+    <button id="reset-filters" class="reset-filters">Reset Filters</button>
+    <span id="user-count" class="user-count"></span>
   `;
   
   // Insert filter container before the user list
-  const userListContainer = document.querySelector(".user-list-container");
-  if (userListContainer) {
-    content.insertBefore(filterContainer, userListContainer);
-  } else {
-    // If the container doesn't exist yet, append it to content
-    content.appendChild(filterContainer);
-  }
-  
-  // Add event listeners after creating the elements
-  setupFilterEventListeners();
-}
-
-// Setup event listeners for filters
-function setupFilterEventListeners() {
-  // Search input
-  const searchInput = document.getElementById('user-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', applyFilters);
-  }
-  
-  // Role filter checkboxes
-  const filterAll = document.getElementById('filter-all');
-  const filterSuperAdmin = document.getElementById('filter-super-admin');
-  const filterAdmin = document.getElementById('filter-admin');
-  const filterRegular = document.getElementById('filter-regular');
-  
-  // Status filter checkboxes
-  const filterStatusAll = document.getElementById('filter-status-all');
-  const filterActive = document.getElementById('filter-active');
-  const filterDisabled = document.getElementById('filter-disabled');
-  
-  // Sort dropdown
-  const sortSelect = document.getElementById('sort-users');
-  
-  // Clear filters button
-  const clearFiltersBtn = document.getElementById('clear-filters');
-  
-  // Role filter logic
-  if (filterAll) {
-    filterAll.addEventListener('change', function() {
-      if (this.checked) {
-        // If "All" is checked, uncheck others
-        if (filterSuperAdmin) filterSuperAdmin.checked = false;
-        if (filterAdmin) filterAdmin.checked = false;
-        if (filterRegular) filterRegular.checked = false;
-      } else {
-        // If "All" is unchecked and no other is checked, check it again
-        if (filterSuperAdmin && filterAdmin && filterRegular && 
-            !filterSuperAdmin.checked && !filterAdmin.checked && !filterRegular.checked) {
-          this.checked = true;
-        }
-      }
-      applyFilters();
-    });
-  }
-  
-  // When any role filter other than "All" is checked
-  [filterSuperAdmin, filterAdmin, filterRegular].forEach(checkbox => {
-    if (checkbox) {
-      checkbox.addEventListener('change', function() {
-        if (this.checked) {
-          // If any specific role is checked, uncheck "All"
-          if (filterAll) filterAll.checked = false;
-        } else {
-          // If all specific roles are unchecked, check "All"
-          if (filterAll && filterSuperAdmin && filterAdmin && filterRegular && 
-              !filterSuperAdmin.checked && !filterAdmin.checked && !filterRegular.checked) {
-            filterAll.checked = true;
-          }
-        }
-        applyFilters();
-      });
-    }
-  });
-  
-  // Status filter logic
-  if (filterStatusAll) {
-    filterStatusAll.addEventListener('change', function() {
-      if (this.checked) {
-        // If "All" is checked, uncheck others
-        if (filterActive) filterActive.checked = false;
-        if (filterDisabled) filterDisabled.checked = false;
-      } else {
-        // If "All" is unchecked and no other is checked, check it again
-        if (filterActive && filterDisabled && !filterActive.checked && !filterDisabled.checked) {
-          this.checked = true;
-        }
-      }
-      applyFilters();
-    });
-  }
-  
-  // When any status filter other than "All" is checked
-  [filterActive, filterDisabled].forEach(checkbox => {
-    if (checkbox) {
-      checkbox.addEventListener('change', function() {
-        if (this.checked) {
-          // If any specific status is checked, uncheck "All"
-          if (filterStatusAll) filterStatusAll.checked = false;
-        } else {
-          // If all specific statuses are unchecked, check "All"
-          if (filterStatusAll && filterActive && filterDisabled && 
-              !filterActive.checked && !filterDisabled.checked) {
-            filterStatusAll.checked = true;
-          }
-        }
-        applyFilters();
-      });
-    }
-  });
-  
-  // Add sort event listener
-  if (sortSelect) {
-    sortSelect.addEventListener('change', function() {
-      applyFilters();
-    });
-  }
-  
-  // Clear filters button
-  if (clearFiltersBtn) {
-    clearFiltersBtn.addEventListener('click', function() {
-      if (searchInput) searchInput.value = '';
-      if (filterAll) filterAll.checked = true;
-      if (filterSuperAdmin) filterSuperAdmin.checked = false;
-      if (filterAdmin) filterAdmin.checked = false;
-      if (filterRegular) filterRegular.checked = false;
-      if (filterStatusAll) filterStatusAll.checked = true;
-      if (filterActive) filterActive.checked = false;
-      if (filterDisabled) filterDisabled.checked = false;
-      if (sortSelect) sortSelect.value = 'email-asc';
-      applyFilters();
-    });
-  }
-}
-
-// Apply filters to the user list
-function applyFilters() {
-  const userItems = document.querySelectorAll('.user-item');
-  const searchInput = document.getElementById('user-search');
-  const filterAll = document.getElementById('filter-all');
-  const filterSuperAdmin = document.getElementById('filter-super-admin');
-  const filterAdmin = document.getElementById('filter-admin');
-  const filterRegular = document.getElementById('filter-regular');
-  const filterStatusAll = document.getElementById('filter-status-all');
-  const filterActive = document.getElementById('filter-active');
-  const filterDisabled = document.getElementById('filter-disabled');
-  const sortSelect = document.getElementById('sort-users');
-  
-  // Get search term
-  const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-  
-  // Collect all visible users to sort them later
-  const visibleUsers = [];
-  let totalCount = 0;
-  
-  userItems.forEach(item => {
-    // Skip the "No users found" message or no-results message
-    if (item.textContent.includes('No users found.') || item.classList.contains('no-results-message')) {
-      return;
-    }
-    
-    totalCount++;
-    
-    // Get the item's text content
-    const userInfo = item.querySelector('.user-info').textContent.toLowerCase();
-    
-    // Check if the item matches the search term
-    const matchesSearch = !searchTerm || userInfo.includes(searchTerm);
-    
-    // Check if the item matches the role filter
-    let matchesRole = false;
-    
-    // Get role information
-    const isSuperAdmin = item.querySelector('.super-admin-role') !== null;
-    const isAdmin = (item.querySelector('.admin-role') !== null) && !isSuperAdmin;
-    const isRegularUser = (item.querySelector('.user-role') !== null) && !isSuperAdmin && !isAdmin;
-    
-    if (filterAll && filterAll.checked) {
-      matchesRole = true;
-    } else {
-      if ((filterSuperAdmin && filterSuperAdmin.checked && isSuperAdmin) ||
-          (filterAdmin && filterAdmin.checked && isAdmin) ||
-          (filterRegular && filterRegular.checked && isRegularUser)) {
-        matchesRole = true;
-      }
-    }
-    
-    // Check if the item matches the status filter
-    let matchesStatus = false;
-    
-    // Get status information
-    const isActive = userInfo.includes('status:</strong> active');
-    const isDisabled = userInfo.includes('status:</strong> disabled');
-    
-    if (filterStatusAll && filterStatusAll.checked) {
-      matchesStatus = true;
-    } else {
-      if ((filterActive && filterActive.checked && isActive) ||
-          (filterDisabled && filterDisabled.checked && isDisabled)) {
-        matchesStatus = true;
-      }
-    }
-    
-    // Apply filter
-    const isVisible = matchesSearch && matchesRole && matchesStatus;
-    
-    if (isVisible) {
-      // Get the email for sorting
-      const emailMatch = userInfo.match(/email:<\/strong> ([^|]+)/i);
-      const email = emailMatch ? emailMatch[1].trim().toLowerCase() : '';
-      
-      // Add to visible users array with metadata for sorting
-      visibleUsers.push({
-        element: item,
-        email: email,
-        isSuperAdmin: isSuperAdmin,
-        isAdmin: isAdmin,
-        isRegularUser: isRegularUser,
-        isActive: isActive,
-        isDisabled: isDisabled
-      });
-      
-      // If search term exists, highlight matches
-      if (searchTerm) {
-        // First remove any existing highlights
-        const highlighted = item.innerHTML;
-        const cleaned = highlighted.replace(/<span class="highlight">|<\/span>/g, '');
-        item.innerHTML = cleaned;
-        
-        // Then add new highlights
-        if (searchTerm.trim() !== '') {
-          const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-          item.innerHTML = item.innerHTML.replace(regex, match => `<span class="highlight">${match}</span>`);
-        }
-      }
-    } else {
-      // Hide non-matching items
-      item.classList.add('hidden');
-      item.classList.remove('visible');
-    }
-  });
-  
-  // Sort the visible users based on selected sorting option
-  if (sortSelect) {
-    const sortBy = sortSelect.value;
-    
-    visibleUsers.sort((a, b) => {
-      switch(sortBy) {
-        case 'email-asc':
-          return a.email.localeCompare(b.email);
-        case 'email-desc':
-          return b.email.localeCompare(a.email);
-        case 'role-asc':
-          // Role order: Regular User (lowest) -> Admin -> Super Admin (highest)
-          const roleValueA = a.isSuperAdmin ? 3 : a.isAdmin ? 2 : 1;
-          const roleValueB = b.isSuperAdmin ? 3 : b.isAdmin ? 2 : 1;
-          return roleValueA - roleValueB;
-        case 'role-desc':
-          // Role order: Super Admin (highest) -> Admin -> Regular User (lowest)
-          const roleValueDescA = a.isSuperAdmin ? 3 : a.isAdmin ? 2 : 1;
-          const roleValueDescB = b.isSuperAdmin ? 3 : b.isAdmin ? 2 : 1;
-          return roleValueDescB - roleValueDescA;
-        case 'status-active':
-          return a.isActive && !b.isActive ? -1 : !a.isActive && b.isActive ? 1 : 0;
-        case 'status-disabled':
-          return a.isDisabled && !b.isDisabled ? -1 : !a.isDisabled && b.isDisabled ? 1 : 0;
-        default:
-          return 0;
-      }
-    });
-  }
-  
-  // Update the DOM order based on sorted results
-  const userList = document.getElementById("user-list");
+  const userList = document.getElementById('user-list');
   if (userList) {
-    // First hide all user items
-    userItems.forEach(item => {
-      item.style.display = 'none';
+    userList.parentNode.insertBefore(filterContainer, userList);
+  }
+  
+  // Add event listeners to filters
+  document.getElementById('sort-by').addEventListener('change', applyFilters);
+  document.getElementById('sort-direction').addEventListener('change', applyFilters);
+  document.getElementById('filter-status').addEventListener('change', applyFilters);
+  document.getElementById('filter-role').addEventListener('change', applyFilters);
+  document.getElementById('search-input').addEventListener('input', applyFilters);
+  document.getElementById('reset-filters').addEventListener('click', resetFilters);
+}
+
+// Reset filters to default values
+function resetFilters() {
+  document.getElementById('sort-by').value = 'email';
+  document.getElementById('sort-direction').value = 'asc';
+  document.getElementById('filter-status').value = 'all';
+  document.getElementById('filter-role').value = 'all';
+  document.getElementById('search-input').value = '';
+  
+  applyFilters();
+}
+
+// Apply filters and sort users
+function applyFilters() {
+  if (allUsers.length === 0) return;
+  
+  const sortBy = document.getElementById('sort-by').value;
+  const sortDirection = document.getElementById('sort-direction').value;
+  const filterStatus = document.getElementById('filter-status').value;
+  const filterRole = document.getElementById('filter-role').value;
+  const searchTerm = document.getElementById('search-input').value.toLowerCase();
+  
+  // Filter users
+  let filteredUsers = [...allUsers];
+  
+  // Filter by status
+  if (filterStatus !== 'all') {
+    const isDisabled = filterStatus === 'disabled';
+    filteredUsers = filteredUsers.filter(user => user.disabled === isDisabled);
+  }
+  
+  // Filter by role
+  if (filterRole !== 'all') {
+    filteredUsers = filteredUsers.filter(user => {
+      if (filterRole === 'superadmin') return user.userData.isSuperAdmin;
+      if (filterRole === 'admin') return user.userData.isAdmin && !user.userData.isSuperAdmin;
+      return !user.userData.isAdmin; // regular users
     });
-    
-    // Then append the visible items in sorted order
-    visibleUsers.forEach((userData, index) => {
-      userList.appendChild(userData.element);
-      userData.element.classList.remove('hidden');
-      userData.element.classList.add('visible');
-      userData.element.style.display = 'block';
-    });
-    
-    // Show "No users found" message if all are filtered out
-    if (visibleUsers.length === 0 && totalCount > 0) {
-      // Check if the no-results message already exists
-      let noResultsMessage = document.querySelector('.no-results-message');
+  }
+  
+  // Filter by search term
+  if (searchTerm) {
+    filteredUsers = filteredUsers.filter(user => {
+      const email = (user.email || '').toLowerCase();
+      const firstName = (user.userData.firstName || '').toLowerCase();
+      const lastName = (user.userData.lastName || '').toLowerCase();
+      const username = (user.userData.username || '').toLowerCase();
       
-      if (!noResultsMessage) {
-        noResultsMessage = document.createElement('li');
-        noResultsMessage.className = 'user-item no-results-message';
-        noResultsMessage.innerHTML = '<div class="user-info">No users match the current filters.</div>';
-        userList.appendChild(noResultsMessage);
-      } else {
-        noResultsMessage.style.display = 'block';
-      }
-    } else {
-      // Hide the no-results message if there are visible items
-      const noResultsMessage = document.querySelector('.no-results-message');
-      if (noResultsMessage) {
-        noResultsMessage.style.display = 'none';
-      }
+      return email.includes(searchTerm) || 
+             firstName.includes(searchTerm) || 
+             lastName.includes(searchTerm) ||
+             username.includes(searchTerm);
+    });
+  }
+  
+  // Sort users
+  filteredUsers.sort((a, b) => {
+    let valueA, valueB;
+    
+    switch (sortBy) {
+      case 'email':
+        valueA = (a.email || '').toLowerCase();
+        valueB = (b.email || '').toLowerCase();
+        break;
+      case 'status':
+        valueA = a.disabled ? 'disabled' : 'active';
+        valueB = b.disabled ? 'disabled' : 'active';
+        break;
+      case 'role':
+        valueA = a.userData.isSuperAdmin ? 3 : (a.userData.isAdmin ? 2 : 1);
+        valueB = b.userData.isSuperAdmin ? 3 : (b.userData.isAdmin ? 2 : 1);
+        break;
+      case 'date':
+        // Get timestamp values
+        valueA = getTimestampValue(a.userData.createdAt) || 0;
+        valueB = getTimestampValue(b.userData.createdAt) || 0;
+        break;
+      default:
+        valueA = (a.email || '').toLowerCase();
+        valueB = (b.email || '').toLowerCase();
     }
+    
+    // Sort direction
+    let comparison = 0;
+    if (valueA > valueB) {
+      comparison = 1;
+    } else if (valueA < valueB) {
+      comparison = -1;
+    }
+    
+    return sortDirection === 'desc' ? -comparison : comparison;
+  });
+  
+  // Update user count
+  const userCount = document.getElementById('user-count');
+  if (userCount) {
+    userCount.textContent = `Showing ${filteredUsers.length} of ${allUsers.length} users`;
   }
   
-  // Update counter
-  const filteredCountElement = document.getElementById('filtered-count');
-  const totalCountElement = document.getElementById('total-count');
+  // Display filtered users
+  displayFilteredUsers(filteredUsers);
+}
+
+// Helper function to get timestamp value for sorting
+function getTimestampValue(timestamp) {
+  if (!timestamp) return 0;
   
-  if (filteredCountElement) {
-    filteredCountElement.textContent = visibleUsers.length;
+  try {
+    if (typeof timestamp.toDate === 'function') {
+      return timestamp.toDate().getTime();
+    } else if (timestamp instanceof Date) {
+      return timestamp.getTime();
+    } else if (typeof timestamp === 'string') {
+      return new Date(timestamp).getTime();
+    }
+  } catch (e) {
+    console.error("Error parsing timestamp:", e);
   }
   
-  if (totalCountElement) {
-    totalCountElement.textContent = totalCount;
+  return 0;
+}
+
+// Display filtered users in the UI
+function displayFilteredUsers(users) {
+  const userList = document.getElementById('user-list');
+  if (!userList) return;
+  
+  // Clear user list
+  userList.innerHTML = '';
+  
+  if (users.length === 0) {
+    userList.innerHTML = '<li class="user-item">No users found matching the current filters.</li>';
+    return;
   }
+  
+  // Add each user to the list
+  users.forEach(user => {
+    userList.appendChild(user.element);
+  });
 }
 
 // Synchronize superAdminUIDs with Firestore
@@ -965,19 +523,12 @@ async function loadUsers() {
     const users = await response.json();
     console.log("Users received:", users.length);
 
-    // Update user statistics dashboard
-    updateUserStatistics(users);
-
     userList.innerHTML = ""; // Clear existing list
 
     // Check if there are users
     if (users.length === 0) {
       console.log("No users found");
       userList.innerHTML = '<li class="user-item">No users found.</li>';
-      
-      // Update filter counts
-      document.getElementById('filtered-count').textContent = "0";
-      document.getElementById('total-count').textContent = "0";
       return;
     }
 
@@ -1049,7 +600,12 @@ async function loadUsers() {
             </div>
           `;
           
-          return { element: li, userData: {...userData, ...user, uid: user.uid} };
+          return { 
+            element: li, 
+            userData: {...userData}, 
+            ...user, // Spread auth data like email, disabled
+            uid: user.uid 
+          };
         })()
       );
     });
@@ -1060,31 +616,25 @@ async function loadUsers() {
     // Remove loading indicator
     userList.innerHTML = "";
     
-    // Append all user elements
+    // Store the user results for filtering
+    allUsers = userResults;
+    
+    // Apply initial filters
+    applyFilters();
+    
+    // Append all user elements and add event listeners
     userResults.forEach(result => {
-      userList.appendChild(result.element);
-      
       // Add event listener directly to the button
       const viewDetailsBtn = result.element.querySelector('.view-details-btn');
       viewDetailsBtn.addEventListener('click', function() {
-        window.showUserDetails(result.userData.uid, result.userData);
+        window.showUserDetails(result.uid, result);
       });
     });
-    
-    // Apply filters after loading users
-    applyFilters();
     
     console.log("All users loaded successfully");
   } catch (error) {
     console.error("Error fetching users:", error);
     userList.innerHTML = '<li class="user-item">Error loading users.</li>';
-    
-    // Update filter counts in case of error
-    const filteredCountElement = document.getElementById('filtered-count');
-    const totalCountElement = document.getElementById('total-count');
-    
-    if (filteredCountElement) filteredCountElement.textContent = "0";
-    if (totalCountElement) totalCountElement.textContent = "0";
   }
 }
 
@@ -1183,15 +733,6 @@ window.showUserDetails = async function(userId, userData = null) {
     // Check if data appears to be missing
     const hasMissingData = !userFullData.firstName || !userFullData.lastName || !userFullData.username || !userFullData.phoneNumber;
     const userSignupComplete = userFullData.firstName && userFullData.lastName && userFullData.username && userFullData.phoneNumber;
-
-    // Create toggle user status button
-    const isUserDisabled = authUserData.disabled;
-    const statusButtonClass = isUserDisabled ? 'action-btn enable-btn' : 'action-btn disable-btn';
-    const statusButtonText = isUserDisabled ? 'Enable User' : 'Disable User';
-    const statusButtonStyle = isUserDisabled ? 'background-color: #4CAF50;' : 'background-color: #f44336;';
-    
-    // Create the toggle status button
-    const toggleStatusButton = `<button id="toggle-user-status" class="${statusButtonClass}" style="${statusButtonStyle}" onclick="window.toggleUserStatus('${userId}', '${isUserDisabled ? 'disabled' : 'active'}')">${statusButtonText}</button>`;
     
     modalContent.innerHTML = `
       <div class="user-details-container">
@@ -1199,7 +740,7 @@ window.showUserDetails = async function(userId, userData = null) {
           <h3>Basic Information</h3>
           <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
           <p><strong>UID:</strong> ${userId}</p>
-          <p><strong>Status:</strong> <span id="user-status-display">${authUserData.disabled ? 'Disabled' : 'Active'}</span></p>
+          <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
           <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
         </div>
         
@@ -1228,7 +769,7 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
           <h3>User Management</h3>
-          <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
             ${userFullData.isSuperAdmin ? 
               `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
               userFullData.isAdmin ? 
@@ -1236,7 +777,6 @@ window.showUserDetails = async function(userId, userData = null) {
                  <button class="role-btn remove-admin" onclick="window.updateUserRole('${userId}', false)">Remove Admin</button>` :
                 `<button class="role-btn make-admin" onclick="window.updateUserRole('${userId}', true)">Make Admin</button>`
             }
-            ${toggleStatusButton}
             <button class="delete-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
           </div>
         </div>
@@ -1571,6 +1111,15 @@ window.updateUserRole = async function(userId, isAdmin) {
       document.body.removeChild(message);
     }, 3000);
     
+    // Update the user data in the allUsers array
+    const userIndex = allUsers.findIndex(user => user.uid === userId);
+    if (userIndex !== -1) {
+      allUsers[userIndex].userData.isAdmin = isAdmin;
+      
+      // Re-apply filters to update the displayed list
+      applyFilters();
+    }
+    
     // If a modal is currently displayed, update it too
     if (currentUserId === userId && modal.style.display === "block") {
       window.showUserDetails(userId, { uid: userId, isAdmin: isAdmin, isSuperAdmin: false });
@@ -1698,6 +1247,16 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
     message.style.zIndex = '1000';
     document.body.appendChild(message);
     
+    // Update the user data in the allUsers array
+    const userIndex = allUsers.findIndex(user => user.uid === userId);
+    if (userIndex !== -1) {
+      allUsers[userIndex].userData.isSuperAdmin = makeUserSuperAdmin;
+      allUsers[userIndex].userData.isAdmin = true;
+      
+      // Re-apply filters to update the displayed list
+      applyFilters();
+    }
+    
     // Remove the message after 3 seconds
     setTimeout(() => {
       document.body.removeChild(message);
@@ -1768,12 +1327,12 @@ window.deleteUser = async function(uid) {
         
         // Log response status for debugging
         console.log("Cloud Function response status:", response.status);
-        
-        if (response.ok) {
+      
+      if (response.ok) {
           const responseData = await response.json();
           console.log("Delete response:", responseData);
           deleteSuccess = true;
-        } else {
+      } else {
           console.warn("Delete request failed with status:", response.status);
           const errorText = await response.text();
           console.warn("Error response:", errorText);
@@ -1881,16 +1440,26 @@ window.deleteUser = async function(uid) {
         successMessage.style.zIndex = '1000';
         document.body.appendChild(successMessage);
         
-        // Remove the user from the list in the UI
-        const userItems = document.querySelectorAll('.user-item');
-        userItems.forEach(item => {
-          if (item.getAttribute('data-uid') === uid) {
-            item.remove();
-          }
-        });
+        // Remove the user from allUsers array
+        const userIndex = allUsers.findIndex(user => user.uid === uid);
+        if (userIndex !== -1) {
+          allUsers.splice(userIndex, 1);
+          
+          // Re-apply filters to update the displayed list
+          applyFilters();
+        } else {
+          // If for some reason we can't find the user in the array,
+          // remove the element from the DOM directly
+          const userItems = document.querySelectorAll('.user-item');
+          userItems.forEach(item => {
+            if (item.getAttribute('data-uid') === uid) {
+              item.remove();
+            }
+          });
+        }
         
         // If no users left, show a message
-        if (document.querySelectorAll('.user-item').length === 0) {
+        if (allUsers.length === 0) {
           const userList = document.getElementById("user-list");
           userList.innerHTML = '<li class="user-item">No users found.</li>';
         }
@@ -1971,7 +1540,7 @@ if (logoutBtn) {
       window.location.href = "index.html";
     });
   });
-}
+} 
 
 // Add a function to generate password reset links
 window.generatePasswordResetLink = async function(userId) {
@@ -2134,100 +1703,5 @@ window.generatePasswordResetLink = async function(userId) {
     } else {
       alert('Error generating password reset link: ' + error.message);
     }
-  }
-};
-
-// Add the user status toggle function
-window.toggleUserStatus = async function(userId, currentStatus) {
-  // Confirm the action
-  const action = currentStatus === 'disabled' ? 'enable' : 'disable';
-  const confirmText = `Are you sure you want to ${action} this user?`;
-  
-  if (!confirm(confirmText)) return;
-  
-  try {
-    // Show loading indicator
-    const loadingMessage = document.createElement('div');
-    loadingMessage.className = 'loading-message';
-    loadingMessage.textContent = `${action.charAt(0).toUpperCase() + action.slice(1)}ing user...`;
-    loadingMessage.style.position = 'fixed';
-    loadingMessage.style.top = '20px';
-    loadingMessage.style.left = '50%';
-    loadingMessage.style.transform = 'translateX(-50%)';
-    loadingMessage.style.backgroundColor = '#2196F3';
-    loadingMessage.style.color = 'white';
-    loadingMessage.style.padding = '10px 20px';
-    loadingMessage.style.borderRadius = '5px';
-    loadingMessage.style.zIndex = '1000';
-    document.body.appendChild(loadingMessage);
-    
-    // Call Firebase Admin SDK function via our Cloud Function
-    const adminUid = auth.currentUser.uid;
-    
-    // Fetch using Firebase Admin SDK (through our Cloud Function)
-    const response = await fetch("https://us-central1-makeupbyny-1.cloudfunctions.net/toggleUserStatus", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        uid: userId,
-        disabled: currentStatus === 'active',
-        adminUid: adminUid
-      })
-    });
-    
-    // Remove loading indicator
-    document.body.removeChild(loadingMessage);
-    
-    if (!response.ok) {
-      const errorData = await response.text();
-      throw new Error(errorData || `HTTP error: ${response.status}`);
-    }
-    
-    // Show success message
-    const successMessage = document.createElement('div');
-    successMessage.className = 'success-message';
-    successMessage.textContent = `User ${action}d successfully`;
-    successMessage.style.position = 'fixed';
-    successMessage.style.top = '20px';
-    successMessage.style.left = '50%';
-    successMessage.style.transform = 'translateX(-50%)';
-    successMessage.style.backgroundColor = '#4CAF50';
-    successMessage.style.color = 'white';
-    successMessage.style.padding = '10px 20px';
-    successMessage.style.borderRadius = '5px';
-    successMessage.style.zIndex = '1000';
-    document.body.appendChild(successMessage);
-    
-    // Remove the message after 3 seconds and reload to see the changes
-    setTimeout(() => {
-      document.body.removeChild(successMessage);
-      window.location.reload(); // Reload to see the updated data
-    }, 3000);
-    
-  } catch (error) {
-    console.error(`Error ${action}ing user:`, error);
-    
-    // Show error message
-    const errorMessage = document.createElement('div');
-    errorMessage.className = 'error-message';
-    errorMessage.textContent = `Error ${action}ing user: ${error.message}`;
-    errorMessage.style.position = 'fixed';
-    errorMessage.style.top = '20px';
-    errorMessage.style.left = '50%';
-    errorMessage.style.transform = 'translateX(-50%)';
-    errorMessage.style.backgroundColor = '#F44336';
-    errorMessage.style.color = 'white';
-    errorMessage.style.padding = '10px 20px';
-    errorMessage.style.borderRadius = '5px';
-    errorMessage.style.zIndex = '1000';
-    document.body.appendChild(errorMessage);
-    
-    // Remove the error message after 5 seconds
-    setTimeout(() => {
-      document.body.removeChild(errorMessage);
-    }, 5000);
   }
 }; 

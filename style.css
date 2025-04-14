@@ -321,3 +321,37 @@ form textarea {
     font-size: 1em;
   }
 }
+
+/* Filter styles */
+.filter-section {
+  margin: 20px 0;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.filter-control:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.25);
+}
+
+.filter-group {
+  flex: 1 1 auto;
+  min-width: 180px;
+}
+
+@media (max-width: 768px) {
+  .filter-section {
+    flex-direction: column;
+    padding: 10px;
+  }
+  
+  .filter-group {
+    margin-bottom: 8px;
+    width: 100%;
+  }
+  
+  .reset-filters {
+    margin-top: 10px;
+    width: 100%;
+  }
+}
