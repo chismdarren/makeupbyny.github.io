@@ -13,6 +13,121 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+// Add custom styles to improve user experience
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+  /* Loading spinner and animations */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loading-spinner {
+    margin: 20px auto;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  .small-spinner {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  
+  /* Progress bar styling */
+  .progress-bar {
+    height: 10px;
+    background: #eee;
+    border-radius: 5px;
+    margin: 10px 0;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: #3498db;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+  }
+  
+  /* User item styling */
+  .user-item {
+    position: relative;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .view-details-btn {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .view-details-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+  }
+  
+  .view-details-btn:hover::after {
+    left: 100%;
+  }
+  
+  /* Modal improvements */
+  .user-details-container {
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Status indicators */
+  .warning-message {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #ffeeba;
+    margin-bottom: 15px;
+  }
+  
+  .recover-btn {
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.2s;
+  }
+  
+  .recover-btn:hover {
+    background-color: #138496;
+  }
+  
+  /* Error state styling */
+  .user-item.error {
+    border-left: 4px solid #dc3545;
+  }
+`;
+document.head.appendChild(styleElement);
+
 // Synchronize superAdminUIDs with Firestore
 async function syncSuperAdmins() {
   try {
@@ -192,24 +307,66 @@ async function loadUserComments(userId) {
 async function loadUsers() {
   try {
     console.log("Starting to load users...");
-    // Fetch user data from the Cloud Function with appropriate headers
-    const response = await fetch("https://us-central1-makeupbyny-1.cloudfunctions.net/listAllAuthUsers", {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'include'
-    });
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    // Show loading indicator
+    userList.innerHTML = "";
+    const loadingItem = document.createElement("li");
+    loadingItem.className = "user-item";
+    loadingItem.innerHTML = `
+      <div class="user-info" style="text-align: center;">
+        <div class="loading-spinner" style="margin: 20px auto; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p>Loading users...</p>
+        <style>
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      </div>
+    `;
+    userList.appendChild(loadingItem);
     
-    const users = await response.json();
-    console.log("Users received:", users.length);
-
-    userList.innerHTML = ""; // Clear existing list
+    // Implement retry mechanism for API fetch
+    const fetchUsers = async (retryCount = 0, maxRetries = 3) => {
+      try {
+        console.log(`Fetching users attempt ${retryCount + 1}/${maxRetries + 1}`);
+        
+        // Add cache-busting parameter
+        const timestamp = new Date().getTime();
+        const url = `https://us-central1-makeupbyny-1.cloudfunctions.net/listAllAuthUsers?_=${timestamp}`;
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store'
+          },
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const users = await response.json();
+        console.log("Users received:", users.length);
+        return users;
+      } catch (error) {
+        console.error(`Error fetching users (attempt ${retryCount + 1}):`, error);
+        if (retryCount < maxRetries) {
+          console.log("Retrying after error...");
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+          return await fetchUsers(retryCount + 1, maxRetries);
+        }
+        throw error; // Re-throw on final attempt
+      }
+    };
+    
+    // Fetch users with retry mechanism
+    const users = await fetchUsers();
+    
+    userList.innerHTML = ""; // Clear loading indicator
 
     // Check if there are users
     if (users.length === 0) {
@@ -218,87 +375,155 @@ async function loadUsers() {
       return;
     }
 
-    // Create a loading indicator
-    const loadingItem = document.createElement("li");
-    loadingItem.className = "user-item";
-    loadingItem.innerHTML = `<div class="user-info">Loading user data...</div>`;
-    userList.appendChild(loadingItem);
+    // Show progress indicator
+    const progressItem = document.createElement("li");
+    progressItem.className = "user-item";
+    progressItem.innerHTML = `
+      <div class="user-info" style="text-align: center;">
+        <p>Processing users: <span id="progress-counter">0</span>/${users.length}</p>
+        <div class="progress-bar" style="height: 10px; background: #eee; border-radius: 5px; margin: 10px 0;">
+          <div id="progress-fill" style="width: 0%; height: 100%; background: #3498db; border-radius: 5px; transition: width 0.3s;"></div>
+        </div>
+      </div>
+    `;
+    userList.appendChild(progressItem);
+    
+    // Progress counter elements
+    const progressCounter = document.getElementById("progress-counter");
+    const progressFill = document.getElementById("progress-fill");
+    let processedCount = 0;
 
-    // Track promises for all user data fetching
-    const userDataPromises = [];
-
-    // Loop through each user and create an HTML list item
-    users.forEach(user => {
-      // Add the promise to our array
-      userDataPromises.push(
+    // Process users in smaller batches to avoid overwhelming Firestore
+    const batchSize = 5;
+    const userBatches = [];
+    
+    // Split users into batches
+    for (let i = 0; i < users.length; i += batchSize) {
+      userBatches.push(users.slice(i, i + batchSize));
+    }
+    
+    const processedUsers = [];
+    
+    // Process each batch sequentially
+    for (let batch of userBatches) {
+      const batchPromises = batch.map(user => 
         (async () => {
           console.log("Processing user:", user.email);
           
-          // Get user's data from Firestore
-          const userRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userRef);
-          
-          let userData;
-          if (userDoc.exists()) {
-            userData = userDoc.data();
-            console.log(`User document found for ${user.email}:`, userData);
-          } else {
-            // If no user document exists, just use the auth data - don't create a document
-            console.log(`No Firestore document found for ${user.email}`);
-            userData = {
-              email: user.email,
-              isAdmin: false,
-              isSuperAdmin: false
-            };
-          }
-          
-          // Get user role display
-          let roleDisplay = 'User';
-          let roleClass = 'user-role';
-          if (userData.isSuperAdmin) {
-            roleDisplay = 'Super Admin';
-            roleClass = 'super-admin-role';
-          } else if (userData.isAdmin) {
-            roleDisplay = 'Admin';
-            roleClass = 'admin-role';
-          }
-          
-          const li = document.createElement("li");
-          li.className = "user-item";
-          li.setAttribute('data-uid', user.uid);
-          li.innerHTML = `
-            <div class="user-info">
-              <strong>Email:</strong> ${user.email} | 
-              <strong>UID:</strong> ${user.uid} | 
-              <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
-              <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
-            </div>
-            <div class="user-actions">
-              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
-              ${userData.isSuperAdmin ? 
-                `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
-                userData.isAdmin ? 
-                  `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
-                   <button class="role-btn remove-admin" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
-                  `<button class="role-btn make-admin" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
+          try {
+            // Get user's data from Firestore with retries
+            const getUserData = async (retry = 0, maxRetries = 2) => {
+              try {
+                const userRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  console.log(`User document found for ${user.email}:`, userData);
+                  return userData;
+                } else if (retry < maxRetries) {
+                  console.log(`No document found for ${user.email}, retrying (${retry + 1}/${maxRetries + 1})...`);
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                  return await getUserData(retry + 1, maxRetries);
+                } else {
+                  console.log(`No Firestore document found for ${user.email} after retries`);
+                  return {
+                    email: user.email,
+                    isAdmin: false,
+                    isSuperAdmin: false
+                  };
+                }
+              } catch (error) {
+                console.error(`Error getting user data for ${user.email} (attempt ${retry + 1}):`, error);
+                if (retry < maxRetries) {
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                  return await getUserData(retry + 1, maxRetries);
+                }
+                throw error;
               }
-              <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
-            </div>
-          `;
-          
-          return { element: li, userData: {...userData, ...user, uid: user.uid} };
+            };
+            
+            const userData = await getUserData();
+            
+            // Get user role display
+            let roleDisplay = 'User';
+            let roleClass = 'user-role';
+            if (userData.isSuperAdmin) {
+              roleDisplay = 'Super Admin';
+              roleClass = 'super-admin-role';
+            } else if (userData.isAdmin) {
+              roleDisplay = 'Admin';
+              roleClass = 'admin-role';
+            }
+            
+            // Create the user list item
+            const li = document.createElement("li");
+            li.className = "user-item";
+            li.setAttribute('data-uid', user.uid);
+            li.innerHTML = `
+              <div class="user-info">
+                <strong>Email:</strong> ${user.email} | 
+                <strong>UID:</strong> ${user.uid} | 
+                <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
+                <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+              </div>
+              <div class="user-actions">
+                <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
+                ${userData.isSuperAdmin ? 
+                  `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
+                  userData.isAdmin ? 
+                    `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
+                     <button class="role-btn remove-admin" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
+                    `<button class="role-btn make-admin" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
+                }
+                <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
+              </div>
+            `;
+            
+            // Update progress
+            processedCount++;
+            if (progressCounter) progressCounter.textContent = processedCount;
+            if (progressFill) progressFill.style.width = `${(processedCount / users.length) * 100}%`;
+            
+            return { element: li, userData: {...userData, ...user, uid: user.uid} };
+          } catch (error) {
+            console.error(`Error processing user ${user.email}:`, error);
+            // Still update progress even on error
+            processedCount++;
+            if (progressCounter) progressCounter.textContent = processedCount;
+            if (progressFill) progressFill.style.width = `${(processedCount / users.length) * 100}%`;
+            
+            // Return a simple error element
+            const li = document.createElement("li");
+            li.className = "user-item error";
+            li.setAttribute('data-uid', user.uid);
+            li.innerHTML = `
+              <div class="user-info">
+                <strong>Email:</strong> ${user.email} | 
+                <strong>Error:</strong> Could not load complete data
+              </div>
+              <div class="user-actions">
+                <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
+              </div>
+            `;
+            return { element: li, userData: { ...user, uid: user.uid } };
+          }
         })()
       );
-    });
-
-    // Wait for all users to be processed
-    const userResults = await Promise.all(userDataPromises);
+      
+      // Process the current batch
+      const batchResults = await Promise.all(batchPromises);
+      processedUsers.push(...batchResults);
+      
+      // Small delay between batches to avoid overwhelming Firestore
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
     
-    // Remove loading indicator
+    // Remove progress indicator
     userList.innerHTML = "";
     
     // Append all user elements
-    userResults.forEach(result => {
+    processedUsers.forEach(result => {
       userList.appendChild(result.element);
       
       // Add event listener directly to the button
@@ -311,7 +536,14 @@ async function loadUsers() {
     console.log("All users loaded successfully");
   } catch (error) {
     console.error("Error fetching users:", error);
-    userList.innerHTML = '<li class="user-item">Error loading users.</li>';
+    userList.innerHTML = `
+      <li class="user-item error">
+        <div class="user-info">
+          <p>Error loading users: ${error.message}</p>
+          <button onclick="loadUsers()" style="margin-top: 10px; padding: 5px 10px; background: #5bc0de; color: white; border: none; border-radius: 4px; cursor: pointer;">Try Again</button>
+        </div>
+      </li>
+    `;
   }
 }
 
@@ -320,50 +552,113 @@ window.showUserDetails = async function(userId, userData = null) {
   currentUserId = userId;
   
   try {
-    // Always fetch the latest user data from Firestore
-    const userRef = doc(db, "users", userId);
-    const userDoc = await getDoc(userRef);
+    // Show loading state in the modal
+    modal.style.display = "block";
+    modalContent.innerHTML = `
+      <div class="loading-container" style="text-align: center; padding: 30px;">
+        <p>Loading user details...</p>
+        <div class="loading-spinner" style="margin: 20px auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <style>
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      </div>
+    `;
     
-    // Setup default auth user data and user profile data
-    let userFullData = {};
-    let authUserData = { email: "Unknown", disabled: false };
-    
-    // Use provided userData if available
-    if (userData && userData.email) {
-      authUserData = userData;
-      console.log("Using provided auth user data:", authUserData);
-    }
-    
-    if (userDoc.exists()) {
-      userFullData = userDoc.data();
-      console.log("User document found in Firestore:", userFullData);
-    } else {
-      console.log("No Firestore document exists for user:", userId);
-      // Don't create a document - just display what we know from auth data
-      userFullData = {
-        email: authUserData.email,
-        isAdmin: false,
-        isSuperAdmin: false
-      };
-    }
-    
-    // If authUserData email is Unknown, try to extract from DOM
-    if (authUserData.email === "Unknown") {
-      const userItem = document.querySelector(`li[data-uid="${userId}"]`);
-      if (userItem) {
-        const emailMatch = userItem.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
-        if (emailMatch && emailMatch[1]) {
-          authUserData.email = emailMatch[1].trim();
-          if (!userFullData.email) {
-            userFullData.email = authUserData.email;
+    // Implement retry mechanism for fetching user data
+    const fetchUserData = async (retryCount = 0, maxRetries = 3) => {
+      try {
+        console.log(`Fetching user data attempt ${retryCount + 1}/${maxRetries + 1}`);
+        
+        // Always fetch the latest user data from Firestore with cache-busting
+        const userRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userRef);
+        
+        // Setup default auth user data and user profile data
+        let userFullData = {};
+        let authUserData = { email: "Unknown", disabled: false };
+        
+        // Use provided userData if available
+        if (userData && userData.email) {
+          authUserData = userData;
+          console.log("Using provided auth user data:", authUserData);
+        }
+        
+        if (userDoc.exists()) {
+          userFullData = userDoc.data();
+          console.log("User document found in Firestore:", userFullData);
+          
+          // Validate if we have all required fields
+          const requiredFields = ['firstName', 'lastName', 'username', 'phoneNumber'];
+          const missingFields = [];
+          
+          requiredFields.forEach(field => {
+            if (!userFullData[field] || userFullData[field] === '') {
+              missingFields.push(field);
+            }
+          });
+          
+          if (missingFields.length > 0 && retryCount < maxRetries) {
+            // If missing fields and not on last retry, wait and try again
+            console.log(`Missing fields detected: ${missingFields.join(', ')}. Retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            return await fetchUserData(retryCount + 1, maxRetries);
+          }
+        } else {
+          console.log("No Firestore document exists for user:", userId);
+          // If document doesn't exist and not on last retry, wait and try again
+          if (retryCount < maxRetries) {
+            console.log("Retrying fetch...");
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            return await fetchUserData(retryCount + 1, maxRetries);
+          }
+          
+          // Don't create a document - just display what we know from auth data
+          userFullData = {
+            email: authUserData.email,
+            isAdmin: false,
+            isSuperAdmin: false
+          };
+        }
+        
+        // If authUserData email is Unknown, try to extract from DOM
+        if (authUserData.email === "Unknown") {
+          const userItem = document.querySelector(`li[data-uid="${userId}"]`);
+          if (userItem) {
+            const emailMatch = userItem.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
+            if (emailMatch && emailMatch[1]) {
+              authUserData.email = emailMatch[1].trim();
+              if (!userFullData.email) {
+                userFullData.email = authUserData.email;
+              }
+            }
+            
+            authUserData.disabled = userItem.innerHTML.includes('Status:</strong> Disabled');
           }
         }
         
-        authUserData.disabled = userItem.innerHTML.includes('Status:</strong> Disabled');
+        return { userFullData, authUserData };
+      } catch (error) {
+        console.error(`Error fetching user data (attempt ${retryCount + 1}):`, error);
+        if (retryCount < maxRetries) {
+          console.log("Retrying after error...");
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+          return await fetchUserData(retryCount + 1, maxRetries);
+        }
+        throw error; // Re-throw on final attempt
       }
-    }
+    };
     
-    const commentsHtml = await loadUserComments(userId);
+    // Fetch user data with retry mechanism
+    const { userFullData, authUserData } = await fetchUserData();
+    
+    // Load comments with its own retry mechanism
+    const commentsHtml = await loadUserComments(userId).catch(error => {
+      console.error("Error loading comments:", error);
+      return '<div class="user-comments-section"><h3>User Comments</h3><p>Error loading comments. Please try again.</p></div>';
+    });
     
     // Format timestamps with robust handling
     let createdAtDisplay = 'Unknown';
@@ -423,7 +718,10 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-personal-info">
           <h3>Personal Information</h3>
-          ${!userSignupComplete ? '<p class="warning-message">⚠️ User signup data is incomplete. This user may need to complete registration.</p>' : ''}
+          ${!userSignupComplete ? 
+            `<p class="warning-message">⚠️ User signup data is incomplete. This user may need to complete registration.</p>
+             <button class="recover-btn" onclick="window.showRecoverOptions('${userId}', '${authUserData.email || userFullData.email || ''}', ${JSON.stringify(userFullData).replace(/"/g, '&quot;')})">Recover User Data</button>` 
+            : ''}
           <p><strong>First Name:</strong> ${userFullData.firstName || 'Not provided'}</p>
           <p><strong>Last Name:</strong> ${userFullData.lastName || 'Not provided'}</p>
           <p><strong>Username:</strong> ${userFullData.username || 'Not provided'}</p>
@@ -454,11 +752,15 @@ window.showUserDetails = async function(userId, userData = null) {
         ${commentsHtml}
       </div>
     `;
-    
-    modal.style.display = "block";
   } catch (error) {
     console.error('Error loading user details:', error);
-    alert('Error loading user details: ' + error.message);
+    modalContent.innerHTML = `
+      <div style="padding: 20px; text-align: center;">
+        <h3 style="color: #d9534f;">Error Loading User Details</h3>
+        <p>${error.message}</p>
+        <button onclick="window.showUserDetails('${userId}', null)" style="margin-top: 15px; padding: 8px 16px; background: #5bc0de; color: white; border: none; border-radius: 4px; cursor: pointer;">Try Again</button>
+      </div>
+    `;
   }
 };
 
