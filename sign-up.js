@@ -1,7 +1,7 @@
 // Import Firebase essentials from our config
 import { auth, db, createUserDocument } from './firebase-config.js';
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log("Sign-up form page loaded");
@@ -105,6 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
           termsAcceptedDate: new Date().toISOString()
         };
         
+        // IMPORTANT: Disable the submit button to prevent double submission
+        const submitButton = signUpForm.querySelector('button[type="submit"]');
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Creating Account...";
+        }
+        
         // Create the user account with Firebase Authentication
         console.log("Creating user authentication account with email:", email);
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -112,59 +119,138 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log("Authentication account created successfully. UID:", user.uid);
         
-        // Save user data to localStorage first as a safety measure
+        // IMMEDIATELY save user data to localStorage as a backup
         console.log("Saving user data to localStorage as a backup");
-        localStorage.setItem(`pendingUserData_${user.uid}`, JSON.stringify(userData));
+        const pendingDataKey = `pendingUserData_${user.uid}`;
+        localStorage.setItem(pendingDataKey, JSON.stringify(userData));
+        
+        // Also save to sessionStorage as an additional backup
+        sessionStorage.setItem(pendingDataKey, JSON.stringify(userData));
+        
+        // Create a function to verify the user data was saved properly
+        const verifyUserData = async () => {
+          console.log("Verifying user data was saved correctly");
+          const userRef = doc(db, "users", user.uid);
+          
+          // Retry mechanism for verification with exponential backoff
+          let retryCount = 0;
+          const maxRetries = 3;
+          let delay = 500;
+          
+          while (retryCount < maxRetries) {
+            try {
+              const userDoc = await getDoc(userRef);
+              
+              if (userDoc.exists()) {
+                const savedData = userDoc.data();
+                console.log(`Verification attempt ${retryCount + 1}: Retrieved saved user data:`, savedData);
+                
+                // Check if all fields were saved properly
+                const requiredFields = ['firstName', 'lastName', 'username', 'phoneNumber'];
+                const missingFields = [];
+                
+                requiredFields.forEach(field => {
+                  if (!savedData[field] || savedData[field] === '') {
+                    missingFields.push(field);
+                  }
+                });
+                
+                if (missingFields.length === 0) {
+                  console.log("All required fields were saved correctly");
+                  return { success: true, data: savedData };
+                } else {
+                  console.warn(`Verification attempt ${retryCount + 1}: Fields missing:`, missingFields);
+                  
+                  // If this is not the last retry, attempt to fix the data
+                  if (retryCount < maxRetries - 1) {
+                    console.log("Attempting to fix missing fields...");
+                    const updates = {};
+                    missingFields.forEach(field => {
+                      updates[field] = userData[field];
+                    });
+                    
+                    await updateDoc(userRef, updates);
+                    console.log("Applied fixes for missing fields:", updates);
+                  }
+                }
+              } else {
+                console.warn(`Verification attempt ${retryCount + 1}: User document doesn't exist`);
+                
+                // If document doesn't exist, recreate it on non-final attempts
+                if (retryCount < maxRetries - 1) {
+                  // Re-create the entire document with setDoc
+                  const fullUserData = {
+                    ...userData,
+                    email: user.email,
+                    createdAt: new Date().toISOString(),
+                    isAdmin: false,
+                    isSuperAdmin: false
+                  };
+                  
+                  await setDoc(userRef, fullUserData);
+                  console.log("Recreated user document with all data");
+                }
+              }
+              
+              // Increase retry count and delay
+              retryCount++;
+              await new Promise(resolve => setTimeout(resolve, delay));
+              delay *= 2; // Exponential backoff
+              
+            } catch (error) {
+              console.error(`Verification error on attempt ${retryCount + 1}:`, error);
+              retryCount++;
+              await new Promise(resolve => setTimeout(resolve, delay));
+              delay *= 2;
+            }
+          }
+          
+          // If we got here, verification failed after all retries
+          return { success: false };
+        };
         
         // Save the user data to Firestore using the createUserDocument function
         let firestoreSaveSuccess = false;
         try {
           console.log("Saving user data to Firestore:", userData);
+          
+          // First attempt with createUserDocument
           await createUserDocument(user, userData);
-          console.log("User data saved successfully to Firestore");
-          firestoreSaveSuccess = true;
+          console.log("Initial save to Firestore completed");
           
-          // Double-check that the data was actually saved properly
-          const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
-          const { db } = await import("./firebase-config.js");
+          // Verify the save was successful and data is complete
+          const verificationResult = await verifyUserData();
+          firestoreSaveSuccess = verificationResult.success;
           
-          console.log("Verifying user data was saved correctly");
-          const userRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userRef);
-          
-          if (userDoc.exists()) {
-            const savedData = userDoc.data();
-            console.log("Retrieved saved user data:", savedData);
-            
-            // Check if all fields were saved properly
-            const requiredFields = ['firstName', 'lastName', 'username', 'phoneNumber'];
-            const missingFields = [];
-            
-            requiredFields.forEach(field => {
-              if (!savedData[field] || savedData[field] === '') {
-                missingFields.push(field);
-              }
-            });
-            
-            if (missingFields.length > 0) {
-              console.warn("Some required fields are missing or empty:", missingFields);
-              firestoreSaveSuccess = false;
-              throw new Error(`Data was not saved completely. Missing fields: ${missingFields.join(', ')}`);
-            } else {
-              console.log("All required fields were saved correctly");
-              // Now that we're sure data is saved, we can remove the localStorage backup
-              localStorage.removeItem(`pendingUserData_${user.uid}`);
-            }
+          if (firestoreSaveSuccess) {
+            // Data verified as complete, now safe to remove localStorage backup
+            localStorage.removeItem(pendingDataKey);
+            sessionStorage.removeItem(pendingDataKey);
+            console.log("User data verified and localStorage backup removed");
           } else {
-            console.warn("User document doesn't exist after save attempt");
-            firestoreSaveSuccess = false;
-            throw new Error("User document doesn't exist after save attempt");
+            // Verification failed, try direct method as final attempt
+            console.warn("Verification failed after retries, trying direct setDoc as final attempt");
+            
+            const userRef = doc(db, "users", user.uid);
+            const fullUserData = {
+              ...userData,
+              email: user.email,
+              createdAt: new Date().toISOString(),
+              isAdmin: false,
+              isSuperAdmin: false
+            };
+            
+            // Use merge:true to avoid overwriting any existing data
+            await setDoc(userRef, fullUserData, { merge: true });
+            console.log("Final direct setDoc attempt completed");
+            
+            // We'll keep localStorage data just in case - don't remove it
           }
         } catch (firestoreError) {
           console.error("Error saving user data to Firestore:", firestoreError);
           
           // We already saved to localStorage above as a backup
-          console.log("User data was already saved to localStorage as fallback");
+          console.log("Keeping user data in localStorage and sessionStorage for recovery during login");
         }
         
         // Show success message based on save status
@@ -180,6 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (error) {
         console.error("❌ Error in signup process:", error.message);
         alert("Error: " + error.message);
+        
+        // Re-enable the submit button if there was an error
+        const submitButton = signUpForm.querySelector('button[type="submit"]');
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Create Account";
+        }
       }
     });
   } else {

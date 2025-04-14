@@ -326,6 +326,15 @@ onAuthStateChanged(auth, async (user) => {
         return { exists: () => false };
       });
       
+      // Check for pending data in localStorage or sessionStorage first
+      const pendingDataKey = `pendingUserData_${user.uid}`;
+      const hasPendingLocalData = localStorage.getItem(pendingDataKey) || sessionStorage.getItem(pendingDataKey);
+      
+      if (hasPendingLocalData) {
+        console.log("Auth state change - Found pending data in storage, deferring to login handler for recovery");
+        return; // Let the login handler take care of data recovery
+      }
+      
       if (!userDoc.exists()) {
         // User doesn't have a document yet, create a minimal one
         // This is a fallback only - the signup process should have created a complete document
@@ -351,7 +360,8 @@ onAuthStateChanged(auth, async (user) => {
         // Document exists, check if it needs basic updates
         console.log("Found existing user document:", userDoc.data());
         
-        // Check if any critical boolean fields are missing or undefined
+        // Be careful not to overwrite existing user data
+        // Only update critical missing fields
         const data = userDoc.data();
         const updates = {};
         
@@ -360,13 +370,13 @@ onAuthStateChanged(auth, async (user) => {
         if (data.isSuperAdmin === undefined) updates.isSuperAdmin = false;
         if (data.termsAccepted === undefined) updates.termsAccepted = false;
         
-        // Make sure email is set
+        // Make sure email is set, but don't touch other profile fields
         if (!data.email && user.email) updates.email = user.email;
         
         // Only update if needed
         if (Object.keys(updates).length > 0) {
           try {
-            console.log("Updating existing user document with data:", updates);
+            console.log("Updating existing user document with missing fields:", updates);
             await updateDoc(userRef, updates);
             console.log("✅ User document updated with missing fields");
           } catch (updateError) {

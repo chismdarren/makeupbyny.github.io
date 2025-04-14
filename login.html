@@ -120,141 +120,196 @@
     async function recoverUserData(user) {
       const pendingDataKey = `pendingUserData_${user.uid}`;
       
-      // Check if we have pending data in localStorage
-      const pendingData = localStorage.getItem(pendingDataKey);
+      // Check both localStorage and sessionStorage for pending data
+      let pendingData = localStorage.getItem(pendingDataKey);
+      
+      if (!pendingData) {
+        pendingData = sessionStorage.getItem(pendingDataKey);
+        if (pendingData) {
+          console.log("Found pending user data in sessionStorage");
+        }
+      } else {
+        console.log("Found pending user data in localStorage");
+      }
       
       if (pendingData) {
-        console.log("Found pending user data in localStorage:", pendingData);
+        console.log("Processing pending user data:", pendingData);
         try {
           const userData = JSON.parse(pendingData);
           
-          // Check if the user document exists in Firestore
-          const userRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userRef);
-          
-          if (userDoc.exists()) {
-            // Update existing document with pending data if fields are missing
-            const existingData = userDoc.data();
-            const updates = {};
+          // Create a function to verify data was properly saved
+          const verifyAndFixUserData = async (attempts = 0) => {
+            const maxAttempts = 3;
+            const userRef = doc(db, "users", user.uid);
             
-            // Always update fields from pending data, overriding existing empty fields
-            if (userData.firstName && (!existingData.firstName || existingData.firstName === '')) {
-              updates.firstName = userData.firstName;
-            }
-            
-            if (userData.lastName && (!existingData.lastName || existingData.lastName === '')) {
-              updates.lastName = userData.lastName;
-            }
-            
-            if (userData.username && (!existingData.username || existingData.username === '')) {
-              updates.username = userData.username;
-            }
-            
-            if (userData.phoneNumber && (!existingData.phoneNumber || existingData.phoneNumber === '')) {
-              updates.phoneNumber = userData.phoneNumber;
-            }
-            
-            if (userData.termsAccepted && !existingData.termsAccepted) {
-              updates.termsAccepted = userData.termsAccepted;
-              updates.termsAcceptedDate = userData.termsAcceptedDate || new Date().toISOString();
-            }
-            
-            if (Object.keys(updates).length > 0) {
-              console.log("Applying recovered data to user document:", updates);
-              await updateDoc(userRef, updates);
-              console.log("Updated user document with recovered data successfully");
+            try {
+              console.log(`Verification attempt ${attempts + 1}: Checking user document`);
+              const userDoc = await getDoc(userRef);
               
-              // Make a second attempt to ensure data is properly saved
-              await new Promise(resolve => setTimeout(resolve, 500));
-              const verifyDoc = await getDoc(userRef);
-              const verifyData = verifyDoc.data();
-              
-              // Check if data was actually saved
-              let missingFields = [];
-              if (!verifyData.firstName || verifyData.firstName === '') missingFields.push('firstName');
-              if (!verifyData.lastName || verifyData.lastName === '') missingFields.push('lastName');
-              if (!verifyData.username || verifyData.username === '') missingFields.push('username');
-              if (!verifyData.phoneNumber || verifyData.phoneNumber === '') missingFields.push('phoneNumber');
-              
-              if (missingFields.length > 0) {
-                console.warn("Data recovery verification failed. Still missing fields:", missingFields);
-                // Try one more time with forceful update
-                const forceUpdates = {};
-                missingFields.forEach(field => {
-                  if (userData[field]) forceUpdates[field] = userData[field];
-                });
+              if (userDoc.exists()) {
+                const existingData = userDoc.data();
+                console.log(`User document exists:`, existingData);
                 
-                if (Object.keys(forceUpdates).length > 0) {
-                  console.log("Forcing update of missing fields:", forceUpdates);
-                  await updateDoc(userRef, forceUpdates);
-                  console.log("Forced update completed");
+                // Check for missing or empty required fields
+                const missingFields = [];
+                if (!existingData.firstName || existingData.firstName === '') missingFields.push('firstName');
+                if (!existingData.lastName || existingData.lastName === '') missingFields.push('lastName');
+                if (!existingData.username || existingData.username === '') missingFields.push('username');
+                if (!existingData.phoneNumber || existingData.phoneNumber === '') missingFields.push('phoneNumber');
+                
+                if (missingFields.length === 0) {
+                  console.log("All required fields are present - recovery complete");
+                  return true;
+                } else {
+                  console.warn(`Missing fields detected:`, missingFields);
+                  
+                  // Create updates for only the missing fields
+                  const updates = {};
+                  missingFields.forEach(field => {
+                    if (userData[field]) {
+                      updates[field] = userData[field];
+                    }
+                  });
+                  
+                  // Make sure terms are accepted
+                  if (!existingData.termsAccepted && userData.termsAccepted) {
+                    updates.termsAccepted = true;
+                    updates.termsAcceptedDate = userData.termsAcceptedDate || new Date().toISOString();
+                  }
+                  
+                  if (Object.keys(updates).length > 0) {
+                    console.log(`Applying fixes for missing fields:`, updates);
+                    await updateDoc(userRef, updates);
+                    
+                    // If this isn't the last attempt, verify the updates worked
+                    if (attempts < maxAttempts - 1) {
+                      // Add a short delay before checking again
+                      await new Promise(resolve => setTimeout(resolve, 500 * (attempts + 1)));
+                      return await verifyAndFixUserData(attempts + 1);
+                    } else {
+                      // On final attempt, use more aggressive approach
+                      const finalUpdate = {
+                        ...userData,
+                        email: user.email
+                      };
+                      
+                      console.log("Final attempt: Force-updating all user data fields");
+                      await updateDoc(userRef, finalUpdate);
+                      console.log("Final forced update completed");
+                      return true;
+                    }
+                  }
                 }
               } else {
-                console.log("Data recovery verification confirmed all fields are present");
+                // Document doesn't exist - create it
+                console.log("User document doesn't exist - creating new document");
+                const completeUserData = {
+                  email: user.email,
+                  firstName: userData.firstName || '',
+                  lastName: userData.lastName || '',
+                  username: userData.username || '',
+                  phoneNumber: userData.phoneNumber || '',
+                  termsAccepted: userData.termsAccepted || false,
+                  termsAcceptedDate: userData.termsAcceptedDate || null,
+                  createdAt: new Date().toISOString(),
+                  isAdmin: false,
+                  isSuperAdmin: false
+                };
+                
+                await setDoc(userRef, completeUserData);
+                console.log("Created new user document with recovered data");
+                
+                // Verify document creation on non-final attempts
+                if (attempts < maxAttempts - 1) {
+                  await new Promise(resolve => setTimeout(resolve, 500 * (attempts + 1)));
+                  return await verifyAndFixUserData(attempts + 1);
+                } else {
+                  return true;
+                }
               }
-            } else {
-              console.log("No updates needed - user document already has all required data");
+            } catch (error) {
+              console.error(`Error during verification attempt ${attempts + 1}:`, error);
+              
+              // Retry on non-final attempts
+              if (attempts < maxAttempts - 1) {
+                await new Promise(resolve => setTimeout(resolve, 500 * (attempts + 1)));
+                return await verifyAndFixUserData(attempts + 1);
+              } else {
+                console.warn("All verification attempts failed");
+                return false;
+              }
             }
-          } else {
-            // Create a new document with the pending data
-            console.log("Creating new user document with recovered data");
-            await setDoc(userRef, {
-              email: user.email,
-              firstName: userData.firstName || '',
-              lastName: userData.lastName || '',
-              username: userData.username || '',
-              phoneNumber: userData.phoneNumber || '',
-              termsAccepted: userData.termsAccepted || false,
-              termsAcceptedDate: userData.termsAcceptedDate || null,
-              createdAt: new Date().toISOString(),
-              isAdmin: false,
-              isSuperAdmin: false
-            });
-            console.log("Created new user document with recovered data");
-          }
+          };
           
-          // Remove the data from localStorage after successful recovery
-          localStorage.removeItem(pendingDataKey);
-          console.log("Recovered data and removed from localStorage");
+          // Start the verification and recovery process
+          const recoverySuccessful = await verifyAndFixUserData();
+          
+          if (recoverySuccessful) {
+            console.log("User data recovery successful - removing from storage");
+            // Clear data from both storage locations
+            localStorage.removeItem(pendingDataKey);
+            sessionStorage.removeItem(pendingDataKey);
+          } else {
+            console.warn("User data recovery encountered issues - keeping data in storage for next login");
+            // Keep the data in storage for future recovery attempts
+          }
         } catch (error) {
           console.error("Error recovering user data:", error);
-          // Keep the data in localStorage for another attempt
-          console.log("Keeping data in localStorage for another recovery attempt");
+          // Keep data in storage for future recovery attempts
         }
       } else {
-        console.log("No pending user data found in localStorage");
+        console.log("No pending user data found in storage");
       }
     }
 
-    document.getElementById("login-form").addEventListener("submit", (e) => {
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
+      
+      // Disable login button and show loading state
+      const submitButton = document.querySelector("#login-form button[type='submit']");
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = "Logging in...";
+      
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-
-      signInWithEmailAndPassword(auth, email, password)
-        .then(async (userCredential) => {
-          const user = userCredential.user;
-          console.log("Logged in user UID:", user.uid);  // Debug: show UID in console
-          
-          // Try to recover any pending user data from signup
-          await recoverUserData(user);
-          
-          // Check if the logged-in user is an admin
-          const isAdmin = await isAdminUser(user.uid);
-          if (isAdmin) {
-            console.log("Admin login detected");  // Debug: admin branch
-            alert("Admin login detected. Redirecting to admin dashboard.");
-            window.location.href = "admin-dashboard.html";  // Redirect to admin dashboard
-          } else {
-            console.log("Non-admin login detected");  // Debug: non-admin branch
-            alert("Non-admin login detected. Redirecting to blog page.");
-            window.location.href = "index.html";  // Redirect non-admin users to the blog page
-          }
-        })
-        .catch((error) => {
-          console.error("Error during login:", error);
-          document.getElementById("error-message").textContent = error.message;
-        });
+      
+      try {
+        // Clear any previous error messages
+        document.getElementById("error-message").textContent = "";
+        
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log("Logged in user UID:", user.uid);
+        
+        // IMPORTANT: First try to recover any pending user data
+        submitButton.textContent = "Recovering user data...";
+        await recoverUserData(user);
+        
+        // Wait a moment to ensure Firestore is updated
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Then check if the logged-in user is an admin
+        submitButton.textContent = "Checking permissions...";
+        const isAdmin = await isAdminUser(user.uid);
+        
+        if (isAdmin) {
+          console.log("Admin login detected");
+          alert("Admin login detected. Redirecting to admin dashboard.");
+          window.location.href = "admin-dashboard.html";
+        } else {
+          console.log("Non-admin login detected");
+          alert("Non-admin login detected. Redirecting to blog page.");
+          window.location.href = "index.html";
+        }
+      } catch (error) {
+        console.error("Error during login:", error);
+        document.getElementById("error-message").textContent = error.message;
+        
+        // Re-enable login button
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
     });
   </script>
 </body>
