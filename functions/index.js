@@ -183,10 +183,10 @@ exports.createUserProfile = functions.https.onRequest((req, res) => {
 
 // Cloud Function to delete a user from both Auth and Firestore
 exports.deleteUser = functions.https.onRequest((req, res) => {
-  // Set up CORS handler for DELETE and OPTIONS methods
+  // Set up CORS handler for DELETE, POST and OPTIONS methods
   const deleteCorsHandler = cors({
     origin: "https://chismdarren.github.io", // Specifically allow the GitHub Pages domain
-    methods: "DELETE, OPTIONS",
+    methods: "DELETE, POST, OPTIONS",
     allowedHeaders: "Content-Type, Accept",
     credentials: true,
   });
@@ -196,7 +196,7 @@ exports.deleteUser = functions.https.onRequest((req, res) => {
       // Handle preflight request (OPTIONS request)
       if (req.method === "OPTIONS") {
         res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
-        res.set("Access-Control-Allow-Methods", "DELETE, OPTIONS");
+        res.set("Access-Control-Allow-Methods", "DELETE, POST, OPTIONS");
         res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
         res.set("Access-Control-Allow-Credentials", "true");
         res.status(204).send("");
@@ -205,12 +205,16 @@ exports.deleteUser = functions.https.onRequest((req, res) => {
 
       // Always set CORS headers for the actual request as well
       res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
-      res.set("Access-Control-Allow-Methods", "DELETE, OPTIONS");
+      res.set("Access-Control-Allow-Methods", "DELETE, POST, OPTIONS");
       res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
       res.set("Access-Control-Allow-Credentials", "true");
 
-      // Check if the request method is DELETE
-      if (req.method !== "DELETE") {
+      // Check if the request method is DELETE or POST with _method=DELETE
+      const isDeleteMethod = 
+        req.method === "DELETE" || 
+        (req.method === "POST" && req.body._method === "DELETE");
+      
+      if (!isDeleteMethod) {
         return res.status(405).json({ error: "Method not allowed" });
       }
 
@@ -324,9 +328,13 @@ exports.generatePasswordResetLink = functions.https.onRequest((req, res) => {
       // Get user ID and admin ID from request
       const uid = req.query.uid;
       const adminId = req.query.adminId;
+      const callback = req.query.callback; // For JSONP support
       
       if (!uid) {
-        return res.status(400).json({ error: "Missing required parameter: uid" });
+        const errorResponse = { error: "Missing required parameter: uid" };
+        return callback 
+          ? res.status(400).send(`${callback}(${JSON.stringify(errorResponse)})`)
+          : res.status(400).json(errorResponse);
       }
 
       // Verify the requester is a super admin
@@ -345,11 +353,17 @@ exports.generatePasswordResetLink = functions.https.onRequest((req, res) => {
         }
         
         if (!isSuperAdmin) {
-          return res.status(403).json({ error: "Unauthorized. Super Admin privileges required." });
+          const errorResponse = { error: "Unauthorized. Super Admin privileges required." };
+          return callback 
+            ? res.status(403).send(`${callback}(${JSON.stringify(errorResponse)})`)
+            : res.status(403).json(errorResponse);
         }
       } catch (authError) {
         console.error("Error checking admin permissions:", authError);
-        return res.status(500).json({ error: "Error verifying admin permissions" });
+        const errorResponse = { error: "Error verifying admin permissions" };
+        return callback 
+          ? res.status(500).send(`${callback}(${JSON.stringify(errorResponse)})`)
+          : res.status(500).json(errorResponse);
       }
       
       // Get user email
@@ -358,27 +372,43 @@ exports.generatePasswordResetLink = functions.https.onRequest((req, res) => {
         const email = userRecord.email;
         
         if (!email) {
-          return res.status(400).json({ error: "User does not have an email address" });
+          const errorResponse = { error: "User does not have an email address" };
+          return callback 
+            ? res.status(400).send(`${callback}(${JSON.stringify(errorResponse)})`)
+            : res.status(400).json(errorResponse);
         }
         
         // Generate a password reset link
         const resetLink = await admin.auth().generatePasswordResetLink(email);
         
-        return res.status(200).json({
+        const successResponse = {
           success: true,
           email: email,
           resetLink: resetLink
-        });
+        };
+        
+        return callback 
+          ? res.status(200).send(`${callback}(${JSON.stringify(successResponse)})`)
+          : res.status(200).json(successResponse);
       } catch (error) {
         console.error("Error generating password reset link:", error);
-        return res.status(500).json({
+        const errorResponse = {
           error: "Error generating password reset link",
           details: error.message
-        });
+        };
+        
+        return callback 
+          ? res.status(500).send(`${callback}(${JSON.stringify(errorResponse)})`)
+          : res.status(500).json(errorResponse);
       }
     } catch (error) {
       console.error("Error in generatePasswordResetLink function:", error);
-      return res.status(500).json({ error: error.message });
+      const errorResponse = { error: error.message };
+      
+      const callback = req.query.callback;
+      return callback 
+        ? res.status(500).send(`${callback}(${JSON.stringify(errorResponse)})`)
+        : res.status(500).json(errorResponse);
     }
   });
 });
