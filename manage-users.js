@@ -583,6 +583,7 @@ async function loadUsers() {
           li.innerHTML = `
             <div class="user-info">
               <strong>Email:</strong> ${user.email} | 
+              <strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> |
               <strong>UID:</strong> ${user.uid} | 
               <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
               <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
@@ -870,6 +871,31 @@ window.showUserDetails = async function(userId, userData = null) {
         const section = this.getAttribute('data-section');
         document.getElementById(`${section}-section-content`).style.display = 'none';
         document.getElementById(`${section}-section-edit`).style.display = 'block';
+        
+        // If editing personal info, set focus to first name input
+        if (section === 'personal') {
+          const firstNameInput = document.getElementById('firstName-edit');
+          if (firstNameInput) {
+            setTimeout(() => firstNameInput.focus(), 100);
+            
+            // If username is empty or not set, auto-generate it from existing first/last name
+            const usernameInput = document.getElementById('username-edit');
+            if (usernameInput && (!usernameInput.value || usernameInput.value === 'Not provided')) {
+              const firstName = firstNameInput.value.trim();
+              const lastNameInput = document.getElementById('lastName-edit');
+              const lastName = lastNameInput ? lastNameInput.value.trim() : '';
+              
+              if (firstName && lastName) {
+                const formattedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+                const lastInitial = lastName.charAt(0).toUpperCase();
+                usernameInput.value = `${formattedFirstName}. ${lastInitial}`;
+              } else if (firstName) {
+                const formattedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+                usernameInput.value = `${formattedFirstName}. `;
+              }
+            }
+          }
+        }
       });
     });
     
@@ -956,7 +982,22 @@ window.showUserDetails = async function(userId, userData = null) {
             // Handle personal info updates
             updates.firstName = document.getElementById('firstName-edit').value.trim();
             updates.lastName = document.getElementById('lastName-edit').value.trim();
-            updates.username = document.getElementById('username-edit').value.trim();
+            
+            // Auto-generate the username based on first name and last initial
+            if (updates.firstName && updates.lastName) {
+              const firstName = updates.firstName.charAt(0).toUpperCase() + updates.firstName.slice(1).toLowerCase();
+              const lastInitial = updates.lastName.charAt(0).toUpperCase();
+              updates.username = `${firstName}. ${lastInitial}`;
+            } else if (updates.firstName) {
+              const firstName = updates.firstName.charAt(0).toUpperCase() + updates.firstName.slice(1).toLowerCase();
+              updates.username = `${firstName}. `;
+            }
+            
+            // Use the username from input as fallback if auto-generation is disabled
+            if (!updates.username) {
+              updates.username = document.getElementById('username-edit').value.trim();
+            }
+            
             updates.phoneNumber = document.getElementById('phoneNumber-edit').value.trim();
             
             await updateDoc(doc(db, "users", userId), updates);
@@ -972,6 +1013,15 @@ window.showUserDetails = async function(userId, userData = null) {
             if (userIndex !== -1) {
               allUsers[userIndex].userData = {...allUsers[userIndex].userData, ...updates};
               // Don't apply filters here as that would close the modal
+              
+              // Also update the username in the user list item if it exists
+              const userItem = document.querySelector(`li[data-uid="${userId}"]`);
+              if (userItem) {
+                const usernameElement = userItem.querySelector('.user-username');
+                if (usernameElement) {
+                  usernameElement.textContent = updates.username || 'Not set';
+                }
+              }
             }
           } 
           else if (section === 'account') {
@@ -1138,18 +1188,7 @@ async function updateUserStatus(userId, disabled) {
 
 // Helper function to update user status in the user list
 function updateUserListItemStatus(userId, disabled) {
-  const userItems = document.querySelectorAll('.user-item');
-  userItems.forEach(item => {
-    if (item.getAttribute('data-uid') === userId) {
-      // Find the status text in the user-info div
-      const statusText = item.querySelector('.user-info').innerHTML;
-      const updatedStatus = statusText.replace(
-        /Status:<\/strong> (Active|Disabled)/,
-        `Status:</strong> ${disabled ? 'Disabled' : 'Active'}`
-      );
-      item.querySelector('.user-info').innerHTML = updatedStatus;
-    }
-  });
+  updateUserListItemInfo(userId, { disabled: disabled });
 }
 
 // Add function to delete comments
@@ -1354,5 +1393,351 @@ window.generatePasswordResetLink = async function(userId) {
     } else {
       alert('Error generating password reset link: ' + error.message);
     }
+  }
+};
+
+// Helper function to update user info in the list item
+function updateUserListItemInfo(userId, updates, refreshElement = false) {
+  const userItems = document.querySelectorAll('.user-item');
+  let userItem = null;
+  
+  userItems.forEach(item => {
+    if (item.getAttribute('data-uid') === userId) {
+      userItem = item;
+    }
+  });
+  
+  if (userItem) {
+    const userInfo = userItem.querySelector('.user-info');
+    
+    if (refreshElement) {
+      // Generate new HTML for the entire info section
+      const existingHTML = userInfo.innerHTML;
+      
+      // Extract username from HTML or use from updates
+      let username = updates.username;
+      if (!username) {
+        const usernameMatch = existingHTML.match(/Username:<\/strong> <span class="user-username">([^<]+)<\/span>/);
+        username = usernameMatch ? usernameMatch[1] : 'Not set';
+      }
+      
+      // Extract email from HTML
+      const emailMatch = existingHTML.match(/Email:<\/strong> ([^<|]+)/);
+      const email = emailMatch ? emailMatch[1].trim() : '';
+      
+      // Extract UID from HTML
+      const uidMatch = existingHTML.match(/UID:<\/strong> ([^<|]+)/);
+      const uid = uidMatch ? uidMatch[1].trim() : userId;
+      
+      // Extract disabled status from HTML or use from updates
+      let status = '';
+      if (typeof updates.disabled === 'boolean') {
+        status = updates.disabled ? 'Disabled' : 'Active';
+      } else {
+        status = existingHTML.includes('Status:</strong> Disabled') ? 'Disabled' : 'Active';
+      }
+      
+      // Create new role span
+      let roleDisplay = 'User';
+      let roleClass = 'user-role';
+      
+      if (updates.isSuperAdmin) {
+        roleDisplay = 'Super Admin';
+        roleClass = 'super-admin-role';
+      } else if (updates.isAdmin) {
+        roleDisplay = 'Admin';
+        roleClass = 'admin-role';
+      }
+      
+      // Rebuild the user info HTML
+      userInfo.innerHTML = `
+        <strong>Email:</strong> ${email} | 
+        <strong>Username:</strong> <span class="user-username">${username}</span> |
+        <strong>UID:</strong> ${uid} | 
+        <strong>Status:</strong> ${status} |
+        <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+      `;
+    } else {
+      // Only update specific parts
+      if (updates.username) {
+        const usernameElement = userInfo.querySelector('.user-username');
+        if (usernameElement) {
+          usernameElement.textContent = updates.username;
+        }
+      }
+      
+      if (typeof updates.disabled === 'boolean') {
+        const statusText = userInfo.innerHTML;
+        const updatedStatus = statusText.replace(
+          /Status:<\/strong> (Active|Disabled)/,
+          `Status:</strong> ${updates.disabled ? 'Disabled' : 'Active'}`
+        );
+        userInfo.innerHTML = updatedStatus;
+      }
+      
+      if (typeof updates.isAdmin === 'boolean' || typeof updates.isSuperAdmin === 'boolean') {
+        const roleSpan = userInfo.querySelector('.user-role');
+        if (roleSpan) {
+          let roleDisplay = 'User';
+          let roleClass = 'user-role';
+          
+          if (updates.isSuperAdmin) {
+            roleDisplay = 'Super Admin';
+            roleClass = 'super-admin-role';
+          } else if (updates.isAdmin) {
+            roleDisplay = 'Admin';
+            roleClass = 'admin-role';
+          }
+          
+          roleSpan.textContent = roleDisplay;
+          roleSpan.className = `user-role ${roleClass}`;
+        }
+      }
+    }
+    
+    return true;
+  }
+  
+  return false;
+}
+
+// Update the updateUserRole function
+window.updateUserRole = async function(userId, isAdmin) {
+  try {
+    // First update the UI to provide immediate feedback
+    // Find the list item containing this user by iterating through all user items
+    const userItems = document.querySelectorAll('.user-item');
+    let userItem = null;
+    userItems.forEach(item => {
+      if (item.getAttribute('data-uid') === userId) {
+        userItem = item;
+      }
+    });
+    
+    if (userItem) {
+      // Update role display
+      updateUserListItemInfo(userId, { isAdmin: isAdmin });
+      
+      // Update action buttons
+      const userActions = userItem.querySelector('.user-actions');
+      
+      if (userActions) {
+        const actionButtons = Array.from(userActions.querySelectorAll('button')).filter(btn => btn.textContent.includes('Admin'));
+        actionButtons.forEach(btn => userActions.removeChild(btn));
+        
+        // Insert new buttons after view details button
+        const viewDetailsBtn = userActions.querySelector('.view-details-btn');
+        if (viewDetailsBtn) {
+          if (isAdmin) {
+            const makeSuperAdminBtn = document.createElement('button');
+            makeSuperAdminBtn.className = 'role-btn make-super-admin';
+            makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
+            makeSuperAdminBtn.textContent = 'Make Super Admin';
+            
+            const removeAdminBtn = document.createElement('button');
+            removeAdminBtn.className = 'role-btn remove-admin';
+            removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
+            removeAdminBtn.textContent = 'Remove Admin';
+            
+            userActions.insertBefore(removeAdminBtn, viewDetailsBtn.nextSibling);
+            userActions.insertBefore(makeSuperAdminBtn, viewDetailsBtn.nextSibling);
+          } else {
+            const makeAdminBtn = document.createElement('button');
+            makeAdminBtn.className = 'role-btn make-admin';
+            makeAdminBtn.onclick = () => window.updateUserRole(userId, true);
+            makeAdminBtn.textContent = 'Make Admin';
+            
+            userActions.insertBefore(makeAdminBtn, viewDetailsBtn.nextSibling);
+          }
+        }
+      }
+    }
+    
+    // Update in Firestore
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, { isAdmin });
+    
+    // Show success message
+    const message = document.createElement('div');
+    message.className = 'success-message';
+    message.textContent = `User ${isAdmin ? 'promoted to admin' : 'removed from admin role'} successfully`;
+    message.style.position = 'fixed';
+    message.style.top = '20px';
+    message.style.left = '50%';
+    message.style.transform = 'translateX(-50%)';
+    message.style.backgroundColor = '#4CAF50';
+    message.style.color = 'white';
+    message.style.padding = '10px 20px';
+    message.style.borderRadius = '5px';
+    message.style.zIndex = '1000';
+    document.body.appendChild(message);
+    
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 3000);
+    
+    // Update the user data in the allUsers array
+    const userIndex = allUsers.findIndex(user => user.uid === userId);
+    if (userIndex !== -1) {
+      allUsers[userIndex].userData.isAdmin = isAdmin;
+      
+      // Re-apply filters to update the displayed list
+      applyFilters();
+    }
+    
+    // If a modal is currently displayed, update it too
+    if (currentUserId === userId && modal.style.display === "block") {
+      window.showUserDetails(userId, { uid: userId, isAdmin: isAdmin, isSuperAdmin: false });
+    }
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    alert("Error updating user role: " + error.message);
+  }
+};
+
+// Update Super Admin role function
+window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
+  try {
+    // Get current authenticated user
+    const user = auth.currentUser;
+    const isCurrentUserSuperAdmin = await isSuperAdmin(user.uid);
+    if (!user || !isCurrentUserSuperAdmin) {
+      alert("You need super admin privileges to manage super admins");
+      return;
+    }
+    
+    // Prevent removing the last super admin
+    if (!makeUserSuperAdmin && userId === user.uid) {
+      const superAdmins = [...superAdminUIDs];
+      
+      // Also check Firestore for other super admins
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("isSuperAdmin", "==", true));
+      const superAdminDocs = await getDocs(q);
+      const superAdminCount = superAdminDocs.size;
+      
+      if (superAdminCount <= 1) {
+        alert("Cannot remove the last super admin. Promote another user to super admin first.");
+        return;
+      }
+    }
+    
+    // First update the UI to provide immediate feedback
+    const updates = {
+      isSuperAdmin: makeUserSuperAdmin,
+      isAdmin: true // Super admins are also admins
+    };
+    
+    updateUserListItemInfo(userId, updates, true);
+    
+    // Find the list item to update action buttons
+    const userItems = document.querySelectorAll('.user-item');
+    let userItem = null;
+    userItems.forEach(item => {
+      if (item.getAttribute('data-uid') === userId) {
+        userItem = item;
+      }
+    });
+    
+    if (userItem) {
+      // Update action buttons
+      const userActions = userItem.querySelector('.user-actions');
+      
+      if (userActions) {
+        const actionButtons = Array.from(userActions.querySelectorAll('button')).filter(btn => btn.textContent.includes('Admin'));
+        actionButtons.forEach(btn => userActions.removeChild(btn));
+        
+        // Insert new buttons after view details button
+        const viewDetailsBtn = userActions.querySelector('.view-details-btn');
+        if (viewDetailsBtn) {
+          if (makeUserSuperAdmin) {
+            const removeSuperAdminBtn = document.createElement('button');
+            removeSuperAdminBtn.className = 'role-btn remove-super-admin';
+            removeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, false);
+            removeSuperAdminBtn.textContent = 'Remove Super Admin';
+            
+            userActions.insertBefore(removeSuperAdminBtn, viewDetailsBtn.nextSibling);
+          } else {
+            const makeSuperAdminBtn = document.createElement('button');
+            makeSuperAdminBtn.className = 'role-btn make-super-admin';
+            makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
+            makeSuperAdminBtn.textContent = 'Make Super Admin';
+            
+            const removeAdminBtn = document.createElement('button');
+            removeAdminBtn.className = 'role-btn remove-admin';
+            removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
+            removeAdminBtn.textContent = 'Remove Admin';
+            
+            userActions.insertBefore(removeAdminBtn, viewDetailsBtn.nextSibling);
+            userActions.insertBefore(makeSuperAdminBtn, viewDetailsBtn.nextSibling);
+          }
+        }
+      }
+    }
+    
+    // Update in Firestore
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, updates);
+    
+    // Update superAdminUIDs array
+    let updated = false;
+    if (makeUserSuperAdmin && !superAdminUIDs.includes(userId)) {
+      superAdminUIDs.push(userId);
+      updated = true;
+    } else if (!makeUserSuperAdmin && superAdminUIDs.includes(userId)) {
+      const index = superAdminUIDs.indexOf(userId);
+      if (index > -1) {
+        superAdminUIDs.splice(index, 1);
+        updated = true;
+      }
+    }
+    
+    if (updated) {
+      console.log("Updated super admin list:", superAdminUIDs);
+    }
+    
+    // Show success message
+    const message = document.createElement('div');
+    message.className = 'success-message';
+    message.textContent = `User ${makeUserSuperAdmin ? 'promoted to super admin' : 'removed from super admin role'} successfully`;
+    message.style.position = 'fixed';
+    message.style.top = '20px';
+    message.style.left = '50%';
+    message.style.transform = 'translateX(-50%)';
+    message.style.backgroundColor = '#4CAF50';
+    message.style.color = 'white';
+    message.style.padding = '10px 20px';
+    message.style.borderRadius = '5px';
+    message.style.zIndex = '1000';
+    document.body.appendChild(message);
+    
+    // Update the user data in the allUsers array
+    const userIndex = allUsers.findIndex(user => user.uid === userId);
+    if (userIndex !== -1) {
+      allUsers[userIndex].userData.isSuperAdmin = makeUserSuperAdmin;
+      allUsers[userIndex].userData.isAdmin = true;
+      
+      // Re-apply filters to update the displayed list
+      applyFilters();
+    }
+    
+    // Remove the message after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(message);
+      
+      // After making a change to super admin status, refresh the page to update permissions
+      if (makeUserSuperAdmin || userId === user.uid) {
+        window.location.reload();
+      }
+    }, 3000);
+    
+    // If a modal is currently displayed, update it too
+    if (currentUserId === userId && modal.style.display === "block") {
+      window.showUserDetails(userId, { uid: userId, isAdmin: true, isSuperAdmin: makeUserSuperAdmin });
+    }
+  } catch (error) {
+    console.error("Error updating super admin role:", error);
+    alert("Error updating super admin role: " + error.message);
   }
 }; 
