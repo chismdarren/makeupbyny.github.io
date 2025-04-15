@@ -737,27 +737,106 @@ window.showUserDetails = async function(userId, userData = null) {
     modalContent.innerHTML = `
       <div class="user-details-container">
         <div class="user-basic-info">
-          <h3>Basic Information</h3>
-          <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
-          <p><strong>UID:</strong> ${userId}</p>
-          <p><strong>Status:</strong> ${authUserData.disabled ? 'Disabled' : 'Active'}</p>
-          <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
+          <div class="section-header">
+            <h3>Basic Information</h3>
+            <button type="button" class="edit-section-btn" data-section="basic">Edit</button>
+          </div>
+          <div class="section-content" id="basic-section-content">
+            <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
+            <p><strong>UID:</strong> ${userId}</p>
+            <p><strong>Status:</strong> <span id="status-display">${authUserData.disabled ? 'Disabled' : 'Active'}</span></p>
+            <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
+          </div>
+          <div class="section-edit" id="basic-section-edit" style="display: none;">
+            <form id="basic-info-form">
+              <div class="form-group">
+                <label for="email-edit">Email:</label>
+                <input type="email" id="email-edit" value="${authUserData.email || userFullData.email || ''}" disabled>
+                <small>Email cannot be changed directly</small>
+              </div>
+              <div class="form-group">
+                <label for="status-edit">Status:</label>
+                <select id="status-edit">
+                  <option value="active" ${!authUserData.disabled ? 'selected' : ''}>Active</option>
+                  <option value="disabled" ${authUserData.disabled ? 'selected' : ''}>Disabled</option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="cancel-edit-btn" data-section="basic">Cancel</button>
+                <button type="button" class="save-edit-btn" data-section="basic">Save Changes</button>
+              </div>
+            </form>
+          </div>
         </div>
         
         <div class="user-personal-info">
-          <h3>Personal Information</h3>
+          <div class="section-header">
+            <h3>Personal Information</h3>
+            <button type="button" class="edit-section-btn" data-section="personal">Edit</button>
+          </div>
           ${!userSignupComplete ? '<p class="warning-message">⚠️ User signup data is incomplete. This user may need to complete registration.</p>' : ''}
-          <p><strong>First Name:</strong> ${userFullData.firstName || 'Not provided'}</p>
-          <p><strong>Last Name:</strong> ${userFullData.lastName || 'Not provided'}</p>
-          <p><strong>Username:</strong> ${userFullData.username || 'Not provided'}</p>
-          <p><strong>Phone Number:</strong> ${userFullData.phoneNumber || 'Not provided'}</p>
+          <div class="section-content" id="personal-section-content">
+            <p><strong>First Name:</strong> <span id="firstName-display">${userFullData.firstName || 'Not provided'}</span></p>
+            <p><strong>Last Name:</strong> <span id="lastName-display">${userFullData.lastName || 'Not provided'}</span></p>
+            <p><strong>Username:</strong> <span id="username-display">${userFullData.username || 'Not provided'}</span></p>
+            <p><strong>Phone Number:</strong> <span id="phoneNumber-display">${userFullData.phoneNumber || 'Not provided'}</span></p>
+          </div>
+          <div class="section-edit" id="personal-section-edit" style="display: none;">
+            <form id="personal-info-form">
+              <div class="form-group">
+                <label for="firstName-edit">First Name:</label>
+                <input type="text" id="firstName-edit" value="${userFullData.firstName || ''}">
+              </div>
+              <div class="form-group">
+                <label for="lastName-edit">Last Name:</label>
+                <input type="text" id="lastName-edit" value="${userFullData.lastName || ''}">
+              </div>
+              <div class="form-group">
+                <label for="username-edit">Username:</label>
+                <input type="text" id="username-edit" value="${userFullData.username || ''}">
+                <small>Format should be "FirstName. LastInitial" (e.g., "Ray. C")</small>
+              </div>
+              <div class="form-group">
+                <label for="phoneNumber-edit">Phone Number:</label>
+                <input type="tel" id="phoneNumber-edit" value="${userFullData.phoneNumber || ''}">
+              </div>
+              <div class="form-actions">
+                <button type="button" class="cancel-edit-btn" data-section="personal">Cancel</button>
+                <button type="button" class="save-edit-btn" data-section="personal">Save Changes</button>
+              </div>
+            </form>
+          </div>
         </div>
         
         <div class="user-account-info">
-          <h3>Account Information</h3>
-          <p><strong>Account Created:</strong> ${createdAtDisplay}</p>
-          <p><strong>Terms & Policy Accepted:</strong> ${userFullData.termsAccepted ? 'Yes' : 'No'}</p>
-          <p><strong>Acceptance Date:</strong> ${termsAcceptedDateDisplay}</p>
+          <div class="section-header">
+            <h3>Account Information</h3>
+            <button type="button" class="edit-section-btn" data-section="account">Edit</button>
+          </div>
+          <div class="section-content" id="account-section-content">
+            <p><strong>Account Created:</strong> ${createdAtDisplay}</p>
+            <p><strong>Terms & Policy Accepted:</strong> <span id="terms-display">${userFullData.termsAccepted ? 'Yes' : 'No'}</span></p>
+            <p><strong>Acceptance Date:</strong> <span id="termsDate-display">${termsAcceptedDateDisplay}</span></p>
+          </div>
+          <div class="section-edit" id="account-section-edit" style="display: none;">
+            <form id="account-info-form">
+              <div class="form-group">
+                <label for="terms-edit">Terms & Policy:</label>
+                <select id="terms-edit">
+                  <option value="true" ${userFullData.termsAccepted ? 'selected' : ''}>Accepted</option>
+                  <option value="false" ${!userFullData.termsAccepted ? 'selected' : ''}>Not Accepted</option>
+                </select>
+              </div>
+              <div class="form-group terms-date-group" ${!userFullData.termsAccepted ? 'style="display: none;"' : ''}>
+                <label for="terms-date-edit">Acceptance Date:</label>
+                <input type="datetime-local" id="terms-date-edit" value="${formatDateTimeLocal(userFullData.termsAcceptedDate)}">
+              </div>
+              <div class="form-actions">
+                <button type="button" class="cancel-edit-btn" data-section="account">Cancel</button>
+                <button type="button" class="save-edit-btn" data-section="account">Save Changes</button>
+              </div>
+            </form>
+          </div>
         </div>
         
         <div class="user-password-section">
@@ -785,6 +864,151 @@ window.showUserDetails = async function(userId, userData = null) {
       </div>
     `;
     
+    // Add event listeners for edit buttons
+    document.querySelectorAll('.edit-section-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const section = this.getAttribute('data-section');
+        document.getElementById(`${section}-section-content`).style.display = 'none';
+        document.getElementById(`${section}-section-edit`).style.display = 'block';
+      });
+    });
+    
+    // Add event listeners for cancel buttons
+    document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const section = this.getAttribute('data-section');
+        document.getElementById(`${section}-section-edit`).style.display = 'none';
+        document.getElementById(`${section}-section-content`).style.display = 'block';
+      });
+    });
+    
+    // Toggle terms date field visibility based on terms acceptance
+    const termsSelect = document.getElementById('terms-edit');
+    if (termsSelect) {
+      termsSelect.addEventListener('change', function() {
+        const termsDateGroup = document.querySelector('.terms-date-group');
+        termsDateGroup.style.display = this.value === 'true' ? 'block' : 'none';
+        
+        // If switching to accepted, set current date
+        if (this.value === 'true' && !document.getElementById('terms-date-edit').value) {
+          document.getElementById('terms-date-edit').value = formatDateTimeLocal(new Date());
+        }
+      });
+    }
+    
+    // Update username when first or last name changes
+    const firstNameInput = document.getElementById('firstName-edit');
+    const lastNameInput = document.getElementById('lastName-edit');
+    const usernameInput = document.getElementById('username-edit');
+    
+    if (firstNameInput && lastNameInput && usernameInput) {
+      const updateUsername = function() {
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
+        
+        if (firstName) {
+          // Capitalize first letter of first name
+          const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+          
+          if (lastName) {
+            // Format as "FirstName. LastInitial"
+            const lastInitial = lastName.charAt(0).toUpperCase();
+            usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
+          } else {
+            // If we only have first name, use with a dot and space
+            usernameInput.value = `${capitalizedFirstName}. `;
+          }
+        }
+      };
+      
+      firstNameInput.addEventListener('input', updateUsername);
+      lastNameInput.addEventListener('input', updateUsername);
+    }
+    
+    // Add event listeners for save buttons
+    document.querySelectorAll('.save-edit-btn').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const section = this.getAttribute('data-section');
+        
+        try {
+          const updates = {};
+          
+          if (section === 'basic') {
+            // Handle basic info updates
+            const status = document.getElementById('status-edit').value;
+            // We can't update the email directly, so we only handle user status
+            
+            // Update disabled state via Cloud Function (you'll need to implement this)
+            const wasSuccessful = await updateUserStatus(userId, status === 'disabled');
+            
+            if (wasSuccessful) {
+              document.getElementById('status-display').textContent = status === 'disabled' ? 'Disabled' : 'Active';
+              
+              // Update the allUsers array for filtering
+              const userIndex = allUsers.findIndex(user => user.uid === userId);
+              if (userIndex !== -1) {
+                allUsers[userIndex].disabled = status === 'disabled';
+                // Don't apply filters here as that would close the modal
+              }
+            }
+          } 
+          else if (section === 'personal') {
+            // Handle personal info updates
+            updates.firstName = document.getElementById('firstName-edit').value.trim();
+            updates.lastName = document.getElementById('lastName-edit').value.trim();
+            updates.username = document.getElementById('username-edit').value.trim();
+            updates.phoneNumber = document.getElementById('phoneNumber-edit').value.trim();
+            
+            await updateDoc(doc(db, "users", userId), updates);
+            
+            // Update display values
+            document.getElementById('firstName-display').textContent = updates.firstName || 'Not provided';
+            document.getElementById('lastName-display').textContent = updates.lastName || 'Not provided';
+            document.getElementById('username-display').textContent = updates.username || 'Not provided';
+            document.getElementById('phoneNumber-display').textContent = updates.phoneNumber || 'Not provided';
+            
+            // Update the allUsers array for filtering
+            const userIndex = allUsers.findIndex(user => user.uid === userId);
+            if (userIndex !== -1) {
+              allUsers[userIndex].userData = {...allUsers[userIndex].userData, ...updates};
+              // Don't apply filters here as that would close the modal
+            }
+          } 
+          else if (section === 'account') {
+            // Handle account info updates
+            const termsAccepted = document.getElementById('terms-edit').value === 'true';
+            updates.termsAccepted = termsAccepted;
+            
+            if (termsAccepted) {
+              // Get the terms date from the input or use current date
+              const termsDateInput = document.getElementById('terms-date-edit').value;
+              updates.termsAcceptedDate = termsDateInput ? new Date(termsDateInput).toISOString() : new Date().toISOString();
+            } else {
+              // If terms not accepted, clear the date
+              updates.termsAcceptedDate = null;
+            }
+            
+            await updateDoc(doc(db, "users", userId), updates);
+            
+            // Update display values
+            document.getElementById('terms-display').textContent = termsAccepted ? 'Yes' : 'No';
+            const formattedDate = updates.termsAcceptedDate ? new Date(updates.termsAcceptedDate).toLocaleString() : 'Not accepted';
+            document.getElementById('termsDate-display').textContent = formattedDate;
+          }
+          
+          // Hide edit form, show content
+          document.getElementById(`${section}-section-edit`).style.display = 'none';
+          document.getElementById(`${section}-section-content`).style.display = 'block';
+          
+          // Show success message
+          showNotification('Changes saved successfully', 'success');
+        } catch (error) {
+          console.error(`Error saving ${section} changes:`, error);
+          showNotification(`Error: ${error.message}`, 'error');
+        }
+      });
+    });
+    
     modal.style.display = "block";
   } catch (error) {
     console.error('Error loading user details:', error);
@@ -792,714 +1016,141 @@ window.showUserDetails = async function(userId, userData = null) {
   }
 };
 
-// Function to show recovery options dialog
-window.showRecoverOptions = function(userId, email, userData) {
-  // Create recovery options dialog
-  const recoverDialog = document.createElement('div');
-  recoverDialog.id = 'recover-dialog';
-  recoverDialog.className = 'recover-dialog';
+// Helper function to show notifications
+function showNotification(message, type = 'success') {
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}-notification`;
+  notification.textContent = message;
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.left = '50%';
+  notification.style.transform = 'translateX(-50%)';
+  notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
+  notification.style.color = 'white';
+  notification.style.padding = '10px 20px';
+  notification.style.borderRadius = '5px';
+  notification.style.zIndex = '1000';
+  document.body.appendChild(notification);
   
-  // Determine which fields are missing
-  const missingFirstName = !userData.firstName;
-  const missingLastName = !userData.lastName;
-  const missingUsername = !userData.username;
-  const missingPhoneNumber = !userData.phoneNumber;
+  // Remove the notification after 3 seconds
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 3000);
+}
+
+// Helper function to format date for datetime-local input
+function formatDateTimeLocal(date) {
+  if (!date) return '';
   
-  // Generate suggested values
-  let suggestedFirstName = '';
-  let suggestedLastName = '';
-  
-  if (email) {
-    // Try to extract first name from email
-    const emailParts = email.split('@')[0];
+  try {
+    let dateObj;
     
-    if (emailParts.includes('.')) {
-      suggestedFirstName = emailParts.split('.')[0];
-      // Try to get last name initial if available
-      if (emailParts.split('.').length > 1) {
-        suggestedLastName = emailParts.split('.')[1];
-      }
-    } else if (emailParts.includes('_')) {
-      suggestedFirstName = emailParts.split('_')[0];
-      // Try to get last name initial if available
-      if (emailParts.split('_').length > 1) {
-        suggestedLastName = emailParts.split('_')[1];
-      }
+    if (typeof date === 'string') {
+      dateObj = new Date(date);
+    } else if (typeof date.toDate === 'function') {
+      dateObj = date.toDate();
+    } else if (date instanceof Date) {
+      dateObj = date;
     } else {
-      suggestedFirstName = emailParts;
+      return '';
     }
     
-    // Capitalize first letter
-    suggestedFirstName = suggestedFirstName.charAt(0).toUpperCase() + suggestedFirstName.slice(1).toLowerCase();
+    // Check if valid date
+    if (isNaN(dateObj.getTime())) return '';
     
-    if (suggestedLastName) {
-      suggestedLastName = suggestedLastName.charAt(0).toUpperCase() + suggestedLastName.slice(1).toLowerCase();
+    // Format for datetime-local input: YYYY-MM-DDThh:mm
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  } catch (e) {
+    console.error("Error formatting date for input:", e);
+    return '';
+  }
+}
+
+// Function to update user status via a Cloud Function
+async function updateUserStatus(userId, disabled) {
+  try {
+    // Get current admin user ID
+    const adminUser = auth.currentUser;
+    if (!adminUser) {
+      throw new Error("You must be logged in as an admin to perform this action.");
     }
-  }
-  
-  // Always generate the username in the correct format
-  let suggestedUsername = '';
-  
-  if (suggestedFirstName && suggestedLastName) {
-    // Format: "FirstName. LastInitial"
-    suggestedUsername = `${suggestedFirstName}. ${suggestedLastName.charAt(0)}`;
-  } else if (suggestedFirstName) {
-    // If we only have first name, just add the dot and space
-    suggestedUsername = `${suggestedFirstName}. `;
-  } else if (email) {
-    // Fallback to email
-    suggestedUsername = email.split('@')[0];
-  }
-  
-  recoverDialog.innerHTML = `
-    <div class="recover-dialog-content">
-      <h3>Recover Missing Information</h3>
-      <p>Select which information to recover for this user:</p>
-      <form id="recover-form">
-        ${missingFirstName ? `
-          <div class="recover-field">
-            <input type="checkbox" id="recover-firstName" name="firstName" checked>
-            <label for="recover-firstName">First Name:</label>
-            <input type="text" id="firstName-value" value="${suggestedFirstName}" placeholder="Enter first name">
-          </div>
-        ` : ''}
-        
-        ${missingLastName ? `
-          <div class="recover-field">
-            <input type="checkbox" id="recover-lastName" name="lastName" checked>
-            <label for="recover-lastName">Last Name:</label>
-            <input type="text" id="lastName-value" value="${suggestedLastName}" placeholder="Enter last name">
-            <small>Even a single letter is fine; only the first letter will be used in the username</small>
-          </div>
-        ` : ''}
-        
-        ${missingUsername ? `
-          <div class="recover-field">
-            <input type="checkbox" id="recover-username" name="username" checked>
-            <label for="recover-username">Username:</label>
-            <input type="text" id="username-value" value="${suggestedUsername}" placeholder="Enter username">
-            <small>Will be automatically formatted as "FirstName. LastInitial" (e.g., "Ray. C")</small>
-          </div>
-        ` : ''}
-        
-        ${missingPhoneNumber ? `
-          <div class="recover-field">
-            <input type="checkbox" id="recover-phoneNumber" name="phoneNumber" checked>
-            <label for="recover-phoneNumber">Phone Number:</label>
-            <input type="text" id="phoneNumber-value" value="" placeholder="Enter phone number (e.g., 123-456-7890)">
-          </div>
-        ` : ''}
-        
-        ${!userData.termsAccepted ? `
-          <div class="recover-field">
-            <input type="checkbox" id="recover-terms" name="terms" checked>
-            <label for="recover-terms">Accept Terms:</label>
-            <span>Set as accepted</span>
-          </div>
-        ` : ''}
-        
-        <div class="recover-buttons">
-          <button type="button" id="recover-cancel" class="cancel-btn">Cancel</button>
-          <button type="button" id="recover-apply" class="apply-btn">Apply Changes</button>
-        </div>
-      </form>
-    </div>
-  `;
-  
-  // Add dialog to the document
-  document.body.appendChild(recoverDialog);
-  
-  // Update username when first or last name changes
-  const firstNameInput = document.getElementById('firstName-value');
-  const lastNameInput = document.getElementById('lastName-value');
-  const usernameInput = document.getElementById('username-value');
-  
-  if (firstNameInput && lastNameInput && usernameInput) {
-    const updateUsername = function() {
-      const firstName = firstNameInput.value.trim();
-      const lastName = lastNameInput.value.trim();
-      
-      if (firstName) {
-        // Capitalize first letter of first name
-        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-        
-        if (lastName) {
-          // Format as "FirstName. LastInitial"
-          const lastInitial = lastName.charAt(0).toUpperCase();
-          usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
-        } else {
-          // If we only have first name, use with a dot and space
-          usernameInput.value = `${capitalizedFirstName}. `;
-        }
-      }
-    };
     
-    firstNameInput.addEventListener('input', updateUsername);
-    lastNameInput.addEventListener('input', updateUsername);
-  }
-  
-  // Disable username editing - only auto-generated based on first/last name
-  if (usernameInput) {
-    usernameInput.addEventListener('focus', function() {
-      this.blur();
-      alert('Username is automatically generated from First Name and Last Name to maintain the required format.');
+    // Create a loading indicator
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'loading-message';
+    loadingMessage.textContent = 'Updating user status...';
+    loadingMessage.style.position = 'fixed';
+    loadingMessage.style.top = '20px';
+    loadingMessage.style.left = '50%';
+    loadingMessage.style.transform = 'translateX(-50%)';
+    loadingMessage.style.backgroundColor = '#2196F3';
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '10px 20px';
+    loadingMessage.style.borderRadius = '5px';
+    loadingMessage.style.zIndex = '1000';
+    document.body.appendChild(loadingMessage);
+    
+    console.log(`Attempting to update status for user with UID: ${userId} to ${disabled ? 'disabled' : 'active'}`);
+    
+    // Call the deployed Cloud Function
+    const response = await fetch('https://us-central1-makeupbyny-1.cloudfunctions.net/updateUserStatus', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        uid: userId,
+        disabled: disabled,
+        adminId: adminUser.uid
+      })
     });
+    
+    // Remove the loading indicator
+    document.body.removeChild(loadingMessage);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log("Status update result:", result);
+    
+    // Show success notification
+    showNotification(result.message || "User status updated successfully", "success");
+    
+    // Update the UI in the user item list
+    updateUserListItemStatus(userId, disabled);
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    showNotification(`Error updating user status: ${error.message}`, "error");
+    return false;
   }
-  
-  // Add event listeners
-  document.getElementById('recover-cancel').addEventListener('click', function() {
-    document.body.removeChild(recoverDialog);
+}
+
+// Helper function to update user status in the user list
+function updateUserListItemStatus(userId, disabled) {
+  const userItems = document.querySelectorAll('.user-item');
+  userItems.forEach(item => {
+    if (item.getAttribute('data-uid') === userId) {
+      // Find the status text in the user-info div
+      const statusText = item.querySelector('.user-info').innerHTML;
+      const updatedStatus = statusText.replace(
+        /Status:<\/strong> (Active|Disabled)/,
+        `Status:</strong> ${disabled ? 'Disabled' : 'Active'}`
+      );
+      item.querySelector('.user-info').innerHTML = updatedStatus;
+    }
   });
-  
-  document.getElementById('recover-apply').addEventListener('click', function() {
-    const updates = {};
-    
-    // Get values from selected checkboxes
-    if (missingFirstName && document.getElementById('recover-firstName').checked) {
-      const firstName = document.getElementById('firstName-value').value.trim();
-      if (firstName) {
-        updates.firstName = firstName;
-      }
-    }
-    
-    if (missingLastName && document.getElementById('recover-lastName').checked) {
-      const lastName = document.getElementById('lastName-value').value.trim();
-      if (lastName) {
-        updates.lastName = lastName;
-      }
-    }
-    
-    // Generate username with the correct format if either first or last name was updated
-    if ((updates.firstName || updates.lastName) && document.getElementById('recover-username')?.checked) {
-      const firstName = updates.firstName || userData.firstName || '';
-      const lastName = updates.lastName || userData.lastName || '';
-      
-      if (firstName) {
-        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-        
-        if (lastName) {
-          const lastInitial = lastName.charAt(0).toUpperCase();
-          updates.username = `${capitalizedFirstName}. ${lastInitial}`;
-        } else {
-          updates.username = `${capitalizedFirstName}. `;
-        }
-      }
-    } else if (missingUsername && document.getElementById('recover-username')?.checked) {
-      updates.username = document.getElementById('username-value').value.trim();
-    }
-    
-    if (missingPhoneNumber && document.getElementById('recover-phoneNumber').checked) {
-      const phoneNumber = document.getElementById('phoneNumber-value').value.trim();
-      if (phoneNumber) {
-        updates.phoneNumber = phoneNumber;
-      }
-    }
-    
-    if (!userData.termsAccepted && document.getElementById('recover-terms')?.checked) {
-      updates.termsAccepted = true;
-      updates.termsAcceptedDate = new Date().toISOString();
-    }
-    
-    // Apply updates
-    window.applyUserDataRecovery(userId, updates);
-    
-    // Remove the dialog
-    document.body.removeChild(recoverDialog);
-  });
-  
-  // Position the dialog
-  recoverDialog.style.display = 'block';
-};
-
-// Function to apply user data recovery
-window.applyUserDataRecovery = async function(userId, updates) {
-  try {
-    // Only update if there are changes
-    if (Object.keys(updates).length > 0) {
-      const userRef = doc(db, "users", userId);
-      await updateDoc(userRef, updates);
-      
-      // Show success message
-      alert(`User data recovered successfully. Updated fields: ${Object.keys(updates).join(', ')}`);
-      
-      // Refresh the modal
-      window.showUserDetails(userId);
-    } else {
-      alert('No changes selected for recovery.');
-    }
-  } catch (error) {
-    console.error('Error recovering user data:', error);
-    alert('Error recovering user data: ' + error.message);
-  }
-};
-
-window.updateUserRole = async function(userId, isAdmin) {
-  try {
-    // First update the UI to provide immediate feedback
-    // Find the list item containing this user by iterating through all user items
-    const userItems = document.querySelectorAll('.user-item');
-    let userItem = null;
-    userItems.forEach(item => {
-      if (item.innerHTML.includes(userId)) {
-        userItem = item;
-      }
-    });
-    
-    if (userItem) {
-      const roleSpan = userItem.querySelector('.user-role');
-      const userActions = userItem.querySelector('.user-actions');
-      
-      if (roleSpan) {
-        roleSpan.textContent = isAdmin ? 'Admin' : 'User';
-        roleSpan.className = `user-role ${isAdmin ? 'admin-role' : 'user-role'}`;
-      }
-      
-      // Update action buttons
-      if (userActions) {
-        const actionButtons = Array.from(userActions.querySelectorAll('button')).filter(btn => btn.textContent.includes('Admin'));
-        actionButtons.forEach(btn => userActions.removeChild(btn));
-        
-        // Insert new buttons after view details button
-        const viewDetailsBtn = userActions.querySelector('.view-details-btn');
-        if (viewDetailsBtn) {
-          if (isAdmin) {
-            const makeSuperAdminBtn = document.createElement('button');
-            makeSuperAdminBtn.className = 'role-btn make-super-admin';
-            makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
-            makeSuperAdminBtn.textContent = 'Make Super Admin';
-            
-            const removeAdminBtn = document.createElement('button');
-            removeAdminBtn.className = 'role-btn remove-admin';
-            removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
-            removeAdminBtn.textContent = 'Remove Admin';
-            
-            userActions.insertBefore(removeAdminBtn, viewDetailsBtn.nextSibling);
-            userActions.insertBefore(makeSuperAdminBtn, viewDetailsBtn.nextSibling);
-          } else {
-            const makeAdminBtn = document.createElement('button');
-            makeAdminBtn.className = 'role-btn make-admin';
-            makeAdminBtn.onclick = () => window.updateUserRole(userId, true);
-            makeAdminBtn.textContent = 'Make Admin';
-            
-            userActions.insertBefore(makeAdminBtn, viewDetailsBtn.nextSibling);
-          }
-        }
-      }
-    }
-    
-    // Update in Firestore
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, { isAdmin });
-    
-    // Show success message
-    const message = document.createElement('div');
-    message.className = 'success-message';
-    message.textContent = `User ${isAdmin ? 'promoted to admin' : 'removed from admin role'} successfully`;
-    message.style.position = 'fixed';
-    message.style.top = '20px';
-    message.style.left = '50%';
-    message.style.transform = 'translateX(-50%)';
-    message.style.backgroundColor = '#4CAF50';
-    message.style.color = 'white';
-    message.style.padding = '10px 20px';
-    message.style.borderRadius = '5px';
-    message.style.zIndex = '1000';
-    document.body.appendChild(message);
-    
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 3000);
-    
-    // Update the user data in the allUsers array
-    const userIndex = allUsers.findIndex(user => user.uid === userId);
-    if (userIndex !== -1) {
-      allUsers[userIndex].userData.isAdmin = isAdmin;
-      
-      // Re-apply filters to update the displayed list
-      applyFilters();
-    }
-    
-    // If a modal is currently displayed, update it too
-    if (currentUserId === userId && modal.style.display === "block") {
-      window.showUserDetails(userId, { uid: userId, isAdmin: isAdmin, isSuperAdmin: false });
-    }
-  } catch (error) {
-    console.error("Error updating user role:", error);
-    alert("Error updating user role: " + error.message);
-  }
-};
-
-// Add the Super Admin role update function
-window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
-  try {
-    // Get current authenticated user
-    const user = auth.currentUser;
-    const isCurrentUserSuperAdmin = await isSuperAdmin(user.uid);
-    if (!user || !isCurrentUserSuperAdmin) {
-      alert("You need super admin privileges to manage super admins");
-      return;
-    }
-    
-    // Prevent removing the last super admin
-    if (!makeUserSuperAdmin && userId === user.uid) {
-      const superAdmins = [...superAdminUIDs];
-      
-      // Also check Firestore for other super admins
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("isSuperAdmin", "==", true));
-      const superAdminDocs = await getDocs(q);
-      const superAdminCount = superAdminDocs.size;
-      
-      if (superAdminCount <= 1) {
-        alert("Cannot remove the last super admin. Promote another user to super admin first.");
-        return;
-      }
-    }
-    
-    // First update the UI to provide immediate feedback
-    const userItems = document.querySelectorAll('.user-item');
-    let userItem = null;
-    userItems.forEach(item => {
-      if (item.innerHTML.includes(userId)) {
-        userItem = item;
-      }
-    });
-    
-    if (userItem) {
-      const roleSpan = userItem.querySelector('.user-role');
-      const userActions = userItem.querySelector('.user-actions');
-      
-      if (roleSpan) {
-        roleSpan.textContent = makeUserSuperAdmin ? 'Super Admin' : 'Admin';
-        roleSpan.className = `user-role ${makeUserSuperAdmin ? 'super-admin-role' : 'admin-role'}`;
-      }
-      
-      // Update action buttons
-      if (userActions) {
-        const actionButtons = Array.from(userActions.querySelectorAll('button')).filter(btn => btn.textContent.includes('Admin'));
-        actionButtons.forEach(btn => userActions.removeChild(btn));
-        
-        // Insert new buttons after view details button
-        const viewDetailsBtn = userActions.querySelector('.view-details-btn');
-        if (viewDetailsBtn) {
-          if (makeUserSuperAdmin) {
-            const removeSuperAdminBtn = document.createElement('button');
-            removeSuperAdminBtn.className = 'role-btn remove-super-admin';
-            removeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, false);
-            removeSuperAdminBtn.textContent = 'Remove Super Admin';
-            
-            userActions.insertBefore(removeSuperAdminBtn, viewDetailsBtn.nextSibling);
-          } else {
-            const makeSuperAdminBtn = document.createElement('button');
-            makeSuperAdminBtn.className = 'role-btn make-super-admin';
-            makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
-            makeSuperAdminBtn.textContent = 'Make Super Admin';
-            
-            const removeAdminBtn = document.createElement('button');
-            removeAdminBtn.className = 'role-btn remove-admin';
-            removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
-            removeAdminBtn.textContent = 'Remove Admin';
-            
-            userActions.insertBefore(removeAdminBtn, viewDetailsBtn.nextSibling);
-            userActions.insertBefore(makeSuperAdminBtn, viewDetailsBtn.nextSibling);
-          }
-        }
-      }
-    }
-    
-    // Update in Firestore
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, { 
-      isSuperAdmin: makeUserSuperAdmin,
-      isAdmin: true // Super admins are also admins
-    });
-    
-    // Update superAdminUIDs array
-    let updated = false;
-    if (makeUserSuperAdmin && !superAdminUIDs.includes(userId)) {
-      superAdminUIDs.push(userId);
-      updated = true;
-    } else if (!makeUserSuperAdmin && superAdminUIDs.includes(userId)) {
-      const index = superAdminUIDs.indexOf(userId);
-      if (index > -1) {
-        superAdminUIDs.splice(index, 1);
-        updated = true;
-      }
-    }
-    
-    if (updated) {
-      console.log("Updated super admin list:", superAdminUIDs);
-    }
-    
-    // Show success message
-    const message = document.createElement('div');
-    message.className = 'success-message';
-    message.textContent = `User ${makeUserSuperAdmin ? 'promoted to super admin' : 'removed from super admin role'} successfully`;
-    message.style.position = 'fixed';
-    message.style.top = '20px';
-    message.style.left = '50%';
-    message.style.transform = 'translateX(-50%)';
-    message.style.backgroundColor = '#4CAF50';
-    message.style.color = 'white';
-    message.style.padding = '10px 20px';
-    message.style.borderRadius = '5px';
-    message.style.zIndex = '1000';
-    document.body.appendChild(message);
-    
-    // Update the user data in the allUsers array
-    const userIndex = allUsers.findIndex(user => user.uid === userId);
-    if (userIndex !== -1) {
-      allUsers[userIndex].userData.isSuperAdmin = makeUserSuperAdmin;
-      allUsers[userIndex].userData.isAdmin = true;
-      
-      // Re-apply filters to update the displayed list
-      applyFilters();
-    }
-    
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-      document.body.removeChild(message);
-      
-      // After making a change to super admin status, refresh the page to update permissions
-      if (makeUserSuperAdmin || userId === user.uid) {
-        window.location.reload();
-      }
-    }, 3000);
-    
-    // If a modal is currently displayed, update it too
-    if (currentUserId === userId && modal.style.display === "block") {
-      window.showUserDetails(userId, { uid: userId, isAdmin: true, isSuperAdmin: makeUserSuperAdmin });
-    }
-  } catch (error) {
-    console.error("Error updating super admin role:", error);
-    alert("Error updating super admin role: " + error.message);
-  }
-};
-
-window.deleteUser = async function(uid) {
-  const confirmText = "Are you sure you want to delete this user? This action cannot be undone.";
-  if (confirm(confirmText)) {
-    try {
-      // Show loading indicator
-      const loadingMessage = document.createElement('div');
-      loadingMessage.className = 'loading-message';
-      loadingMessage.textContent = 'Deleting user...';
-      loadingMessage.style.position = 'fixed';
-      loadingMessage.style.top = '20px';
-      loadingMessage.style.left = '50%';
-      loadingMessage.style.transform = 'translateX(-50%)';
-      loadingMessage.style.backgroundColor = '#2196F3';
-      loadingMessage.style.color = 'white';
-      loadingMessage.style.padding = '10px 20px';
-      loadingMessage.style.borderRadius = '5px';
-      loadingMessage.style.zIndex = '1000';
-      document.body.appendChild(loadingMessage);
-      
-      console.log(`Attempting to delete user with UID: ${uid}`);
-      
-      // Step 1: Delete user from Firestore directly
-      let firestoreDeleted = false;
-      try {
-        const userRef = doc(db, "users", uid);
-        await deleteDoc(userRef);
-        console.log(`User document deleted from Firestore: ${uid}`);
-        firestoreDeleted = true;
-      } catch (firestoreError) {
-        console.warn("Could not delete user from Firestore directly:", firestoreError);
-      }
-      
-      // Step 2: Try the recently deployed Cloud Function
-      let deleteSuccess = false;
-      
-      try {
-        // Direct method using fetch
-        const response = await fetch(`https://deleteuser-lkkilrnjsq-uc.a.run.app`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ 
-            _method: 'DELETE',
-            uid: uid
-          })
-        });
-        
-        // Log response status for debugging
-        console.log("Cloud Function response status:", response.status);
-      
-      if (response.ok) {
-          const responseData = await response.json();
-          console.log("Delete response:", responseData);
-          deleteSuccess = true;
-      } else {
-          console.warn("Delete request failed with status:", response.status);
-          const errorText = await response.text();
-          console.warn("Error response:", errorText);
-        }
-      } catch (fetchError) {
-        console.warn("Error calling deleteUser function:", fetchError);
-        
-        // Fallback method using a form
-        try {
-          console.log("Trying form-based approach as fallback");
-          const iframe = document.createElement('iframe');
-          iframe.name = 'deleteframe';
-          iframe.style.display = 'none';
-          document.body.appendChild(iframe);
-          
-          // Create a form that will make the request
-          const form = document.createElement('form');
-          form.action = `https://deleteuser-lkkilrnjsq-uc.a.run.app`;
-          form.method = 'POST'; 
-          form.target = 'deleteframe';
-          
-          // Add uid as a field
-          const uidField = document.createElement('input');
-          uidField.type = 'hidden';
-          uidField.name = 'uid';
-          uidField.value = uid;
-          form.appendChild(uidField);
-          
-          // Add a hidden field to indicate this should be a DELETE operation
-          const methodField = document.createElement('input');
-          methodField.type = 'hidden';
-          methodField.name = '_method';
-          methodField.value = 'DELETE';
-          form.appendChild(methodField);
-          
-          document.body.appendChild(form);
-          form.submit();
-          
-          // Wait a bit to allow the request to process
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          // Clean up
-          document.body.removeChild(iframe);
-          document.body.removeChild(form);
-          
-          console.log("Delete request sent via form submission");
-          deleteSuccess = true; // Assume success since we can't easily check the response
-        } catch (formError) {
-          console.warn("Error with form submission:", formError);
-        }
-      }
-      
-      // Step 3: Try refreshing the user list to see if deletion took effect
-      try {
-        // Get a fresh list of users
-        const response = await fetch("https://us-central1-makeupbyny-1.cloudfunctions.net/listAllAuthUsers", {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const users = await response.json();
-          // Check if the user is still in the list
-          const userStillExists = users.some(user => user.uid === uid);
-          
-          if (!userStillExists) {
-            console.log("User confirmed deleted from Auth");
-            deleteSuccess = true;
-          } else {
-            console.warn("User still exists in Auth after deletion attempts");
-          }
-        }
-      } catch (checkError) {
-        console.warn("Error checking if user was deleted:", checkError);
-      }
-      
-      // Remove loading indicator
-      document.body.removeChild(loadingMessage);
-      
-      // If either Firestore was deleted or we got a success from the Cloud Function
-      if (firestoreDeleted || deleteSuccess) {
-        console.log("User deletion succeeded");
-        
-        // Close modal if it's open
-        if (modal.style.display === "block") {
-          modal.style.display = "none";
-        }
-        
-        // Show success message
-        const successMessage = document.createElement('div');
-        successMessage.className = 'success-message';
-        successMessage.textContent = 'User deleted successfully';
-        successMessage.style.position = 'fixed';
-        successMessage.style.top = '20px';
-        successMessage.style.left = '50%';
-        successMessage.style.transform = 'translateX(-50%)';
-        successMessage.style.backgroundColor = '#4CAF50';
-        successMessage.style.color = 'white';
-        successMessage.style.padding = '10px 20px';
-        successMessage.style.borderRadius = '5px';
-        successMessage.style.zIndex = '1000';
-        document.body.appendChild(successMessage);
-        
-        // Remove the user from allUsers array
-        const userIndex = allUsers.findIndex(user => user.uid === uid);
-        if (userIndex !== -1) {
-          allUsers.splice(userIndex, 1);
-          
-          // Re-apply filters to update the displayed list
-          applyFilters();
-        } else {
-          // If for some reason we can't find the user in the array,
-          // remove the element from the DOM directly
-          const userItems = document.querySelectorAll('.user-item');
-          userItems.forEach(item => {
-            if (item.getAttribute('data-uid') === uid) {
-              item.remove();
-            }
-          });
-        }
-        
-        // If no users left, show a message
-        if (allUsers.length === 0) {
-          const userList = document.getElementById("user-list");
-          userList.innerHTML = '<li class="user-item">No users found.</li>';
-        }
-        
-        // If deleted successfully, force a full reload after 3 seconds
-        setTimeout(() => {
-          document.body.removeChild(successMessage);
-          // Force reload the page to ensure user list is updated
-          window.location.reload();
-        }, 3000);
-      } else {
-        // All deletion attempts failed
-        console.error("Error deleting user: All deletion methods failed");
-        
-        // Show error message
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'error-message';
-        errorMessage.textContent = 'Error deleting user. Please try again or check console for details.';
-        errorMessage.style.position = 'fixed';
-        errorMessage.style.top = '20px';
-        errorMessage.style.left = '50%';
-        errorMessage.style.transform = 'translateX(-50%)';
-        errorMessage.style.backgroundColor = '#F44336';
-        errorMessage.style.color = 'white';
-        errorMessage.style.padding = '10px 20px';
-        errorMessage.style.borderRadius = '5px';
-        errorMessage.style.zIndex = '1000';
-        document.body.appendChild(errorMessage);
-        
-        // Remove the error message after 5 seconds
-        setTimeout(() => {
-          document.body.removeChild(errorMessage);
-        }, 5000);
-      }
-    } catch (error) {
-      console.error("Error in deleteUser function:", error);
-      alert("Error deleting user: " + error.message);
-    }
-  }
-};
+}
 
 // Add function to delete comments
 window.deleteComment = async function(postId, commentId) {
