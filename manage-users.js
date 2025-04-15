@@ -619,7 +619,7 @@ async function loadUsers() {
     
     // Store the user results for filtering
     allUsers = userResults;
-    
+      
     // Apply initial filters
     applyFilters();
     
@@ -739,15 +739,15 @@ window.showUserDetails = async function(userId, userData = null) {
       <div class="user-details-container">
         <div class="user-basic-info">
           <div class="section-header">
-            <h3>Basic Information</h3>
+          <h3>Basic Information</h3>
             <button type="button" class="edit-section-btn" data-section="basic">Edit</button>
           </div>
           <div class="section-content" id="basic-section-content">
             <p><strong>Username:</strong> <span id="username-display">${userFullData.username || 'Not provided'}</span></p>
-            <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
-            <p><strong>UID:</strong> ${userId}</p>
+          <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
+          <p><strong>UID:</strong> ${userId}</p>
             <p><strong>Status:</strong> <span id="status-display">${authUserData.disabled ? 'Disabled' : 'Active'}</span></p>
-            <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
+          <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
           </div>
           <div class="section-edit" id="basic-section-edit" style="display: none;">
             <form id="basic-info-form">
@@ -778,7 +778,7 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-personal-info">
           <div class="section-header">
-            <h3>Personal Information</h3>
+          <h3>Personal Information</h3>
             <button type="button" class="edit-section-btn" data-section="personal">Edit</button>
           </div>
           ${!userSignupComplete ? '<p class="warning-message">⚠️ User signup data is incomplete. This user may need to complete registration.</p>' : ''}
@@ -816,11 +816,11 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-account-info">
           <div class="section-header">
-            <h3>Account Information</h3>
+          <h3>Account Information</h3>
             <button type="button" class="edit-section-btn" data-section="account">Edit</button>
           </div>
           <div class="section-content" id="account-section-content">
-            <p><strong>Account Created:</strong> ${createdAtDisplay}</p>
+          <p><strong>Account Created:</strong> ${createdAtDisplay}</p>
             <p><strong>Terms & Policy Accepted:</strong> <span id="terms-display">${userFullData.termsAccepted ? 'Yes' : 'No'}</span></p>
             <p><strong>Acceptance Date:</strong> <span id="termsDate-display">${termsAcceptedDateDisplay}</span></p>
           </div>
@@ -847,9 +847,29 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-password-section">
           <h3>Password Management</h3>
-          <p>As an admin, you can generate a password reset link for this user.</p>
-          <button id="generate-reset-link" class="action-btn" onclick="window.generatePasswordResetLink('${userId}')">Generate Password Reset Link</button>
+          <p>As an admin, you can manage this user's password:</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+            <button id="generate-reset-link" class="action-btn" onclick="window.generatePasswordResetLink('${userId}')">Generate Password Reset Link</button>
+            <button id="show-set-password" class="action-btn" onclick="window.showSetPasswordForm('${userId}')">Set New Password</button>
+          </div>
           <div id="password-reset-result" style="margin-top: 10px; display: none;"></div>
+          <div id="set-password-form" style="margin-top: 15px; display: none;">
+            <form id="password-form" onsubmit="window.setNewPassword(event, '${userId}')">
+              <div class="form-group">
+                <label for="new-password">New Password:</label>
+                <input type="password" id="new-password" required minlength="6">
+                <small>Password must be at least 6 characters</small>
+              </div>
+              <div class="form-group">
+                <label for="confirm-password">Confirm Password:</label>
+                <input type="password" id="confirm-password" required>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="cancel-edit-btn" onclick="window.hideSetPasswordForm()">Cancel</button>
+                <button type="submit" class="save-edit-btn">Save Password</button>
+              </div>
+            </form>
+          </div>
         </div>
         
         <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
@@ -926,36 +946,36 @@ window.showUserDetails = async function(userId, userData = null) {
         }
       });
     }
-    
-    // Update username when first or last name changes
+  
+  // Update username when first or last name changes
     const firstNameInput = document.getElementById('firstName-edit');
     const lastNameInput = document.getElementById('lastName-edit');
     const usernameInput = document.getElementById('username-edit');
-    
-    if (firstNameInput && lastNameInput && usernameInput) {
-      const updateUsername = function() {
-        const firstName = firstNameInput.value.trim();
-        const lastName = lastNameInput.value.trim();
-        
-        if (firstName) {
-          // Capitalize first letter of first name
-          const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-          
-          if (lastName) {
-            // Format as "FirstName. LastInitial"
-            const lastInitial = lastName.charAt(0).toUpperCase();
-            usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
-          } else {
-            // If we only have first name, use with a dot and space
-            usernameInput.value = `${capitalizedFirstName}. `;
-          }
-        }
-      };
+  
+  if (firstNameInput && lastNameInput && usernameInput) {
+    const updateUsername = function() {
+      const firstName = firstNameInput.value.trim();
+      const lastName = lastNameInput.value.trim();
       
-      firstNameInput.addEventListener('input', updateUsername);
-      lastNameInput.addEventListener('input', updateUsername);
-    }
+      if (firstName) {
+        // Capitalize first letter of first name
+        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        
+        if (lastName) {
+          // Format as "FirstName. LastInitial"
+          const lastInitial = lastName.charAt(0).toUpperCase();
+          usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
+        } else {
+          // If we only have first name, use with a dot and space
+          usernameInput.value = `${capitalizedFirstName}. `;
+        }
+      }
+    };
     
+    firstNameInput.addEventListener('input', updateUsername);
+    lastNameInput.addEventListener('input', updateUsername);
+  }
+  
     // Add event listeners for save buttons
     document.querySelectorAll('.save-edit-btn').forEach(btn => {
       btn.addEventListener('click', async function() {
@@ -1235,169 +1255,183 @@ if (logoutBtn) {
   });
 } 
 
-// Add a function to generate password reset links
-window.generatePasswordResetLink = async function(userId) {
+// Function to handle password reset link generation
+async function generatePasswordResetLink(userId) {
   try {
-    // Get current admin user ID
-    const adminUser = auth.currentUser;
-    if (!adminUser) {
-      alert('You must be logged in as an admin to perform this action.');
+    // Get the email for this user from Firestore
+    const userDoc = await getDoc(doc(db, "users", userId));
+    if (!userDoc.exists()) {
+      showNotification('User data not found', 'error');
+      return;
+    }
+    
+    const userEmail = userDoc.data().email;
+    if (!userEmail) {
+      showNotification('User email not found', 'error');
       return;
     }
     
     // Show loading state
-    const resultDiv = document.getElementById('password-reset-result');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<p>Generating reset link...</p>';
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'loading-message';
+    loadingMessage.textContent = 'Generating password reset link...';
+    loadingMessage.style.position = 'fixed';
+    loadingMessage.style.top = '20px';
+    loadingMessage.style.left = '50%';
+    loadingMessage.style.transform = 'translateX(-50%)';
+    loadingMessage.style.backgroundColor = '#2196F3';
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '10px 20px';
+    loadingMessage.style.borderRadius = '5px';
+    loadingMessage.style.zIndex = '1000';
+    document.body.appendChild(loadingMessage);
     
-    // First try to use direct Firestore approach
-    let email = null;
+    // First try to use the direct Firebase method (this will work if we're on the same domain)
     try {
-      // Get the user's email from the list item if possible
-      const userItem = document.querySelector(`li[data-uid="${userId}"]`);
-      if (userItem) {
-        const emailMatch = userItem.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
-        if (emailMatch && emailMatch[1]) {
-          email = emailMatch[1].trim();
-        }
-      }
+      console.log("Attempting to send password reset email directly");
+      await sendPasswordResetEmail(auth, userEmail);
+      showNotification(`Password reset email sent to ${userEmail}`, 'success');
       
-      // If we couldn't get the email, try getting it from Firestore
-      if (!email) {
-        const userRef = doc(db, "users", userId);
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          email = userData.email;
-        }
+      // Remove the loading indicator
+      if (document.body.contains(loadingMessage)) {
+        document.body.removeChild(loadingMessage);
       }
-    } catch (error) {
-      console.warn("Could not get user email directly:", error);
+      return;
+    } catch (directError) {
+      console.warn("Direct password reset failed:", directError);
+      // Continue with the Cloud Function approach
     }
     
-    // If we have an email, we can use the Firebase Auth SDK directly
-    if (email) {
-      try {
-        // This won't work in most cases due to security restrictions
-        // but we'll try anyway in case the permissions are set up properly
-        const auth = getAuth();
-        const actionCodeSettings = {
-          url: window.location.origin + '/login.html',
-          handleCodeInApp: false
-        };
-        
-        const resetLink = await sendPasswordResetEmail(auth, email);
-        
-        // If we get here, we were able to send a reset email directly
-        resultDiv.innerHTML = `
-          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px;">
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Status:</strong> Password reset email sent successfully!</p>
-            <p style="font-size: 0.9em; color: #666;">
-              A password reset email has been sent to the user's email address.
-            </p>
-          </div>
-        `;
-        return;
-      } catch (authError) {
-        console.warn("Could not send reset email directly, falling back to Cloud Function:", authError);
+    console.log(`Attempting to generate password reset link for user: ${userId}`);
+    
+    // Get current admin user ID
+    const adminUser = auth.currentUser;
+    if (!adminUser) {
+      showNotification('You must be logged in as an admin to perform this action', 'error');
+      
+      // Remove the loading indicator
+      if (document.body.contains(loadingMessage)) {
+        document.body.removeChild(loadingMessage);
       }
+      return;
     }
     
-    // CORS workaround using iframe approach
-    const iframe = document.createElement('iframe');
-    iframe.name = 'resetframe';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    
-    // Create a promise to handle the response
-    const resetPromise = new Promise((resolve, reject) => {
-      // Add a script to receive the JSON response
-      const scriptId = 'reset-script-' + Date.now();
-      window[scriptId] = function(response) {
-        if (response.success) {
-          resolve(response);
-        } else {
-          reject(new Error(response.error || "Unknown error"));
-        }
-        // Clean up
-        document.head.removeChild(document.getElementById(scriptId));
-        delete window[scriptId];
-      };
-      
-      const script = document.createElement('script');
-      script.id = scriptId;
-      script.src = `https://us-central1-makeupbyny-1.cloudfunctions.net/generatePasswordResetLink?uid=${userId}&adminId=${adminUser.uid}&callback=${scriptId}`;
-      document.head.appendChild(script);
-      
-      // Set a timeout
-      setTimeout(() => {
-        reject(new Error("Request timed out"));
-        if (document.getElementById(scriptId)) {
-          document.head.removeChild(document.getElementById(scriptId));
-          delete window[scriptId];
-        }
-      }, 10000);
-    });
-    
+    // Try fetch method
     try {
-      const result = await resetPromise;
-      console.log("Password reset link generated:", result);
+      const response = await fetch(`https://us-central1-makeupbyny-1.cloudfunctions.net/generatePasswordResetLink?uid=${userId}&adminId=${adminUser.uid}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
       
-      // Display reset link
-      resultDiv.innerHTML = `
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px;">
-          <p><strong>Email:</strong> ${result.email}</p>
-          <p><strong>Password Reset Link:</strong></p>
-          <div style="margin: 10px 0; word-break: break-all; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 3px;">
-            <a href="${result.resetLink}" target="_blank">${result.resetLink}</a>
-          </div>
-          <p style="font-size: 0.9em; color: #666;">
-            Note: This link can be used to reset the user's password. It expires after 24 hours.
-          </p>
-          <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button onclick="navigator.clipboard.writeText('${result.resetLink}').then(() => alert('Reset link copied to clipboard'))">
-              Copy Link
-            </button>
-            <button onclick="window.open('${result.resetLink}', '_blank')">Open Link</button>
-          </div>
-        </div>
-      `;
-    } catch (error) {
-      console.error("Error generating password reset link:", error);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
       
-      // As a fallback, provide instructions for manual password reset
-      resultDiv.innerHTML = `
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;">
-          <p><strong>Error generating reset link:</strong> ${error.message}</p>
-          <p>As an alternative, you can:</p>
-          <ol>
-            <li>Go to the Firebase console</li>
-            <li>Find this user (${userId})</li>
-            <li>Use the "Reset Password" option there</li>
-          </ol>
-          <p>Or send the user a manual password reset email if you know their email address.</p>
-        </div>
-      `;
-    } finally {
-      // Clean up
-      if (document.body.contains(iframe)) {
-        document.body.removeChild(iframe);
+      const result = await response.json();
+      console.log("Password reset result:", result);
+      
+      if (result.resetLink) {
+        // Update the UI with the reset link
+        const passwordSection = document.getElementById('passwordManagement');
+        if (passwordSection) {
+          const resetLinkElem = document.getElementById('resetLink');
+          if (resetLinkElem) {
+            resetLinkElem.href = result.resetLink;
+            resetLinkElem.textContent = 'Password Reset Link (Click to open)';
+            resetLinkElem.style.display = 'inline-block';
+          }
+          
+          const copyLinkBtn = document.getElementById('copyResetLink');
+          if (copyLinkBtn) {
+            copyLinkBtn.style.display = 'inline-block';
+            copyLinkBtn.onclick = function() {
+              navigator.clipboard.writeText(result.resetLink)
+                .then(() => {
+                  showNotification('Reset link copied to clipboard', 'success');
+                })
+                .catch(err => {
+                  console.error('Could not copy text: ', err);
+                  showNotification('Failed to copy reset link', 'error');
+                });
+            };
+          }
+        }
+        
+        showNotification('Password reset link generated successfully', 'success');
+      } else {
+        showNotification('No reset link received from server', 'error');
+      }
+      
+      // Remove the loading indicator
+      if (document.body.contains(loadingMessage)) {
+        document.body.removeChild(loadingMessage);
+      }
+      
+      return;
+    } catch (fetchError) {
+      console.warn("Fetch method failed:", fetchError);
+      showNotification(`Error generating reset link: ${fetchError.message}`, 'error');
+      
+      // Remove the loading indicator
+      if (document.body.contains(loadingMessage)) {
+        document.body.removeChild(loadingMessage);
       }
     }
   } catch (error) {
     console.error("Error in generatePasswordResetLink function:", error);
+    showNotification(`Error generating password reset link: ${error.message}`, 'error');
     
-    // Show error in the UI
-    const resultDiv = document.getElementById('password-reset-result');
-    if (resultDiv) {
-      resultDiv.style.display = 'block';
-      resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-    } else {
-      alert('Error generating password reset link: ' + error.message);
+    // Remove any loading indicator that might be present
+    const loadingMessage = document.querySelector('.loading-message');
+    if (loadingMessage) {
+      document.body.removeChild(loadingMessage);
     }
   }
-};
+}
+
+// Add function to show password management section in user details modal
+function showPasswordManagement(userId) {
+  // Create password management section
+  const passwordSection = document.createElement('div');
+  passwordSection.id = 'passwordManagement';
+  passwordSection.className = 'password-management';
+  
+  // Add password reset button
+  const resetButton = document.createElement('button');
+  resetButton.textContent = 'Generate Password Reset Link';
+  resetButton.className = 'reset-button';
+  resetButton.onclick = function() {
+    generatePasswordResetLink(userId);
+  };
+  
+  // Add link element to display reset link
+  const resetLinkContainer = document.createElement('div');
+  resetLinkContainer.className = 'reset-link-container';
+  
+  const resetLinkElem = document.createElement('a');
+  resetLinkElem.id = 'resetLink';
+  resetLinkElem.className = 'reset-link';
+  resetLinkElem.target = '_blank';
+  resetLinkElem.style.display = 'none';
+  resetLinkContainer.appendChild(resetLinkElem);
+  
+  // Add copy button for reset link
+  const copyButton = document.createElement('button');
+  copyButton.id = 'copyResetLink';
+  copyButton.textContent = 'Copy Link';
+  copyButton.className = 'copy-button';
+  copyButton.style.display = 'none';
+  resetLinkContainer.appendChild(copyButton);
+  
+  // Add elements to password section
+  passwordSection.appendChild(resetButton);
+  passwordSection.appendChild(resetLinkContainer);
+  
+  return passwordSection;
+}
 
 // Helper function to update user info in the list item
 function updateUserListItemInfo(userId, updates, refreshElement = false) {
@@ -1743,4 +1777,272 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
     console.error("Error updating super admin role:", error);
     alert("Error updating super admin role: " + error.message);
   }
-}; 
+};
+
+// Function to show password form
+window.showSetPasswordForm = function(userId) {
+  document.getElementById('set-password-form').style.display = 'block';
+  document.getElementById('new-password').focus();
+  document.getElementById('password-reset-result').style.display = 'none';
+};
+
+// Function to hide password form
+window.hideSetPasswordForm = function() {
+  document.getElementById('set-password-form').style.display = 'none';
+  document.getElementById('password-form').reset();
+};
+
+// Function to set a new password
+window.setNewPassword = async function(event, userId) {
+  event.preventDefault();
+  
+  // Get password values
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  
+  // Validate passwords
+  if (newPassword !== confirmPassword) {
+    showNotification('Passwords do not match', 'error');
+    return;
+  }
+  
+  try {
+    // Get current admin user ID
+    const adminUser = auth.currentUser;
+    if (!adminUser) {
+      showNotification('You must be logged in as an admin to perform this action', 'error');
+      return;
+    }
+    
+    // Show loading state
+    const resultDiv = document.getElementById('password-reset-result');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<p>Setting new password...</p>';
+    
+    // Call the Cloud Function
+    const response = await fetch('https://us-central1-makeupbyny-1.cloudfunctions.net/setUserPassword', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        uid: userId,
+        password: newPassword,
+        adminId: adminUser.uid
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP error! status: ${response.status}`);
+    }
+    
+    // Display success
+    resultDiv.innerHTML = `
+      <div style="background-color: #f1f8e9; padding: 15px; border-radius: 5px; border: 1px solid #c5e1a5; margin-top: 10px;">
+        <p><strong>Success:</strong> Password has been updated successfully.</p>
+        <p style="font-size: 0.9em; color: #558b2f;">
+          The user can now log in with their new password.
+        </p>
+      </div>
+    `;
+    
+    // Hide form and reset it
+    document.getElementById('set-password-form').style.display = 'none';
+    document.getElementById('password-form').reset();
+    
+  } catch (error) {
+    console.error("Error setting password:", error);
+    
+    // Show error in the UI
+    const resultDiv = document.getElementById('password-reset-result');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      <div style="background-color: #ffebee; padding: 15px; border-radius: 5px; border: 1px solid #ffcdd2; margin-top: 10px;">
+        <p><strong>Error:</strong> ${error.message}</p>
+        <p style="font-size: 0.9em; color: #c62828;">
+          Please try using the password reset link instead.
+        </p>
+      </div>
+    `;
+  }
+};
+
+// Add function to delete users
+window.deleteUser = async function(userId) {
+  // Ask for confirmation before proceeding
+  if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+  
+  try {
+    // Get current admin user ID
+    const adminUser = auth.currentUser;
+    if (!adminUser) {
+      showNotification('You must be logged in as an admin to perform this action', 'error');
+      return;
+    }
+    
+    // Show loading state
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'loading-message';
+    loadingMessage.textContent = 'Deleting user...';
+    loadingMessage.style.position = 'fixed';
+    loadingMessage.style.top = '20px';
+    loadingMessage.style.left = '50%';
+    loadingMessage.style.transform = 'translateX(-50%)';
+    loadingMessage.style.backgroundColor = '#2196F3';
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '10px 20px';
+    loadingMessage.style.borderRadius = '5px';
+    loadingMessage.style.zIndex = '1000';
+    document.body.appendChild(loadingMessage);
+    
+    console.log(`Attempting to delete user with UID: ${userId}`);
+    
+    // Try direct fetch method first
+    try {
+      const response = await fetch('https://us-central1-makeupbyny-1.cloudfunctions.net/deleteUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ 
+          uid: userId,
+          adminId: adminUser.uid
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log("Delete user result:", result);
+      
+      // Remove the user from the UI
+      const userItem = document.querySelector(`li[data-uid="${userId}"]`);
+      if (userItem) {
+        userItem.remove();
+      }
+      
+      // Remove from allUsers array
+      const userIndex = allUsers.findIndex(user => user.uid === userId);
+      if (userIndex !== -1) {
+        allUsers.splice(userIndex, 1);
+        // Re-apply filters to update the displayed list
+        applyFilters();
+      }
+      
+      // Close modal if open
+      if (modal.style.display === "block" && currentUserId === userId) {
+        modal.style.display = "none";
+      }
+      
+      showNotification('User deleted successfully', 'success');
+      
+      // Remove the loading indicator
+      if (document.body.contains(loadingMessage)) {
+        document.body.removeChild(loadingMessage);
+      }
+      
+      return;
+    } catch (fetchError) {
+      console.warn("Fetch method failed:", fetchError);
+      // Continue with fallback methods
+    }
+    
+    // Fallback to direct Firestore deletion if the API call failed
+    console.log("API call failed, trying direct Firestore deletion");
+    try {
+      // Delete the user document from Firestore
+      await deleteDoc(doc(db, "users", userId));
+      
+      // Remove the user from the UI
+      const userItem = document.querySelector(`li[data-uid="${userId}"]`);
+      if (userItem) {
+        userItem.remove();
+      }
+      
+      // Remove from allUsers array
+      const userIndex = allUsers.findIndex(user => user.uid === userId);
+      if (userIndex !== -1) {
+        allUsers.splice(userIndex, 1);
+        // Re-apply filters to update the displayed list
+        applyFilters();
+      }
+      
+      // Close modal if open
+      if (modal.style.display === "block" && currentUserId === userId) {
+        modal.style.display = "none";
+      }
+      
+      showNotification('User document deleted from Firestore, but the authentication record may still exist', 'warning');
+    } catch (firestoreError) {
+      console.error("Error deleting user document:", firestoreError);
+      showNotification(`Error deleting user: ${firestoreError.message}`, 'error');
+    }
+    
+  } catch (error) {
+    console.error("Error in deleteUser function:", error);
+    showNotification(`Error deleting user: ${error.message}`, 'error');
+  } finally {
+    // Remove the loading indicator
+    if (document.body.contains(loadingMessage)) {
+      document.body.removeChild(loadingMessage);
+    }
+  }
+};
+
+function showUserDetails(userId) {
+  // Fetch user data from Firestore
+  const userRef = doc(db, "users", userId);
+  getDoc(userRef).then((docSnap) => {
+    if (docSnap.exists()) {
+      const userData = docSnap.data();
+      
+      // Store the current user ID so we can reference it later
+      currentUserId = userId;
+      
+      // Set user data in the modal
+      document.getElementById('user-name').textContent = userData.displayName || 'No name provided';
+      document.getElementById('user-email').textContent = userData.email || 'No email provided';
+      document.getElementById('user-phone').textContent = userData.phoneNumber || 'No phone provided';
+      document.getElementById('user-role').textContent = userData.role || 'No role assigned';
+      
+      // Show user profile image if available
+      const userImage = document.getElementById('user-image');
+      if (userData.photoURL) {
+        userImage.src = userData.photoURL;
+        userImage.style.display = 'block';
+      } else {
+        userImage.style.display = 'none';
+      }
+      
+      // Set up role selection dropdown
+      const roleSelect = document.getElementById('role-select');
+      roleSelect.value = userData.role || 'customer';
+      
+      // Show the delete button
+      const deleteButton = document.getElementById('delete-user-button');
+      if (deleteButton) {
+        deleteButton.style.display = 'block';
+        deleteButton.onclick = function() {
+          window.deleteUser(userId);
+        };
+      }
+      
+      // Show password management section
+      showPasswordManagement(userId);
+      
+      // Show the modal
+      modal.style.display = "block";
+    } else {
+      showNotification('User data not found', 'error');
+    }
+  }).catch((error) => {
+    console.error("Error getting user data:", error);
+    showNotification('Error retrieving user data: ' + error.message, 'error');
+  });
+}

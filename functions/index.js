@@ -506,3 +506,102 @@ exports.updateUserStatus = functions.https.onRequest((req, res) => {
     }
   });
 });
+
+// Cloud Function to set a user password directly (for admin use only)
+exports.setUserPassword = functions.https.onRequest((req, res) => {
+  const corsHandler = cors({
+    origin: "https://chismdarren.github.io",
+    methods: "POST, OPTIONS",
+    allowedHeaders: "Content-Type, Accept",
+    credentials: true,
+  });
+
+  return corsHandler(req, res, async () => {
+    try {
+      // Handle preflight request
+      if (req.method === "OPTIONS") {
+        res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+        res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+        res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+        res.set("Access-Control-Allow-Credentials", "true");
+        res.status(204).send("");
+        return;
+      }
+
+      // Set CORS headers for actual request
+      res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+      res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+      res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.set("Access-Control-Allow-Credentials", "true");
+
+      // Check request method
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method not allowed" });
+      }
+
+      // Get parameters from request body
+      const { uid, newPassword, adminId } = req.body;
+
+      if (!uid || !newPassword) {
+        return res.status(400).json({ 
+          error: "Missing required parameters",
+          details: "Required parameters: uid (string), newPassword (string)"
+        });
+      }
+
+      // Password validation
+      if (newPassword.length < 6) {
+        return res.status(400).json({ 
+          error: "Invalid password",
+          details: "Password must be at least 6 characters long"
+        });
+      }
+
+      // Verify the requester is a super admin
+      try {
+        // First check if admin is in the hardcoded super admin list
+        const superAdminUIDs = ["yuoaYY14sINHaqtNK5EAz4nl8cc2"]; // Same as in other functions
+        let isSuperAdmin = superAdminUIDs.includes(adminId);
+        
+        // If not found in hardcoded list, check Firestore
+        if (!isSuperAdmin && adminId) {
+          const adminRef = admin.firestore().collection("users").doc(adminId);
+          const adminDoc = await adminRef.get();
+          if (adminDoc.exists && adminDoc.data().isSuperAdmin === true) {
+            isSuperAdmin = true;
+          }
+        }
+        
+        if (!isSuperAdmin) {
+          return res.status(403).json({ error: "Unauthorized. Super Admin privileges required." });
+        }
+      } catch (authError) {
+        console.error("Error checking admin permissions:", authError);
+        return res.status(500).json({ error: "Error verifying admin permissions" });
+      }
+
+      // Update user password in Firebase Authentication
+      try {
+        await admin.auth().updateUser(uid, {
+          password: newPassword
+        });
+        
+        console.log(`Password updated successfully for user ${uid}`);
+        
+        return res.status(200).json({
+          success: true,
+          message: "User password updated successfully"
+        });
+      } catch (error) {
+        console.error("Error updating user password:", error);
+        return res.status(500).json({
+          error: "Failed to update user password",
+          details: error.message
+        });
+      }
+    } catch (error) {
+      console.error("Error in setUserPassword function:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+});
