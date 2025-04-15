@@ -541,8 +541,24 @@ async function loadUsers() {
     // Track promises for all user data fetching
     const userDataPromises = [];
 
-    // Loop through each user and create an HTML list item
+    // Deduplicate users by UID to prevent showing recreated accounts multiple times
+    const uniqueUsers = [];
+    const userMap = new Map();
+    
     users.forEach(user => {
+      // Only add users we haven't seen before (based on UID)
+      if (!userMap.has(user.uid)) {
+        userMap.set(user.uid, true);
+        uniqueUsers.push(user);
+      } else {
+        console.log(`Skipping duplicate user with UID: ${user.uid}, email: ${user.email}`);
+      }
+    });
+    
+    console.log(`Filtered out ${users.length - uniqueUsers.length} duplicate users`);
+
+    // Loop through each unique user and create an HTML list item
+    uniqueUsers.forEach(user => {
       // Add the promise to our array
       userDataPromises.push(
         (async () => {
@@ -661,14 +677,38 @@ window.showUserDetails = async function(userId, userData = null) {
     if (userDoc.exists()) {
       userFullData = userDoc.data();
       console.log("User document found in Firestore:", userFullData);
+      
+      // Ensure we have the most current email from auth data
+      if (authUserData.email && authUserData.email !== "Unknown") {
+        userFullData.email = authUserData.email;
+      }
     } else {
       console.log("No Firestore document exists for user:", userId);
-      // Don't create a document - just display what we know from auth data
-      userFullData = {
-        email: authUserData.email,
-        isAdmin: false,
-        isSuperAdmin: false
-      };
+      // Check if we need to create a document based on auth data
+      if (authUserData.email && authUserData.email !== "Unknown") {
+        console.log("Creating basic user profile from auth data");
+        userFullData = {
+          email: authUserData.email,
+          isAdmin: false,
+          isSuperAdmin: false,
+          createdAt: new Date().toISOString()
+        };
+        
+        // Save basic profile to Firestore
+        try {
+          await setDoc(userRef, userFullData);
+          console.log("Created basic user profile in Firestore");
+        } catch (createError) {
+          console.error("Failed to create user profile:", createError);
+        }
+      } else {
+        // Use minimal data if we don't have email
+        userFullData = {
+          email: "Unknown",
+          isAdmin: false,
+          isSuperAdmin: false
+        };
+      }
     }
     
     // If authUserData email is Unknown, try to extract from DOM
@@ -678,7 +718,7 @@ window.showUserDetails = async function(userId, userData = null) {
         const emailMatch = userItem.innerHTML.match(/Email:<\/strong> ([^<|]+)/);
         if (emailMatch && emailMatch[1]) {
           authUserData.email = emailMatch[1].trim();
-          if (!userFullData.email) {
+          if (!userFullData.email || userFullData.email === "Unknown") {
             userFullData.email = authUserData.email;
           }
         }
@@ -1899,7 +1939,9 @@ window.deleteUser = async function(userId) {
     
     console.log(`Attempting to delete user with UID: ${userId}`);
     
-    // Try direct fetch method first
+    let deletionSuccessful = false;
+    
+    // Try direct fetch method first (Cloud Function)
     try {
       const response = await fetch('https://us-central1-makeupbyny-1.cloudfunctions.net/deleteUser', {
         method: 'POST',
@@ -1909,7 +1951,8 @@ window.deleteUser = async function(userId) {
         },
         body: JSON.stringify({ 
           uid: userId,
-          adminId: adminUser.uid
+          adminId: adminUser.uid,
+          _method: "DELETE" // Add method override for servers that don't support DELETE
         })
       });
       
@@ -1920,52 +1963,36 @@ window.deleteUser = async function(userId) {
       
       const result = await response.json();
       console.log("Delete user result:", result);
-      
-      // Remove the user from the UI
-      const userItem = document.querySelector(`li[data-uid="${userId}"]`);
-      if (userItem) {
-        userItem.remove();
-      }
-      
-      // Remove from allUsers array
-      const userIndex = allUsers.findIndex(user => user.uid === userId);
-      if (userIndex !== -1) {
-        allUsers.splice(userIndex, 1);
-        // Re-apply filters to update the displayed list
-        applyFilters();
-      }
-      
-      // Close modal if open
-      if (modal.style.display === "block" && currentUserId === userId) {
-        modal.style.display = "none";
-      }
-      
-      showNotification('User deleted successfully', 'success');
-      
-      // Remove the loading indicator
-      if (document.body.contains(loadingMessage)) {
-        document.body.removeChild(loadingMessage);
-      }
-      
-      return;
+      deletionSuccessful = true;
     } catch (fetchError) {
-      console.warn("Fetch method failed:", fetchError);
-      // Continue with fallback methods
+      console.warn("Cloud Function deletion method failed:", fetchError);
+      // Will continue with fallback methods
     }
     
-    // Fallback to direct Firestore deletion if the API call failed
-    console.log("API call failed, trying direct Firestore deletion");
-    try {
-      // Delete the user document from Firestore
-      await deleteDoc(doc(db, "users", userId));
-      
+    // If Cloud Function failed, try direct Firestore deletion as fallback
+    if (!deletionSuccessful) {
+      console.log("API call failed, trying direct Firestore deletion");
+      try {
+        // Delete the user document from Firestore
+        await deleteDoc(doc(db, "users", userId));
+        console.log(`User document deleted from Firestore for UID: ${userId}`);
+        showNotification('User document deleted from Firestore, but the authentication record may still exist', 'warning');
+        deletionSuccessful = true;
+      } catch (firestoreError) {
+        console.error("Error deleting user document from Firestore:", firestoreError);
+        showNotification(`Error deleting user from Firestore: ${firestoreError.message}`, 'error');
+      }
+    }
+    
+    // Update the UI regardless of deletion method success
+    if (deletionSuccessful) {
       // Remove the user from the UI
       const userItem = document.querySelector(`li[data-uid="${userId}"]`);
       if (userItem) {
         userItem.remove();
       }
       
-      // Remove from allUsers array
+      // Remove from allUsers array to prevent showing in filtered views
       const userIndex = allUsers.findIndex(user => user.uid === userId);
       if (userIndex !== -1) {
         allUsers.splice(userIndex, 1);
@@ -1974,22 +2001,21 @@ window.deleteUser = async function(userId) {
       }
       
       // Close modal if open
-      if (modal.style.display === "block" && currentUserId === userId) {
+      if (modal && modal.style.display === "block" && currentUserId === userId) {
         modal.style.display = "none";
       }
       
-      showNotification('User document deleted from Firestore, but the authentication record may still exist', 'warning');
-    } catch (firestoreError) {
-      console.error("Error deleting user document:", firestoreError);
-      showNotification(`Error deleting user: ${firestoreError.message}`, 'error');
+      if (deletionSuccessful) {
+        showNotification('User deleted successfully', 'success');
+      }
     }
-    
   } catch (error) {
     console.error("Error in deleteUser function:", error);
     showNotification(`Error deleting user: ${error.message}`, 'error');
   } finally {
     // Remove the loading indicator
-    if (document.body.contains(loadingMessage)) {
+    const loadingMessage = document.querySelector('.loading-message');
+    if (loadingMessage && document.body.contains(loadingMessage)) {
       document.body.removeChild(loadingMessage);
     }
   }
