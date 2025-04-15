@@ -582,8 +582,8 @@ async function loadUsers() {
           li.setAttribute('data-uid', user.uid);
           li.innerHTML = `
             <div class="user-info">
+              <strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> | 
               <strong>Email:</strong> ${user.email} | 
-              <strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> |
               <strong>UID:</strong> ${user.uid} | 
               <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
               <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
@@ -743,6 +743,7 @@ window.showUserDetails = async function(userId, userData = null) {
             <button type="button" class="edit-section-btn" data-section="basic">Edit</button>
           </div>
           <div class="section-content" id="basic-section-content">
+            <p><strong>Username:</strong> <span id="username-display">${userFullData.username || 'Not provided'}</span></p>
             <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
             <p><strong>UID:</strong> ${userId}</p>
             <p><strong>Status:</strong> <span id="status-display">${authUserData.disabled ? 'Disabled' : 'Active'}</span></p>
@@ -750,6 +751,11 @@ window.showUserDetails = async function(userId, userData = null) {
           </div>
           <div class="section-edit" id="basic-section-edit" style="display: none;">
             <form id="basic-info-form">
+              <div class="form-group">
+                <label for="username-edit">Username:</label>
+                <input type="text" id="username-edit" value="${userFullData.username || ''}" disabled>
+                <small>Username can be edited in the Personal Information section</small>
+              </div>
               <div class="form-group">
                 <label for="email-edit">Email:</label>
                 <input type="email" id="email-edit" value="${authUserData.email || userFullData.email || ''}" disabled>
@@ -779,7 +785,6 @@ window.showUserDetails = async function(userId, userData = null) {
           <div class="section-content" id="personal-section-content">
             <p><strong>First Name:</strong> <span id="firstName-display">${userFullData.firstName || 'Not provided'}</span></p>
             <p><strong>Last Name:</strong> <span id="lastName-display">${userFullData.lastName || 'Not provided'}</span></p>
-            <p><strong>Username:</strong> <span id="username-display">${userFullData.username || 'Not provided'}</span></p>
             <p><strong>Phone Number:</strong> <span id="phoneNumber-display">${userFullData.phoneNumber || 'Not provided'}</span></p>
           </div>
           <div class="section-edit" id="personal-section-edit" style="display: none;">
@@ -794,8 +799,8 @@ window.showUserDetails = async function(userId, userData = null) {
               </div>
               <div class="form-group">
                 <label for="username-edit">Username:</label>
-                <input type="text" id="username-edit" value="${userFullData.username || ''}">
-                <small>Format should be "FirstName. LastInitial" (e.g., "Ray. C")</small>
+                <input type="text" id="username-edit" value="${userFullData.username || ''}" readonly>
+                <small>Username is automatically generated from first name and last initial</small>
               </div>
               <div class="form-group">
                 <label for="phoneNumber-edit">Phone Number:</label>
@@ -983,7 +988,7 @@ window.showUserDetails = async function(userId, userData = null) {
             updates.firstName = document.getElementById('firstName-edit').value.trim();
             updates.lastName = document.getElementById('lastName-edit').value.trim();
             
-            // Auto-generate the username based on first name and last initial
+            // Always auto-generate the username based on first name and last initial
             if (updates.firstName && updates.lastName) {
               const firstName = updates.firstName.charAt(0).toUpperCase() + updates.firstName.slice(1).toLowerCase();
               const lastInitial = updates.lastName.charAt(0).toUpperCase();
@@ -991,11 +996,9 @@ window.showUserDetails = async function(userId, userData = null) {
             } else if (updates.firstName) {
               const firstName = updates.firstName.charAt(0).toUpperCase() + updates.firstName.slice(1).toLowerCase();
               updates.username = `${firstName}. `;
-            }
-            
-            // Use the username from input as fallback if auto-generation is disabled
-            if (!updates.username) {
-              updates.username = document.getElementById('username-edit').value.trim();
+            } else {
+              // If no first name, just use a placeholder
+              updates.username = 'User';
             }
             
             updates.phoneNumber = document.getElementById('phoneNumber-edit').value.trim();
@@ -1449,10 +1452,10 @@ function updateUserListItemInfo(userId, updates, refreshElement = false) {
         roleClass = 'admin-role';
       }
       
-      // Rebuild the user info HTML
+      // Rebuild the user info HTML with username before email
       userInfo.innerHTML = `
+        <strong>Username:</strong> <span class="user-username">${username}</span> | 
         <strong>Email:</strong> ${email} | 
-        <strong>Username:</strong> <span class="user-username">${username}</span> |
         <strong>UID:</strong> ${uid} | 
         <strong>Status:</strong> ${status} |
         <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>

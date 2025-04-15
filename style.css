@@ -485,3 +485,11 @@ form textarea {
   font-size: 0.9em;
   color: #e65100;
 }
+
+/* Read-only input styling */
+input[readonly] {
+  background-color: #f8f8f8;
+  color: #555;
+  cursor: not-allowed;
+  border: 1px solid #ddd;
+}
