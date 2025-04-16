@@ -541,19 +541,40 @@ async function loadUsers() {
     // Track promises for all user data fetching
     const userDataPromises = [];
 
-    // Deduplicate users by UID to prevent showing recreated accounts multiple times
+    // Deduplicate users by both UID and email to prevent duplicates
     const uniqueUsers = [];
     const userMap = new Map();
+    const emailMap = new Map();
     
-    users.forEach(user => {
-      // Only add users we haven't seen before (based on UID)
-      if (!userMap.has(user.uid)) {
-        userMap.set(user.uid, true);
-        uniqueUsers.push(user);
-      } else {
-        console.log(`Skipping duplicate user with UID: ${user.uid}, email: ${user.email}`);
+    for (const user of users) {
+      // Skip users without email (should be rare but possible)
+      if (!user.email) {
+        console.log(`Skipping user without email, UID: ${user.uid}`);
+        continue;
       }
-    });
+      
+      // Check if we've already seen this UID
+      if (userMap.has(user.uid)) {
+        console.log(`Skipping duplicate user with UID: ${user.uid}, email: ${user.email}`);
+        continue;
+      }
+      
+      // Check if we've already seen this email address
+      if (emailMap.has(user.email)) {
+        console.log(`Found duplicate account with same email: ${user.email}`);
+        console.log(`  First account: ${emailMap.get(user.email)}`);
+        console.log(`  This account: ${user.uid}`);
+        
+        // Skip this user since we already have one with the same email
+        // The onAuthStateChanged handler in firebase-config.js will clean these up
+        continue;
+      }
+      
+      // Track both UID and email
+      userMap.set(user.uid, true);
+      emailMap.set(user.email, user.uid);
+      uniqueUsers.push(user);
+    }
     
     console.log(`Filtered out ${users.length - uniqueUsers.length} duplicate users`);
 
@@ -1939,6 +1960,26 @@ window.deleteUser = async function(userId) {
     
     console.log(`Attempting to delete user with UID: ${userId}`);
     
+    // First, get the user's email to check for duplicates later
+    let userEmail = null;
+    try {
+      // Find the user in our allUsers array to get their email
+      const userToDelete = allUsers.find(user => user.uid === userId);
+      if (userToDelete && userToDelete.email) {
+        userEmail = userToDelete.email;
+        console.log(`User being deleted has email: ${userEmail}`);
+      } else {
+        // Try to get from Firestore directly
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists() && userDoc.data().email) {
+          userEmail = userDoc.data().email;
+          console.log(`Found user email in Firestore: ${userEmail}`);
+        }
+      }
+    } catch (emailError) {
+      console.warn("Could not determine user email:", emailError);
+    }
+    
     let deletionSuccessful = false;
     
     // Try direct fetch method first (Cloud Function)
@@ -1984,6 +2025,34 @@ window.deleteUser = async function(userId) {
       }
     }
     
+    // After deleting the main account, check for duplicates with the same email
+    if (deletionSuccessful && userEmail) {
+      try {
+        console.log(`Checking for duplicate accounts with email: ${userEmail}`);
+        // Look for other accounts with the same email
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          console.log(`Found ${querySnapshot.size} duplicate accounts with the same email`);
+          
+          // Delete all duplicate user documents
+          const deletePromises = [];
+          querySnapshot.forEach((doc) => {
+            console.log(`Deleting duplicate user document: ${doc.id}`);
+            deletePromises.push(deleteDoc(doc.ref));
+          });
+          
+          // Wait for all deletions to complete
+          await Promise.all(deletePromises);
+          console.log("All duplicate user documents deleted");
+        }
+      } catch (duplicateError) {
+        console.error("Error cleaning up duplicate accounts:", duplicateError);
+      }
+    }
+    
     // Update the UI regardless of deletion method success
     if (deletionSuccessful) {
       // Remove the user from the UI
@@ -1996,6 +2065,23 @@ window.deleteUser = async function(userId) {
       const userIndex = allUsers.findIndex(user => user.uid === userId);
       if (userIndex !== -1) {
         allUsers.splice(userIndex, 1);
+        
+        // Also remove any other users with the same email
+        if (userEmail) {
+          const duplicateIndices = [];
+          allUsers.forEach((user, index) => {
+            if (user.email === userEmail) {
+              duplicateIndices.push(index);
+            }
+          });
+          
+          // Remove duplicates from highest index to lowest to avoid shifting issues
+          duplicateIndices.sort((a, b) => b - a).forEach(index => {
+            console.log(`Removing duplicate user from UI: ${allUsers[index].uid}`);
+            allUsers.splice(index, 1);
+          });
+        }
+        
         // Re-apply filters to update the displayed list
         applyFilters();
       }
@@ -2005,9 +2091,7 @@ window.deleteUser = async function(userId) {
         modal.style.display = "none";
       }
       
-      if (deletionSuccessful) {
-        showNotification('User deleted successfully', 'success');
-      }
+      showNotification('User deleted successfully', 'success');
     }
   } catch (error) {
     console.error("Error in deleteUser function:", error);

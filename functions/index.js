@@ -36,12 +36,57 @@ exports.listAllAuthUsers = functions.https.onRequest((req, res) => {
       // Fetch up to 1000 users
       const listUsersResult = await admin.auth().listUsers(1000);
 
+      // Check for duplicate email addresses
+      const emailMap = new Map();
+      const duplicateEmails = [];
+      
+      // First pass to identify duplicates
+      listUsersResult.users.forEach(userRecord => {
+        if (userRecord.email) {
+          if (emailMap.has(userRecord.email)) {
+            // Found a duplicate email
+            const existing = emailMap.get(userRecord.email);
+            duplicateEmails.push({
+              email: userRecord.email,
+              accounts: [
+                {
+                  uid: existing.uid,
+                  metadata: existing.metadata
+                },
+                {
+                  uid: userRecord.uid,
+                  metadata: userRecord.metadata
+                }
+              ]
+            });
+          } else {
+            // Store the user record by email
+            emailMap.set(userRecord.email, {
+              uid: userRecord.uid,
+              metadata: userRecord.metadata
+            });
+          }
+        }
+      });
+      
+      // Log any duplicates found
+      if (duplicateEmails.length > 0) {
+        console.warn(`Found ${duplicateEmails.length} users with duplicate email addresses:`);
+        duplicateEmails.forEach(duplicate => {
+          console.warn(`Duplicate email: ${duplicate.email}`);
+          duplicate.accounts.forEach(account => {
+            console.warn(`  - UID: ${account.uid}, Created: ${account.metadata.creationTime}`);
+          });
+        });
+      }
+
       // Format the response
       const users = listUsersResult.users.map((userRecord) => ({
         uid: userRecord.uid,
-        email: userRecord.email,
+        email: userRecord.email || "",
         displayName: userRecord.displayName || "",
         disabled: userRecord.disabled,
+        createdAt: userRecord.metadata.creationTime || null,
       }));
 
       return res.status(200).json(users);

@@ -1,7 +1,7 @@
 // Import Firebase SDK modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -313,18 +313,89 @@ export async function createUserDocument(user, additionalData = {}) {
   }
 }
 
-// Listen for auth state changes to create user documents
+// Check auth state changes to keep user profile in sync
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    console.log("📢 Auth state change - User detected:", user.email);
+    console.log("Auth state changed - User is signed in:", user.email);
     
     try {
-      // Check if user document already exists
+      // Check for duplicate accounts with the same email
+      const userEmail = user.email;
+      if (userEmail) {
+        console.log("Checking for duplicate accounts with email:", userEmail);
+        
+        // Check Firestore for any users with this email
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+        
+        // If we find multiple documents with the same email but different UIDs
+        if (querySnapshot.size > 0) {
+          let userDocsWithSameEmail = [];
+          
+          querySnapshot.forEach((doc) => {
+            if (doc.id !== user.uid) {
+              // Found a document with same email but different UID
+              userDocsWithSameEmail.push({
+                uid: doc.id,
+                ...doc.data()
+              });
+            }
+          });
+          
+          if (userDocsWithSameEmail.length > 0) {
+            console.warn(`Found ${userDocsWithSameEmail.length} existing accounts with the same email but different UIDs`);
+            
+            // For each duplicate, we need to merge the data with the current user
+            for (const duplicateUser of userDocsWithSameEmail) {
+              console.log(`Merging data from account ${duplicateUser.uid} into current account ${user.uid}`);
+              
+              // Get the reference to the current user's document
+              const currentUserRef = doc(db, "users", user.uid);
+              const currentUserDoc = await getDoc(currentUserRef);
+              
+              // If the current user's document exists, merge in the data from the duplicate
+              if (currentUserDoc.exists()) {
+                const currentUserData = currentUserDoc.data();
+                const updates = {};
+                
+                // Only copy over fields that are not empty in the duplicate but are empty in current user
+                for (const [key, value] of Object.entries(duplicateUser)) {
+                  if (key !== 'uid' && key !== 'email' && value && 
+                     (!currentUserData[key] || currentUserData[key] === '')) {
+                    updates[key] = value;
+                  }
+                }
+                
+                // Apply the merged updates if there are any
+                if (Object.keys(updates).length > 0) {
+                  console.log("Applying merged data to current user:", updates);
+                  await updateDoc(currentUserRef, updates);
+                }
+              } else {
+                // Current user document doesn't exist, copy all data from duplicate
+                const newUserData = { ...duplicateUser, email: userEmail };
+                delete newUserData.uid; // Remove uid from the data object
+                
+                console.log("Creating new document for current user with merged data");
+                await setDoc(currentUserRef, newUserData);
+              }
+              
+              // Delete the duplicate document
+              try {
+                console.log(`Deleting duplicate user document ${duplicateUser.uid}`);
+                await deleteDoc(doc(db, "users", duplicateUser.uid));
+              } catch (deleteError) {
+                console.error("Error deleting duplicate document:", deleteError);
+              }
+            }
+          }
+        }
+      }
+      
+      // Now proceed with normal user document check/creation
       const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef).catch(err => {
-        console.error("Error checking for user document:", err);
-        return { exists: () => false };
-      });
+      const userDoc = await getDoc(userRef);
       
       // Check for pending data in localStorage or sessionStorage first
       const pendingDataKey = `pendingUserData_${user.uid}`;
