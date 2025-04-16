@@ -24,37 +24,6 @@ export const superAdminUIDs = ["yuoaYY14sINHaqtNK5EAz4nl8cc2"];
 
 console.log("✅ Firebase Initialized Successfully!");
 
-// Wait for the DOM to fully load before attaching event listeners
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("📢 DOM Loaded. Setting up event listeners...");
-
-  const signUpForm = document.getElementById('signUpForm');
-  if (signUpForm) {
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-
-    signUpForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      const email = emailInput.value;
-      const password = passwordInput.value;
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        await createUserDocument(user);
-        alert("✅ Account created successfully!");
-        window.location.href = 'login.html';
-
-      } catch (error) {
-        console.error("❌ Error creating user:", error.message);
-        alert("Error: " + error.message);
-      }
-    });
-  }
-});
-
 // Check if user is a super admin
 export async function isSuperAdmin(uid) {
   // First check the hardcoded list (for backward compatibility)
@@ -105,6 +74,121 @@ export async function createUserDocument(user, additionalData = {}) {
     // Add a small delay to ensure Firebase Auth token is fully processed
     // This helps prevent "Missing or insufficient permissions" errors
     await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // First check if there are existing accounts with this email
+    // This prevents duplicate accounts in Firestore
+    if (user.email) {
+      console.log("Checking for existing accounts with email:", user.email);
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", user.email));
+      
+      try {
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          // Found accounts with the same email
+          console.log(`Found ${querySnapshot.size} existing accounts with the same email`);
+          
+          // Get the existing accounts that are not the current user
+          const otherAccounts = [];
+          querySnapshot.forEach(doc => {
+            if (doc.id !== user.uid) {
+              otherAccounts.push({
+                uid: doc.id,
+                ...doc.data()
+              });
+            }
+          });
+          
+          if (otherAccounts.length > 0) {
+            console.log(`Found ${otherAccounts.length} accounts with this email that aren't the current user`);
+            
+            // Find the account with the most complete data to use as source
+            let mostCompleteAccount = otherAccounts[0];
+            let maxFieldCount = 0;
+            
+            // Find account with most fields
+            for (const account of otherAccounts) {
+              const fieldCount = Object.keys(account).length;
+              if (fieldCount > maxFieldCount) {
+                maxFieldCount = fieldCount;
+                mostCompleteAccount = account;
+              }
+            }
+            
+            console.log("Most complete account:", mostCompleteAccount);
+            
+            // Merge this data with any additionalData provided
+            if (additionalData && Object.keys(additionalData).length > 0) {
+              console.log("Merging additional data with most complete account");
+              // For each field in additionalData, check if it exists and is non-empty
+              for (const [key, value] of Object.entries(additionalData)) {
+                if (value && (!mostCompleteAccount[key] || mostCompleteAccount[key] === '')) {
+                  mostCompleteAccount[key] = value;
+                }
+              }
+            }
+            
+            // Copy data from most complete account to current user's document
+            const userRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (!userDoc.exists()) {
+              // Create a new document for current user with merged data
+              console.log("Creating new document for current user with merged data");
+              const newUserData = {
+                ...mostCompleteAccount,
+                email: user.email,
+                createdAt: serverTimestamp(),
+                isAdmin: mostCompleteAccount.isAdmin || false,
+                isSuperAdmin: mostCompleteAccount.isSuperAdmin || false
+              };
+              
+              // Remove the uid property as it's in the document ID
+              delete newUserData.uid;
+              
+              // Set the document
+              await setDoc(userRef, newUserData);
+              console.log("Successfully created user document with merged data");
+            } else {
+              // Document exists, update missing fields
+              console.log("Updating existing document with data from duplicate account");
+              const currentUserData = userDoc.data();
+              const updates = {};
+              
+              for (const [key, value] of Object.entries(mostCompleteAccount)) {
+                if (key !== 'uid' && key !== 'email' && value && 
+                   (!currentUserData[key] || currentUserData[key] === '')) {
+                  updates[key] = value;
+                }
+              }
+              
+              if (Object.keys(updates).length > 0) {
+                await updateDoc(userRef, updates);
+                console.log("Updated user document with fields from duplicate account");
+              }
+            }
+            
+            // Now delete the duplicate accounts
+            for (const account of otherAccounts) {
+              try {
+                console.log(`Deleting duplicate account: ${account.uid}`);
+                await deleteDoc(doc(db, "users", account.uid));
+                console.log(`Successfully deleted account ${account.uid}`);
+              } catch (deleteError) {
+                console.error("Error deleting duplicate account:", deleteError);
+              }
+            }
+            
+            // Early return since we've already created/updated the user document
+            return { success: true, userId: user.uid, mergedAccounts: otherAccounts.length };
+          }
+        }
+      } catch (checkError) {
+        console.warn("Error checking for duplicate accounts:", checkError);
+        // Continue with normal document creation
+      }
+    }
     
     const userRef = doc(db, "users", user.uid);
     

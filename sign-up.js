@@ -1,6 +1,6 @@
 // Import Firebase essentials from our config
 import { auth, db, createUserDocument } from './firebase-config.js';
-import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -90,6 +90,68 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       try {
+        // IMPORTANT: Disable the submit button to prevent double submission
+        const submitButton = signUpForm.querySelector('button[type="submit"]');
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Creating Account...";
+        }
+        
+        // First, check if an account with this email already exists
+        console.log("Checking if an account with this email already exists:", email);
+        let existingAccount = false;
+        let existingUser = null;
+        
+        try {
+          // Check Firestore first for existing accounts with this email
+          const usersRef = collection(db, "users");
+          const q = query(usersRef, where("email", "==", email));
+          const querySnapshot = await getDocs(q);
+          
+          if (!querySnapshot.empty) {
+            console.log(`Found ${querySnapshot.size} existing accounts with email ${email} in Firestore`);
+            existingAccount = true;
+            
+            // Get the first existing account
+            querySnapshot.forEach(doc => {
+              if (!existingUser) {
+                existingUser = {
+                  uid: doc.id,
+                  ...doc.data()
+                };
+              }
+            });
+          } else {
+            // If not found in Firestore, check Firebase Auth
+            try {
+              const methods = await fetchSignInMethodsForEmail(auth, email);
+              if (methods && methods.length > 0) {
+                console.log(`Account exists with email ${email} in Authentication, sign-in methods:`, methods);
+                existingAccount = true;
+                
+                // Since we know this email is registered but found no Firestore record,
+                // the user likely never completed registration. We'll let them login with their credentials.
+                alert("An account with this email already exists. Please log in instead.");
+                window.location.href = "login.html";
+                return;
+              }
+            } catch (methodError) {
+              console.warn("Error checking sign-in methods:", methodError);
+              // Continue with account creation even if check fails
+            }
+          }
+        } catch (checkError) {
+          console.warn("Error checking for existing account:", checkError);
+          // Continue with account creation if checks fail
+        }
+        
+        // If an existing account was found in Firestore
+        if (existingAccount && existingUser) {
+          alert("An account with this email already exists. You will be redirected to the login page.");
+          window.location.href = "login.html";
+          return;
+        }
+        
         // Format username properly to ensure "FirstName. LastInitial" format
         const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
         const lastInitial = lastName.charAt(0).toUpperCase();
@@ -104,13 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
           termsAccepted: true,
           termsAcceptedDate: new Date().toISOString()
         };
-        
-        // IMPORTANT: Disable the submit button to prevent double submission
-        const submitButton = signUpForm.querySelector('button[type="submit"]');
-        if (submitButton) {
-          submitButton.disabled = true;
-          submitButton.textContent = "Creating Account...";
-        }
         
         // Create the user account with Firebase Authentication
         console.log("Creating user authentication account with email:", email);

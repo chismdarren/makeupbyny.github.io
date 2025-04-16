@@ -178,7 +178,7 @@ function initializeFilters() {
     userList.parentNode.insertBefore(filterContainer, userList);
   }
   
-  // Add event listeners to filters
+  // Add event listeners for filter controls
   document.getElementById('sort-by').addEventListener('change', applyFilters);
   document.getElementById('sort-direction').addEventListener('change', applyFilters);
   document.getElementById('filter-status').addEventListener('change', applyFilters);
