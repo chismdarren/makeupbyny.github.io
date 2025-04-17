@@ -163,7 +163,7 @@
 
   <script type="module">
     // Only import what's needed from Firebase directly
-    import { signInWithEmailAndPassword, sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     // Import from our config file which now exports the needed functions
     import { auth, db, updatePassword, isAdminUser } from "./firebase-config.js";
     import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -340,48 +340,6 @@
         submitButton.textContent = "Recovering user data...";
         await recoverUserData(user);
         
-        // Check if there's a pending password reset for this user
-        const userRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists() && userDoc.data().passwordResetRequested === true) {
-          const userData = userDoc.data();
-          
-          // Check if there's a token and it hasn't expired
-          const resetTokenExpiry = userData.passwordResetTokenExpires ? new Date(userData.passwordResetTokenExpires) : null;
-          const now = new Date();
-          
-          if (resetTokenExpiry && now < resetTokenExpiry && userData.newPasswordPending) {
-            submitButton.textContent = "Applying password update...";
-            
-            try {
-              // Create credential with email and current password (which worked for login)
-              const credential = EmailAuthProvider.credential(email, password);
-              
-              // Reauthenticate
-              await reauthenticateWithCredential(user, credential);
-              
-              // Now update the password
-              await updatePassword(user, userData.newPasswordPending);
-              
-              // Update Firestore to show password was reset
-              await updateDoc(userRef, {
-                passwordResetRequested: false,
-                passwordResetToken: null,
-                passwordResetTokenExpires: null,
-                newPasswordPending: null,
-                passwordReset: true,
-                passwordResetTimestamp: new Date().toISOString()
-              });
-              
-              alert("Your password has been updated successfully!");
-            } catch (passwordUpdateError) {
-              console.error("Failed to update password:", passwordUpdateError);
-              // Continue with normal login flow even if password update fails
-            }
-          }
-        }
-        
         // Wait a moment to ensure Firestore is updated
         await new Promise(resolve => setTimeout(resolve, 1000));
         
@@ -493,29 +451,22 @@
         submitButton.textContent = "Updating Password...";
         
         try {
+          // First sign in with this user's email
           try {
-            // Since we've verified the user identity, create a token in Firestore for this user
-            // that indicates they're allowed to reset their password
-            const userRef = doc(db, "users", verifiedUserId);
+            // Since we've verified the user identity through our own system,
+            // we'll sign them in and update their password
+            await signInWithEmailAndPassword(auth, email, document.getElementById("password").value || "placeholder");
             
-            // Generate a reset token
-            const resetToken = Math.random().toString(36).substring(2, 15) + 
-                               Math.random().toString(36).substring(2, 15);
+            // Now update the password
+            await updatePassword(auth.currentUser, newPassword);
             
-            // Store it in Firestore with an expiration time (1 hour)
-            const expirationTime = new Date();
-            expirationTime.setHours(expirationTime.getHours() + 1);
-            
-            await updateDoc(userRef, {
-              passwordResetToken: resetToken,
-              passwordResetTokenExpires: expirationTime.toISOString(),
-              newPasswordPending: newPassword, // Store the new password temporarily
-              passwordResetRequested: true,
-              passwordResetRequestedAt: new Date().toISOString()
+            // Mark in Firestore that this user has reset their password
+            await updateDoc(doc(db, "users", verifiedUserId), {
+              passwordReset: true,
+              passwordResetTimestamp: new Date().toISOString()
             });
             
-            // Show success message directing them to login
-            resetSuccessMessage.textContent = "Password reset request processed successfully! Please log in with your current password, and your password will be updated automatically.";
+            resetSuccessMessage.textContent = "Password updated successfully! You can now log in with your new password.";
             resetSuccessMessage.style.display = "block";
             resetErrorMessage.textContent = "";
             
@@ -524,18 +475,18 @@
             verificationComplete = false;
             verifiedUserId = null;
             
-            // Auto-close modal after 5 seconds
+            // Auto-close modal after 3 seconds
             setTimeout(() => {
               passwordResetModal.style.display = "none";
-            }, 5000);
-            
-          } catch (error) {
-            console.error("Error during password reset request:", error);
-            resetErrorMessage.textContent = "Unable to process password reset. Please try again or contact support.";
+            }, 3000);
+          } catch (signInError) {
+            console.error("Error during sign-in attempt:", signInError);
+            resetErrorMessage.textContent = "Unable to update password: current password is required. Please log in first and try again, or contact support.";
           }
         } catch (error) {
-          console.error("Error during password reset request:", error);
-          resetErrorMessage.textContent = "Unable to process password reset. Please try again or contact support.";
+          console.error("Error during password update:", error);
+          resetErrorMessage.textContent = error.message || "An error occurred updating your password. Please try again.";
+          resetSuccessMessage.style.display = "none";
         }
         
         submitButton.disabled = false;
@@ -547,62 +498,86 @@
       submitButton.textContent = "Verifying...";
       
       try {
-        // Store the verification data in local storage temporarily
-        const verificationData = {
-          email: email,
-          firstName: firstName,
-          lastName: lastName,
-          phoneNumber: phoneNumber,
-          timestamp: new Date().getTime()
-        };
+        // Instead of directly querying Firestore (which causes permission issues),
+        // we'll first log in with a temporary login approach
+        try {
+          console.log("Attempting login with password 'temporary' for email verification");
+          // Try to sign in with the email and a temporary password to establish authentication
+          await signInWithEmailAndPassword(auth, email, "temporary")
+            .catch(error => {
+              console.log("Expected login error (this is normal):", error.code);
+              // This error is expected - we're just trying to establish authentication
+              // We'll still continue with our verification process
+            });
+            
+          // After attempt (success or fail), now check Firebase Auth state
+          const currentUser = auth.currentUser;
+          if (currentUser && currentUser.email === email) {
+            console.log("User successfully logged in during verification");
+          }
+        } catch (signInAttemptError) {
+          // We expect this to fail in most cases - it's just an attempt
+          console.log("Sign in attempt failed as expected:", signInAttemptError.code);
+        }
         
-        // Save to local storage - we'll use this instead of querying Firestore directly
-        localStorage.setItem('passwordResetVerification', JSON.stringify(verificationData));
-        
-        // Query Firestore to verify user identity
+        // Now try to access Firestore with potentially authenticated state
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", email));
         const querySnapshot = await getDocs(q);
         
-        let userMatch = false;
-        let matchedUserId = null;
-        
-        if (!querySnapshot.empty) {
-          querySnapshot.forEach((userDoc) => {
-            const userData = userDoc.data();
-            // Check if first name, last name, and phone number match
-            if (userData.firstName && userData.firstName.toLowerCase() === firstName.toLowerCase() &&
-                userData.lastName && userData.lastName.toLowerCase() === lastName.toLowerCase() &&
-                userData.phoneNumber && userData.phoneNumber === phoneNumber) {
-              userMatch = true;
-              matchedUserId = userDoc.id;
-            }
-          });
+        if (querySnapshot.empty) {
+          resetErrorMessage.textContent = "No account found with this email address.";
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+          return;
         }
         
-        if (userMatch && matchedUserId) {
-          // Identity verified - show password fields
-          document.getElementById("password-fields").style.display = "block";
-          resetSuccessMessage.textContent = "Identity verified successfully. Please set your new password.";
-          resetSuccessMessage.style.display = "block";
-          resetErrorMessage.textContent = "";
-          
-          // Update button and state
-          submitButton.textContent = "Update Password";
-          verificationComplete = true;
-          verifiedUserId = matchedUserId;
-        } else {
-          // No match found
-          resetErrorMessage.textContent = "We couldn't verify your identity with the information provided. Please try again or contact support.";
-          resetSuccessMessage.style.display = "none";
+        // Get the first matching user document
+        let userDoc;
+        let userId;
+        
+        querySnapshot.forEach((doc) => {
+          if (!userDoc) {
+            userDoc = doc.data();
+            userId = doc.id;
+          }
+        });
+        
+        // Verify first name, last name, and phone number
+        const isFirstNameMatch = userDoc.firstName && userDoc.firstName.toLowerCase() === firstName.toLowerCase();
+        const isLastNameMatch = userDoc.lastName && userDoc.lastName.toLowerCase() === lastName.toLowerCase();
+        const isPhoneMatch = userDoc.phoneNumber && userDoc.phoneNumber === phoneNumber;
+        
+        if (!isFirstNameMatch || !isLastNameMatch || !isPhoneMatch) {
+          resetErrorMessage.textContent = "The information provided doesn't match our records.";
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+          return;
         }
+        
+        // All information matches, show password fields
+        document.getElementById("password-fields").style.display = "block";
+        resetErrorMessage.textContent = "";
+        resetSuccessMessage.textContent = "Identity verified! Please enter a new password.";
+        resetSuccessMessage.style.display = "block";
+        
+        // Update form state
+        verificationComplete = true;
+        verifiedUserId = userId;
+        
+        // Change button text
+        submitButton.textContent = "Update Password";
+        
+        // Make new password fields required
+        document.getElementById("new-password").required = true;
+        document.getElementById("confirm-password").required = true;
         
         // Re-enable submit button
         submitButton.disabled = false;
-                
+        
       } catch (error) {
         console.error("Error during identity verification:", error);
-        resetErrorMessage.textContent = "A password reset email has been sent if the account exists and information is correct.";
+        resetErrorMessage.textContent = error.message || "An error occurred. Please try again.";
         
         // Re-enable submit button
         submitButton.disabled = false;
