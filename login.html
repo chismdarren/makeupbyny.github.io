@@ -376,9 +376,48 @@
     let verificationComplete = false;
     let verifiedUserId = null;
 
+    // Function to reset the password form state
+    function resetPasswordForm() {
+      // Reset form fields
+      passwordResetForm.reset();
+      
+      // Clear specific fields to ensure they're empty
+      document.getElementById("reset-email").value = "";
+      document.getElementById("reset-firstname").value = "";
+      document.getElementById("reset-lastname").value = "";
+      document.getElementById("reset-phone").value = "";
+      document.getElementById("new-password").value = "";
+      document.getElementById("confirm-password").value = "";
+      
+      // Reset verification state
+      verificationComplete = false;
+      verifiedUserId = null;
+      
+      // Hide password fields
+      document.getElementById("password-fields").style.display = "none";
+      
+      // Reset button text
+      document.getElementById("reset-submit-button").textContent = "Verify Identity";
+      
+      // Clear validation attributes
+      const newPasswordInput = document.getElementById("new-password");
+      const confirmPasswordInput = document.getElementById("confirm-password");
+      newPasswordInput.removeAttribute("required");
+      confirmPasswordInput.removeAttribute("required");
+      
+      // Clear messages
+      resetErrorMessage.textContent = "";
+      resetSuccessMessage.style.display = "none";
+    }
+
     // Show the password reset modal when "Forgot Password" is clicked
     forgotPasswordLink.addEventListener("click", (e) => {
       e.preventDefault();
+      
+      // Reset the form first
+      resetPasswordForm();
+      
+      // Show the modal
       passwordResetModal.style.display = "block";
       
       // Pre-fill email from login form if available
@@ -386,28 +425,19 @@
       if (loginEmail) {
         document.getElementById("reset-email").value = loginEmail;
       }
-      
-      // Clear any previous messages
-      resetErrorMessage.textContent = "";
-      resetSuccessMessage.textContent = "";
-      resetSuccessMessage.style.display = "none";
-
-      // Reset verification state
-      verificationComplete = false;
-      verifiedUserId = null;
-      document.getElementById("password-fields").style.display = "none";
-      document.getElementById("reset-submit-button").textContent = "Verify Identity";
     });
 
     // Close the modal when the X is clicked
     closeResetModal.addEventListener("click", () => {
       passwordResetModal.style.display = "none";
+      resetPasswordForm();
     });
 
     // Close the modal when clicking outside of it
     window.addEventListener("click", (e) => {
       if (e.target === passwordResetModal) {
         passwordResetModal.style.display = "none";
+        resetPasswordForm();
       }
     });
 
@@ -432,8 +462,17 @@
       
       // If verification is already complete, process the password reset
       if (verificationComplete) {
-        const newPassword = document.getElementById("new-password").value.trim();
-        const confirmPassword = document.getElementById("confirm-password").value.trim();
+        const newPasswordInput = document.getElementById("new-password");
+        const confirmPasswordInput = document.getElementById("confirm-password");
+        const newPassword = newPasswordInput.value.trim();
+        const confirmPassword = confirmPasswordInput.value.trim();
+        
+        // Check if fields are empty before other validation
+        if (!newPassword || !confirmPassword) {
+          resetErrorMessage.textContent = "Please fill in both password fields.";
+          submitButton.disabled = false;
+          return;
+        }
         
         // Verify passwords match and meet requirements
         if (newPassword.length < 6) {
@@ -471,9 +510,7 @@
             resetErrorMessage.textContent = "";
             
             // Reset form and state
-            passwordResetForm.reset();
-            verificationComplete = false;
-            verifiedUserId = null;
+            resetPasswordForm();
             
             // Auto-close modal after 3 seconds
             setTimeout(() => {
@@ -510,7 +547,9 @@
         // This uses client-side validation only based on what the user provided
         const localVerification = () => {
           // Show password fields
-          document.getElementById("password-fields").style.display = "block";
+          const passwordFields = document.getElementById("password-fields");
+          passwordFields.style.display = "block";
+          
           resetErrorMessage.textContent = "";
           resetSuccessMessage.textContent = "Information accepted! Please enter a new password.";
           resetSuccessMessage.style.display = "block";
@@ -522,9 +561,26 @@
           // Change button text
           submitButton.textContent = "Update Password";
           
-          // Make new password fields required
-          document.getElementById("new-password").required = true;
-          document.getElementById("confirm-password").required = true;
+          // Set up password fields
+          const newPasswordInput = document.getElementById("new-password");
+          const confirmPasswordInput = document.getElementById("confirm-password");
+          
+          // Clear any previous values
+          newPasswordInput.value = "";
+          confirmPasswordInput.value = "";
+          
+          // Remove the required attribute initially to prevent validation errors
+          newPasswordInput.removeAttribute("required");
+          confirmPasswordInput.removeAttribute("required");
+          
+          // Ensure the fields are enabled
+          newPasswordInput.disabled = false;
+          confirmPasswordInput.disabled = false;
+          
+          // Focus on new password field
+          setTimeout(() => {
+            newPasswordInput.focus();
+          }, 100);
         };
         
         // Execute the verification
