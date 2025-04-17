@@ -912,7 +912,6 @@ window.showUserDetails = async function(userId, userData = null) {
           <h3>Password Management</h3>
           <p>As an admin, you can manage this user's password:</p>
           <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-            <button id="generate-reset-link" class="action-btn" onclick="window.generatePasswordResetLink('${userId}')">Generate Password Reset Link</button>
             <button id="show-set-password" class="action-btn" onclick="window.showSetPasswordForm('${userId}')">Set New Password</button>
           </div>
           <div id="password-reset-result" style="margin-top: 10px; display: none;"></div>
