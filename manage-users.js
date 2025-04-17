@@ -433,13 +433,15 @@ if (adminDropdownBtn) {
 // Close modal when clicking the X
 if (closeBtn) {
   closeBtn.onclick = function() {
-    modal.style.display = "none";
+    if (modal) {
+      modal.style.display = "none";
+    }
   };
 }
 
 // Close modal when clicking outside
 window.onclick = function(event) {
-  if (event.target == modal) {
+  if (modal && event.target == modal) {
     modal.style.display = "none";
   }
 };
@@ -1110,13 +1112,21 @@ window.showUserDetails = async function(userId, userData = null) {
           } 
           else if (section === 'account') {
             // Handle account info updates
-            const termsAccepted = document.getElementById('terms-edit').value === 'true';
+            const termsEditElement = document.getElementById('terms-edit');
+            if (!termsEditElement) {
+              console.warn('Could not find terms-edit element');
+              return;
+            }
+            
+            const termsAccepted = termsEditElement.value === 'true';
             updates.termsAccepted = termsAccepted;
             
             if (termsAccepted) {
               // Get the terms date from the input or use current date
-              const termsDateInput = document.getElementById('terms-date-edit').value;
-              updates.termsAcceptedDate = termsDateInput ? new Date(termsDateInput).toISOString() : new Date().toISOString();
+              const termsDateInput = document.getElementById('terms-date-edit');
+              updates.termsAcceptedDate = termsDateInput && termsDateInput.value 
+                ? new Date(termsDateInput.value).toISOString() 
+                : new Date().toISOString();
             } else {
               // If terms not accepted, clear the date
               updates.termsAcceptedDate = null;
@@ -1125,14 +1135,36 @@ window.showUserDetails = async function(userId, userData = null) {
             await updateDoc(doc(db, "users", userId), updates);
             
             // Update display values
-            document.getElementById('terms-display').textContent = termsAccepted ? 'Yes' : 'No';
-            const formattedDate = updates.termsAcceptedDate ? new Date(updates.termsAcceptedDate).toLocaleString() : 'Not accepted';
-            document.getElementById('termsDate-display').textContent = formattedDate;
+            const termsDisplayElement = document.getElementById('terms-display');
+            if (termsDisplayElement) {
+              termsDisplayElement.textContent = termsAccepted ? 'Yes' : 'No';
+            }
+            
+            const formattedDate = updates.termsAcceptedDate 
+              ? new Date(updates.termsAcceptedDate).toLocaleString() 
+              : 'Not accepted';
+            
+            const termsDateDisplayElement = document.getElementById('termsDate-display');
+            if (termsDateDisplayElement) {
+              termsDateDisplayElement.textContent = formattedDate;
+            }
           }
           
           // Hide edit form, show content
-          document.getElementById(`${section}-section-edit`).style.display = 'none';
-          document.getElementById(`${section}-section-content`).style.display = 'block';
+          const editSection = document.getElementById(`${section}-section-edit`);
+          const contentSection = document.getElementById(`${section}-section-content`);
+          
+          if (editSection) {
+            editSection.style.display = 'none';
+          } else {
+            console.warn(`Edit section not found: ${section}-section-edit`);
+          }
+          
+          if (contentSection) {
+            contentSection.style.display = 'block';
+          } else {
+            console.warn(`Content section not found: ${section}-section-content`);
+          }
           
           // Show success message
           showNotification('Changes saved successfully', 'success');
@@ -1816,7 +1848,7 @@ window.updateUserRole = async function(userId, isAdmin) {
     }
     
     // If a modal is currently displayed, update it too
-    if (currentUserId === userId && modal.style.display === "block") {
+    if (currentUserId === userId && modal && modal.style.display === "block") {
       window.showUserDetails(userId, { uid: userId, isAdmin: isAdmin, isSuperAdmin: false });
     }
   } catch (error) {
@@ -1962,7 +1994,7 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
     }, 3000);
     
     // If a modal is currently displayed, update it too
-    if (currentUserId === userId && modal.style.display === "block") {
+    if (currentUserId === userId && modal && modal.style.display === "block") {
       window.showUserDetails(userId, { uid: userId, isAdmin: true, isSuperAdmin: makeUserSuperAdmin });
     }
   } catch (error) {
@@ -2355,10 +2387,11 @@ function showUserDetails(userId) {
         passwordContainer.appendChild(passwordManagementSection);
       }
       
-      // Show the modal if it exists
-      const modal = document.getElementById('userModal');
-      if (modal) {
+      // Check if the modal variable exists and has style property
+      if (typeof modal !== 'undefined' && modal !== null && typeof modal.style !== 'undefined') {
         modal.style.display = "block";
+      } else {
+        console.warn("Modal element is not properly initialized");
       }
     } else {
       showNotification('User data not found', 'error');
