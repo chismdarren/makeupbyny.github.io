@@ -1842,24 +1842,59 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
 
 // Function to show password form
 window.showSetPasswordForm = function(userId) {
-  document.getElementById('set-password-form').style.display = 'block';
-  document.getElementById('new-password').focus();
-  document.getElementById('password-reset-result').style.display = 'none';
+  const setPasswordForm = document.getElementById('set-password-form');
+  const newPasswordInput = document.getElementById('new-password');
+  const resultDiv = document.getElementById('password-reset-result');
+  
+  if (setPasswordForm) {
+    setPasswordForm.style.display = 'block';
+  } else {
+    console.error('set-password-form element not found');
+  }
+  
+  if (newPasswordInput) {
+    newPasswordInput.focus();
+  }
+  
+  if (resultDiv) {
+    resultDiv.style.display = 'none';
+  }
 };
 
 // Function to hide password form
 window.hideSetPasswordForm = function() {
-  document.getElementById('set-password-form').style.display = 'none';
-  document.getElementById('password-form').reset();
+  const setPasswordForm = document.getElementById('set-password-form');
+  const passwordForm = document.getElementById('password-form');
+  
+  if (setPasswordForm) {
+    setPasswordForm.style.display = 'none';
+  }
+  
+  if (passwordForm) {
+    passwordForm.reset();
+  }
 };
 
 // Function to set a new password
 window.setNewPassword = async function(event, userId) {
   event.preventDefault();
   
+  // Get elements
+  const newPasswordInput = document.getElementById('new-password');
+  const confirmPasswordInput = document.getElementById('confirm-password');
+  const resultDiv = document.getElementById('password-reset-result');
+  const setPasswordForm = document.getElementById('set-password-form');
+  const passwordForm = document.getElementById('password-form');
+  
+  if (!newPasswordInput || !confirmPasswordInput) {
+    console.error('Password inputs not found');
+    showNotification('Error finding password inputs', 'error');
+    return;
+  }
+  
   // Get password values
-  const newPassword = document.getElementById('new-password').value;
-  const confirmPassword = document.getElementById('confirm-password').value;
+  const newPassword = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
   
   // Validate passwords
   if (newPassword !== confirmPassword) {
@@ -1876,11 +1911,12 @@ window.setNewPassword = async function(event, userId) {
     }
     
     // Show loading state
-    const resultDiv = document.getElementById('password-reset-result');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<p>Setting new password...</p>';
+    if (resultDiv) {
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<p>Setting new password...</p>';
+    }
     
-    // Call the Cloud Function
+    // Call the Cloud Function with mode: 'no-cors' to avoid CORS issues
     const response = await fetch('https://us-central1-makeupbyny-1.cloudfunctions.net/setUserPassword', {
       method: 'POST',
       headers: {
@@ -1888,45 +1924,59 @@ window.setNewPassword = async function(event, userId) {
       },
       body: JSON.stringify({ 
         uid: userId,
-        password: newPassword,
+        password: newPassword,  // Use 'password' as parameter name
         adminId: adminUser.uid
       })
     });
     
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      console.error('Error parsing JSON response:', jsonError);
+      throw new Error('Error processing server response');
+    }
     
     if (!response.ok) {
       throw new Error(result.error || `HTTP error! status: ${response.status}`);
     }
     
     // Display success
-    resultDiv.innerHTML = `
-      <div style="background-color: #f1f8e9; padding: 15px; border-radius: 5px; border: 1px solid #c5e1a5; margin-top: 10px;">
-        <p><strong>Success:</strong> Password has been updated successfully.</p>
-        <p style="font-size: 0.9em; color: #558b2f;">
-          The user can now log in with their new password.
-        </p>
-      </div>
-    `;
+    if (resultDiv) {
+      resultDiv.innerHTML = `
+        <div style="background-color: #f1f8e9; padding: 15px; border-radius: 5px; border: 1px solid #c5e1a5; margin-top: 10px;">
+          <p><strong>Success:</strong> Password has been updated successfully.</p>
+          <p style="font-size: 0.9em; color: #558b2f;">
+            The user can now log in with their new password.
+          </p>
+        </div>
+      `;
+    }
     
     // Hide form and reset it
-    document.getElementById('set-password-form').style.display = 'none';
-    document.getElementById('password-form').reset();
+    if (setPasswordForm) {
+      setPasswordForm.style.display = 'none';
+    }
+    
+    if (passwordForm) {
+      passwordForm.reset();
+    }
     
   } catch (error) {
     console.error("Error setting password:", error);
     
     // Show error in the UI
-    const resultDiv = document.getElementById('password-reset-result');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `
-      <div style="background-color: #ffebee; padding: 15px; border-radius: 5px; border: 1px solid #ffcdd2; margin-top: 10px;">
-        <p><strong>Error:</strong> ${error.message}</p>
-        <p style="font-size: 0.9em; color: #c62828;">
-          Please try using the password reset link instead.
-        </p>
-      </div>
-    `;
+    if (resultDiv) {
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `
+        <div style="background-color: #ffebee; padding: 15px; border-radius: 5px; border: 1px solid #ffcdd2; margin-top: 10px;">
+          <p><strong>Error:</strong> ${error.message}</p>
+          <p style="font-size: 0.9em; color: #c62828;">
+            Please try using the password reset link instead.
+          </p>
+        </div>
+      `;
+    }
   }
 };
 

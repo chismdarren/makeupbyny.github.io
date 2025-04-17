@@ -555,9 +555,9 @@ exports.updateUserStatus = functions.https.onRequest((req, res) => {
 // Cloud Function to set a user password directly (for admin use only)
 exports.setUserPassword = functions.https.onRequest((req, res) => {
   const corsHandler = cors({
-    origin: "https://chismdarren.github.io",
+    origin: true, // Allow any origin for now
     methods: "POST, OPTIONS",
-    allowedHeaders: "Content-Type, Accept",
+    allowedHeaders: "Content-Type, Accept, Authorization",
     credentials: true,
   });
 
@@ -565,18 +565,18 @@ exports.setUserPassword = functions.https.onRequest((req, res) => {
     try {
       // Handle preflight request
       if (req.method === "OPTIONS") {
-        res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+        res.set("Access-Control-Allow-Origin", "*"); // Allow any origin for now
         res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-        res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+        res.set("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
         res.set("Access-Control-Allow-Credentials", "true");
         res.status(204).send("");
         return;
       }
 
       // Set CORS headers for actual request
-      res.set("Access-Control-Allow-Origin", "https://chismdarren.github.io");
+      res.set("Access-Control-Allow-Origin", "*"); // Allow any origin for now
       res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-      res.set("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.set("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
       res.set("Access-Control-Allow-Credentials", "true");
 
       // Check request method
@@ -585,17 +585,17 @@ exports.setUserPassword = functions.https.onRequest((req, res) => {
       }
 
       // Get parameters from request body
-      const { uid, newPassword, adminId } = req.body;
+      const { uid, password, adminId } = req.body;
 
-      if (!uid || !newPassword) {
+      if (!uid || !password) {
         return res.status(400).json({ 
           error: "Missing required parameters",
-          details: "Required parameters: uid (string), newPassword (string)"
+          details: "Required parameters: uid (string), password (string)"
         });
       }
 
       // Password validation
-      if (newPassword.length < 6) {
+      if (password.length < 6) {
         return res.status(400).json({ 
           error: "Invalid password",
           details: "Password must be at least 6 characters long"
@@ -628,7 +628,7 @@ exports.setUserPassword = functions.https.onRequest((req, res) => {
       // Update user password in Firebase Authentication
       try {
         await admin.auth().updateUser(uid, {
-          password: newPassword
+          password: password
         });
         
         console.log(`Password updated successfully for user ${uid}`);
