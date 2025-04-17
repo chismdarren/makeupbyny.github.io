@@ -434,7 +434,7 @@ if (adminDropdownBtn) {
 if (closeBtn) {
   closeBtn.onclick = function() {
     if (modal) {
-      modal.style.display = "none";
+    modal.style.display = "none";
     }
   };
 }
@@ -1442,7 +1442,7 @@ function showPasswordManagement(userId) {
     cancelButton.onclick = function() {
       try {
         window.hideSetPasswordForm();
-      } catch (error) {
+  } catch (error) {
         console.error("Error in cancel button handler:", error);
         if (setPasswordForm) {
           setPasswordForm.style.display = 'none';
@@ -1476,8 +1476,8 @@ function showPasswordManagement(userId) {
     passwordSection.appendChild(setPasswordButton);
     passwordSection.appendChild(setPasswordForm);
     passwordSection.appendChild(resultDiv);
-    
-    return passwordSection;
+  
+  return passwordSection;
   } catch (error) {
     console.error("Error creating password management section:", error);
     // Return a basic div with error message if something went wrong
@@ -1906,8 +1906,8 @@ window.setNewPassword = async function(event, userId) {
     
     // Show loading state
     if (resultDiv) {
-      resultDiv.style.display = 'block';
-      resultDiv.innerHTML = '<p>Setting new password...</p>';
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<p>Setting new password...</p>';
     }
     
     // Call the Cloud Function with mode: 'no-cors' to avoid CORS issues
@@ -1937,14 +1937,14 @@ window.setNewPassword = async function(event, userId) {
     
     // Display success
     if (resultDiv) {
-      resultDiv.innerHTML = `
-        <div style="background-color: #f1f8e9; padding: 15px; border-radius: 5px; border: 1px solid #c5e1a5; margin-top: 10px;">
-          <p><strong>Success:</strong> Password has been updated successfully.</p>
-          <p style="font-size: 0.9em; color: #558b2f;">
-            The user can now log in with their new password.
-          </p>
-        </div>
-      `;
+    resultDiv.innerHTML = `
+      <div style="background-color: #f1f8e9; padding: 15px; border-radius: 5px; border: 1px solid #c5e1a5; margin-top: 10px;">
+        <p><strong>Success:</strong> Password has been updated successfully.</p>
+        <p style="font-size: 0.9em; color: #558b2f;">
+          The user can now log in with their new password.
+        </p>
+      </div>
+    `;
     }
     
     // Hide form and reset it
@@ -1961,15 +1961,15 @@ window.setNewPassword = async function(event, userId) {
     
     // Show error in the UI
     if (resultDiv) {
-      resultDiv.style.display = 'block';
-      resultDiv.innerHTML = `
-        <div style="background-color: #ffebee; padding: 15px; border-radius: 5px; border: 1px solid #ffcdd2; margin-top: 10px;">
-          <p><strong>Error:</strong> ${error.message}</p>
-          <p style="font-size: 0.9em; color: #c62828;">
-            Please try using the password reset link instead.
-          </p>
-        </div>
-      `;
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      <div style="background-color: #ffebee; padding: 15px; border-radius: 5px; border: 1px solid #ffcdd2; margin-top: 10px;">
+        <p><strong>Error:</strong> ${error.message}</p>
+        <p style="font-size: 0.9em; color: #c62828;">
+          Please try using the password reset link instead.
+        </p>
+      </div>
+    `;
     }
   }
 };
@@ -2173,18 +2173,18 @@ function showUserDetails(userId) {
       // Show user profile image if available
       const userImage = document.getElementById('user-image');
       if (userImage) {
-        if (userData.photoURL) {
-          userImage.src = userData.photoURL;
-          userImage.style.display = 'block';
-        } else {
-          userImage.style.display = 'none';
+      if (userData.photoURL) {
+        userImage.src = userData.photoURL;
+        userImage.style.display = 'block';
+      } else {
+        userImage.style.display = 'none';
         }
       }
       
       // Set up role selection dropdown
       const roleSelect = document.getElementById('role-select');
       if (roleSelect) {
-        roleSelect.value = userData.role || 'customer';
+      roleSelect.value = userData.role || 'customer';
       }
       
       // Show the delete button
@@ -2220,7 +2220,7 @@ function showUserDetails(userId) {
       
       // Check if the modal variable exists and has style property
       if (typeof modal !== 'undefined' && modal !== null && typeof modal.style !== 'undefined') {
-        modal.style.display = "block";
+      modal.style.display = "block";
       } else {
         console.warn("Modal element is not properly initialized");
       }

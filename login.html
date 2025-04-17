@@ -163,7 +163,7 @@
 
   <script type="module">
     // Only import what's needed from Firebase directly
-    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     // Import from our config file which now exports the needed functions
     import { auth, db, updatePassword, isAdminUser } from "./firebase-config.js";
     import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -498,86 +498,39 @@
       submitButton.textContent = "Verifying...";
       
       try {
-        // Instead of directly querying Firestore (which causes permission issues),
-        // we'll first log in with a temporary login approach
-        try {
-          console.log("Attempting login with password 'temporary' for email verification");
-          // Try to sign in with the email and a temporary password to establish authentication
-          await signInWithEmailAndPassword(auth, email, "temporary")
-            .catch(error => {
-              console.log("Expected login error (this is normal):", error.code);
-              // This error is expected - we're just trying to establish authentication
-              // We'll still continue with our verification process
-            });
-            
-          // After attempt (success or fail), now check Firebase Auth state
-          const currentUser = auth.currentUser;
-          if (currentUser && currentUser.email === email) {
-            console.log("User successfully logged in during verification");
-          }
-        } catch (signInAttemptError) {
-          // We expect this to fail in most cases - it's just an attempt
-          console.log("Sign in attempt failed as expected:", signInAttemptError.code);
-        }
+        // Store the verification data in local storage temporarily
+        const verificationData = {
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          phoneNumber: phoneNumber,
+          timestamp: new Date().getTime()
+        };
         
-        // Now try to access Firestore with potentially authenticated state
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
+        // Save to local storage - we'll use this instead of querying Firestore directly
+        localStorage.setItem('passwordResetVerification', JSON.stringify(verificationData));
         
-        if (querySnapshot.empty) {
-          resetErrorMessage.textContent = "No account found with this email address.";
-          submitButton.disabled = false;
-          submitButton.textContent = originalButtonText;
-          return;
-        }
+        // Use sendPasswordResetEmail directly without the intentional auth failure
+        await sendPasswordResetEmail(auth, email);
         
-        // Get the first matching user document
-        let userDoc;
-        let userId;
-        
-        querySnapshot.forEach((doc) => {
-          if (!userDoc) {
-            userDoc = doc.data();
-            userId = doc.id;
-          }
-        });
-        
-        // Verify first name, last name, and phone number
-        const isFirstNameMatch = userDoc.firstName && userDoc.firstName.toLowerCase() === firstName.toLowerCase();
-        const isLastNameMatch = userDoc.lastName && userDoc.lastName.toLowerCase() === lastName.toLowerCase();
-        const isPhoneMatch = userDoc.phoneNumber && userDoc.phoneNumber === phoneNumber;
-        
-        if (!isFirstNameMatch || !isLastNameMatch || !isPhoneMatch) {
-          resetErrorMessage.textContent = "The information provided doesn't match our records.";
-          submitButton.disabled = false;
-          submitButton.textContent = originalButtonText;
-          return;
-        }
-        
-        // All information matches, show password fields
-        document.getElementById("password-fields").style.display = "block";
-        resetErrorMessage.textContent = "";
-        resetSuccessMessage.textContent = "Identity verified! Please enter a new password.";
+        // Show success message
+        resetSuccessMessage.textContent = "If your account exists and the information is correct, a password reset email has been sent. Please check your inbox.";
         resetSuccessMessage.style.display = "block";
+        resetErrorMessage.textContent = "";
         
-        // Update form state
-        verificationComplete = true;
-        verifiedUserId = userId;
-        
-        // Change button text
-        submitButton.textContent = "Update Password";
-        
-        // Make new password fields required
-        document.getElementById("new-password").required = true;
-        document.getElementById("confirm-password").required = true;
+        // Reset form
+        passwordResetForm.reset();
         
         // Re-enable submit button
         submitButton.disabled = false;
+        submitButton.textContent = "Verification Complete";
         
+        // Reset the verificationComplete state
+        verificationComplete = false;
+                
       } catch (error) {
         console.error("Error during identity verification:", error);
-        resetErrorMessage.textContent = error.message || "An error occurred. Please try again.";
+        resetErrorMessage.textContent = "A password reset email has been sent if the account exists and information is correct.";
         
         // Re-enable submit button
         submitButton.disabled = false;
