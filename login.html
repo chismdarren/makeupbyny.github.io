@@ -77,9 +77,62 @@
         <button type="submit">Login</button>
         <p id="error-message" style="color: red;"></p>
       </form>
+      <!-- Added Forgot Password link -->
+      <p style="text-align: center; margin-top: 10px;">
+        <a href="#" id="forgot-password-link">Forgot Password?</a>
+      </p>
       <!-- Link to navigate to the sign-up page -->
       <p>Don't have an account? <a href="sign-up.html">Create an Account</a></p>
     </main>
+
+    <!-- Password Reset Modal -->
+    <div id="password-reset-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto;">
+      <div style="background-color: white; margin: 15% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px;">
+        <span id="close-reset-modal" style="float: right; cursor: pointer; font-size: 24px;">&times;</span>
+        <h2>Reset Password</h2>
+        <p>Please verify your identity to reset your password. Fill in all fields below:</p>
+        
+        <form id="password-reset-form">
+          <div style="margin-bottom: 15px;">
+            <label for="reset-email">Email Address:</label>
+            <input type="email" id="reset-email" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label for="reset-firstname">First Name:</label>
+            <input type="text" id="reset-firstname" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label for="reset-lastname">Last Name:</label>
+            <input type="text" id="reset-lastname" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <label for="reset-phone">Phone Number:</label>
+            <input type="tel" id="reset-phone" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          
+          <div id="password-fields" style="display: none;">
+            <div style="margin-bottom: 15px;">
+              <label for="new-password">New Password:</label>
+              <input type="password" id="new-password" minlength="6" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+              <small style="color: #666;">Password must be at least 6 characters</small>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <label for="confirm-password">Confirm New Password:</label>
+              <input type="password" id="confirm-password" minlength="6" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+          </div>
+          
+          <p id="reset-error-message" style="color: red; margin-bottom: 15px;"></p>
+          <p id="reset-success-message" style="color: green; margin-bottom: 15px; display: none;"></p>
+          
+          <button type="submit" id="reset-submit-button" style="width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Verify Identity</button>
+        </form>
+      </div>
+    </div>
 
     <!-- About Me Sidebar -->
     <aside class="about-me">
@@ -109,10 +162,11 @@
   </footer>
 
   <script type="module">
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { auth, isAdminUser } from "./firebase-config.js";
-    import { doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { db } from "./firebase-config.js";
+    // Only import what's needed from Firebase directly
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    // Import from our config file which now exports the needed functions
+    import { auth, db, updatePassword, isAdminUser } from "./firebase-config.js";
+    import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     console.log("Login script loaded");  // Debug log to confirm script load
 
@@ -307,6 +361,203 @@
         document.getElementById("error-message").textContent = error.message;
         
         // Re-enable login button
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+    });
+
+    // Password Reset Functionality
+    const passwordResetModal = document.getElementById("password-reset-modal");
+    const forgotPasswordLink = document.getElementById("forgot-password-link");
+    const closeResetModal = document.getElementById("close-reset-modal");
+    const passwordResetForm = document.getElementById("password-reset-form");
+    const resetErrorMessage = document.getElementById("reset-error-message");
+    const resetSuccessMessage = document.getElementById("reset-success-message");
+    let verificationComplete = false;
+    let verifiedUserId = null;
+
+    // Show the password reset modal when "Forgot Password" is clicked
+    forgotPasswordLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      passwordResetModal.style.display = "block";
+      
+      // Pre-fill email from login form if available
+      const loginEmail = document.getElementById("email").value;
+      if (loginEmail) {
+        document.getElementById("reset-email").value = loginEmail;
+      }
+      
+      // Clear any previous messages
+      resetErrorMessage.textContent = "";
+      resetSuccessMessage.textContent = "";
+      resetSuccessMessage.style.display = "none";
+
+      // Reset verification state
+      verificationComplete = false;
+      verifiedUserId = null;
+      document.getElementById("password-fields").style.display = "none";
+      document.getElementById("reset-submit-button").textContent = "Verify Identity";
+    });
+
+    // Close the modal when the X is clicked
+    closeResetModal.addEventListener("click", () => {
+      passwordResetModal.style.display = "none";
+    });
+
+    // Close the modal when clicking outside of it
+    window.addEventListener("click", (e) => {
+      if (e.target === passwordResetModal) {
+        passwordResetModal.style.display = "none";
+      }
+    });
+
+    // Handle password reset form submission
+    passwordResetForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      // Get form values
+      const email = document.getElementById("reset-email").value.trim();
+      const firstName = document.getElementById("reset-firstname").value.trim();
+      const lastName = document.getElementById("reset-lastname").value.trim();
+      const phoneNumber = document.getElementById("reset-phone").value.trim();
+      
+      // Clear previous messages
+      resetErrorMessage.textContent = "";
+      resetSuccessMessage.style.display = "none";
+      
+      // Disable submit button while processing
+      const submitButton = document.getElementById("reset-submit-button");
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      
+      // If verification is already complete, process the password reset
+      if (verificationComplete) {
+        const newPassword = document.getElementById("new-password").value.trim();
+        const confirmPassword = document.getElementById("confirm-password").value.trim();
+        
+        // Verify passwords match and meet requirements
+        if (newPassword.length < 6) {
+          resetErrorMessage.textContent = "Password must be at least 6 characters long.";
+          submitButton.disabled = false;
+          return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+          resetErrorMessage.textContent = "Passwords do not match.";
+          submitButton.disabled = false;
+          return;
+        }
+        
+        submitButton.textContent = "Updating Password...";
+        
+        try {
+          // First sign in with this user's email
+          try {
+            // Since we've verified the user identity through our own system,
+            // we'll sign them in and update their password
+            await signInWithEmailAndPassword(auth, email, document.getElementById("password").value || "placeholder");
+            
+            // Now update the password
+            await updatePassword(auth.currentUser, newPassword);
+            
+            // Mark in Firestore that this user has reset their password
+            await updateDoc(doc(db, "users", verifiedUserId), {
+              passwordReset: true,
+              passwordResetTimestamp: new Date().toISOString()
+            });
+            
+            resetSuccessMessage.textContent = "Password updated successfully! You can now log in with your new password.";
+            resetSuccessMessage.style.display = "block";
+            resetErrorMessage.textContent = "";
+            
+            // Reset form and state
+            passwordResetForm.reset();
+            verificationComplete = false;
+            verifiedUserId = null;
+            
+            // Auto-close modal after 3 seconds
+            setTimeout(() => {
+              passwordResetModal.style.display = "none";
+            }, 3000);
+          } catch (signInError) {
+            console.error("Error during sign-in attempt:", signInError);
+            resetErrorMessage.textContent = "Unable to update password: current password is required. Please log in first and try again, or contact support.";
+          }
+        } catch (error) {
+          console.error("Error during password update:", error);
+          resetErrorMessage.textContent = error.message || "An error occurred updating your password. Please try again.";
+          resetSuccessMessage.style.display = "none";
+        }
+        
+        submitButton.disabled = false;
+        submitButton.textContent = "Update Password";
+        return;
+      }
+      
+      // First-time submission - verify identity
+      submitButton.textContent = "Verifying...";
+      
+      try {
+        // Find user by email
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+          resetErrorMessage.textContent = "No account found with this email address.";
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+          return;
+        }
+        
+        // Get the first matching user document
+        let userDoc;
+        let userId;
+        
+        querySnapshot.forEach((doc) => {
+          if (!userDoc) {
+            userDoc = doc.data();
+            userId = doc.id;
+          }
+        });
+        
+        // Verify first name, last name, and phone number
+        const isFirstNameMatch = userDoc.firstName && userDoc.firstName.toLowerCase() === firstName.toLowerCase();
+        const isLastNameMatch = userDoc.lastName && userDoc.lastName.toLowerCase() === lastName.toLowerCase();
+        const isPhoneMatch = userDoc.phoneNumber && userDoc.phoneNumber === phoneNumber;
+        
+        if (!isFirstNameMatch || !isLastNameMatch || !isPhoneMatch) {
+          resetErrorMessage.textContent = "The information provided doesn't match our records.";
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+          return;
+        }
+        
+        // All information matches, show password fields
+        document.getElementById("password-fields").style.display = "block";
+        resetErrorMessage.textContent = "";
+        resetSuccessMessage.textContent = "Identity verified! Please enter a new password.";
+        resetSuccessMessage.style.display = "block";
+        
+        // Update form state
+        verificationComplete = true;
+        verifiedUserId = userId;
+        
+        // Change button text
+        submitButton.textContent = "Update Password";
+        
+        // Make new password fields required
+        document.getElementById("new-password").required = true;
+        document.getElementById("confirm-password").required = true;
+        
+        // Re-enable submit button
+        submitButton.disabled = false;
+        
+      } catch (error) {
+        console.error("Error during identity verification:", error);
+        resetErrorMessage.textContent = error.message || "An error occurred. Please try again.";
+        
+        // Re-enable submit button
         submitButton.disabled = false;
         submitButton.textContent = originalButtonText;
       }
