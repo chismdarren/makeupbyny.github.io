@@ -1455,43 +1455,174 @@ async function generatePasswordResetLink(userId) {
 
 // Add function to show password management section in user details modal
 function showPasswordManagement(userId) {
-  // Create password management section
-  const passwordSection = document.createElement('div');
-  passwordSection.id = 'passwordManagement';
-  passwordSection.className = 'password-management';
-  
-  // Add password reset button
-  const resetButton = document.createElement('button');
-  resetButton.textContent = 'Generate Password Reset Link';
-  resetButton.className = 'reset-button';
-  resetButton.onclick = function() {
-    generatePasswordResetLink(userId);
-  };
-  
-  // Add link element to display reset link
-  const resetLinkContainer = document.createElement('div');
-  resetLinkContainer.className = 'reset-link-container';
-  
-  const resetLinkElem = document.createElement('a');
-  resetLinkElem.id = 'resetLink';
-  resetLinkElem.className = 'reset-link';
-  resetLinkElem.target = '_blank';
-  resetLinkElem.style.display = 'none';
-  resetLinkContainer.appendChild(resetLinkElem);
-  
-  // Add copy button for reset link
-  const copyButton = document.createElement('button');
-  copyButton.id = 'copyResetLink';
-  copyButton.textContent = 'Copy Link';
-  copyButton.className = 'copy-button';
-  copyButton.style.display = 'none';
-  resetLinkContainer.appendChild(copyButton);
-  
-  // Add elements to password section
-  passwordSection.appendChild(resetButton);
-  passwordSection.appendChild(resetLinkContainer);
-  
-  return passwordSection;
+  try {
+    // Create password management section
+    const passwordSection = document.createElement('div');
+    passwordSection.id = 'passwordManagement';
+    passwordSection.className = 'password-management';
+    
+    // Add password reset button
+    const resetButton = document.createElement('button');
+    resetButton.textContent = 'Generate Password Reset Link';
+    resetButton.className = 'reset-button';
+    resetButton.onclick = function() {
+      try {
+        generatePasswordResetLink(userId);
+      } catch (error) {
+        console.error("Error in password reset button click handler:", error);
+        showNotification("Error setting up password reset", "error");
+      }
+    };
+    
+    // Add link element to display reset link
+    const resetLinkContainer = document.createElement('div');
+    resetLinkContainer.className = 'reset-link-container';
+    
+    const resetLinkElem = document.createElement('a');
+    resetLinkElem.id = 'resetLink';
+    resetLinkElem.className = 'reset-link';
+    resetLinkElem.target = '_blank';
+    resetLinkElem.style.display = 'none';
+    resetLinkContainer.appendChild(resetLinkElem);
+    
+    // Add copy button for reset link
+    const copyButton = document.createElement('button');
+    copyButton.id = 'copyResetLink';
+    copyButton.textContent = 'Copy Link';
+    copyButton.className = 'copy-button';
+    copyButton.style.display = 'none';
+    resetLinkContainer.appendChild(copyButton);
+    
+    // Add elements to password section
+    passwordSection.appendChild(resetButton);
+    passwordSection.appendChild(resetLinkContainer);
+    
+    // Add set password button
+    const setPasswordButton = document.createElement('button');
+    setPasswordButton.id = 'show-set-password';
+    setPasswordButton.textContent = 'Set New Password';
+    setPasswordButton.className = 'action-btn';
+    setPasswordButton.onclick = function() {
+      try {
+        window.showSetPasswordForm(userId);
+      } catch (error) {
+        console.error("Error in set password button click handler:", error);
+        showNotification("Error setting up password form", "error");
+      }
+    };
+    passwordSection.appendChild(setPasswordButton);
+    
+    // Add password form container (initially hidden)
+    const setPasswordForm = document.createElement('div');
+    setPasswordForm.id = 'set-password-form';
+    setPasswordForm.style.display = 'none';
+    setPasswordForm.style.marginTop = '15px';
+    
+    // Create the password form
+    const passwordForm = document.createElement('form');
+    passwordForm.id = 'password-form';
+    passwordForm.onsubmit = function(event) {
+      event.preventDefault();
+      try {
+        window.setNewPassword(event, userId);
+      } catch (error) {
+        console.error("Error in password form submission:", error);
+        showNotification("Error submitting password form", "error");
+      }
+    };
+    
+    // Create password field
+    const newPasswordGroup = document.createElement('div');
+    newPasswordGroup.className = 'form-group';
+    
+    const newPasswordLabel = document.createElement('label');
+    newPasswordLabel.htmlFor = 'new-password';
+    newPasswordLabel.textContent = 'New Password:';
+    
+    const newPasswordInput = document.createElement('input');
+    newPasswordInput.type = 'password';
+    newPasswordInput.id = 'new-password';
+    newPasswordInput.required = true;
+    newPasswordInput.minLength = 6;
+    
+    const passwordHelp = document.createElement('small');
+    passwordHelp.textContent = 'Password must be at least 6 characters';
+    
+    newPasswordGroup.appendChild(newPasswordLabel);
+    newPasswordGroup.appendChild(newPasswordInput);
+    newPasswordGroup.appendChild(passwordHelp);
+    
+    // Create confirm password field
+    const confirmPasswordGroup = document.createElement('div');
+    confirmPasswordGroup.className = 'form-group';
+    
+    const confirmPasswordLabel = document.createElement('label');
+    confirmPasswordLabel.htmlFor = 'confirm-password';
+    confirmPasswordLabel.textContent = 'Confirm Password:';
+    
+    const confirmPasswordInput = document.createElement('input');
+    confirmPasswordInput.type = 'password';
+    confirmPasswordInput.id = 'confirm-password';
+    confirmPasswordInput.required = true;
+    
+    confirmPasswordGroup.appendChild(confirmPasswordLabel);
+    confirmPasswordGroup.appendChild(confirmPasswordInput);
+    
+    // Create form actions
+    const formActions = document.createElement('div');
+    formActions.className = 'form-actions';
+    
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.className = 'cancel-edit-btn';
+    cancelButton.textContent = 'Cancel';
+    cancelButton.onclick = function() {
+      try {
+        window.hideSetPasswordForm();
+      } catch (error) {
+        console.error("Error in cancel button handler:", error);
+        if (setPasswordForm) {
+          setPasswordForm.style.display = 'none';
+        }
+      }
+    };
+    
+    const saveButton = document.createElement('button');
+    saveButton.type = 'submit';
+    saveButton.className = 'save-edit-btn';
+    saveButton.textContent = 'Save Password';
+    
+    formActions.appendChild(cancelButton);
+    formActions.appendChild(saveButton);
+    
+    // Add all elements to form
+    passwordForm.appendChild(newPasswordGroup);
+    passwordForm.appendChild(confirmPasswordGroup);
+    passwordForm.appendChild(formActions);
+    
+    // Add form to container
+    setPasswordForm.appendChild(passwordForm);
+    
+    // Add password result div
+    const resultDiv = document.createElement('div');
+    resultDiv.id = 'password-reset-result';
+    resultDiv.style.display = 'none';
+    resultDiv.style.marginTop = '10px';
+    
+    // Add all to password section
+    passwordSection.appendChild(setPasswordButton);
+    passwordSection.appendChild(setPasswordForm);
+    passwordSection.appendChild(resultDiv);
+    
+    return passwordSection;
+  } catch (error) {
+    console.error("Error creating password management section:", error);
+    // Return a basic div with error message if something went wrong
+    const errorDiv = document.createElement('div');
+    errorDiv.textContent = "Error loading password management options";
+    errorDiv.style.color = "red";
+    return errorDiv;
+  }
 }
 
 // Helper function to update user info in the list item
@@ -2165,24 +2296,33 @@ function showUserDetails(userId) {
       // Store the current user ID so we can reference it later
       currentUserId = userId;
       
-      // Set user data in the modal
-      document.getElementById('user-name').textContent = userData.displayName || 'No name provided';
-      document.getElementById('user-email').textContent = userData.email || 'No email provided';
-      document.getElementById('user-phone').textContent = userData.phoneNumber || 'No phone provided';
-      document.getElementById('user-role').textContent = userData.role || 'No role assigned';
+      // Check if the elements exist before trying to update them
+      const userNameElement = document.getElementById('user-name');
+      const userEmailElement = document.getElementById('user-email');
+      const userPhoneElement = document.getElementById('user-phone');
+      const userRoleElement = document.getElementById('user-role');
+      
+      if (userNameElement) userNameElement.textContent = userData.displayName || 'No name provided';
+      if (userEmailElement) userEmailElement.textContent = userData.email || 'No email provided';
+      if (userPhoneElement) userPhoneElement.textContent = userData.phoneNumber || 'No phone provided';
+      if (userRoleElement) userRoleElement.textContent = userData.role || 'No role assigned';
       
       // Show user profile image if available
       const userImage = document.getElementById('user-image');
-      if (userData.photoURL) {
-        userImage.src = userData.photoURL;
-        userImage.style.display = 'block';
-      } else {
-        userImage.style.display = 'none';
+      if (userImage) {
+        if (userData.photoURL) {
+          userImage.src = userData.photoURL;
+          userImage.style.display = 'block';
+        } else {
+          userImage.style.display = 'none';
+        }
       }
       
       // Set up role selection dropdown
       const roleSelect = document.getElementById('role-select');
-      roleSelect.value = userData.role || 'customer';
+      if (roleSelect) {
+        roleSelect.value = userData.role || 'customer';
+      }
       
       // Show the delete button
       const deleteButton = document.getElementById('delete-user-button');
@@ -2194,10 +2334,32 @@ function showUserDetails(userId) {
       }
       
       // Show password management section
-      showPasswordManagement(userId);
+      const passwordManagementSection = showPasswordManagement(userId);
       
-      // Show the modal
-      modal.style.display = "block";
+      // Find password management container or create one if it doesn't exist
+      let passwordContainer = document.getElementById('password-management-container');
+      if (!passwordContainer) {
+        // If there's no dedicated container, try to append to the modal content
+        const modalContent = document.getElementById('modalContent');
+        if (modalContent) {
+          passwordContainer = document.createElement('div');
+          passwordContainer.id = 'password-management-container';
+          modalContent.appendChild(passwordContainer);
+        }
+      }
+      
+      // Append the password management section if container exists
+      if (passwordContainer && passwordManagementSection) {
+        // Clear any existing content
+        passwordContainer.innerHTML = '';
+        passwordContainer.appendChild(passwordManagementSection);
+      }
+      
+      // Show the modal if it exists
+      const modal = document.getElementById('userModal');
+      if (modal) {
+        modal.style.display = "block";
+      }
     } else {
       showNotification('User data not found', 'error');
     }
