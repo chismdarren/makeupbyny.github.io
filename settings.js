@@ -4,12 +4,14 @@ import {
     signOut, 
     updatePassword, 
     reauthenticateWithCredential, 
-    EmailAuthProvider 
+    EmailAuthProvider,
+    deleteUser
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 import { 
     doc, 
     getDoc, 
-    updateDoc 
+    updateDoc,
+    deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { initializeConnectionMonitoring } from './firebase-connection-handler.js';
 
@@ -24,7 +26,7 @@ const tabContents = document.querySelectorAll('.tab-content');
 // Form elements
 const profileForm = document.getElementById('profile-form');
 const passwordForm = document.getElementById('password-form');
-const preferencesForm = document.getElementById('preferences-form');
+const deleteAccountForm = document.getElementById('delete-account-form');
 
 // Navigation elements
 const adminDropdownBtn = document.getElementById('adminDropdownBtn');
@@ -58,12 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set up form submissions
     if (profileForm) profileForm.addEventListener('submit', handleProfileUpdate);
     if (passwordForm) passwordForm.addEventListener('submit', handlePasswordUpdate);
-    if (preferencesForm) preferencesForm.addEventListener('submit', handlePreferencesUpdate);
+    if (deleteAccountForm) deleteAccountForm.addEventListener('submit', handleDeleteAccount);
     
     // Set up cancel buttons
     document.getElementById('profile-cancel').addEventListener('click', () => loadUserData());
     document.getElementById('password-cancel').addEventListener('click', () => passwordForm.reset());
-    document.getElementById('preferences-cancel').addEventListener('click', () => loadUserPreferences());
+    document.getElementById('delete-cancel').addEventListener('click', () => {
+        document.getElementById('delete-confirm-password').value = '';
+        document.getElementById('confirm-delete').checked = false;
+    });
     
     // Check authentication state
     onAuthStateChanged(auth, handleAuthStateChange);
@@ -158,13 +163,9 @@ async function loadUserData() {
 
 // Load user preferences
 function loadUserPreferences() {
-    if (userData && userData.preferences) {
-        document.getElementById('emailNotifications').checked = userData.preferences.emailNotifications || false;
-        document.getElementById('marketingEmails').checked = userData.preferences.marketingEmails || false;
-    } else {
-        document.getElementById('emailNotifications').checked = false;
-        document.getElementById('marketingEmails').checked = false;
-    }
+    // No longer needed since we removed the preferences tab
+    // Just keeping an empty function in case it's called elsewhere
+    return;
 }
 
 // Handle profile form submission
@@ -250,31 +251,65 @@ async function handlePasswordUpdate(e) {
     }
 }
 
-// Handle preferences form submission
-async function handlePreferencesUpdate(e) {
+// Handle account deletion
+async function handleDeleteAccount(e) {
     e.preventDefault();
     
-    const emailNotifications = document.getElementById('emailNotifications').checked;
-    const marketingEmails = document.getElementById('marketingEmails').checked;
+    const password = document.getElementById('delete-confirm-password').value;
+    const confirmDelete = document.getElementById('confirm-delete').checked;
+    
+    if (!confirmDelete) {
+        showNotification('You must confirm that you understand the consequences of deleting your account', 'error');
+        return;
+    }
+    
+    if (!password) {
+        showNotification('Please enter your password to confirm account deletion', 'error');
+        return;
+    }
+    
+    // Confirm with a dialog
+    if (!confirm('Are you absolutely sure you want to delete your account? This action CANNOT be undone.')) {
+        return;
+    }
     
     try {
-        const userRef = doc(db, 'users', currentUser.uid);
+        // Re-authenticate user
+        const credential = EmailAuthProvider.credential(
+            currentUser.email,
+            password
+        );
         
-        await updateDoc(userRef, {
-            'preferences.emailNotifications': emailNotifications,
-            'preferences.marketingEmails': marketingEmails,
-            updatedAt: new Date().toISOString()
-        });
+        await reauthenticateWithCredential(currentUser, credential);
         
-        // Update local user data
-        if (!userData.preferences) userData.preferences = {};
-        userData.preferences.emailNotifications = emailNotifications;
-        userData.preferences.marketingEmails = marketingEmails;
+        // Delete user data from Firestore first
+        try {
+            const userRef = doc(db, 'users', currentUser.uid);
+            await deleteDoc(userRef);
+            console.log('User document deleted from Firestore');
+        } catch (deleteDocError) {
+            console.error('Error deleting user document:', deleteDocError);
+            // Continue with account deletion even if document deletion fails
+        }
         
-        showNotification('Preferences updated successfully', 'success');
+        // Delete user account from Firebase Auth
+        await deleteUser(currentUser);
+        
+        // Show success notification
+        showNotification('Your account has been permanently deleted', 'success');
+        
+        // Redirect to home page after a short delay
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 3000);
     } catch (error) {
-        console.error('Error updating preferences:', error);
-        showNotification('Error updating preferences: ' + error.message, 'error');
+        console.error('Error deleting account:', error);
+        
+        if (error.code === 'auth/wrong-password') {
+            showNotification('Incorrect password. Please try again.', 'error');
+        } else {
+            showNotification('Error deleting account: ' + error.message, 'error');
+        }
     }
 }
 

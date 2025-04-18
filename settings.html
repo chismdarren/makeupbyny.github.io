@@ -400,7 +400,7 @@
             <div class="settings-tabs">
                 <button class="tab-button active" data-tab="profile">Profile Information</button>
                 <button class="tab-button" data-tab="password">Change Password</button>
-                <button class="tab-button" data-tab="preferences">Preferences</button>
+                <button class="tab-button" data-tab="delete-account">Delete Account</button>
             </div>
             
             <!-- Profile Information Tab -->
@@ -495,6 +495,31 @@
                     <div class="button-group">
                         <button type="button" class="cancel-button" id="preferences-cancel">Cancel</button>
                         <button type="submit" class="save-button" id="preferences-save">Save Preferences</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Delete Account Tab -->
+            <div id="delete-account" class="tab-content">
+                <h2>Delete Account</h2>
+                <p>Warning: This action is permanent and cannot be undone. All your data will be permanently deleted.</p>
+                
+                <form id="delete-account-form">
+                    <div class="form-group">
+                        <label for="delete-confirm-password">Enter your password to confirm:</label>
+                        <input type="password" id="delete-confirm-password" required placeholder="Your current password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="confirm-delete" required>
+                            I understand that my account and all associated data will be permanently deleted
+                        </label>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="button" class="cancel-button" id="delete-cancel">Cancel</button>
+                        <button type="submit" class="save-button" id="delete-submit" style="background-color: #dc3545; border-color: #dc3545;">Delete My Account</button>
                     </div>
                 </form>
             </div>
