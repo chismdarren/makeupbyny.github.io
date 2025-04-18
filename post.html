@@ -569,6 +569,8 @@
         <a href="contact.html">Contact</a>
         <!-- Admin-only link (initially hidden) -->
         <a id="adminDashboard" href="admin-dashboard.html" style="display:none;">Admin Dashboard</a>
+        <!-- User account link (initially hidden) -->
+        <a id="myAccount" href="account.html" style="display:none;">My Account</a>
         <!-- Public links -->
         <a id="login-link" href="login.html">Login</a>
         <button id="logout-btn" style="display:none;">Logout</button>
@@ -674,6 +676,7 @@
         // User is signed in
         document.getElementById("login-link").style.display = "none";
         document.getElementById("logout-btn").style.display = "inline";
+        document.getElementById("myAccount").style.display = "inline";
         
         // Check if user is admin
         if (user.uid === adminUID) {
@@ -686,6 +689,7 @@
         document.getElementById("login-link").style.display = "inline";
         document.getElementById("logout-btn").style.display = "none";
         document.getElementById("adminDashboard").style.display = "none";
+        document.getElementById("myAccount").style.display = "none";
       }
     });
 
