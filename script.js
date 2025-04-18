@@ -13,7 +13,9 @@ import {
   getDocs,
   deleteDoc,
   updateDoc,
-  doc
+  doc,
+  getDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"; // ✅ Fixed URL
 
 // Import Firebase Storage functions for image uploads
@@ -27,6 +29,20 @@ import {
 // Initialize Firestore and Storage
 const db = getFirestore();
 const storage = getStorage();
+
+// Constants for profile icons
+const PROFILE_ICONS = [
+  { id: 'icon-1', color: '#FF5733', name: 'Red' },
+  { id: 'icon-2', color: '#33FF57', name: 'Green' },
+  { id: 'icon-3', color: '#3357FF', name: 'Blue' },
+  { id: 'icon-4', color: '#F3FF33', name: 'Yellow' },
+  { id: 'icon-5', color: '#33FFF3', name: 'Cyan' },
+  { id: 'icon-6', color: '#F333FF', name: 'Magenta' },
+  { id: 'icon-7', color: '#FF33A8', name: 'Pink' },
+  { id: 'icon-8', color: '#A833FF', name: 'Purple' },
+  { id: 'icon-9', color: '#33A8FF', name: 'Sky Blue' },
+  { id: 'icon-10', color: '#FF8C33', name: 'Orange' }
+];
 
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -59,6 +75,16 @@ document.addEventListener("DOMContentLoaded", () => {
         // If we're on an admin page, load admin content
         if (isAdmin) {
           loadAdminContent();
+        }
+        
+        // Check if we should show the profile icon popup
+        const showProfileIconPopup = sessionStorage.getItem('showProfileIconPopup');
+        if (showProfileIconPopup === 'true') {
+          // Clear the flag so the popup doesn't show again
+          sessionStorage.removeItem('showProfileIconPopup');
+          
+          // Show the profile icon selection popup
+          showProfileIconSelectionPopup(user);
         }
       } else {
         loginLink.style.display = "block";
@@ -277,5 +303,177 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     });
+  }
+
+  // Function to show profile icon selection popup
+  async function showProfileIconSelectionPopup(user) {
+    // Create popup overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'profile-icon-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '1000';
+    
+    // Create popup content
+    const popup = document.createElement('div');
+    popup.className = 'profile-icon-popup';
+    popup.style.backgroundColor = 'white';
+    popup.style.borderRadius = '8px';
+    popup.style.padding = '25px';
+    popup.style.width = '500px';
+    popup.style.maxWidth = '90%';
+    popup.style.maxHeight = '90%';
+    popup.style.overflowY = 'auto';
+    popup.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
+    
+    // Popup content
+    popup.innerHTML = `
+      <h2 style="text-align: center; margin-bottom: 20px;">Choose Your Profile Icon</h2>
+      <p style="text-align: center; margin-bottom: 20px;">Select a profile icon that will represent you across the site.</p>
+      
+      <div class="current-icon" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;">
+        <div id="currentProfileIcon" style="width: 80px; height: 80px; border-radius: 50%; background-color: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #666; margin-bottom: 8px; overflow: hidden;">
+          <span id="profileIconInitial"></span>
+        </div>
+        <span>Current Selection</span>
+      </div>
+      
+      <div id="profileIconsGrid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 25px;">
+        <!-- Icons will be added dynamically -->
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+        <button id="skipButton" style="padding: 10px 20px; background-color: #f5f5f5; color: #333; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">Skip</button>
+        <button id="saveIconButton" style="padding: 10px 20px; background-color: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Icon</button>
+      </div>
+    `;
+    
+    // Add popup to overlay
+    overlay.appendChild(popup);
+    
+    // Add overlay to body
+    document.body.appendChild(overlay);
+    
+    // Get user data to display initial
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      const initial = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
+      
+      // Set the initial
+      const profileIconInitial = document.getElementById('profileIconInitial');
+      if (profileIconInitial) {
+        profileIconInitial.textContent = initial;
+      }
+      
+      // Variable to track selected icon
+      let selectedProfileIcon = userData.profileIcon || null;
+      
+      // Populate icons grid
+      const profileIconsGrid = document.getElementById('profileIconsGrid');
+      if (profileIconsGrid) {
+        PROFILE_ICONS.forEach(icon => {
+          const iconDiv = document.createElement('div');
+          iconDiv.style.width = '50px';
+          iconDiv.style.height = '50px';
+          iconDiv.style.borderRadius = '50%';
+          iconDiv.style.backgroundColor = icon.color;
+          iconDiv.style.cursor = 'pointer';
+          iconDiv.style.border = '2px solid transparent';
+          iconDiv.style.transition = 'transform 0.2s, border-color 0.2s';
+          iconDiv.title = icon.name;
+          iconDiv.dataset.icon = icon.id;
+          
+          // Mark as selected if it matches user's current icon
+          if (userData.profileIcon === icon.id) {
+            iconDiv.style.borderColor = '#333';
+            iconDiv.style.transform = 'scale(1.05)';
+            
+            // Update preview
+            const currentProfileIcon = document.getElementById('currentProfileIcon');
+            if (currentProfileIcon) {
+              currentProfileIcon.innerHTML = '';
+              currentProfileIcon.style.backgroundColor = icon.color;
+            }
+          }
+          
+          // Add click handler
+          iconDiv.addEventListener('click', () => {
+            // Update selected state for all icons
+            document.querySelectorAll('#profileIconsGrid > div').forEach(option => {
+              option.style.borderColor = 'transparent';
+              option.style.transform = 'none';
+            });
+            
+            // Update this icon as selected
+            iconDiv.style.borderColor = '#333';
+            iconDiv.style.transform = 'scale(1.05)';
+            
+            // Update preview
+            const currentProfileIcon = document.getElementById('currentProfileIcon');
+            if (currentProfileIcon) {
+              currentProfileIcon.innerHTML = '';
+              currentProfileIcon.style.backgroundColor = icon.color;
+            }
+            
+            // Store selection
+            selectedProfileIcon = icon.id;
+          });
+          
+          profileIconsGrid.appendChild(iconDiv);
+        });
+      }
+      
+      // Handle skip button
+      const skipButton = document.getElementById('skipButton');
+      if (skipButton) {
+        skipButton.addEventListener('click', () => {
+          // Close the popup
+          document.body.removeChild(overlay);
+        });
+      }
+      
+      // Handle save button
+      const saveIconButton = document.getElementById('saveIconButton');
+      if (saveIconButton) {
+        saveIconButton.addEventListener('click', async () => {
+          if (selectedProfileIcon) {
+            try {
+              // Save the selected icon to user's profile
+              await updateDoc(doc(db, 'users', user.uid), {
+                profileIcon: selectedProfileIcon,
+                updatedAt: new Date().toISOString()
+              });
+              
+              // Show success message
+              alert('Profile icon saved successfully!');
+              
+              // Close the popup
+              document.body.removeChild(overlay);
+              
+              // Refresh page to show updated icon in navigation
+              window.location.reload();
+            } catch (error) {
+              console.error('Error saving profile icon:', error);
+              alert('Error saving profile icon. Please try again.');
+            }
+          } else {
+            // If no icon is selected, just close the popup
+            document.body.removeChild(overlay);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user data for icon popup:', error);
+      // Remove the overlay if there was an error
+      document.body.removeChild(overlay);
+    }
   }
 });

@@ -38,9 +38,22 @@ const logoutLink = document.getElementById('logout-link');
 // User data
 let currentUser = null;
 let userData = null;
+let selectedProfileIcon = null;
 
 // Constants
 const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
+const PROFILE_ICONS = [
+    { id: 'icon-1', color: '#FF5733', name: 'Red' },
+    { id: 'icon-2', color: '#33FF57', name: 'Green' },
+    { id: 'icon-3', color: '#3357FF', name: 'Blue' },
+    { id: 'icon-4', color: '#F3FF33', name: 'Yellow' },
+    { id: 'icon-5', color: '#33FFF3', name: 'Cyan' },
+    { id: 'icon-6', color: '#F333FF', name: 'Magenta' },
+    { id: 'icon-7', color: '#FF33A8', name: 'Pink' },
+    { id: 'icon-8', color: '#A833FF', name: 'Purple' },
+    { id: 'icon-9', color: '#33A8FF', name: 'Sky Blue' },
+    { id: 'icon-10', color: '#FF8C33', name: 'Orange' }
+];
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
@@ -120,6 +133,9 @@ async function handleAuthStateChange(user) {
     // Show settings icon when user is logged in
     const settingsIcon = document.getElementById('settingsIcon');
     if (settingsIcon) settingsIcon.style.display = 'flex';
+    
+    // If we have a user account link, update it to include the profile icon
+    updateUserAccountLinkWithIcon();
 }
 
 // Load user data from Firestore
@@ -139,6 +155,9 @@ async function loadUserData() {
             document.getElementById('email').value = currentUser.email || '';
             document.getElementById('phoneNumber').value = userData.phoneNumber || '';
             
+            // Load profile icon if exists
+            loadProfileIcon();
+            
             // Load preferences
             loadUserPreferences();
         } else {
@@ -154,11 +173,111 @@ async function loadUserData() {
                     marketingEmails: false
                 }
             };
+            
+            // Initialize profile icon with first letter
+            initializeProfileIconDisplay();
         }
+        
+        // Load available profile icons
+        loadProfileIcons();
     } catch (error) {
         console.error('Error loading user data:', error);
         showNotification('Error loading user data: ' + error.message, 'error');
     }
+}
+
+// Load profile icon
+function loadProfileIcon() {
+    const profileIconPreview = document.getElementById('currentProfileIcon');
+    const profileIconInitial = document.getElementById('profileIconInitial');
+    
+    if (!profileIconPreview) return;
+    
+    if (userData.profileIcon) {
+        // User has a profile icon set
+        const selectedIcon = PROFILE_ICONS.find(icon => icon.id === userData.profileIcon);
+        if (selectedIcon) {
+            profileIconPreview.innerHTML = '';
+            profileIconPreview.style.backgroundColor = selectedIcon.color;
+            selectedProfileIcon = userData.profileIcon;
+        } else {
+            // Fallback to initial if icon not found
+            initializeProfileIconDisplay();
+        }
+    } else {
+        // Use initial as fallback
+        initializeProfileIconDisplay();
+    }
+}
+
+// Initialize profile icon with user's initial
+function initializeProfileIconDisplay() {
+    const profileIconPreview = document.getElementById('currentProfileIcon');
+    const profileIconInitial = document.getElementById('profileIconInitial');
+    
+    if (!profileIconPreview || !profileIconInitial) return;
+    
+    // Clear any existing styling
+    profileIconPreview.style.backgroundColor = '#f0f0f0';
+    
+    // Clear any existing content
+    profileIconPreview.innerHTML = '';
+    profileIconPreview.appendChild(profileIconInitial);
+    
+    // Set initial based on first name or email
+    let initial = '';
+    if (userData && userData.firstName) {
+        initial = userData.firstName.charAt(0).toUpperCase();
+    } else if (currentUser && currentUser.email) {
+        initial = currentUser.email.charAt(0).toUpperCase();
+    }
+    
+    profileIconInitial.textContent = initial;
+}
+
+// Load profile icons for selection
+async function loadProfileIcons() {
+    const profileIconsGrid = document.getElementById('profileIconsGrid');
+    if (!profileIconsGrid) return;
+    
+    // Clear loading message
+    profileIconsGrid.innerHTML = '';
+    
+    // Add each icon as an option
+    PROFILE_ICONS.forEach(icon => {
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'profile-icon-option';
+        iconDiv.style.backgroundColor = icon.color;
+        
+        if (userData.profileIcon === icon.id) {
+            iconDiv.classList.add('selected');
+        }
+        
+        iconDiv.dataset.icon = icon.id;
+        iconDiv.title = icon.name;
+        
+        // Add click handler
+        iconDiv.addEventListener('click', () => selectProfileIcon(icon.id, icon.color, iconDiv));
+        
+        profileIconsGrid.appendChild(iconDiv);
+    });
+}
+
+// Handle profile icon selection
+function selectProfileIcon(iconId, iconColor, iconElement) {
+    // Update selected state in UI
+    document.querySelectorAll('.profile-icon-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    iconElement.classList.add('selected');
+    
+    // Update preview
+    const profileIconPreview = document.getElementById('currentProfileIcon');
+    profileIconPreview.innerHTML = '';
+    profileIconPreview.style.backgroundColor = iconColor;
+    
+    // Store selection for form submission
+    selectedProfileIcon = iconId;
 }
 
 // Load user preferences
@@ -186,17 +305,27 @@ async function handleProfileUpdate(e) {
     try {
         const userRef = doc(db, 'users', currentUser.uid);
         
-        await updateDoc(userRef, {
+        const updateData = {
             firstName,
             lastName,
             phoneNumber,
             updatedAt: new Date().toISOString()
-        });
+        };
+        
+        // Add profileIcon if selected
+        if (selectedProfileIcon) {
+            updateData.profileIcon = selectedProfileIcon;
+        }
+        
+        await updateDoc(userRef, updateData);
         
         // Update local user data
         userData.firstName = firstName;
         userData.lastName = lastName;
         userData.phoneNumber = phoneNumber;
+        if (selectedProfileIcon) {
+            userData.profileIcon = selectedProfileIcon;
+        }
         
         showNotification('Profile updated successfully', 'success');
     } catch (error) {
@@ -379,4 +508,43 @@ function handleLogout() {
     }).catch(error => {
         console.error('Error signing out:', error);
     });
+}
+
+// Update user account link with icon
+function updateUserAccountLinkWithIcon() {
+    if (!userAccountLink || !userData) return;
+    
+    // Create icon span
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'user-icon-small';
+    
+    // Check if user has a profile icon
+    if (userData.profileIcon) {
+        const icon = PROFILE_ICONS.find(icon => icon.id === userData.profileIcon);
+        if (icon) {
+            iconSpan.style.backgroundColor = icon.color;
+        } else {
+            // Fallback to initial
+            const initial = userData.firstName ? 
+                userData.firstName.charAt(0).toUpperCase() : 
+                currentUser.email.charAt(0).toUpperCase();
+            iconSpan.textContent = initial;
+        }
+    } else {
+        // Use initial as fallback
+        const initial = userData.firstName ? 
+            userData.firstName.charAt(0).toUpperCase() : 
+            currentUser.email.charAt(0).toUpperCase();
+        iconSpan.textContent = initial;
+    }
+    
+    // Create display name span
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'user-name';
+    nameSpan.textContent = userData.firstName || 'My Account';
+    
+    // Clear existing content and add new elements
+    userAccountLink.innerHTML = '';
+    userAccountLink.appendChild(iconSpan);
+    userAccountLink.appendChild(nameSpan);
 }

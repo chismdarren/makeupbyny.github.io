@@ -3,6 +3,23 @@ import { auth, db, createUserDocument } from './firebase-config.js';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+// Constants for profile icons
+const PROFILE_ICONS = [
+  { id: 'icon-1', color: '#FF5733', name: 'Red' },
+  { id: 'icon-2', color: '#33FF57', name: 'Green' },
+  { id: 'icon-3', color: '#3357FF', name: 'Blue' },
+  { id: 'icon-4', color: '#F3FF33', name: 'Yellow' },
+  { id: 'icon-5', color: '#33FFF3', name: 'Cyan' },
+  { id: 'icon-6', color: '#F333FF', name: 'Magenta' },
+  { id: 'icon-7', color: '#FF33A8', name: 'Pink' },
+  { id: 'icon-8', color: '#A833FF', name: 'Purple' },
+  { id: 'icon-9', color: '#33A8FF', name: 'Sky Blue' },
+  { id: 'icon-10', color: '#FF8C33', name: 'Orange' }
+];
+
+// Track selected profile icon
+let selectedProfileIcon = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log("Sign-up form page loaded");
   const signUpForm = document.getElementById('signUpForm');
@@ -15,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
   const confirmPasswordInput = document.getElementById('confirmPassword');
+  
+  // Initialize profile icon elements
+  initializeProfileIconSelector();
   
   // Generate username when first or last name changes
   function generateUsername() {
@@ -31,6 +51,70 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Set the username
       usernameInput.value = formattedUsername;
+      
+      // Update profile icon initial
+      updateProfileIconInitial(firstName);
+    }
+  }
+  
+  // Initialize profile icon selector
+  function initializeProfileIconSelector() {
+    // Set up the profile icon grid
+    const profileIconsGrid = document.getElementById('profileIconsGrid');
+    if (!profileIconsGrid) return;
+    
+    // Clear loading message
+    profileIconsGrid.innerHTML = '';
+    
+    // Add each icon as an option
+    PROFILE_ICONS.forEach(icon => {
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'profile-icon-option';
+      iconDiv.style.backgroundColor = icon.color;
+      iconDiv.dataset.icon = icon.id;
+      iconDiv.title = icon.name;
+      
+      // Add click handler
+      iconDiv.addEventListener('click', () => selectProfileIcon(icon.id, icon.color, iconDiv));
+      
+      profileIconsGrid.appendChild(iconDiv);
+    });
+    
+    // Default to first icon
+    const firstIconDiv = profileIconsGrid.querySelector('.profile-icon-option');
+    if (firstIconDiv) {
+      const firstIcon = PROFILE_ICONS[0];
+      selectProfileIcon(firstIcon.id, firstIcon.color, firstIconDiv);
+    }
+  }
+  
+  // Handle profile icon selection
+  function selectProfileIcon(iconId, iconColor, iconElement) {
+    // Update selected state in UI
+    document.querySelectorAll('.profile-icon-option').forEach(option => {
+      option.classList.remove('selected');
+    });
+    iconElement.classList.add('selected');
+    
+    // Update preview
+    const profileIconPreview = document.getElementById('currentProfileIcon');
+    if (profileIconPreview) {
+      profileIconPreview.innerHTML = '';
+      profileIconPreview.style.backgroundColor = iconColor;
+    }
+    
+    // Store selection
+    selectedProfileIcon = iconId;
+  }
+  
+  // Update profile icon initial based on first name
+  function updateProfileIconInitial(firstName) {
+    if (!selectedProfileIcon) {
+      const profileIconInitial = document.getElementById('profileIconInitial');
+      if (profileIconInitial) {
+        const initial = firstName ? firstName.charAt(0).toUpperCase() : '';
+        profileIconInitial.textContent = initial;
+      }
     }
   }
   
@@ -53,9 +137,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const confirmPassword = confirmPasswordInput.value.trim();
       const agreeTerms = document.getElementById('agreeTerms').checked;
       
+      // Validate profile icon selection
+      if (!selectedProfileIcon) {
+        alert("Please select a profile icon");
+        return;
+      }
+      
       // Detailed validation and data logging
       console.log("Signup form data:", { 
-        firstName, lastName, username, phoneNumber, email, agreeTerms 
+        firstName, lastName, username, phoneNumber, email, agreeTerms, profileIcon: selectedProfileIcon
       });
       
       // Missing required fields check
@@ -163,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
           lastName: lastName.trim(),
           username: formattedUsername,
           phoneNumber: phoneNumber.trim(),
+          profileIcon: selectedProfileIcon,
           termsAccepted: true,
           termsAcceptedDate: new Date().toISOString()
         };
@@ -201,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Verification attempt ${retryCount + 1}: Retrieved saved user data:`, savedData);
                 
                 // Check if all fields were saved properly
-                const requiredFields = ['firstName', 'lastName', 'username', 'phoneNumber'];
+                const requiredFields = ['firstName', 'lastName', 'username', 'phoneNumber', 'profileIcon'];
                 const missingFields = [];
                 
                 requiredFields.forEach(field => {
@@ -310,13 +401,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Show success message based on save status
         if (firestoreSaveSuccess) {
-          alert("✅ Account created successfully! You will now be redirected to the login page.");
+          alert(`✅ Account created successfully! You'll now be redirected to the homepage.`);
         } else {
-          alert("✅ Account created, but there was an issue saving some of your information. It will be recovered when you log in.");
+          alert("✅ Account created, but there was an issue saving some of your information. We'll try to recover it for you.");
         }
         
-        // Navigate to login page
-        window.location.href = "login.html";
+        // Store a flag in sessionStorage to show the profile icon popup
+        sessionStorage.setItem('showProfileIconPopup', 'true');
+        
+        // Navigate to home page
+        window.location.href = "index.html";
         
       } catch (error) {
         console.error("❌ Error in signup process:", error.message);
