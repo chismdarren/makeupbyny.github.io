@@ -474,52 +474,27 @@
                 </form>
             </div>
             
-            <!-- Preferences Tab -->
-            <div id="preferences" class="tab-content">
-                <h2>Notification Preferences</h2>
-                <p>Manage your notification settings below.</p>
-                
-                <form id="preferences-form">
-                    <div class="form-group">
-                        <input type="checkbox" id="emailNotifications" name="emailNotifications">
-                        <label for="emailNotifications">Email Notifications</label>
-                        <small>Receive email notifications about new posts and comments</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <input type="checkbox" id="marketingEmails" name="marketingEmails">
-                        <label for="marketingEmails">Marketing Emails</label>
-                        <small>Receive promotional emails and special offers</small>
-                    </div>
-                    
-                    <div class="button-group">
-                        <button type="button" class="cancel-button" id="preferences-cancel">Cancel</button>
-                        <button type="submit" class="save-button" id="preferences-save">Save Preferences</button>
-                    </div>
-                </form>
-            </div>
-            
             <!-- Delete Account Tab -->
             <div id="delete-account" class="tab-content">
                 <h2>Delete Account</h2>
-                <p>Warning: This action is permanent and cannot be undone. All your data will be permanently deleted.</p>
+                <p>Warning: This action cannot be undone. All your data will be permanently deleted.</p>
                 
                 <form id="delete-account-form">
                     <div class="form-group">
-                        <label for="delete-confirm-password">Enter your password to confirm:</label>
-                        <input type="password" id="delete-confirm-password" required placeholder="Your current password">
+                        <label for="delete-confirm-password">Confirm Password</label>
+                        <input type="password" id="delete-confirm-password" name="delete-confirm-password" placeholder="Enter your current password" required>
+                        <small>For security, please enter your current password to delete your account</small>
                     </div>
                     
                     <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="confirm-delete" required>
-                            I understand that my account and all associated data will be permanently deleted
-                        </label>
+                        <label for="delete-confirmation">Type "DELETE" to confirm</label>
+                        <input type="text" id="delete-confirmation" name="delete-confirmation" placeholder="DELETE" required>
+                        <small>To confirm account deletion, please type DELETE in all capitals</small>
                     </div>
                     
                     <div class="button-group">
                         <button type="button" class="cancel-button" id="delete-cancel">Cancel</button>
-                        <button type="submit" class="save-button" id="delete-submit" style="background-color: #dc3545; border-color: #dc3545;">Delete My Account</button>
+                        <button type="submit" class="save-button" id="delete-account-button" style="background-color: #dc3545; color: white;">Delete My Account</button>
                     </div>
                 </form>
             </div>

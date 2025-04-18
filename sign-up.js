@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Since we know this email is registered but found no Firestore record,
                 // the user likely never completed registration. We'll let them login with their credentials.
                 alert("An account with this email already exists. Please log in instead.");
-                window.location.href = "index.html";
+                window.location.href = "login.html";
                 return;
               }
             } catch (methodError) {
@@ -147,8 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // If an existing account was found in Firestore
         if (existingAccount && existingUser) {
-          alert("An account with this email already exists. You will be redirected to the home page.");
-          window.location.href = "index.html";
+          alert("An account with this email already exists. You will be redirected to the login page.");
+          window.location.href = "login.html";
           return;
         }
         
@@ -310,13 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Show success message based on save status
         if (firestoreSaveSuccess) {
-          alert("✅ Account created successfully! You will now be redirected to the home page.");
+          alert("✅ Account created successfully! You will now be redirected to the login page.");
         } else {
           alert("✅ Account created, but there was an issue saving some of your information. It will be recovered when you log in.");
         }
         
-        // Navigate to home page
-        window.location.href = "index.html";
+        // Navigate to login page
+        window.location.href = "login.html";
         
       } catch (error) {
         console.error("❌ Error in signup process:", error.message);

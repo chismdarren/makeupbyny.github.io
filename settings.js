@@ -5,7 +5,7 @@ import {
     updatePassword, 
     reauthenticateWithCredential, 
     EmailAuthProvider,
-    deleteUser
+    deleteUser 
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 import { 
     doc, 
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('password-cancel').addEventListener('click', () => passwordForm.reset());
     document.getElementById('delete-cancel').addEventListener('click', () => {
         document.getElementById('delete-confirm-password').value = '';
-        document.getElementById('confirm-delete').checked = false;
+        document.getElementById('delete-confirmation').value = '';
     });
     
     // Check authentication state
@@ -138,9 +138,6 @@ async function loadUserData() {
             document.getElementById('username').value = userData.username || '';
             document.getElementById('email').value = currentUser.email || '';
             document.getElementById('phoneNumber').value = userData.phoneNumber || '';
-            
-            // Load preferences
-            loadUserPreferences();
         } else {
             console.log('No user data found, creating new document');
             userData = {
@@ -159,13 +156,6 @@ async function loadUserData() {
         console.error('Error loading user data:', error);
         showNotification('Error loading user data: ' + error.message, 'error');
     }
-}
-
-// Load user preferences
-function loadUserPreferences() {
-    // No longer needed since we removed the preferences tab
-    // Just keeping an empty function in case it's called elsewhere
-    return;
 }
 
 // Handle profile form submission
@@ -251,25 +241,16 @@ async function handlePasswordUpdate(e) {
     }
 }
 
-// Handle account deletion
+// Add new function to handle account deletion
 async function handleDeleteAccount(e) {
     e.preventDefault();
     
-    const password = document.getElementById('delete-confirm-password').value;
-    const confirmDelete = document.getElementById('confirm-delete').checked;
+    const confirmPassword = document.getElementById('delete-confirm-password').value;
+    const confirmText = document.getElementById('delete-confirmation').value;
     
-    if (!confirmDelete) {
-        showNotification('You must confirm that you understand the consequences of deleting your account', 'error');
-        return;
-    }
-    
-    if (!password) {
-        showNotification('Please enter your password to confirm account deletion', 'error');
-        return;
-    }
-    
-    // Confirm with a dialog
-    if (!confirm('Are you absolutely sure you want to delete your account? This action CANNOT be undone.')) {
+    // Validate confirmation text
+    if (confirmText !== 'DELETE') {
+        showNotification('Please type DELETE in all capitals to confirm', 'error');
         return;
     }
     
@@ -277,39 +258,60 @@ async function handleDeleteAccount(e) {
         // Re-authenticate user
         const credential = EmailAuthProvider.credential(
             currentUser.email,
-            password
+            confirmPassword
         );
         
-        await reauthenticateWithCredential(currentUser, credential);
+        // Show confirmation dialog
+        if (!confirm('Are you absolutely sure you want to delete your account? This action CANNOT be undone.')) {
+            return;
+        }
         
-        // Delete user data from Firestore first
+        // Disable delete button during processing
+        const deleteButton = document.getElementById('delete-account-button');
+        const originalButtonText = deleteButton.textContent;
+        deleteButton.disabled = true;
+        deleteButton.textContent = 'Deleting...';
+        
         try {
-            const userRef = doc(db, 'users', currentUser.uid);
-            await deleteDoc(userRef);
-            console.log('User document deleted from Firestore');
-        } catch (deleteDocError) {
-            console.error('Error deleting user document:', deleteDocError);
-            // Continue with account deletion even if document deletion fails
+            // Re-authenticate first
+            await reauthenticateWithCredential(currentUser, credential);
+            
+            // Delete user data from Firestore first
+            if (currentUser.uid) {
+                try {
+                    const userDocRef = doc(db, 'users', currentUser.uid);
+                    await deleteDoc(userDocRef);
+                    console.log('User document deleted from Firestore');
+                } catch (firestoreError) {
+                    console.error('Error deleting user document from Firestore:', firestoreError);
+                    // Continue with account deletion even if Firestore delete fails
+                }
+            }
+            
+            // Now delete the Firebase Auth user
+            await deleteUser(currentUser);
+            
+            // Show success notification
+            showNotification('Your account has been successfully deleted', 'success');
+            
+            // Redirect to homepage after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        } catch (error) {
+            console.error('Error during account deletion:', error);
+            deleteButton.disabled = false;
+            deleteButton.textContent = originalButtonText;
+            
+            if (error.code === 'auth/wrong-password') {
+                showNotification('Incorrect password. Please try again.', 'error');
+            } else {
+                showNotification('Error deleting account: ' + error.message, 'error');
+            }
         }
-        
-        // Delete user account from Firebase Auth
-        await deleteUser(currentUser);
-        
-        // Show success notification
-        showNotification('Your account has been permanently deleted', 'success');
-        
-        // Redirect to home page after a short delay
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 3000);
     } catch (error) {
-        console.error('Error deleting account:', error);
-        
-        if (error.code === 'auth/wrong-password') {
-            showNotification('Incorrect password. Please try again.', 'error');
-        } else {
-            showNotification('Error deleting account: ' + error.message, 'error');
-        }
+        console.error('Error during authentication:', error);
+        showNotification('Authentication error: ' + error.message, 'error');
     }
 }
 
