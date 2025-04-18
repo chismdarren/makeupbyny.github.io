@@ -866,10 +866,13 @@
           const commentId = commentDoc.id;
           const commentData = commentDoc.data();
           
+          // Add the ID to the comment data so it's accessible within the element
+          commentData.id = commentId;
+          
           // Store the comment in our threads object
           commentThreads[commentId] = {
             data: commentData,
-            element: createCommentElement(commentData, commentId),
+            element: createCommentElement(commentData, Boolean(commentData.parentId)),
             replies: []
           };
           
