@@ -79,13 +79,22 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Check if we should show the profile icon popup
         const showProfileIconPopup = sessionStorage.getItem('showProfileIconPopup');
+        console.log("Checking for profile icon popup flag:", showProfileIconPopup);
         if (showProfileIconPopup === 'true') {
           // Clear the flag so the popup doesn't show again
           sessionStorage.removeItem('showProfileIconPopup');
+          console.log("Profile icon popup flag found! Opening popup...");
           
           // Show the profile icon selection popup
           showProfileIconSelectionPopup(user);
         }
+        
+        // TESTING ONLY: Force show the profile icon popup after 2 seconds
+        // Comment or remove this block after testing
+        setTimeout(() => {
+          console.log("TEST: Manually triggering profile icon popup");
+          showProfileIconSelectionPopup(user);
+        }, 2000);
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
@@ -307,6 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to show profile icon selection popup
   async function showProfileIconSelectionPopup(user) {
+    console.log("showProfileIconSelectionPopup function called for user:", user.uid);
+    
     // Create popup overlay
     const overlay = document.createElement('div');
     overlay.className = 'profile-icon-overlay';
@@ -379,56 +390,62 @@ document.addEventListener("DOMContentLoaded", () => {
       // Populate icons grid
       const profileIconsGrid = document.getElementById('profileIconsGrid');
       if (profileIconsGrid) {
-        PROFILE_ICONS.forEach(icon => {
-          const iconDiv = document.createElement('div');
-          iconDiv.style.width = '50px';
-          iconDiv.style.height = '50px';
-          iconDiv.style.borderRadius = '50%';
-          iconDiv.style.backgroundColor = icon.color;
-          iconDiv.style.cursor = 'pointer';
-          iconDiv.style.border = '2px solid transparent';
-          iconDiv.style.transition = 'transform 0.2s, border-color 0.2s';
-          iconDiv.title = icon.name;
-          iconDiv.dataset.icon = icon.id;
-          
-          // Mark as selected if it matches user's current icon
-          if (userData.profileIcon === icon.id) {
-            iconDiv.style.borderColor = '#333';
-            iconDiv.style.transform = 'scale(1.05)';
+        console.log("Found profileIconsGrid element, now adding icons...");
+        try {
+          PROFILE_ICONS.forEach(icon => {
+            console.log("Creating icon element for:", icon.name);
+            const iconDiv = document.createElement('div');
+            iconDiv.style.width = '50px';
+            iconDiv.style.height = '50px';
+            iconDiv.style.borderRadius = '50%';
+            iconDiv.style.backgroundColor = icon.color;
+            iconDiv.style.cursor = 'pointer';
+            iconDiv.style.border = '2px solid transparent';
+            iconDiv.style.transition = 'transform 0.2s, border-color 0.2s';
+            iconDiv.title = icon.name;
+            iconDiv.dataset.icon = icon.id;
             
-            // Update preview
-            const currentProfileIcon = document.getElementById('currentProfileIcon');
-            if (currentProfileIcon) {
-              currentProfileIcon.innerHTML = '';
-              currentProfileIcon.style.backgroundColor = icon.color;
+            // Mark as selected if it matches user's current icon
+            if (userData.profileIcon === icon.id) {
+              iconDiv.style.borderColor = '#333';
+              iconDiv.style.transform = 'scale(1.05)';
+              
+              // Update preview
+              const currentProfileIcon = document.getElementById('currentProfileIcon');
+              if (currentProfileIcon) {
+                currentProfileIcon.innerHTML = '';
+                currentProfileIcon.style.backgroundColor = icon.color;
+              }
             }
-          }
-          
-          // Add click handler
-          iconDiv.addEventListener('click', () => {
-            // Update selected state for all icons
-            document.querySelectorAll('#profileIconsGrid > div').forEach(option => {
-              option.style.borderColor = 'transparent';
-              option.style.transform = 'none';
+            
+            // Add click handler
+            iconDiv.addEventListener('click', () => {
+              // Update selected state for all icons
+              document.querySelectorAll('#profileIconsGrid > div').forEach(option => {
+                option.style.borderColor = 'transparent';
+                option.style.transform = 'none';
+              });
+              
+              // Update this icon as selected
+              iconDiv.style.borderColor = '#333';
+              iconDiv.style.transform = 'scale(1.05)';
+              
+              // Update preview
+              const currentProfileIcon = document.getElementById('currentProfileIcon');
+              if (currentProfileIcon) {
+                currentProfileIcon.innerHTML = '';
+                currentProfileIcon.style.backgroundColor = icon.color;
+              }
+              
+              // Store selection
+              selectedProfileIcon = icon.id;
             });
             
-            // Update this icon as selected
-            iconDiv.style.borderColor = '#333';
-            iconDiv.style.transform = 'scale(1.05)';
-            
-            // Update preview
-            const currentProfileIcon = document.getElementById('currentProfileIcon');
-            if (currentProfileIcon) {
-              currentProfileIcon.innerHTML = '';
-              currentProfileIcon.style.backgroundColor = icon.color;
-            }
-            
-            // Store selection
-            selectedProfileIcon = icon.id;
+            profileIconsGrid.appendChild(iconDiv);
           });
-          
-          profileIconsGrid.appendChild(iconDiv);
-        });
+        } catch (error) {
+          console.error("Error populating icons:", error);
+        }
       }
       
       // Handle skip button

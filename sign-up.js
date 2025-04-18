@@ -317,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Store a flag in sessionStorage to show the profile icon popup
         sessionStorage.setItem('showProfileIconPopup', 'true');
+        console.log("Set showProfileIconPopup flag to true in sessionStorage");
         
         // Navigate to home page
         window.location.href = "index.html";
