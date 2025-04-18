@@ -1,46 +1,14 @@
-// Import Firebase SDK modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+// Import Firebase modules from our firebase.js file
+import { app, db, auth, storage } from "./firebase.js";
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBeCYpS1JV5gJWD8qWsnVKenwgbDrIt_h8",
-  authDomain: "makeupbyny-1.firebaseapp.com",
-  projectId: "makeupbyny-1",
-  storageBucket: "makeupbyny-1.appspot.com",
-  messagingSenderId: "327675302548",
-  appId: "1:327675302548:web:581f25c2c6aebaab629a81",
-  measurementId: "G-P8F85KTSFP"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Connection state
-let firebaseConnectionState = {
-  isConnected: true,
-  lastError: null,
-  reconnectAttempts: 0
-};
-
-// Set Firestore cache size and offline persistence settings
-try {
-  db.settings({
-    cacheSizeBytes: 50000000, // 50 MB cache
-    ignoreUndefinedProperties: true
-  });
-  console.log("Firebase cache settings applied");
-} catch (error) {
-  console.warn("Could not set Firebase cache settings:", error);
-}
+// Import Firebase functions that we'll still need
+import { createUserWithEmailAndPassword, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { doc, setDoc, serverTimestamp, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Define super admin UIDs - initially just the original admin
 export const superAdminUIDs = ["yuoaYY14sINHaqtNK5EAz4nl8cc2"];
 
-console.log("✅ Firebase Initialized Successfully!");
+console.log("✅ Firebase Config Imported Successfully!");
 
 // Check if user is a super admin
 export async function isSuperAdmin(uid) {
@@ -566,4 +534,4 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // Export Firebase instances and config for use in other modules
-export { app, auth, db, firebaseConfig, updatePassword };
+export { app, auth, db, storage, updatePassword };

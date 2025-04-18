@@ -47,10 +47,13 @@ const PROFILE_ICONS = [
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
+  console.log("Firebase modules imported:", typeof db !== 'undefined', typeof auth !== 'undefined');
 
   // Check for profile icon popup flag immediately when page loads
   console.log("Checking for profile icon popup flag on page load");
   const showProfileIconPopup = sessionStorage.getItem('showProfileIconPopup');
+  console.log("Initial popup flag value:", showProfileIconPopup);
+  
   if (showProfileIconPopup === 'true') {
     console.log("Profile icon popup flag found on page load!");
     // We'll handle this in the auth state change handler to make sure we have the user
@@ -59,10 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Alternative method: Check for URL parameter (used as fallback)
   const urlParams = new URLSearchParams(window.location.search);
   const showIconPopup = urlParams.get('showIconPopup');
+  console.log("URL parameter showIconPopup:", showIconPopup);
+  
   if (showIconPopup === 'true') {
     console.log("Found URL parameter to show icon popup");
     // Set the sessionStorage flag so it's handled by the auth state change
     sessionStorage.setItem('showProfileIconPopup', 'true');
+    console.log("Set sessionStorage flag from URL parameter");
   }
 
   // ===== Authentication State Handling =====
