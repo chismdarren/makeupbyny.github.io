@@ -123,66 +123,6 @@
         .checkbox-group a:hover {
             text-decoration: underline;
         }
-        
-        .profile-icon-container {
-            display: flex;
-            flex-direction: column;
-            margin-top: 10px;
-        }
-        
-        .current-icon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .profile-icon-preview {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #666;
-            margin-bottom: 8px;
-            overflow: hidden;
-        }
-        
-        .profile-icons-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-        }
-        
-        .profile-icon-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            cursor: pointer;
-            overflow: hidden;
-            transition: border-color 0.2s, transform 0.2s;
-        }
-        
-        .profile-icon-option:hover {
-            transform: scale(1.05);
-        }
-        
-        .profile-icon-option.selected {
-            border-color: #333;
-            transform: scale(1.05);
-        }
-        
-        .loading-icons {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: #666;
-            padding: 10px;
-        }
     </style>
 </head>
 <body>
@@ -249,24 +189,6 @@
                 <label for="agreeTerms">
                     I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a> and <a href="privacy-policy.html" target="_blank">Privacy Policy</a> <span class="required">*</span>
                 </label>
-            </div>
-            
-            <!-- Profile Icon Selection -->
-            <div class="form-group">
-                <label>Choose a Profile Icon <span class="required">*</span></label>
-                <div class="profile-icon-container">
-                    <div class="current-icon">
-                        <div id="currentProfileIcon" class="profile-icon-preview">
-                            <span id="profileIconInitial"></span>
-                        </div>
-                        <span>Current Selection</span>
-                    </div>
-                    
-                    <div class="profile-icons-grid" id="profileIconsGrid">
-                        <!-- Icons will be populated by JavaScript -->
-                        <div class="loading-icons">Loading icons...</div>
-                    </div>
-                </div>
             </div>
             
             <button type="submit">Create Account</button>
