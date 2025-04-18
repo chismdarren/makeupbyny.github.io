@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Detailed validation and data logging
       console.log("Signup form data:", { 
-        firstName, lastName, username, phoneNumber, email, agreeTerms
+        firstName, lastName, username, phoneNumber, email, agreeTerms 
       });
       
       // Missing required fields check
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Since we know this email is registered but found no Firestore record,
                 // the user likely never completed registration. We'll let them login with their credentials.
                 alert("An account with this email already exists. Please log in instead.");
-                window.location.href = "login.html";
+                window.location.href = "index.html";
                 return;
               }
             } catch (methodError) {
@@ -147,8 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // If an existing account was found in Firestore
         if (existingAccount && existingUser) {
-          alert("An account with this email already exists. You will be redirected to the login page.");
-          window.location.href = "login.html";
+          alert("An account with this email already exists. You will be redirected to the home page.");
+          window.location.href = "index.html";
           return;
         }
         
@@ -310,24 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Show success message based on save status
         if (firestoreSaveSuccess) {
-          alert(`✅ Account created successfully! You'll now be redirected to the homepage.`);
+          alert("✅ Account created successfully! You will now be redirected to the home page.");
         } else {
-          alert("✅ Account created, but there was an issue saving some of your information. We'll try to recover it for you.");
+          alert("✅ Account created, but there was an issue saving some of your information. It will be recovered when you log in.");
         }
         
-        // Store a flag in sessionStorage to show the profile icon popup
-        sessionStorage.setItem('showProfileIconPopup', 'true');
-        console.log("Set showProfileIconPopup flag to true in sessionStorage");
-        
-        // Add a small delay before redirecting to ensure the flag is saved
-        setTimeout(() => {
-          // Double-check that the flag was set successfully
-          const flagSet = sessionStorage.getItem('showProfileIconPopup') === 'true';
-          console.log("Verified flag is set before redirect:", flagSet);
-          
-          // Navigate to home page - include fallback URL parameter
-          window.location.href = "index.html" + (flagSet ? "" : "?showIconPopup=true");
-        }, 300);
+        // Navigate to home page
+        window.location.href = "index.html";
         
       } catch (error) {
         console.error("❌ Error in signup process:", error.message);

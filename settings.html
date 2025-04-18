@@ -150,78 +150,6 @@
             border: 1px solid #f5c6cb;
         }
         
-        /* Profile Icon Styles */
-        .profile-icon-container {
-            margin-bottom: 20px;
-        }
-        
-        .current-icon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .profile-icon-preview {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: #666;
-            margin-bottom: 8px;
-            overflow: hidden;
-        }
-        
-        .profile-icon-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .profile-icons-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .profile-icon-option {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            cursor: pointer;
-            overflow: hidden;
-            transition: border-color 0.2s, transform 0.2s;
-        }
-        
-        .profile-icon-option:hover {
-            transform: scale(1.05);
-        }
-        
-        .profile-icon-option.selected {
-            border-color: #333;
-            transform: scale(1.05);
-        }
-        
-        .profile-icon-option img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .loading-icons {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: #666;
-            padding: 10px;
-        }
-        
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .settings-tabs {
@@ -422,37 +350,6 @@
         .user-dropdown-btn.active {
             color: #a07;
         }
-        
-        /* User Icon Styles for Navigation */
-        .user-icon-small {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            margin-right: 8px;
-            font-size: 14px;
-            color: #333;
-            font-weight: bold;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        
-        #userAccountLink {
-            display: flex;
-            align-items: center;
-        }
-        
-        .user-name {
-            max-width: 100px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        /* Responsive adjustments */
     </style>
 </head>
 <body>
@@ -512,24 +409,6 @@
                 <p>Update your profile information below.</p>
                 
                 <form id="profile-form">
-                    <!-- Profile Icon Selection -->
-                    <div class="form-group">
-                        <label>Profile Icon</label>
-                        <div class="profile-icon-container">
-                            <div class="current-icon">
-                                <div id="currentProfileIcon" class="profile-icon-preview">
-                                    <span id="profileIconInitial"></span>
-                                </div>
-                                <span>Current Icon</span>
-                            </div>
-                            
-                            <div class="profile-icons-grid" id="profileIconsGrid">
-                                <!-- Icons will be populated by JavaScript -->
-                                <div class="loading-icons">Loading icons...</div>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="form-group">
                         <label for="firstName">First Name</label>
                         <input type="text" id="firstName" name="firstName" placeholder="First Name">
