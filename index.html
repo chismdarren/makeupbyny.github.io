@@ -41,29 +41,23 @@
       text-align: center;
     }
 
-    .close-avatar-popup {
-      float: right;
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
     .avatar-popup h3 {
       margin-top: 10px;
+      margin-bottom: 15px;
       color: #333;
     }
 
     .avatar-popup button {
       margin-top: 15px;
-      padding: 8px 16px;
+      padding: 10px 20px;
       background-color: #333;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
-      margin-left: 5px;
-      margin-right: 5px;
+      width: 80%;
+      max-width: 250px;
     }
 
     .avatar-popup button:hover {
@@ -566,7 +560,6 @@
   <!-- Avatar Popup -->
   <div id="avatarPopup" class="avatar-popup" style="display: none;">
     <div class="avatar-popup-content">
-      <span class="close-avatar-popup">&times;</span>
       <h3>Please Choose Avatar</h3>
       <p>Select an avatar for your profile.</p>
       
@@ -596,7 +589,6 @@
       </div>
       
       <button id="saveAvatarBtn" disabled>Save Selection</button>
-      <button id="closeAvatarPopup">Skip for Now</button>
     </div>
   </div>
 
@@ -645,6 +637,22 @@
                   let selectedAvatar = null;
                   const saveButton = document.getElementById("saveAvatarBtn");
                   const selectedAvatarNameElement = document.getElementById("selectedAvatarName");
+                  
+                  // Prevent closing the popup with Escape key
+                  window.addEventListener("keydown", function(e) {
+                    if (e.key === "Escape" && avatarPopup.style.display === "block") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  });
+                  
+                  // Prevent closing by clicking outside
+                  window.addEventListener("click", function(e) {
+                    if (e.target === avatarPopup) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  });
                   
                   // Add click event handlers to all avatar options
                   const avatarOptions = document.querySelectorAll(".avatar-option");
@@ -695,24 +703,6 @@
                         saveButton.disabled = false;
                       }
                     }
-                  });
-                  
-                  // Handle avatar popup close button
-                  document.querySelector(".close-avatar-popup").addEventListener("click", async () => {
-                    avatarPopup.style.display = "none";
-                    // Update Firestore to record that user has seen the popup
-                    await updateDoc(userRef, {
-                      hasSelectedAvatar: true
-                    });
-                  });
-                  
-                  // Handle skip button click
-                  document.getElementById("closeAvatarPopup").addEventListener("click", async () => {
-                    avatarPopup.style.display = "none";
-                    // Update Firestore to record that user has seen the popup
-                    await updateDoc(userRef, {
-                      hasSelectedAvatar: true
-                    });
                   });
                 }, 1500); // 1.5 second delay before showing popup
               }
