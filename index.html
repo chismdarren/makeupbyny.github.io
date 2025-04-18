@@ -533,7 +533,7 @@
   <script type="module">
     // Import necessary Firebase modules
     import { db, isAdminUser } from "./firebase-config.js";  // Import Firestore database instance
-    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";  // Firestore functions
+    import { collection, getDocs, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";  // Firestore functions
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  // Auth state observer
     import { auth } from "./firebase-config.js";  // Auth instance
 
@@ -551,19 +551,43 @@
           // Show settings icon for logged in users
           document.getElementById("settingsIcon").style.display = "flex";
 
-          // Show avatar popup
-          const avatarPopup = document.getElementById("avatarPopup");
-          avatarPopup.style.display = "block";
-
-          // Handle avatar popup close button
-          document.querySelector(".close-avatar-popup").addEventListener("click", () => {
-            avatarPopup.style.display = "none";
-          });
-
-          // Handle OK button click
-          document.getElementById("closeAvatarPopup").addEventListener("click", () => {
-            avatarPopup.style.display = "none";
-          });
+          // Only show avatar popup for new users - check in Firestore
+          try {
+            // Check user's profile in Firestore to see if they've selected an avatar
+            const userRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              
+              // If user doesn't have hasSelectedAvatar flag or it's false
+              if (!userData.hasSelectedAvatar) {
+                // Show avatar popup
+                const avatarPopup = document.getElementById("avatarPopup");
+                avatarPopup.style.display = "block";
+                
+                // Handle avatar popup close button
+                document.querySelector(".close-avatar-popup").addEventListener("click", async () => {
+                  avatarPopup.style.display = "none";
+                  // Update Firestore to record that user has seen the popup
+                  await updateDoc(userRef, {
+                    hasSelectedAvatar: true
+                  });
+                });
+                
+                // Handle OK button click
+                document.getElementById("closeAvatarPopup").addEventListener("click", async () => {
+                  avatarPopup.style.display = "none";
+                  // Update Firestore to record that user has seen the popup
+                  await updateDoc(userRef, {
+                    hasSelectedAvatar: true
+                  });
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Error checking avatar selection status:", error);
+          }
 
           // Check if user is admin
           const isAdmin = await isAdminUser(user.uid);
