@@ -11,6 +11,10 @@ import {
     getDoc, 
     updateDoc 
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { initializeConnectionMonitoring } from './firebase-connection-handler.js';
+
+// Connection handler
+let connectionHandler;
 
 // DOM elements
 const notificationEl = document.getElementById('notification');
@@ -39,6 +43,9 @@ const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Settings page loaded');
+    
+    // Initialize Firebase connection monitoring
+    connectionHandler = initializeConnectionMonitoring(db);
     
     // Initially hide user account link until auth check completes
     if (userAccountLink) userAccountLink.style.display = 'none';

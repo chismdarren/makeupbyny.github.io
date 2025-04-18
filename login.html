@@ -163,13 +163,17 @@
 
   <script type="module">
     // Only import what's needed from Firebase directly
-    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     // Import from our config file which now exports the needed functions
     import { auth, db, updatePassword, isAdminUser } from "./firebase-config.js";
     import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { initializeConnectionMonitoring } from "./firebase-connection-handler.js";
 
     console.log("Login script loaded");  // Debug log to confirm script load
-
+    
+    // Initialize connection monitoring
+    const connectionHandler = initializeConnectionMonitoring(db);
+    
     // Function to recover user data from localStorage if present
     async function recoverUserData(user) {
       const pendingDataKey = `pendingUserData_${user.uid}`;
@@ -520,6 +524,11 @@
       if (loginEmail) {
         document.getElementById("reset-email").value = loginEmail;
       }
+      
+      // Force reconnect to ensure connection is active when needed
+      if (connectionHandler && typeof connectionHandler.forceReconnect === 'function') {
+        connectionHandler.forceReconnect();
+      }
     });
 
     // Close the modal when the X is clicked
@@ -554,6 +563,20 @@
       const submitButton = document.getElementById("reset-submit-button");
       const originalButtonText = submitButton.textContent;
       submitButton.disabled = true;
+      
+      // Check connection status before proceeding
+      if (connectionHandler && typeof connectionHandler.checkConnection === 'function' && !connectionHandler.checkConnection()) {
+        // Try to force reconnection first
+        if (connectionHandler.forceReconnect) {
+          connectionHandler.forceReconnect();
+        }
+        
+        // Show temporary message
+        resetErrorMessage.textContent = "Trying to reconnect to server...";
+        
+        // Wait a moment to see if connection is restored
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
       
       // If verification is already complete, process the password reset
       if (verificationComplete) {
@@ -592,22 +615,63 @@
             const resetId = Date.now().toString() + '_' + verifiedUserId;
             const resetRef = doc(db, "passwordResets", resetId);
             
-            // Store the password reset data
-            await setDoc(resetRef, {
-              email: email.toLowerCase(),
-              firstName: firstName,
-              lastName: lastName,
-              phoneNumber: phoneNumber,
-              newPasswordHash: btoa(newPassword), // Simple encoding for demonstration
-              createdAt: new Date().toISOString(),
-              processed: false,
-              userId: verifiedUserId
-            });
+            // Handle potential connection errors
+            let retryCount = 0;
+            const maxRetries = 3;
             
-            // Also try to set a special flag in localStorage to handle this during login
+            const saveResetData = async () => {
+              try {
+                // Store the password reset data
+                await setDoc(resetRef, {
+                  email: email.toLowerCase(),
+                  firstName: firstName,
+                  lastName: lastName,
+                  phoneNumber: phoneNumber,
+                  newPasswordHash: btoa(newPassword), // Simple encoding for demonstration
+                  createdAt: new Date().toISOString(),
+                  processed: false,
+                  userId: verifiedUserId
+                });
+                return true;
+              } catch (err) {
+                // Check if this is a connection error
+                if (err.message && 
+                   (err.message.includes('ERR_BLOCKED_BY_CLIENT') || 
+                    err.message.includes('network') ||
+                    err.message.includes('permission'))) {
+                  
+                  console.warn(`Password reset write failed (attempt ${retryCount + 1}):`, err.message);
+                  
+                  if (retryCount < maxRetries) {
+                    retryCount++;
+                    resetErrorMessage.textContent = `Connection issue, retrying (${retryCount}/${maxRetries})...`;
+                    
+                    // Force reconnection attempt
+                    if (connectionHandler && connectionHandler.forceReconnect) {
+                      connectionHandler.forceReconnect();
+                    }
+                    
+                    // Wait with exponential backoff
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                    return await saveResetData(); // Retry recursively
+                  } else {
+                    throw new Error("Failed to save password reset after multiple attempts. Using fallback method.");
+                  }
+                } else {
+                  throw err; // Rethrow if not a connection error
+                }
+              }
+            };
+            
+            // Try to save data with retry logic
+            const saveSuccessful = await saveResetData();
+            
+            // Also try to set a special flag in sessionStorage as fallback
             sessionStorage.setItem('pendingResetId', resetId);
             sessionStorage.setItem('pendingResetEmail', email.toLowerCase());
+            sessionStorage.setItem('pendingResetPassword', btoa(newPassword));
             
+            // Show success message
             resetSuccessMessage.textContent = "Your new password has been saved! You can now sign in with this new password.";
             resetSuccessMessage.style.display = "block";
             resetErrorMessage.textContent = "";

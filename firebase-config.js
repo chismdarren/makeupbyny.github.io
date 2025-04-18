@@ -19,6 +19,24 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Connection state
+let firebaseConnectionState = {
+  isConnected: true,
+  lastError: null,
+  reconnectAttempts: 0
+};
+
+// Set Firestore cache size and offline persistence settings
+try {
+  db.settings({
+    cacheSizeBytes: 50000000, // 50 MB cache
+    ignoreUndefinedProperties: true
+  });
+  console.log("Firebase cache settings applied");
+} catch (error) {
+  console.warn("Could not set Firebase cache settings:", error);
+}
+
 // Define super admin UIDs - initially just the original admin
 export const superAdminUIDs = ["yuoaYY14sINHaqtNK5EAz4nl8cc2"];
 
