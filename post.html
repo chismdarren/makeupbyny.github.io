@@ -840,6 +840,41 @@
         // Initialize the avatar preview
         initializeAvatarPreview();
         
+        // Check if user is logged in and fetch their avatar
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            try {
+              // Fetch user data to get avatar
+              const userRef = doc(db, "users", user.uid);
+              const userSnap = await getDoc(userRef);
+              
+              if (userSnap.exists()) {
+                const userData = userSnap.data();
+                
+                // Pre-fill the form with user data
+                document.getElementById("name").value = userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '';
+                document.getElementById("email").value = user.email || '';
+                
+                // Set avatar preview from user's saved avatar if available
+                if (userData.avatarUrl) {
+                  const avatarPreview = document.getElementById('avatarPreview');
+                  
+                  // Use the user's avatar from their profile
+                  if (userData.avatarUrl.startsWith('http')) {
+                    // If it's already a URL, use it directly
+                    avatarPreview.innerHTML = `<img src="${userData.avatarUrl}" alt="Your avatar">`;
+                  } else {
+                    // For placeholder avatars using our naming pattern
+                    avatarPreview.innerHTML = `<img src="https://ui-avatars.com/api/?name=${userData.avatarUrl.replace('.png', '')}&background=random&color=fff&size=128" alt="Your avatar">`;
+                  }
+                }
+              }
+            } catch (error) {
+              console.error("Error fetching user data:", error);
+            }
+          }
+        });
+        
         commentForm.addEventListener("submit", async (e) => {
           e.preventDefault();
 
@@ -865,7 +900,20 @@
           try {
             // Upload avatar if provided
             let avatarUrl = null;
-            if (avatarFile) {
+            
+            // First check if user is logged in and has an avatar in their profile
+            if (auth.currentUser) {
+              const userRef = doc(db, "users", auth.currentUser.uid);
+              const userSnap = await getDoc(userRef);
+              
+              if (userSnap.exists() && userSnap.data().avatarUrl) {
+                // Use the avatar from the user's profile
+                avatarUrl = userSnap.data().avatarUrl;
+              }
+            }
+            
+            // If user has no avatar in profile or isn't logged in, use the uploaded one
+            if (!avatarUrl && avatarFile) {
               avatarUrl = await uploadAvatar(avatarFile, commenterEmail);
             }
 
@@ -878,6 +926,7 @@
               name: commenterName,
               email: commenterEmail,
               avatarUrl: avatarUrl,
+              userId: auth.currentUser ? auth.currentUser.uid : null,
               createdAt: serverTimestamp(),
             });
 
@@ -1043,95 +1092,91 @@
       }
     }
     
-    // Helper function to create a comment element
-    function createCommentElement(commentData, commentId) {
-      const commentElement = document.createElement("div");
-      commentElement.className = "comment";
-      commentElement.dataset.id = commentId;
-      
-      // Format the date
-      let dateDisplay = "Just now";
-      if (commentData.createdAt) {
-        const date = commentData.createdAt.toDate();
-        const now = new Date();
-        const diffMs = now - date;
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        
-        if (diffDays < 1) {
-          // Less than a day - show relative time
-          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-          if (diffHours < 1) {
-            const diffMinutes = Math.floor(diffMs / (1000 * 60));
-            dateDisplay = diffMinutes < 1 ? "Just now" : `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
-          } else {
-            dateDisplay = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-          }
-        } else if (diffDays < 7) {
-          // Less than a week - show days ago
-          dateDisplay = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    // Function to create a comment element
+    function createCommentElement(comment, isReply = false) {
+      const commentDiv = document.createElement('div');
+      commentDiv.className = isReply ? 'comment reply-comment' : 'comment';
+      commentDiv.id = `comment-${comment.id}`;
+
+      // Determine the avatar to display
+      let avatarHTML = '';
+      if (comment.avatarUrl) {
+        if (comment.avatarUrl.startsWith('http')) {
+          // If it's a full URL, use it directly
+          avatarHTML = `<img src="${comment.avatarUrl}" alt="${comment.name}'s avatar" class="comment-avatar">`;
         } else {
-          // More than a week - show formatted date
-          dateDisplay = date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+          // For placeholder avatars or saved avatar names
+          avatarHTML = `<img src="https://ui-avatars.com/api/?name=${comment.avatarUrl.replace('.png', '')}&background=random&color=fff&size=128" alt="${comment.name}'s avatar" class="comment-avatar">`;
         }
-      }
-      
-      // Generate avatar content
-      let avatarContent = '';
-      if (commentData.avatarUrl) {
-        avatarContent = `<img src="${commentData.avatarUrl}" alt="${commentData.name}'s avatar">`;
       } else {
-        // Use first letter of name as avatar
-        const initial = commentData.name.charAt(0).toUpperCase();
-        avatarContent = initial;
+        // Generate initials avatar as fallback
+        const initials = comment.name.split(' ').map(n => n[0]).join('').toUpperCase();
+        avatarHTML = `<div class="comment-avatar initial-avatar">${initials}</div>`;
       }
-      
+
+      // Format the date
+      const date = comment.createdAt ? new Date(comment.createdAt.seconds * 1000) : new Date();
+      const now = new Date();
+      const diffInMilliseconds = now - date;
+      const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
+      const diffInMinutes = Math.floor(diffInSeconds / 60);
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      const diffInDays = Math.floor(diffInHours / 24);
+      let dateText;
+
+      if (diffInDays > 30) {
+        dateText = `${date.toLocaleDateString()}`;
+      } else if (diffInDays > 0) {
+        dateText = `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+      } else if (diffInHours > 0) {
+        dateText = `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+      } else if (diffInMinutes > 0) {
+        dateText = `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+      } else {
+        dateText = 'Just now';
+      }
+
       // Build the comment HTML
-      commentElement.innerHTML = `
+      commentDiv.innerHTML = `
         <div class="comment-header">
-          <div class="comment-avatar">${avatarContent}</div>
+          <div class="comment-avatar">${avatarHTML}</div>
           <div class="comment-info">
-            <div class="comment-author">${commentData.name}</div>
-            <div class="comment-date">${dateDisplay}</div>
+            <div class="comment-author">${comment.name}</div>
+            <div class="comment-date">${dateText}</div>
           </div>
         </div>
-        <div class="comment-content">${commentData.text}</div>
+        <div class="comment-content">${comment.text}</div>
         <div class="comment-actions">
-          <a href="#" class="comment-action reply-action" data-comment-id="${commentId}">Reply</a>
+          <a href="#" class="comment-action reply-action" data-comment-id="${comment.id}">Reply</a>
         </div>
-        <div class="reply-form" id="replyForm-${commentId}">
-          <textarea placeholder="Write your reply..." id="replyText-${commentId}"></textarea>
+        <div class="reply-form" id="replyForm-${comment.id}">
+          <textarea placeholder="Write your reply..." id="replyText-${comment.id}"></textarea>
           <div class="reply-actions">
-            <button class="reply-cancel" data-comment-id="${commentId}">Cancel</button>
-            <button class="reply-submit" data-comment-id="${commentId}">Reply</button>
+            <button class="reply-cancel" data-comment-id="${comment.id}">Cancel</button>
+            <button class="reply-submit" data-comment-id="${comment.id}">Reply</button>
           </div>
         </div>
       `;
       
       // Add event listener for reply button
-      const replyAction = commentElement.querySelector('.reply-action');
+      const replyAction = commentDiv.querySelector('.reply-action');
       replyAction.addEventListener('click', (e) => {
         e.preventDefault();
-        toggleReplyForm(commentId);
+        toggleReplyForm(comment.id);
       });
       
       // Add event listeners for reply form buttons
-      const cancelButton = commentElement.querySelector('.reply-cancel');
+      const cancelButton = commentDiv.querySelector('.reply-cancel');
       cancelButton.addEventListener('click', () => {
-        toggleReplyForm(commentId, false);
+        toggleReplyForm(comment.id, false);
       });
       
-      const submitButton = commentElement.querySelector('.reply-submit');
+      const submitButton = commentDiv.querySelector('.reply-submit');
       submitButton.addEventListener('click', () => {
-        submitReply(commentId);
+        submitReply(comment.id);
       });
       
-      return commentElement;
+      return commentDiv;
     }
     
     // Toggle reply form visibility
