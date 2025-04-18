@@ -48,6 +48,23 @@ const PROFILE_ICONS = [
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
 
+  // Check for profile icon popup flag immediately when page loads
+  console.log("Checking for profile icon popup flag on page load");
+  const showProfileIconPopup = sessionStorage.getItem('showProfileIconPopup');
+  if (showProfileIconPopup === 'true') {
+    console.log("Profile icon popup flag found on page load!");
+    // We'll handle this in the auth state change handler to make sure we have the user
+  }
+  
+  // Alternative method: Check for URL parameter (used as fallback)
+  const urlParams = new URLSearchParams(window.location.search);
+  const showIconPopup = urlParams.get('showIconPopup');
+  if (showIconPopup === 'true') {
+    console.log("Found URL parameter to show icon popup");
+    // Set the sessionStorage flag so it's handled by the auth state change
+    sessionStorage.setItem('showProfileIconPopup', 'true');
+  }
+
   // ===== Authentication State Handling =====
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
@@ -77,24 +94,22 @@ document.addEventListener("DOMContentLoaded", () => {
           loadAdminContent();
         }
         
-        // Check if we should show the profile icon popup
+        // Check if we should show the profile icon popup - IMPORTANT SECTION
         const showProfileIconPopup = sessionStorage.getItem('showProfileIconPopup');
         console.log("Checking for profile icon popup flag:", showProfileIconPopup);
-        if (showProfileIconPopup === 'true') {
-          // Clear the flag so the popup doesn't show again
-          sessionStorage.removeItem('showProfileIconPopup');
-          console.log("Profile icon popup flag found! Opening popup...");
-          
-          // Show the profile icon selection popup
-          showProfileIconSelectionPopup(user);
-        }
         
-        // TESTING ONLY: Force show the profile icon popup after 2 seconds
-        // Comment or remove this block after testing
-        setTimeout(() => {
-          console.log("TEST: Manually triggering profile icon popup");
-          showProfileIconSelectionPopup(user);
-        }, 2000);
+        // Ensure we clear the flag first, before any potential errors
+        if (showProfileIconPopup === 'true') {
+          // Clear the flag so the popup doesn't show again if there are errors
+          sessionStorage.removeItem('showProfileIconPopup');
+          console.log("Profile icon popup flag found and removed");
+          
+          // Small delay to ensure DOM is fully loaded before showing popup
+          setTimeout(() => {
+            console.log("Now showing profile icon popup after delay");
+            showProfileIconSelectionPopup(user);
+          }, 500);
+        }
       } else {
         loginLink.style.display = "block";
         logoutBtn.style.display = "none";
@@ -317,6 +332,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to show profile icon selection popup
   async function showProfileIconSelectionPopup(user) {
     console.log("showProfileIconSelectionPopup function called for user:", user.uid);
+    
+    // Verify we have a user before proceeding
+    if (!user || !user.uid) {
+      console.error("Cannot show profile icon popup: Invalid user object");
+      return;
+    }
+    
+    // Check if a popup is already open (prevent duplicates)
+    if (document.querySelector('.profile-icon-overlay')) {
+      console.log("Popup already exists, not creating a new one");
+      return;
+    }
     
     // Create popup overlay
     const overlay = document.createElement('div');

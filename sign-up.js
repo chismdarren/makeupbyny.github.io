@@ -319,8 +319,15 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('showProfileIconPopup', 'true');
         console.log("Set showProfileIconPopup flag to true in sessionStorage");
         
-        // Navigate to home page
-        window.location.href = "index.html";
+        // Add a small delay before redirecting to ensure the flag is saved
+        setTimeout(() => {
+          // Double-check that the flag was set successfully
+          const flagSet = sessionStorage.getItem('showProfileIconPopup') === 'true';
+          console.log("Verified flag is set before redirect:", flagSet);
+          
+          // Navigate to home page - include fallback URL parameter
+          window.location.href = "index.html" + (flagSet ? "" : "?showIconPopup=true");
+        }, 300);
         
       } catch (error) {
         console.error("❌ Error in signup process:", error.message);
