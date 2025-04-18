@@ -87,16 +87,27 @@ async function handleAuthStateChange(user) {
     if (logoutBtn) logoutBtn.style.display = 'inline';
     if (userAccountLink) userAccountLink.style.display = 'inline';
     
-    // Show admin dropdown based on role
-    const isAdmin = isSuperAdmin(currentUser.uid) || (userData && userData.isAdmin);
-    if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
+    // Load user data before checking admin status
+    await loadUserData();
+    
+    // Check if user is admin
+    try {
+        const userIsAdmin = await isSuperAdmin(currentUser.uid) || (userData && userData.isAdmin === true);
+        console.log('User admin status:', userIsAdmin);
+        
+        // Only show admin dropdown for admins
+        if (adminDropdownBtn) {
+            adminDropdownBtn.style.display = userIsAdmin ? 'inline' : 'none';
+        }
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        // Default to not showing admin dropdown if there's an error
+        if (adminDropdownBtn) adminDropdownBtn.style.display = 'none';
+    }
     
     // Show settings icon when user is logged in
     const settingsIcon = document.getElementById('settingsIcon');
     if (settingsIcon) settingsIcon.style.display = 'flex';
-    
-    // Load user data
-    await loadUserData();
 }
 
 // Load user data from Firestore
