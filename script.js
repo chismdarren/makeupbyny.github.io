@@ -44,10 +44,16 @@ const PROFILE_ICONS = [
   { id: 'icon-10', color: '#FF8C33', name: 'Orange' }
 ];
 
+// Export the PROFILE_ICONS constant for use in other files
+window.PROFILE_ICONS = PROFILE_ICONS;
+
 // Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM fully loaded. Initializing event listeners...");
   console.log("Firebase modules imported:", typeof db !== 'undefined', typeof auth !== 'undefined');
+
+  // Add a global flag to prevent duplicate popups
+  window.profileIconPopupShown = window.profileIconPopupShown || false;
 
   // Check for profile icon popup flag immediately when page loads
   console.log("Checking for profile icon popup flag on page load");
@@ -104,11 +110,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const showProfileIconPopup = sessionStorage.getItem('showProfileIconPopup');
         console.log("Checking for profile icon popup flag:", showProfileIconPopup);
         
+        // Check if popup has already been shown in this page load
+        if (window.profileIconPopupShown) {
+          console.log("Popup already shown in this session, not showing again");
+          sessionStorage.removeItem('showProfileIconPopup');
+          return;
+        }
+        
         // Ensure we clear the flag first, before any potential errors
         if (showProfileIconPopup === 'true') {
           // Clear the flag so the popup doesn't show again if there are errors
           sessionStorage.removeItem('showProfileIconPopup');
           console.log("Profile icon popup flag found and removed");
+          
+          // Set the global flag to indicate popup has been shown
+          window.profileIconPopupShown = true;
           
           // Small delay to ensure DOM is fully loaded before showing popup
           setTimeout(() => {
@@ -338,6 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to show profile icon selection popup
   async function showProfileIconSelectionPopup(user) {
     console.log("showProfileIconSelectionPopup function called for user:", user.uid);
+    console.log("Body element exists:", !!document.body);
     
     // Verify we have a user before proceeding
     if (!user || !user.uid) {
@@ -365,6 +382,8 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.style.alignItems = 'center';
     overlay.style.zIndex = '1000';
     
+    console.log("Created overlay element:", overlay);
+    
     // Create popup content
     const popup = document.createElement('div');
     popup.className = 'profile-icon-popup';
@@ -376,6 +395,8 @@ document.addEventListener("DOMContentLoaded", () => {
     popup.style.maxHeight = '90%';
     popup.style.overflowY = 'auto';
     popup.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
+    
+    console.log("Created popup element:", popup);
     
     // Popup content
     popup.innerHTML = `
@@ -401,9 +422,11 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Add popup to overlay
     overlay.appendChild(popup);
+    console.log("Appended popup to overlay");
     
     // Add overlay to body
     document.body.appendChild(overlay);
+    console.log("Appended overlay to document body");
     
     // Get user data to display initial
     try {
@@ -526,4 +549,16 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.removeChild(overlay);
     }
   }
+
+  // Expose a function to manually trigger the popup (for testing via console)
+  window.forceShowProfileIconPopup = function() {
+    console.log("Manually triggering profile icon popup...");
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      console.log("Current user found:", currentUser.uid);
+      showProfileIconSelectionPopup(currentUser);
+    } else {
+      console.error("Cannot show popup - no user is logged in");
+    }
+  };
 });
