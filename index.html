@@ -562,27 +562,29 @@
               
               // If user doesn't have hasSelectedAvatar flag or it's false
               if (!userData.hasSelectedAvatar) {
-                // Show avatar popup
-                const avatarPopup = document.getElementById("avatarPopup");
-                avatarPopup.style.display = "block";
-                
-                // Handle avatar popup close button
-                document.querySelector(".close-avatar-popup").addEventListener("click", async () => {
-                  avatarPopup.style.display = "none";
-                  // Update Firestore to record that user has seen the popup
-                  await updateDoc(userRef, {
-                    hasSelectedAvatar: true
+                // Show avatar popup after a slight delay to ensure page is loaded first
+                setTimeout(() => {
+                  const avatarPopup = document.getElementById("avatarPopup");
+                  avatarPopup.style.display = "block";
+                  
+                  // Handle avatar popup close button
+                  document.querySelector(".close-avatar-popup").addEventListener("click", async () => {
+                    avatarPopup.style.display = "none";
+                    // Update Firestore to record that user has seen the popup
+                    await updateDoc(userRef, {
+                      hasSelectedAvatar: true
+                    });
                   });
-                });
-                
-                // Handle OK button click
-                document.getElementById("closeAvatarPopup").addEventListener("click", async () => {
-                  avatarPopup.style.display = "none";
-                  // Update Firestore to record that user has seen the popup
-                  await updateDoc(userRef, {
-                    hasSelectedAvatar: true
+                  
+                  // Handle OK button click
+                  document.getElementById("closeAvatarPopup").addEventListener("click", async () => {
+                    avatarPopup.style.display = "none";
+                    // Update Firestore to record that user has seen the popup
+                    await updateDoc(userRef, {
+                      hasSelectedAvatar: true
+                    });
                   });
-                });
+                }, 1500); // 1.5 second delay before showing popup
               }
             }
           } catch (error) {
