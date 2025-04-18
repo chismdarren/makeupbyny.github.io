@@ -801,7 +801,7 @@
               // Add the comment data with user information
               await addDoc(commentsRef, {
                 text: commentText,
-                name: userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : user.displayName || 'User',
+                name: userData.username || user.displayName || 'User',
                 email: user.email,
                 avatarUrl: userData.avatarUrl,
                 userId: user.uid,
@@ -1051,7 +1051,7 @@
         // Add the reply as a new comment with parentId reference
         await addDoc(commentsRef, {
           text: replyText,
-          name: userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : auth.currentUser.displayName || 'User',
+          name: userData.username || auth.currentUser.displayName || 'User',
           email: auth.currentUser.email,
           avatarUrl: userData.avatarUrl,
           parentId: parentId,
