@@ -138,6 +138,11 @@ async function loadUserData() {
             document.getElementById('username').value = userData.username || '';
             document.getElementById('email').value = currentUser.email || '';
             document.getElementById('phoneNumber').value = userData.phoneNumber || '';
+            
+            // Load current avatar if available
+            if (userData.avatarUrl) {
+                loadAvatar(userData.avatarUrl);
+            }
         } else {
             console.log('No user data found, creating new document');
             userData = {
@@ -152,10 +157,106 @@ async function loadUserData() {
                 }
             };
         }
+        
+        // Set up avatar selection
+        setupAvatarSelection();
     } catch (error) {
         console.error('Error loading user data:', error);
         showNotification('Error loading user data: ' + error.message, 'error');
     }
+}
+
+// Load avatar image
+function loadAvatar(avatarUrl) {
+    // For placeholder avatars from ui-avatars.com, keep using that
+    if (avatarUrl.startsWith('https://ui-avatars.com')) {
+        document.getElementById('currentAvatarImg').src = avatarUrl;
+        return;
+    }
+    
+    // For avatar1.png, avatar2.png style names, create appropriate URL
+    // When using real avatar images, adjust this URL construction
+    const avatarImg = document.getElementById('currentAvatarImg');
+    
+    // If it's a full URL already, use it directly
+    if (avatarUrl.startsWith('http')) {
+        avatarImg.src = avatarUrl;
+    } else {
+        // For now, continue using placeholder images
+        // Replace with actual path when you have real avatar images
+        avatarImg.src = `https://ui-avatars.com/api/?name=${avatarUrl.replace('.png', '')}&background=random&color=fff&size=128`;
+    }
+    
+    // Find and pre-select the matching avatar option if available
+    const avatarOptions = document.querySelectorAll('.avatar-option');
+    avatarOptions.forEach(option => {
+        if (option.getAttribute('data-avatar') === avatarUrl) {
+            option.classList.add('selected');
+        }
+    });
+}
+
+// Set up avatar selection functionality
+function setupAvatarSelection() {
+    let selectedAvatar = null;
+    const saveAvatarBtn = document.getElementById('save-avatar-btn');
+    const avatarOptions = document.querySelectorAll('.avatar-option');
+    
+    // Add click handlers to avatar options
+    avatarOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            // Remove selected class from all options
+            avatarOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            option.classList.add('selected');
+            
+            // Store selected avatar
+            selectedAvatar = option.getAttribute('data-avatar');
+            
+            // Show preview of selected avatar
+            const previewSrc = option.querySelector('img').src;
+            document.getElementById('currentAvatarImg').src = previewSrc;
+            
+            // Enable save button
+            saveAvatarBtn.disabled = false;
+        });
+    });
+    
+    // Handle save button click
+    saveAvatarBtn.addEventListener('click', async () => {
+        if (!selectedAvatar) return;
+        
+        try {
+            // Show loading state
+            saveAvatarBtn.textContent = 'Saving...';
+            saveAvatarBtn.disabled = true;
+            
+            // Update user's profile in Firestore
+            const userRef = doc(db, 'users', currentUser.uid);
+            await updateDoc(userRef, {
+                avatarUrl: selectedAvatar,
+                hasSelectedAvatar: true
+            });
+            
+            // Update local user data
+            userData.avatarUrl = selectedAvatar;
+            
+            // Show success message
+            showNotification('Avatar updated successfully', 'success');
+            
+            // Reset button
+            saveAvatarBtn.textContent = 'Update Avatar';
+            saveAvatarBtn.disabled = true;
+        } catch (error) {
+            console.error('Error updating avatar:', error);
+            showNotification('Error updating avatar: ' + error.message, 'error');
+            
+            // Reset button
+            saveAvatarBtn.textContent = 'Update Avatar';
+            saveAvatarBtn.disabled = false;
+        }
+    });
 }
 
 // Handle profile form submission

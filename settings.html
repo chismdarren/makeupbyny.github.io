@@ -315,6 +315,92 @@
             fill: #333;
         }
 
+        /* Avatar Settings Styles */
+        .avatar-settings {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .current-avatar, .avatar-selection {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        #current-avatar-display {
+            width: 150px;
+            height: 150px;
+            margin: 20px 0;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #ddd;
+            padding: 3px;
+        }
+
+        #current-avatar-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .avatar-option {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-option:hover {
+            border-color: #999;
+            transform: scale(1.05);
+        }
+
+        .avatar-option.selected {
+            border-color: #333;
+            background-color: #f0f0f0;
+        }
+
+        .avatar-option img {
+            width: 100%;
+            height: auto;
+            max-width: 64px;
+            border-radius: 50%;
+        }
+
+        #save-avatar-btn {
+            margin-top: 10px;
+            margin-left: 0;
+        }
+
+        /* Responsive adjustments for avatar settings */
+        @media (max-width: 768px) {
+            .avatar-settings {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            #current-avatar-display {
+                margin: 15px auto;
+            }
+
+            .avatar-options {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         /* User dropdown styles (same as admin dropdown) */
         .user-dropdown {
             position: relative;
@@ -405,6 +491,45 @@
             
             <!-- Profile Information Tab -->
             <div id="profile" class="tab-content active">
+                <h2>Avatar Settings</h2>
+                <p>Choose an avatar for your profile.</p>
+
+                <div class="avatar-settings">
+                    <div class="current-avatar">
+                        <h3>Current Avatar</h3>
+                        <div id="current-avatar-display">
+                            <img id="currentAvatarImg" src="https://ui-avatars.com/api/?name=User&background=random&color=fff&size=128" alt="Current Avatar">
+                        </div>
+                    </div>
+
+                    <div class="avatar-selection">
+                        <h3>Choose New Avatar</h3>
+                        <div class="avatar-options">
+                            <div class="avatar-option" data-avatar="avatar1.png">
+                                <img src="https://ui-avatars.com/api/?name=1&background=random&color=fff&size=64" alt="Avatar 1">
+                            </div>
+                            <div class="avatar-option" data-avatar="avatar2.png">
+                                <img src="https://ui-avatars.com/api/?name=2&background=random&color=fff&size=64" alt="Avatar 2">
+                            </div>
+                            <div class="avatar-option" data-avatar="avatar3.png">
+                                <img src="https://ui-avatars.com/api/?name=3&background=random&color=fff&size=64" alt="Avatar 3">
+                            </div>
+                            <div class="avatar-option" data-avatar="avatar4.png">
+                                <img src="https://ui-avatars.com/api/?name=4&background=random&color=fff&size=64" alt="Avatar 4">
+                            </div>
+                            <div class="avatar-option" data-avatar="avatar5.png">
+                                <img src="https://ui-avatars.com/api/?name=5&background=random&color=fff&size=64" alt="Avatar 5">
+                            </div>
+                            <div class="avatar-option" data-avatar="avatar6.png">
+                                <img src="https://ui-avatars.com/api/?name=6&background=random&color=fff&size=64" alt="Avatar 6">
+                            </div>
+                        </div>
+                        <button type="button" id="save-avatar-btn" class="save-button" disabled>Update Avatar</button>
+                    </div>
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
                 <h2>Personal Information</h2>
                 <p>Update your profile information below.</p>
                 
