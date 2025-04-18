@@ -32,11 +32,11 @@
 
     .avatar-popup-content {
       background-color: #fff;
-      margin: 15% auto;
+      margin: 10% auto;
       padding: 20px;
       border-radius: 8px;
-      width: 300px;
-      max-width: 80%;
+      width: 400px;
+      max-width: 90%;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       text-align: center;
     }
@@ -62,10 +62,57 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
+      margin-left: 5px;
+      margin-right: 5px;
     }
 
     .avatar-popup button:hover {
       background-color: #555;
+    }
+    
+    .avatar-popup button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    
+    #closeAvatarPopup {
+      background-color: #666;
+    }
+    
+    .avatar-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    .avatar-option {
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .avatar-option:hover {
+      border-color: #999;
+      transform: scale(1.05);
+    }
+    
+    .avatar-option.selected {
+      border-color: #333;
+      background-color: #f0f0f0;
+    }
+    
+    .avatar-option img {
+      width: 100%;
+      height: auto;
+      border-radius: 50%;
+    }
+    
+    .selected-avatar-container {
+      margin: 10px 0;
+      font-weight: bold;
     }
 
     /* Custom font styles for blog posts */
@@ -521,8 +568,35 @@
     <div class="avatar-popup-content">
       <span class="close-avatar-popup">&times;</span>
       <h3>Please Choose Avatar</h3>
-      <p>Please select an avatar for your profile.</p>
-      <button id="closeAvatarPopup">OK</button>
+      <p>Select an avatar for your profile.</p>
+      
+      <div class="avatar-options">
+        <div class="avatar-option" data-avatar="avatar1.png">
+          <img src="https://ui-avatars.com/api/?name=1&background=random&color=fff&size=64" alt="Avatar 1">
+        </div>
+        <div class="avatar-option" data-avatar="avatar2.png">
+          <img src="https://ui-avatars.com/api/?name=2&background=random&color=fff&size=64" alt="Avatar 2">
+        </div>
+        <div class="avatar-option" data-avatar="avatar3.png">
+          <img src="https://ui-avatars.com/api/?name=3&background=random&color=fff&size=64" alt="Avatar 3">
+        </div>
+        <div class="avatar-option" data-avatar="avatar4.png">
+          <img src="https://ui-avatars.com/api/?name=4&background=random&color=fff&size=64" alt="Avatar 4">
+        </div>
+        <div class="avatar-option" data-avatar="avatar5.png">
+          <img src="https://ui-avatars.com/api/?name=5&background=random&color=fff&size=64" alt="Avatar 5">
+        </div>
+        <div class="avatar-option" data-avatar="avatar6.png">
+          <img src="https://ui-avatars.com/api/?name=6&background=random&color=fff&size=64" alt="Avatar 6">
+        </div>
+      </div>
+      
+      <div class="selected-avatar-container">
+        <p>Selected: <span id="selectedAvatarName">None</span></p>
+      </div>
+      
+      <button id="saveAvatarBtn" disabled>Save Selection</button>
+      <button id="closeAvatarPopup">Skip for Now</button>
     </div>
   </div>
 
@@ -567,6 +641,62 @@
                   const avatarPopup = document.getElementById("avatarPopup");
                   avatarPopup.style.display = "block";
                   
+                  // Track which avatar is selected
+                  let selectedAvatar = null;
+                  const saveButton = document.getElementById("saveAvatarBtn");
+                  const selectedAvatarNameElement = document.getElementById("selectedAvatarName");
+                  
+                  // Add click event handlers to all avatar options
+                  const avatarOptions = document.querySelectorAll(".avatar-option");
+                  avatarOptions.forEach(option => {
+                    option.addEventListener("click", () => {
+                      // Remove selected class from all options
+                      avatarOptions.forEach(opt => opt.classList.remove("selected"));
+                      
+                      // Add selected class to clicked option
+                      option.classList.add("selected");
+                      
+                      // Store the selected avatar
+                      selectedAvatar = option.getAttribute("data-avatar");
+                      
+                      // Update the selected avatar display
+                      selectedAvatarNameElement.textContent = selectedAvatar;
+                      
+                      // Enable the save button
+                      saveButton.disabled = false;
+                    });
+                  });
+                  
+                  // Handle save button click
+                  saveButton.addEventListener("click", async () => {
+                    if (selectedAvatar) {
+                      // Show loading state
+                      saveButton.textContent = "Saving...";
+                      saveButton.disabled = true;
+                      
+                      try {
+                        // Update user's profile in Firestore with selected avatar
+                        await updateDoc(userRef, {
+                          avatarUrl: selectedAvatar,
+                          hasSelectedAvatar: true
+                        });
+                        
+                        // Close the popup
+                        avatarPopup.style.display = "none";
+                        
+                        // Optionally show a success message
+                        alert("Avatar selected successfully!");
+                      } catch (error) {
+                        console.error("Error saving avatar selection:", error);
+                        alert("There was a problem saving your avatar. Please try again.");
+                        
+                        // Re-enable the save button
+                        saveButton.textContent = "Save Selection";
+                        saveButton.disabled = false;
+                      }
+                    }
+                  });
+                  
                   // Handle avatar popup close button
                   document.querySelector(".close-avatar-popup").addEventListener("click", async () => {
                     avatarPopup.style.display = "none";
@@ -576,7 +706,7 @@
                     });
                   });
                   
-                  // Handle OK button click
+                  // Handle skip button click
                   document.getElementById("closeAvatarPopup").addEventListener("click", async () => {
                     avatarPopup.style.display = "none";
                     // Update Firestore to record that user has seen the popup
