@@ -90,8 +90,7 @@
       color: #222;
     }
 
-    #commentForm textarea,
-    #commentForm input {
+    #commentForm textarea {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #ddd;
@@ -101,20 +100,16 @@
       font-size: 0.95em;
       transition: border-color 0.3s;
       box-sizing: border-box;
-    }
-    
-    #commentForm textarea:focus,
-    #commentForm input:focus {
-      border-color: #222;
-      outline: none;
-    }
-
-    #commentForm textarea {
       min-height: 120px;
       max-height: 200px;
       resize: vertical;
       overflow-y: auto;
       line-height: 1.4;
+    }
+    
+    #commentForm textarea:focus {
+      border-color: #222;
+      outline: none;
     }
 
     #commentForm button {
@@ -133,91 +128,6 @@
     #commentForm button:hover {
       background: #222;
       color: white;
-    }
-    
-    /* Form avatar styles */
-    .form-row {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 15px;
-    }
-    
-    .form-avatar-container {
-      flex-shrink: 0;
-      width: 100px;
-    }
-    
-    .form-fields {
-      flex: 1;
-    }
-    
-    .avatar-preview {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 10px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f0f0f0;
-      border: 1px solid #ddd;
-    }
-    
-    #avatarPreview {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      color: #666;
-      overflow: hidden;
-    }
-    
-    #avatarPreview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .avatar-upload {
-      margin-bottom: 15px;
-    }
-    
-    .avatar-upload label {
-      display: block;
-      margin-bottom: 5px;
-    }
-    
-    .avatar-upload input[type="file"] {
-      font-size: 12px;
-      width: 100%;
-    }
-    
-    .avatar-upload small {
-      display: block;
-      font-size: 12px;
-      color: #777;
-      margin-top: 3px;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 600px) {
-      .form-row {
-        flex-direction: column;
-      }
-      
-      .form-avatar-container {
-        width: 100%;
-        display: flex;
-        gap: 20px;
-        align-items: center;
-      }
-      
-      .avatar-preview {
-        margin-bottom: 0;
-      }
     }
     
     /* Comment display styles */
@@ -613,6 +523,36 @@
     #postHeading[style*="font-family: Pinyon Script"] {
       font-family: 'Pinyon Script', cursive !important;
     }
+
+    #loginToComment {
+      text-align: center;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    #loginToComment p {
+      margin-bottom: 15px;
+    }
+    
+    #loginToComment a {
+      display: inline-block;
+      padding: 8px 16px;
+      background: transparent;
+      border: 2px solid #222;
+      color: #222;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    #loginToComment a:hover {
+      background: #222;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -653,31 +593,16 @@
         <div id="commentsContainer"></div>
 
         <h2>Leave a Reply</h2>
-        <p class="comment-description">Your email address will not be published. Required fields are marked *</p>
+        <p class="comment-description">Sign in to post a comment</p>
 
-        <form id="commentForm">
-          <div class="form-row">
-            <div class="form-avatar-container">
-              <div class="avatar-preview">
-                <div id="avatarPreview">
-                  <span id="avatarInitial"></span>
-                </div>
-              </div>
-              <div class="avatar-upload">
-                <label for="avatarUpload">Profile Picture</label>
-                <input type="file" id="avatarUpload" accept="image/*" />
-                <small>Optional. Max 2MB.</small>
-              </div>
-            </div>
-            <div class="form-fields">
-              <label for="name">Name*</label>
-              <input id="name" name="name" type="text" placeholder="Your name" required />
-              
-              <label for="email">Email*</label>
-              <input id="email" name="email" type="email" placeholder="Your email" required />
-            </div>
-          </div>
-          
+        <!-- Login required message (shown when user is not logged in) -->
+        <div id="loginToComment">
+          <p>Please log in to leave a comment</p>
+          <a href="login.html">Login</a>
+        </div>
+
+        <!-- Comment form (only shown when user is logged in) -->
+        <form id="commentForm" style="display: none;">
           <label for="commentText">Comment*</label>
           <textarea id="commentText" name="commentText" placeholder="Share your thoughts..." required></textarea>
           
@@ -834,196 +759,81 @@
         document.body.innerHTML = "<h2>Error loading post.</h2>";
       }
 
-      // 2. Handle the comment form submission.
-      const commentForm = document.getElementById("commentForm");
-      if (commentForm) {
-        // Initialize the avatar preview
-        initializeAvatarPreview();
+      // Handle authentication state change
+      onAuthStateChanged(auth, async (user) => {
+        const commentForm = document.getElementById("commentForm");
+        const loginToComment = document.getElementById("loginToComment");
         
-        // Check if user is logged in and fetch their avatar
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
+        if (user) {
+          // User is signed in - show comment form and hide login message
+          commentForm.style.display = "flex";
+          loginToComment.style.display = "none";
+          
+          // Listen for comment form submission
+          commentForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // Show loading state
+            const submitBtn = commentForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.textContent = "Submitting...";
+            submitBtn.disabled = true;
+
+            // Gather comment data from the form
+            const commentText = document.getElementById("commentText").value;
+
             try {
-              // Fetch user data to get avatar
+              // Get user data from Firestore
               const userRef = doc(db, "users", user.uid);
               const userSnap = await getDoc(userRef);
               
-              if (userSnap.exists()) {
-                const userData = userSnap.data();
-                
-                // Pre-fill the form with user data
-                document.getElementById("name").value = userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '';
-                document.getElementById("email").value = user.email || '';
-                
-                // Set avatar preview from user's saved avatar if available
-                if (userData.avatarUrl) {
-                  const avatarPreview = document.getElementById('avatarPreview');
-                  
-                  // Use the user's avatar from their profile
-                  if (userData.avatarUrl.startsWith('http')) {
-                    // If it's already a URL, use it directly
-                    avatarPreview.innerHTML = `<img src="${userData.avatarUrl}" alt="Your avatar">`;
-                  } else {
-                    // For placeholder avatars using our naming pattern
-                    avatarPreview.innerHTML = `<img src="https://ui-avatars.com/api/?name=${userData.avatarUrl.replace('.png', '')}&background=random&color=fff&size=128" alt="Your avatar">`;
-                  }
-                }
+              if (!userSnap.exists()) {
+                alert("Could not retrieve your user profile. Please try again.");
+                resetSubmitButton();
+                return;
               }
-            } catch (error) {
-              console.error("Error fetching user data:", error);
-            }
-          }
-        });
-        
-        commentForm.addEventListener("submit", async (e) => {
-          e.preventDefault();
-
-          // Show loading state
-          const submitBtn = commentForm.querySelector('button[type="submit"]');
-          const originalBtnText = submitBtn.textContent;
-          submitBtn.textContent = "Submitting...";
-          submitBtn.disabled = true;
-
-          // Gather comment data from the form.
-          const commentText = document.getElementById("commentText").value;
-          const commenterName = document.getElementById("name").value;
-          const commenterEmail = document.getElementById("email").value;
-          const avatarFile = document.getElementById("avatarUpload").files[0];
-
-          // Basic check for a valid postId.
-          if (!postId) {
-            alert("Cannot post a comment without a valid Post ID!");
-            resetSubmitButton();
-            return;
-          }
-
-          try {
-            // Upload avatar if provided
-            let avatarUrl = null;
-            
-            // First check if user is logged in and has an avatar in their profile
-            if (auth.currentUser) {
-              const userRef = doc(db, "users", auth.currentUser.uid);
-              const userSnap = await getDoc(userRef);
               
-              if (userSnap.exists() && userSnap.data().avatarUrl) {
-                // Use the avatar from the user's profile
-                avatarUrl = userSnap.data().avatarUrl;
-              }
+              const userData = userSnap.data();
+              
+              // Reference to subcollection: posts/{postId}/comments
+              const commentsRef = collection(doc(db, "posts", postId), "comments");
+
+              // Add the comment data with user information
+              await addDoc(commentsRef, {
+                text: commentText,
+                name: userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : user.displayName || 'User',
+                email: user.email,
+                avatarUrl: userData.avatarUrl,
+                userId: user.uid,
+                createdAt: serverTimestamp(),
+              });
+
+              alert("Comment submitted!");
+              commentForm.reset();
+              
+              // Re-fetch comments so the user sees their new comment immediately
+              await fetchAndDisplayComments(postId);
+
+            } catch (error) {
+              console.error("Error submitting comment:", error);
+              alert("Error submitting comment. Please try again.");
+            } finally {
+              // Reset button state
+              resetSubmitButton();
             }
             
-            // If user has no avatar in profile or isn't logged in, use the uploaded one
-            if (!avatarUrl && avatarFile) {
-              avatarUrl = await uploadAvatar(avatarFile, commenterEmail);
+            function resetSubmitButton() {
+              submitBtn.textContent = originalBtnText;
+              submitBtn.disabled = false;
             }
-
-            // Reference to subcollection: posts/{postId}/comments
-            const commentsRef = collection(doc(db, "posts", postId), "comments");
-
-            // Add the comment data, including a timestamp for ordering.
-            await addDoc(commentsRef, {
-              text: commentText,
-              name: commenterName,
-              email: commenterEmail,
-              avatarUrl: avatarUrl,
-              userId: auth.currentUser ? auth.currentUser.uid : null,
-              createdAt: serverTimestamp(),
-            });
-
-            alert("Comment submitted!");
-            commentForm.reset();
-            
-            // Reset avatar preview
-            const avatarPreview = document.getElementById("avatarPreview");
-            avatarPreview.innerHTML = `<span id="avatarInitial"></span>`;
-
-            // Re-fetch comments so the user sees their new comment immediately.
-            await fetchAndDisplayComments(postId);
-
-          } catch (error) {
-            console.error("Error submitting comment:", error);
-            alert("Error submitting comment. Please try again.");
-          } finally {
-            // Reset button state
-            resetSubmitButton();
-          }
-          
-          function resetSubmitButton() {
-            submitBtn.textContent = originalBtnText;
-            submitBtn.disabled = false;
-          }
-        });
-      }
+          });
+        } else {
+          // User is not signed in - hide comment form and show login message
+          commentForm.style.display = "none";
+          loginToComment.style.display = "block";
+        }
+      });
     });
-
-    // Initialize avatar preview functionality
-    function initializeAvatarPreview() {
-      const nameInput = document.getElementById('name');
-      const avatarUpload = document.getElementById('avatarUpload');
-      const avatarPreview = document.getElementById('avatarPreview');
-      const avatarInitial = document.getElementById('avatarInitial');
-      
-      // Update avatar initial when name changes
-      nameInput.addEventListener('input', () => {
-        if (!avatarPreview.querySelector('img')) {
-          const initial = nameInput.value.charAt(0).toUpperCase();
-          avatarInitial.textContent = initial || '';
-        }
-      });
-      
-      // Handle file selection for avatar
-      avatarUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-          alert('Profile picture must be less than 2MB');
-          avatarUpload.value = '';
-          return;
-        }
-        
-        // Validate file type
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!validTypes.includes(file.type)) {
-          alert('Please select a valid image file (JPEG, PNG, or GIF)');
-          avatarUpload.value = '';
-          return;
-        }
-        
-        // Preview the image
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          avatarPreview.innerHTML = `<img src="${evt.target.result}" alt="Avatar preview">`;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-    
-    // Function to upload avatar to storage
-    async function uploadAvatar(file, userEmail) {
-      try {
-        // Import Firebase Storage
-        const { getStorage, ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js");
-        const storage = getStorage();
-        
-        // Create a unique filename
-        const fileExtension = file.name.split('.').pop();
-        const filename = `avatars/${userEmail.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.${fileExtension}`;
-        
-        // Upload the file
-        const storageRef = ref(storage, filename);
-        await uploadBytes(storageRef, file);
-        
-        // Get the download URL
-        const downloadURL = await getDownloadURL(storageRef);
-        return downloadURL;
-      } catch (error) {
-        console.error('Error uploading avatar:', error);
-        alert('Failed to upload profile picture. Comment will be posted without an avatar.');
-        return null;
-      }
-    }
 
     // 3. Fetch and display comments in chronological order (newest first).
     async function fetchAndDisplayComments(postId) {
@@ -1109,9 +919,8 @@
           avatarHTML = `<img src="https://ui-avatars.com/api/?name=${comment.avatarUrl.replace('.png', '')}&background=random&color=fff&size=128" alt="${comment.name}'s avatar" class="comment-avatar">`;
         }
       } else {
-        // Generate initials avatar as fallback
-        const initials = comment.name.split(' ').map(n => n[0]).join('').toUpperCase();
-        avatarHTML = `<div class="comment-avatar initial-avatar">${initials}</div>`;
+        // Use default avatar if no avatar is set
+        avatarHTML = `<img src="default-avatar.png" alt="Avatar" class="comment-avatar">`;
       }
 
       // Format the date
@@ -1201,26 +1010,18 @@
     
     // Submit a reply to a comment
     async function submitReply(parentId) {
+      // Check if user is logged in first
+      if (!auth.currentUser) {
+        alert('Please log in to reply to comments');
+        return;
+      }
+      
       const replyTextArea = document.getElementById(`replyText-${parentId}`);
       const replyText = replyTextArea.value.trim();
       
       if (!replyText) {
         alert('Please enter a reply');
         return;
-      }
-      
-      // Get current user name and email if available, otherwise prompt
-      let name = document.getElementById('name').value;
-      let email = document.getElementById('email').value;
-      
-      if (!name || !email) {
-        name = prompt('Please enter your name');
-        email = prompt('Please enter your email');
-        
-        if (!name || !email) {
-          alert('Name and email are required to submit a reply');
-          return;
-        }
       }
       
       try {
@@ -1233,15 +1034,28 @@
           return;
         }
         
+        // Get user data from Firestore
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (!userSnap.exists()) {
+          alert("Could not retrieve your user profile. Please try again.");
+          return;
+        }
+        
+        const userData = userSnap.data();
+        
         // Reference to subcollection: posts/{postId}/comments
         const commentsRef = collection(doc(db, "posts", postId), "comments");
         
         // Add the reply as a new comment with parentId reference
         await addDoc(commentsRef, {
           text: replyText,
-          name: name,
-          email: email,
+          name: userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : auth.currentUser.displayName || 'User',
+          email: auth.currentUser.email,
+          avatarUrl: userData.avatarUrl,
           parentId: parentId,
+          userId: auth.currentUser.uid,
           createdAt: serverTimestamp(),
         });
         
