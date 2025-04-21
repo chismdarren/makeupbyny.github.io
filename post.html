@@ -263,6 +263,11 @@
       background-color: #fff;
       padding: 0 5px;
       transform: translateX(-50%);
+      transition: opacity 0.2s ease;
+    }
+    
+    .reply-list.collapsed:before {
+      opacity: 0;
     }
     
     .toggle-replies {
@@ -273,6 +278,12 @@
       display: inline-flex;
       align-items: center;
       user-select: none;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+    
+    .toggle-replies.collapsed {
+      margin-bottom: 15px;
     }
     
     .toggle-replies:hover {
@@ -287,6 +298,16 @@
     
     .toggle-replies.collapsed .toggle-icon {
       transform: rotate(-90deg);
+    }
+    
+    .reply-count {
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 0.85em;
+      color: #666;
+      margin-left: 5px;
+      display: inline-block;
     }
     
     .reply-comment {
@@ -1082,7 +1103,7 @@
             console.log(`Comment ${commentId} has ${commentThreads[commentId].replies.length} replies`);
             
             const replyList = document.createElement('div');
-            replyList.className = 'reply-list';
+            replyList.className = 'reply-list collapsed'; // Start collapsed
             
             // Add each reply
             commentThreads[commentId].replies.forEach(replyId => {
@@ -1090,20 +1111,26 @@
             });
             
             // Create toggle button for replies
+            const replyCount = commentThreads[commentId].replies.length;
             const toggleButton = document.createElement('div');
-            toggleButton.className = 'toggle-replies';
-            toggleButton.innerHTML = `<span class="toggle-icon">▼</span> Hide ${commentThreads[commentId].replies.length} ${commentThreads[commentId].replies.length === 1 ? 'reply' : 'replies'}`;
+            toggleButton.className = 'toggle-replies collapsed'; // Start with collapsed class
+            toggleButton.innerHTML = `
+              <span class="toggle-icon">▼</span> 
+              <span>Show replies</span>
+              <span class="reply-count">${replyCount}</span>
+            `;
             toggleButton.dataset.commentId = commentId;
             
             // Add toggle functionality
             toggleButton.addEventListener('click', () => {
               const isCollapsed = replyList.classList.toggle('collapsed');
+              const textSpan = toggleButton.querySelector('span:nth-child(2)');
               
               if (isCollapsed) {
-                toggleButton.innerHTML = `<span class="toggle-icon">▼</span> Show ${commentThreads[commentId].replies.length} ${commentThreads[commentId].replies.length === 1 ? 'reply' : 'replies'}`;
+                textSpan.textContent = 'Show replies';
                 toggleButton.classList.add('collapsed');
               } else {
-                toggleButton.innerHTML = `<span class="toggle-icon">▼</span> Hide ${commentThreads[commentId].replies.length} ${commentThreads[commentId].replies.length === 1 ? 'reply' : 'replies'}`;
+                textSpan.textContent = 'Hide replies';
                 toggleButton.classList.remove('collapsed');
               }
             });
