@@ -221,7 +221,7 @@
     
     /* Reply styling */
     .reply-list {
-      margin: 10px 0 0 20px;
+      margin: 10px 0 0 45px;
       padding-left: 15px;
       border-left: 2px solid #ddd;
     }
@@ -908,12 +908,15 @@
 
       // Clear existing comments from the container.
       commentsContainer.innerHTML = "";
+      console.log("Fetching comments for post:", postId);
 
       try {
         // Subcollection reference: posts/{postId}/comments
         const commentsRef = collection(doc(db, "posts", postId), "comments");
         const q = query(commentsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
+
+        console.log(`Found ${querySnapshot.size} comments total`);
 
         if (querySnapshot.empty) {
           commentsContainer.innerHTML = "<p style='text-align: center; color: #666; font-style: italic;'>No comments yet. Be the first to share your thoughts!</p>";
@@ -922,8 +925,9 @@
 
         // Create an object to store comment threads
         const commentThreads = {};
+        const topLevelComments = [];
         
-        // First pass - create all comment elements and identify parent-child relationships
+        // First pass - gather all comments
         querySnapshot.forEach((commentDoc) => {
           const commentId = commentDoc.id;
           const commentData = commentDoc.data();
@@ -931,65 +935,68 @@
           // Add the ID to the comment data so it's accessible within the element
           commentData.id = commentId;
           
+          console.log(`Processing comment: ${commentId}, parentId: ${commentData.parentId || 'none'}`);
+          
           // Store the comment in our threads object
           commentThreads[commentId] = {
             data: commentData,
             element: createCommentElement(commentData, Boolean(commentData.parentId)),
-            replies: [],
-            parentId: commentData.parentId || null
+            replies: []
           };
-        });
-        
-        // Second pass - organize comments into their proper hierarchy
-        const topLevelComments = [];
-        const processedComments = new Set();
-        
-        // Identify all replies and organize them under their parents
-        Object.keys(commentThreads).forEach(commentId => {
-          const comment = commentThreads[commentId];
           
-          if (comment.parentId && commentThreads[comment.parentId]) {
-            // This is a reply - add it to its parent's replies array
-            commentThreads[comment.parentId].replies.push(commentId);
-          } else if (!comment.parentId) {
-            // This is a top-level comment
+          // If it's a top-level comment, add to that array
+          if (!commentData.parentId) {
             topLevelComments.push(commentId);
           }
         });
         
-        // Add top-level comments to the container first, in reverse chronological order (newest first)
+        console.log(`Found ${topLevelComments.length} top-level comments`);
+        
+        // Organize replies under their parents
+        for (const commentId in commentThreads) {
+          const comment = commentThreads[commentId].data;
+          
+          // If this is a reply (has a parentId) and the parent exists
+          if (comment.parentId && commentThreads[comment.parentId]) {
+            // Add this comment as a reply to its parent
+            commentThreads[comment.parentId].replies.push(commentId);
+            console.log(`Added comment ${commentId} as reply to ${comment.parentId}`);
+          }
+        }
+        
+        // Display top-level comments first (newest first)
         topLevelComments.forEach(commentId => {
-          if (!processedComments.has(commentId)) {
-            commentsContainer.appendChild(commentThreads[commentId].element);
-            processedComments.add(commentId);
+          // Append the comment to the container
+          commentsContainer.appendChild(commentThreads[commentId].element);
+          
+          // Check if this comment has replies
+          if (commentThreads[commentId].replies.length > 0) {
+            console.log(`Comment ${commentId} has ${commentThreads[commentId].replies.length} replies`);
             
-            // Then recursively add any replies
-            if (commentThreads[commentId].replies.length > 0) {
-              const replyList = document.createElement('div');
-              replyList.className = 'reply-list';
-              
-              // Add each reply in chronological order
-              commentThreads[commentId].replies.forEach(replyId => {
-                if (!processedComments.has(replyId)) {
-                  replyList.appendChild(commentThreads[replyId].element);
-                  processedComments.add(replyId);
-                }
-              });
-              
-              // Append the reply list to the parent comment
-              commentThreads[commentId].element.appendChild(replyList);
-            }
+            const replyList = document.createElement('div');
+            replyList.className = 'reply-list';
+            
+            // Add each reply
+            commentThreads[commentId].replies.forEach(replyId => {
+              replyList.appendChild(commentThreads[replyId].element);
+            });
+            
+            // Append all replies to the parent comment
+            commentThreads[commentId].element.appendChild(replyList);
           }
         });
         
-        // Check for any orphaned replies that weren't processed
-        Object.keys(commentThreads).forEach(commentId => {
-          if (!processedComments.has(commentId)) {
-            // This is probably a reply to a comment that was deleted
+        // Handle orphaned replies (replies to comments that no longer exist)
+        for (const commentId in commentThreads) {
+          const comment = commentThreads[commentId].data;
+          
+          // If it has a parentId but that parent doesn't exist or we don't have it
+          if (comment.parentId && !commentThreads[comment.parentId]) {
+            console.log(`Comment ${commentId} has orphaned parentId: ${comment.parentId}`);
             // Add it as a top-level comment
             commentsContainer.appendChild(commentThreads[commentId].element);
           }
-        });
+        }
       } catch (error) {
         console.error("Error fetching comments:", error);
         commentsContainer.innerHTML = "<p>Error loading comments.</p>";
@@ -1001,6 +1008,7 @@
       const commentDiv = document.createElement('div');
       commentDiv.className = isReply ? 'comment reply-comment' : 'comment';
       commentDiv.id = `comment-${comment.id}`;
+      commentDiv.dataset.parentId = comment.parentId || '';
 
       // Determine the avatar to display
       let avatarHTML = '';
@@ -1142,16 +1150,21 @@
         // Reference to subcollection: posts/{postId}/comments
         const commentsRef = collection(doc(db, "posts", postId), "comments");
         
+        console.log(`Submitting reply to comment ${parentId}`);
+        
         // Add the reply as a new comment with parentId reference
-        await addDoc(commentsRef, {
+        const replyData = {
           text: replyText,
           name: userData.username || auth.currentUser.displayName || 'User',
           email: auth.currentUser.email,
           avatarUrl: userData.avatarUrl,
-          parentId: parentId,
+          parentId: parentId,  // Store the parent comment ID
           userId: auth.currentUser.uid,
           createdAt: serverTimestamp(),
-        });
+        };
+        
+        await addDoc(commentsRef, replyData);
+        console.log("Reply added with parentId:", parentId);
         
         // Hide the reply form
         toggleReplyForm(parentId, false);
