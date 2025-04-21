@@ -237,6 +237,19 @@
       margin: 10px 0 0 45px;
       padding-left: 15px;
       border-left: 2px solid #ddd;
+      position: relative;
+    }
+    
+    .reply-list:before {
+      content: "Replies";
+      position: absolute;
+      top: -10px;
+      left: 0;
+      font-size: 0.8em;
+      color: #888;
+      background-color: #fff;
+      padding: 0 5px;
+      transform: translateX(-50%);
     }
     
     .reply-comment {
@@ -652,6 +665,22 @@
         margin-left: 35px;
       }
     }
+
+    /* Styles for orphaned replies */
+    .orphaned-reply {
+      border-left: 2px dashed #999;
+      padding-left: 10px;
+    }
+    
+    .orphaned-reply-note {
+      font-size: 0.8em;
+      color: #666;
+      font-style: italic;
+      margin-bottom: 8px;
+      background-color: #f5f5f5;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -1030,8 +1059,21 @@
           // If it has a parentId but that parent doesn't exist or we don't have it
           if (comment.parentId && !commentThreads[comment.parentId]) {
             console.log(`Comment ${commentId} has orphaned parentId: ${comment.parentId}`);
-            // Add it as a top-level comment
-            commentsContainer.appendChild(commentThreads[commentId].element);
+            // Convert it to a top-level comment by removing the reply styling
+            const element = commentThreads[commentId].element;
+            element.classList.remove('reply-comment');
+            element.classList.add('orphaned-reply');
+            
+            // Add a note that this was a reply to a deleted comment
+            const noteElement = document.createElement('div');
+            noteElement.className = 'orphaned-reply-note';
+            noteElement.textContent = 'This was a reply to a comment that no longer exists.';
+            element.insertBefore(noteElement, element.firstChild);
+            
+            // We don't add reply functionality to orphaned replies to maintain one level of nesting
+            
+            // Add it to the container
+            commentsContainer.appendChild(element);
           }
         }
       } catch (error) {
@@ -1087,7 +1129,20 @@
         dateText = 'Just now';
       }
 
-      // Build the comment HTML
+      // Build the comment HTML with or without reply option based on if this is already a reply
+      const actionsHtml = isReply ? 
+        `<div class="comment-actions"></div>` : 
+        `<div class="comment-actions">
+          <a href="#" class="comment-action reply-action" data-comment-id="${comment.id}">Reply</a>
+        </div>
+        <div class="reply-form" id="replyForm-${comment.id}">
+          <textarea placeholder="Write your reply..." id="replyText-${comment.id}"></textarea>
+          <div class="reply-actions">
+            <button class="reply-cancel" data-comment-id="${comment.id}">Cancel</button>
+            <button class="reply-submit" data-comment-id="${comment.id}">Reply</button>
+          </div>
+        </div>`;
+
       commentDiv.innerHTML = `
         <div class="comment-header">
           <div class="comment-avatar-container">
@@ -1099,35 +1154,33 @@
           </div>
         </div>
         <div class="comment-content">${comment.text}</div>
-        <div class="comment-actions">
-          <a href="#" class="comment-action reply-action" data-comment-id="${comment.id}">Reply</a>
-        </div>
-        <div class="reply-form" id="replyForm-${comment.id}">
-          <textarea placeholder="Write your reply..." id="replyText-${comment.id}"></textarea>
-          <div class="reply-actions">
-            <button class="reply-cancel" data-comment-id="${comment.id}">Cancel</button>
-            <button class="reply-submit" data-comment-id="${comment.id}">Reply</button>
-          </div>
-        </div>
+        ${actionsHtml}
       `;
       
-      // Add event listener for reply button
-      const replyAction = commentDiv.querySelector('.reply-action');
-      replyAction.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleReplyForm(comment.id);
-      });
-      
-      // Add event listeners for reply form buttons
-      const cancelButton = commentDiv.querySelector('.reply-cancel');
-      cancelButton.addEventListener('click', () => {
-        toggleReplyForm(comment.id, false);
-      });
-      
-      const submitButton = commentDiv.querySelector('.reply-submit');
-      submitButton.addEventListener('click', () => {
-        submitReply(comment.id);
-      });
+      // Only add reply event listeners if this is not already a reply
+      if (!isReply) {
+        const replyAction = commentDiv.querySelector('.reply-action');
+        if (replyAction) {
+          replyAction.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleReplyForm(comment.id);
+          });
+          
+          const cancelButton = commentDiv.querySelector('.reply-cancel');
+          if (cancelButton) {
+            cancelButton.addEventListener('click', () => {
+              toggleReplyForm(comment.id, false);
+            });
+          }
+          
+          const submitButton = commentDiv.querySelector('.reply-submit');
+          if (submitButton) {
+            submitButton.addEventListener('click', () => {
+              submitReply(comment.id);
+            });
+          }
+        }
+      }
       
       return commentDiv;
     }
@@ -1175,6 +1228,31 @@
         
         if (!postId) {
           alert('Error: Cannot identify the post');
+          return;
+        }
+        
+        // Get the parent comment element to verify it's not already a reply
+        const parentComment = document.getElementById(`comment-${parentId}`);
+        if (!parentComment) {
+          alert('Error: Cannot find the parent comment');
+          return;
+        }
+        
+        // Stop if trying to reply to a reply (double check at the UI level)
+        if (parentComment.classList.contains('reply-comment') || 
+            parentComment.classList.contains('orphaned-reply') ||
+            parentComment.dataset.parentId) {
+          alert('Replies to replies are not allowed. Please reply to the original comment.');
+          return;
+        }
+        
+        // Additionally check at the data level
+        const parentCommentRef = collection(doc(db, "posts", postId), "comments");
+        const parentDocRef = doc(parentCommentRef, parentId);
+        const parentDocSnap = await getDoc(parentDocRef);
+        
+        if (parentDocSnap.exists() && parentDocSnap.data().parentId) {
+          alert('Replies to replies are not allowed. Please reply to the original comment.');
           return;
         }
         
