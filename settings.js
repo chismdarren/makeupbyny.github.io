@@ -216,19 +216,9 @@ function setupAvatarSelection() {
             
             // Store selected avatar
             selectedAvatar = option.getAttribute('data-avatar');
-            console.log("Selected avatar:", selectedAvatar);
             
             // Show preview of selected avatar
-            let previewSrc = '';
-            
-            // Check if the file exists (first try png then jpg if needed)
-            const avatarBase = selectedAvatar.split('.')[0]; // Get the base name without extension
-            
-            // For now, we'll just use the path as specified in the data-avatar attribute
-            previewSrc = `images/avatar-icons/${selectedAvatar}`;
-            console.log("Preview source:", previewSrc);
-            
-            document.getElementById('currentAvatarImg').src = previewSrc;
+            document.getElementById('currentAvatarImg').src = `images/avatar-icons/${selectedAvatar}`;
             
             // Enable save button
             saveAvatarBtn.disabled = false;
@@ -243,8 +233,6 @@ function setupAvatarSelection() {
             // Show loading state
             saveAvatarBtn.textContent = 'Saving...';
             saveAvatarBtn.disabled = true;
-            
-            console.log("Saving avatar:", selectedAvatar);
             
             // Update user's profile in Firestore
             const userRef = doc(db, 'users', currentUser.uid);

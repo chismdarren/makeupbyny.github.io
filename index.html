@@ -28,6 +28,7 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0, 0, 0, 0.5);
+      overflow: hidden;
     }
 
     .avatar-popup-content {
@@ -35,16 +36,22 @@
       margin: 10% auto;
       padding: 20px;
       border-radius: 8px;
-      width: 400px;
+      width: 350px;
       max-width: 90%;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       text-align: center;
     }
 
     .avatar-popup h3 {
-      margin-top: 10px;
-      margin-bottom: 15px;
+      margin-top: 0;
+      margin-bottom: 10px;
       color: #333;
+      font-size: 1.3em;
+    }
+    
+    .avatar-popup p {
+      margin-bottom: 15px;
+      font-size: 0.9em;
     }
 
     .avatar-popup button {
@@ -55,9 +62,8 @@
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 16px;
-      width: 80%;
-      max-width: 250px;
+      font-size: 14px;
+      width: 150px;
     }
 
     .avatar-popup button:hover {
@@ -75,15 +81,15 @@
     
     .avatar-options {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 20px 0;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 15px 0;
     }
     
     .avatar-option {
       border: 2px solid #ddd;
       border-radius: 8px;
-      padding: 5px;
+      padding: 3px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -602,10 +608,6 @@
         </div>
       </div>
       
-      <div class="selected-avatar-container">
-        <p>Selected: <span id="selectedAvatarName">None</span></p>
-      </div>
-      
       <button id="saveAvatarBtn" disabled>Save Selection</button>
     </div>
   </div>
@@ -651,10 +653,12 @@
                   const avatarPopup = document.getElementById("avatarPopup");
                   avatarPopup.style.display = "block";
                   
+                  // Disable scrolling on the body when popup is shown
+                  document.body.style.overflow = "hidden";
+                  
                   // Track which avatar is selected
                   let selectedAvatar = null;
                   const saveButton = document.getElementById("saveAvatarBtn");
-                  const selectedAvatarNameElement = document.getElementById("selectedAvatarName");
                   
                   // Prevent closing the popup with Escape key
                   window.addEventListener("keydown", function(e) {
@@ -685,9 +689,6 @@
                       // Store the selected avatar
                       selectedAvatar = option.getAttribute("data-avatar");
                       
-                      // Update the selected avatar display
-                      selectedAvatarNameElement.textContent = selectedAvatar;
-                      
                       // Enable the save button
                       saveButton.disabled = false;
                     });
@@ -709,6 +710,9 @@
                         
                         // Close the popup
                         avatarPopup.style.display = "none";
+                        
+                        // Re-enable scrolling
+                        document.body.style.overflow = "";
                         
                         // Optionally show a success message
                         alert("Avatar selected successfully!");
