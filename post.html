@@ -1016,7 +1016,7 @@
         if (comment.avatarUrl.startsWith('http')) {
           // If it's a full URL, use it directly
           avatarHTML = `<img src="${comment.avatarUrl}" alt="${comment.name}'s avatar" class="comment-avatar">`;
-        } else if (comment.avatarUrl.match(/avatar([1-9]|10)\.png/) || comment.avatarUrl.match(/avatar([1-9]|10)\.jpg/)) {
+        } else if (comment.avatarUrl.match(/avatar([1-9]|1[0-2])\.png/) || comment.avatarUrl.match(/avatar([1-9]|1[0-2])\.jpg/)) {
           // It's one of our avatar images
           avatarHTML = `<img src="images/avatar-icons/${comment.avatarUrl}" alt="${comment.name}'s avatar" class="comment-avatar">`;
         } else {

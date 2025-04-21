@@ -170,17 +170,22 @@ async function loadUserData() {
 function loadAvatar(avatarUrl) {
     const avatarImg = document.getElementById('currentAvatarImg');
     
+    console.log("Loading avatar with URL:", avatarUrl);
+    
     // If it's a full URL already, use it directly
     if (avatarUrl && avatarUrl.startsWith('http')) {
+        console.log("Using full URL directly");
         avatarImg.src = avatarUrl;
     } 
     // Check if it's one of our avatar file names (avatar1.png, etc.)
     else if (avatarUrl && (avatarUrl.match(/avatar([1-9]|1[0-2])\.png/) || avatarUrl.match(/avatar([1-9]|1[0-2])\.jpg/))) {
         // Use the actual avatar image file
+        console.log("Using local avatar file path:", `images/avatar-icons/${avatarUrl}`);
         avatarImg.src = `images/avatar-icons/${avatarUrl}`;
     }
     // Fallback to placeholder
     else {
+        console.log("Using placeholder avatar");
         avatarImg.src = "https://ui-avatars.com/api/?name=User&background=random&color=fff&size=128";
     }
     
@@ -211,9 +216,18 @@ function setupAvatarSelection() {
             
             // Store selected avatar
             selectedAvatar = option.getAttribute('data-avatar');
+            console.log("Selected avatar:", selectedAvatar);
             
             // Show preview of selected avatar
-            const previewSrc = `images/avatar-icons/${selectedAvatar}`;
+            let previewSrc = '';
+            
+            // Check if the file exists (first try png then jpg if needed)
+            const avatarBase = selectedAvatar.split('.')[0]; // Get the base name without extension
+            
+            // For now, we'll just use the path as specified in the data-avatar attribute
+            previewSrc = `images/avatar-icons/${selectedAvatar}`;
+            console.log("Preview source:", previewSrc);
+            
             document.getElementById('currentAvatarImg').src = previewSrc;
             
             // Enable save button
@@ -229,6 +243,8 @@ function setupAvatarSelection() {
             // Show loading state
             saveAvatarBtn.textContent = 'Saving...';
             saveAvatarBtn.disabled = true;
+            
+            console.log("Saving avatar:", selectedAvatar);
             
             // Update user's profile in Firestore
             const userRef = doc(db, 'users', currentUser.uid);
