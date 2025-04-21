@@ -238,6 +238,19 @@
       padding-left: 15px;
       border-left: 2px solid #ddd;
       position: relative;
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+      overflow: hidden;
+      max-height: 1000px; /* Default expanded state */
+      opacity: 1;
+    }
+    
+    .reply-list.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-top: 0;
+      padding-bottom: 0;
     }
     
     .reply-list:before {
@@ -250,6 +263,30 @@
       background-color: #fff;
       padding: 0 5px;
       transform: translateX(-50%);
+    }
+    
+    .toggle-replies {
+      font-size: 0.85em;
+      color: #666;
+      cursor: pointer;
+      margin-left: 52px;
+      display: inline-flex;
+      align-items: center;
+      user-select: none;
+    }
+    
+    .toggle-replies:hover {
+      color: #333;
+    }
+    
+    .toggle-replies .toggle-icon {
+      display: inline-block;
+      margin-right: 4px;
+      transition: transform 0.2s ease;
+    }
+    
+    .toggle-replies.collapsed .toggle-icon {
+      transform: rotate(-90deg);
     }
     
     .reply-comment {
@@ -664,6 +701,11 @@
       .reply-list {
         margin-left: 35px;
       }
+      
+      .toggle-replies {
+        margin-left: 47px;
+        font-size: 0.8em;
+      }
     }
 
     /* Styles for orphaned replies */
@@ -1046,6 +1088,28 @@
             commentThreads[commentId].replies.forEach(replyId => {
               replyList.appendChild(commentThreads[replyId].element);
             });
+            
+            // Create toggle button for replies
+            const toggleButton = document.createElement('div');
+            toggleButton.className = 'toggle-replies';
+            toggleButton.innerHTML = `<span class="toggle-icon">▼</span> Hide ${commentThreads[commentId].replies.length} ${commentThreads[commentId].replies.length === 1 ? 'reply' : 'replies'}`;
+            toggleButton.dataset.commentId = commentId;
+            
+            // Add toggle functionality
+            toggleButton.addEventListener('click', () => {
+              const isCollapsed = replyList.classList.toggle('collapsed');
+              
+              if (isCollapsed) {
+                toggleButton.innerHTML = `<span class="toggle-icon">▼</span> Show ${commentThreads[commentId].replies.length} ${commentThreads[commentId].replies.length === 1 ? 'reply' : 'replies'}`;
+                toggleButton.classList.add('collapsed');
+              } else {
+                toggleButton.innerHTML = `<span class="toggle-icon">▼</span> Hide ${commentThreads[commentId].replies.length} ${commentThreads[commentId].replies.length === 1 ? 'reply' : 'replies'}`;
+                toggleButton.classList.remove('collapsed');
+              }
+            });
+            
+            // Add the toggle button before the reply list
+            commentThreads[commentId].element.appendChild(toggleButton);
             
             // Append all replies to the parent comment
             commentThreads[commentId].element.appendChild(replyList);
