@@ -187,7 +187,7 @@
       margin-bottom: 3px;
       font-size: 0.95em;
     }
-    
+
     .comment-date {
       color: #888;
       font-size: 0.85em;
@@ -1016,13 +1016,16 @@
         if (comment.avatarUrl.startsWith('http')) {
           // If it's a full URL, use it directly
           avatarHTML = `<img src="${comment.avatarUrl}" alt="${comment.name}'s avatar" class="comment-avatar">`;
+        } else if (comment.avatarUrl.match(/avatar([1-9]|10)\.png/) || comment.avatarUrl.match(/avatar([1-9]|10)\.jpg/)) {
+          // It's one of our avatar images
+          avatarHTML = `<img src="images/avatar-icons/${comment.avatarUrl}" alt="${comment.name}'s avatar" class="comment-avatar">`;
         } else {
-          // For placeholder avatars or saved avatar names
-          avatarHTML = `<img src="https://ui-avatars.com/api/?name=${comment.avatarUrl.replace('.png', '')}&background=random&color=fff&size=128" alt="${comment.name}'s avatar" class="comment-avatar">`;
+          // Fallback to placeholder
+          avatarHTML = `<img src="https://ui-avatars.com/api/?name=${comment.name.charAt(0)}&background=random&color=fff&size=128" alt="${comment.name}'s avatar" class="comment-avatar">`;
         }
       } else {
         // Use default avatar if no avatar is set
-        avatarHTML = `<img src="default-avatar.png" alt="Avatar" class="comment-avatar">`;
+        avatarHTML = `<img src="https://ui-avatars.com/api/?name=${comment.name.charAt(0)}&background=random&color=fff&size=128" alt="${comment.name}'s avatar" class="comment-avatar">`;
       }
 
       // Format the date

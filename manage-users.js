@@ -620,6 +620,9 @@ async function loadUsers() {
           li.className = "user-item";
           li.setAttribute('data-uid', user.uid);
           li.innerHTML = `
+            <div class="user-avatar-container">
+              ${getAvatarHTML(userData.avatarUrl, userData.username)}
+            </div>
             <div class="user-info">
               <strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> | 
               <strong>Email:</strong> ${user.email} | 
@@ -800,6 +803,9 @@ window.showUserDetails = async function(userId, userData = null) {
     
     modalContent.innerHTML = `
       <div class="user-details-container">
+        <div class="user-avatar-large">
+          ${getAvatarHTML(userFullData.avatarUrl, userFullData.username || '')}
+        </div>
         <div class="user-basic-info">
           <div class="section-header">
           <h3>Basic Information</h3>
@@ -2231,4 +2237,22 @@ function showUserDetails(userId) {
     console.error("Error getting user data:", error);
     showNotification('Error retrieving user data: ' + error.message, 'error');
   });
+}
+
+// Helper function to display an avatar/profile image
+function getAvatarHTML(avatarUrl, username) {
+    // If it's a full URL already, use it directly
+    if (avatarUrl && avatarUrl.startsWith('http')) {
+        return `<img src="${avatarUrl}" alt="${username}'s avatar" class="user-avatar">`;
+    } 
+    // Check if it's one of our avatar file names (avatar1.png, etc.)
+    else if (avatarUrl && (avatarUrl.match(/avatar([1-9]|10)\.png/) || avatarUrl.match(/avatar([1-9]|10)\.png\.jpg/))) {
+        // Use the actual avatar image file
+        return `<img src="images/avatar-icons/${avatarUrl}" alt="${username}'s avatar" class="user-avatar">`;
+    }
+    // Fallback to placeholder
+    else {
+        const initial = username ? username.charAt(0).toUpperCase() : 'U';
+        return `<img src="https://ui-avatars.com/api/?name=${initial}&background=random&color=fff&size=128" alt="${username}'s avatar" class="user-avatar">`;
+    }
 }

@@ -168,28 +168,26 @@ async function loadUserData() {
 
 // Load avatar image
 function loadAvatar(avatarUrl) {
-    // For placeholder avatars from ui-avatars.com, keep using that
-    if (avatarUrl.startsWith('https://ui-avatars.com')) {
-        document.getElementById('currentAvatarImg').src = avatarUrl;
-        return;
-    }
-    
-    // For avatar1.png, avatar2.png style names, create appropriate URL
-    // When using real avatar images, adjust this URL construction
     const avatarImg = document.getElementById('currentAvatarImg');
     
     // If it's a full URL already, use it directly
-    if (avatarUrl.startsWith('http')) {
+    if (avatarUrl && avatarUrl.startsWith('http')) {
         avatarImg.src = avatarUrl;
-    } else {
-        // For now, continue using placeholder images
-        // Replace with actual path when you have real avatar images
-        avatarImg.src = `https://ui-avatars.com/api/?name=${avatarUrl.replace('.png', '')}&background=random&color=fff&size=128`;
+    } 
+    // Check if it's one of our avatar file names (avatar1.png, etc.)
+    else if (avatarUrl && (avatarUrl.match(/avatar([1-9]|10)\.png/) || avatarUrl.match(/avatar([1-9]|10)\.png\.jpg/))) {
+        // Use the actual avatar image file
+        avatarImg.src = `images/avatar-icons/${avatarUrl}`;
+    }
+    // Fallback to placeholder
+    else {
+        avatarImg.src = "https://ui-avatars.com/api/?name=User&background=random&color=fff&size=128";
     }
     
     // Find and pre-select the matching avatar option if available
     const avatarOptions = document.querySelectorAll('.avatar-option');
     avatarOptions.forEach(option => {
+        option.classList.remove('selected');
         if (option.getAttribute('data-avatar') === avatarUrl) {
             option.classList.add('selected');
         }
@@ -215,7 +213,7 @@ function setupAvatarSelection() {
             selectedAvatar = option.getAttribute('data-avatar');
             
             // Show preview of selected avatar
-            const previewSrc = option.querySelector('img').src;
+            const previewSrc = `images/avatar-icons/${selectedAvatar}`;
             document.getElementById('currentAvatarImg').src = previewSrc;
             
             // Enable save button
