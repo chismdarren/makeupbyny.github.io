@@ -576,6 +576,45 @@
       background: #222;
       color: white;
     }
+
+    /* Notification styling */
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 4px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideIn 0.3s forwards, fadeOut 0.5s 2.5s forwards;
+    }
+
+    .notification.success {
+      background-color: #4CAF50;
+    }
+
+    .notification.error {
+      background-color: #F44336;
+    }
+
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+    }
   </style>
 </head>
 <body>
@@ -896,58 +935,58 @@
           commentThreads[commentId] = {
             data: commentData,
             element: createCommentElement(commentData, Boolean(commentData.parentId)),
-            replies: []
+            replies: [],
+            parentId: commentData.parentId || null
           };
         });
         
-        // Second pass - identify all replies
-        querySnapshot.forEach((commentDoc) => {
-          const commentId = commentDoc.id;
-          const commentData = commentDoc.data();
+        // Second pass - organize comments into their proper hierarchy
+        const topLevelComments = [];
+        const processedComments = new Set();
+        
+        // Identify all replies and organize them under their parents
+        Object.keys(commentThreads).forEach(commentId => {
+          const comment = commentThreads[commentId];
           
-          // If this is a reply, add it to its parent's replies array
-          if (commentData.parentId && commentThreads[commentData.parentId]) {
-            commentThreads[commentData.parentId].replies.push(commentId);
+          if (comment.parentId && commentThreads[comment.parentId]) {
+            // This is a reply - add it to its parent's replies array
+            commentThreads[comment.parentId].replies.push(commentId);
+          } else if (!comment.parentId) {
+            // This is a top-level comment
+            topLevelComments.push(commentId);
           }
         });
         
-        // Third pass - display comments in the correct hierarchy
-        const addedComments = new Set();
-        
-        // Add top-level comments first
-        querySnapshot.forEach((commentDoc) => {
-          const commentId = commentDoc.id;
-          const commentData = commentDoc.data();
-          
-          // Only process top-level comments (no parent)
-          if (!commentData.parentId && !addedComments.has(commentId)) {
+        // Add top-level comments to the container first, in reverse chronological order (newest first)
+        topLevelComments.forEach(commentId => {
+          if (!processedComments.has(commentId)) {
             commentsContainer.appendChild(commentThreads[commentId].element);
-            addedComments.add(commentId);
+            processedComments.add(commentId);
             
-            // Add any replies under this comment
+            // Then recursively add any replies
             if (commentThreads[commentId].replies.length > 0) {
               const replyList = document.createElement('div');
               replyList.className = 'reply-list';
               
+              // Add each reply in chronological order
               commentThreads[commentId].replies.forEach(replyId => {
-                if (!addedComments.has(replyId)) {
+                if (!processedComments.has(replyId)) {
                   replyList.appendChild(commentThreads[replyId].element);
-                  addedComments.add(replyId);
+                  processedComments.add(replyId);
                 }
               });
               
+              // Append the reply list to the parent comment
               commentThreads[commentId].element.appendChild(replyList);
             }
           }
         });
         
-        // Check for any orphaned replies (replies to comments that may have been deleted)
-        querySnapshot.forEach((commentDoc) => {
-          const commentId = commentDoc.id;
-          const commentData = commentDoc.data();
-          
-          if (commentData.parentId && !addedComments.has(commentId)) {
-            // This is a reply that wasn't added (possibly because parent doesn't exist)
+        // Check for any orphaned replies that weren't processed
+        Object.keys(commentThreads).forEach(commentId => {
+          if (!processedComments.has(commentId)) {
+            // This is probably a reply to a comment that was deleted
+            // Add it as a top-level comment
             commentsContainer.appendChild(commentThreads[commentId].element);
           }
         });
@@ -1120,7 +1159,19 @@
         // Refresh comments
         await fetchAndDisplayComments(postId);
         
-        alert('Reply submitted!');
+        // Clear the textarea
+        replyTextArea.value = '';
+        
+        // Use notification instead of alert for better UX
+        const notification = document.createElement('div');
+        notification.className = 'notification success';
+        notification.textContent = 'Reply submitted successfully!';
+        document.body.appendChild(notification);
+        
+        // Remove the notification after 3 seconds
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
       } catch (error) {
         console.error('Error submitting reply:', error);
         alert('Error submitting reply. Please try again.');
