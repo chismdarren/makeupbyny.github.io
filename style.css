@@ -298,17 +298,36 @@ form textarea {
 
 @media (max-width: 768px) {
   .content {
-    flex-direction: column;
-    padding: 20px 15px;
+    flex-direction: row;
+    padding: 15px 10px;
+    gap: 15px;
   }
   
   .posts {
-    max-width: 100%;
+    max-width: 65%;
+    padding: 15px;
   }
   
   .about-me {
-    max-width: 100%;
-    margin-top: 30px;
+    max-width: 35%;
+    padding: 15px;
+    font-size: 0.85em;
+    margin-top: 0;
+  }
+  
+  .about-me img {
+    width: 100%;
+    max-width: 120px;
+  }
+
+  .about-me p {
+    font-size: 0.9em;
+    margin-bottom: 10px;
+  }
+
+  .social-icon {
+    padding: 8px 12px;
+    font-size: 0.85em;
   }
   
   header h1 {
@@ -319,6 +338,72 @@ form textarea {
   nav button {
     margin: 0 10px;
     font-size: 1em;
+  }
+}
+
+/* For very small screens/mobile */
+@media (max-width: 480px) {
+  .content {
+    flex-direction: row;
+    padding: 10px 5px;
+    gap: 10px;
+  }
+  
+  .posts {
+    max-width: 60%;
+    padding: 10px;
+  }
+  
+  .about-me {
+    max-width: 40%;
+    padding: 10px;
+    font-size: 0.8em;
+  }
+
+  .about-me img {
+    max-width: 100px;
+    margin-bottom: 10px;
+  }
+
+  .about-me h3 {
+    font-size: 1em;
+    margin: 15px 0 8px;
+  }
+
+  .search-container {
+    margin: 15px 0;
+  }
+
+  .search-container input[type="text"] {
+    padding: 8px 10px;
+    font-size: 0.85em;
+  }
+
+  .recent-post-item {
+    gap: 8px;
+    padding: 5px;
+  }
+
+  .recent-post-item img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .recent-post-item .post-title {
+    font-size: 0.8em;
+  }
+
+  .social-icon {
+    padding: 6px 10px;
+    font-size: 0.8em;
+  }
+
+  #blogPosts h3 {
+    font-size: 1.2em;
+  }
+
+  #blogPosts .post-meta {
+    font-size: 0.8em;
   }
 }
 

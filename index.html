@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
   <title>Makeup Blog - Homepage</title>
   <link rel="stylesheet" href="style.css">
   <!-- Google Fonts for Cursive Options -->
@@ -16,6 +16,7 @@
       background-color: #f9f9f9;
       color: #333;
       line-height: 1.6;
+      overflow-x: hidden; /* Prevent horizontal scrolling */
     }
 
     /* Avatar Popup Styles */
@@ -228,11 +229,16 @@
       }
       
       #blogPosts > div {
-        padding: 0 15px;
+        padding: 0 10px;
       }
       
       #blogPosts h3 {
         font-size: 1.5em;
+      }
+
+      #blogPosts img {
+        max-width: 100%;
+        height: auto;
       }
 
       /* Admin dropdown adjustments for mobile */
