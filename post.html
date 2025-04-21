@@ -156,11 +156,17 @@
       margin-bottom: 10px;
     }
     
+    .comment-avatar-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+    }
+    
     .comment-avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      margin-right: 12px;
       background-color: #f0f0f0;
       display: flex;
       align-items: center;
@@ -169,12 +175,19 @@
       color: #555;
       flex-shrink: 0;
       overflow: hidden;
+      position: relative;
     }
     
     .comment-avatar img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
     }
     
     .comment-info {
@@ -615,6 +628,30 @@
         transform: translateY(20px);
       }
     }
+
+    /* Responsive adjustments for comments */
+    @media (max-width: 480px) {
+      .comment-avatar {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .comment-content {
+        margin-left: 47px;
+      }
+      
+      .comment-actions {
+        margin-left: 47px;
+      }
+      
+      .reply-form {
+        margin-left: 47px;
+      }
+      
+      .reply-list {
+        margin-left: 35px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1053,7 +1090,9 @@
       // Build the comment HTML
       commentDiv.innerHTML = `
         <div class="comment-header">
-          <div class="comment-avatar">${avatarHTML}</div>
+          <div class="comment-avatar-container">
+            <div class="comment-avatar">${avatarHTML}</div>
+          </div>
           <div class="comment-info">
             <div class="comment-author">${comment.name}</div>
             <div class="comment-date">${dateText}</div>
