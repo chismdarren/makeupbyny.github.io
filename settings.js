@@ -175,7 +175,7 @@ function loadAvatar(avatarUrl) {
         avatarImg.src = avatarUrl;
     } 
     // Check if it's one of our avatar file names (avatar1.png, etc.)
-    else if (avatarUrl && (avatarUrl.match(/avatar([1-9]|10)\.png/) || avatarUrl.match(/avatar([1-9]|10)\.png\.jpg/))) {
+    else if (avatarUrl && (avatarUrl.match(/avatar([1-9]|1[0-2])\.png/) || avatarUrl.match(/avatar([1-9]|1[0-2])\.jpg/))) {
         // Use the actual avatar image file
         avatarImg.src = `images/avatar-icons/${avatarUrl}`;
     }
