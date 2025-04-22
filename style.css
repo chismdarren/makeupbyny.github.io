@@ -78,6 +78,7 @@ nav button:hover {
   max-width: 1200px;
   margin: 0 auto;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 /* Posts section */
@@ -89,6 +90,7 @@ nav button:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   position: relative;
   max-width: 700px;
+  box-sizing: border-box;
 }
 
 .posts h2 {
@@ -297,27 +299,47 @@ form textarea {
 }
 
 @media (max-width: 768px) {
+  body, html {
+    overflow-x: hidden;
+    width: 100vw;
+    max-width: 100%;
+  }
+  
+  header {
+    width: 100%;
+    padding: 20px 5px;
+  }
+  
+  header img {
+    max-width: 100%;
+    height: auto;
+  }
+  
   .content {
     flex-direction: row;
-    padding: 15px 10px;
-    gap: 15px;
+    padding: 15px 5px;
+    gap: 10px;
     justify-content: space-between;
+    width: 100%;
+    max-width: 100%;
   }
   
   .posts {
     max-width: 70%;
     flex: 7;
-    padding: 15px;
+    padding: 10px;
     margin-left: 0;
+    overflow: hidden;
   }
   
   .about-me {
     max-width: 30%;
     flex: 3;
-    padding: 15px;
+    padding: 10px;
     font-size: 0.85em;
     margin-top: 0;
     margin-right: 0;
+    overflow: hidden;
   }
   
   .about-me img {
@@ -356,27 +378,63 @@ form textarea {
 
 /* For very small screens/mobile */
 @media (max-width: 480px) {
+  body, html {
+    overflow-x: hidden;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  header {
+    width: 100%;
+    padding: 10px 5px;
+  }
+  
   .content {
     flex-direction: row;
     padding: 10px 5px;
-    gap: 10px;
+    gap: 5px;
     justify-content: space-between;
     align-items: flex-start;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
   }
   
   .posts {
-    max-width: 68%;
-    flex: 68;
-    padding: 10px;
+    max-width: 65%;
+    flex: 65;
+    padding: 8px;
     margin-left: 0;
+    overflow-x: hidden;
   }
   
   .about-me {
-    max-width: 32%;
-    flex: 32;
-    padding: 10px;
+    max-width: 35%;
+    flex: 35;
+    padding: 8px;
     font-size: 0.8em;
     margin-right: 0;
+    overflow-x: hidden;
+  }
+  
+  #blogPosts > div {
+    padding: 0 5px;
+  }
+  
+  #blogPosts img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  #blogPosts h3 {
+    font-size: 1.1em;
+    word-wrap: break-word;
+  }
+  
+  #blogPosts p {
+    font-size: 0.9em;
+    word-wrap: break-word;
   }
 
   header img {
