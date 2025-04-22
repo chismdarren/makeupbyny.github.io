@@ -79,6 +79,7 @@ nav button:hover {
   margin: 0 auto;
   justify-content: center;
   box-sizing: border-box;
+  min-height: 100vh;
 }
 
 /* Posts section */
@@ -158,29 +159,7 @@ nav button:hover {
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   box-sizing: border-box;
-  scrollbar-width: thin;
-  scrollbar-color: #ccc #f5f5f5;
-  transition: top 0.2s ease-in-out;
   z-index: 10;
-}
-
-/* Custom scrollbar for webkit browsers */
-.about-me::-webkit-scrollbar {
-  width: 6px;
-}
-
-.about-me::-webkit-scrollbar-track {
-  background: #f5f5f5;
-  border-radius: 10px;
-}
-
-.about-me::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
-}
-
-.about-me::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
 }
 
 .about-me h3 {
@@ -346,6 +325,7 @@ form textarea {
     justify-content: space-between;
     width: 100%;
     max-width: 100%;
+    min-height: 100vh;
   }
   
   .posts {
@@ -363,13 +343,14 @@ form textarea {
     font-size: 0.9em;
     margin-top: 0;
     margin-right: 0;
-    overflow-y: visible;
+    overflow-y: auto;
     overflow-x: hidden;
     position: sticky;
-    top: 15px;
+    top: 10px;
     height: auto;
-    max-height: calc(100vh - 30px);
+    max-height: calc(100vh - 20px);
     z-index: 10;
+    transition: top 0.2s ease;
   }
   
   .about-me img {
@@ -441,6 +422,7 @@ form textarea {
     width: 100%;
     max-width: 100%;
     margin: 0;
+    min-height: 100vh;
   }
   
   .posts {
@@ -449,6 +431,7 @@ form textarea {
     padding: 10px;
     margin-left: 0;
     overflow-x: hidden;
+    min-height: 120vh;
   }
   
   .about-me {
@@ -463,8 +446,10 @@ form textarea {
     max-height: calc(100vh - 20px);
     position: sticky;
     top: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     z-index: 10;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: top 0.2s ease;
+    align-self: flex-start;
   }
   
   .about-me img {
@@ -588,6 +573,17 @@ form textarea {
   
   .about-me .social-links h3 {
     margin: 10px 0 8px;
+  }
+  
+  /* Hide scrollbar for cleaner appearance while keeping functionality */
+  .about-me::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  
+  .about-me {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
   }
 }
 
