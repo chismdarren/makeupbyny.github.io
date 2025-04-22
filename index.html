@@ -269,6 +269,31 @@
       .admin-dropdown-btn {
         padding: 10px 5px;
       }
+      
+      /* Ensure content fills the width with proper alignment */
+      .content {
+        padding: 10px 5px;
+        width: 100%;
+        max-width: 100%;
+        justify-content: space-between;
+      }
+      
+      /* Position posts on left */
+      .posts {
+        margin-left: 0;
+        align-self: flex-start;
+      }
+      
+      /* Position about-me on right edge */
+      .about-me {
+        margin-right: 0;
+        align-self: flex-end;
+      }
+      
+      header img {
+        max-width: 90%;
+        height: auto;
+      }
     }
 
     .posts {
@@ -478,7 +503,7 @@
     <a href="index.html">
       <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
     </a>
-    <nav id="mainNav">
+    <nav id="mainNav" style="margin-top: 10px; width: 100%;">
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>

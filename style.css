@@ -301,18 +301,23 @@ form textarea {
     flex-direction: row;
     padding: 15px 10px;
     gap: 15px;
+    justify-content: space-between;
   }
   
   .posts {
-    max-width: 65%;
+    max-width: 70%;
+    flex: 7;
     padding: 15px;
+    margin-left: 0;
   }
   
   .about-me {
-    max-width: 35%;
+    max-width: 30%;
+    flex: 3;
     padding: 15px;
     font-size: 0.85em;
     margin-top: 0;
+    margin-right: 0;
   }
   
   .about-me img {
@@ -334,6 +339,14 @@ form textarea {
     font-size: 1.8em;
   }
   
+  nav {
+    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
   nav a,
   nav button {
     margin: 0 10px;
@@ -347,17 +360,41 @@ form textarea {
     flex-direction: row;
     padding: 10px 5px;
     gap: 10px;
+    justify-content: space-between;
+    align-items: flex-start;
   }
   
   .posts {
-    max-width: 60%;
+    max-width: 68%;
+    flex: 68;
     padding: 10px;
+    margin-left: 0;
   }
   
   .about-me {
-    max-width: 40%;
+    max-width: 32%;
+    flex: 32;
     padding: 10px;
     font-size: 0.8em;
+    margin-right: 0;
+  }
+
+  header img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin-bottom: 10px;
+  }
+
+  nav {
+    padding-bottom: 5px;
+  }
+
+  nav a,
+  nav button {
+    margin: 3px 5px;
+    padding: 5px 8px;
+    font-size: 0.9em;
   }
 
   .about-me img {
