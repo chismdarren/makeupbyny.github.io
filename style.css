@@ -157,6 +157,7 @@ nav button:hover {
   height: fit-content;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .about-me h3 {
@@ -325,21 +326,25 @@ form textarea {
   }
   
   .posts {
-    max-width: 70%;
-    flex: 7;
-    padding: 10px;
+    max-width: 65%;
+    flex: 65;
+    padding: 15px;
     margin-left: 0;
     overflow: hidden;
   }
   
   .about-me {
-    max-width: 30%;
-    flex: 3;
-    padding: 10px;
-    font-size: 0.85em;
+    max-width: 35%;
+    flex: 35;
+    padding: 15px;
+    font-size: 0.9em;
     margin-top: 0;
     margin-right: 0;
-    overflow: hidden;
+    overflow-y: visible;
+    overflow-x: hidden;
+    position: static;
+    height: auto;
+    max-height: none;
   }
   
   .about-me img {
@@ -348,17 +353,10 @@ form textarea {
   }
 
   .about-me p {
-    font-size: 0.9em;
-    margin-bottom: 10px;
-  }
-
-  .social-icon {
-    padding: 8px 12px;
-    font-size: 0.85em;
-  }
-  
-  header h1 {
-    font-size: 1.8em;
+    font-size: 0.95em;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    text-align: left;
   }
   
   nav {
@@ -393,7 +391,7 @@ form textarea {
   .content {
     flex-direction: row;
     padding: 10px 5px;
-    gap: 5px;
+    gap: 8px;
     justify-content: space-between;
     align-items: flex-start;
     width: 100%;
@@ -402,20 +400,79 @@ form textarea {
   }
   
   .posts {
-    max-width: 65%;
-    flex: 65;
-    padding: 8px;
+    max-width: 58%;
+    flex: 58;
+    padding: 10px;
     margin-left: 0;
     overflow-x: hidden;
   }
   
   .about-me {
-    max-width: 35%;
-    flex: 35;
-    padding: 8px;
-    font-size: 0.8em;
+    max-width: 42%;
+    flex: 42;
+    padding: 10px;
+    font-size: 0.9em;
     margin-right: 0;
+    overflow-y: visible;
     overflow-x: hidden;
+    height: auto;
+    max-height: none;
+    position: static;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .about-me img {
+    max-width: 80%;
+    width: auto;
+    height: auto;
+    margin: 0 auto 10px;
+    display: block;
+  }
+  
+  .about-me p {
+    font-size: 1em;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+  
+  .about-me p:first-of-type {
+    font-size: 1em;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  
+  .about-me h3 {
+    font-size: 1em;
+    margin: 12px 0 8px;
+  }
+  
+  .search-container {
+    margin: 12px 0;
+  }
+  
+  .search-container input[type="text"] {
+    padding: 8px 10px;
+    font-size: 0.85em;
+  }
+  
+  .recent-post-item {
+    gap: 8px;
+    padding: 5px;
+  }
+  
+  .recent-post-item img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .recent-post-item .post-title {
+    font-size: 0.8em;
+  }
+  
+  .social-icon {
+    padding: 6px 10px;
+    font-size: 0.8em;
   }
   
   #blogPosts > div {
@@ -436,69 +493,32 @@ form textarea {
     font-size: 0.9em;
     word-wrap: break-word;
   }
-
-  header img {
-    width: 100%;
-    max-width: 400px;
-    height: auto;
-    margin-bottom: 10px;
+  
+  /* Hide some elements in the sidebar on very small screens to make more room for essential content */
+  .about-me .social-links {
+    margin-top: 10px;
   }
-
-  nav {
-    padding-bottom: 5px;
+  
+  .about-me .social-icons {
+    gap: 5px;
   }
-
-  nav a,
-  nav button {
-    margin: 3px 5px;
-    padding: 5px 8px;
-    font-size: 0.9em;
+  
+  .about-me .sorting-options {
+    padding: 0;
+    margin: 10px 0 5px;
   }
-
-  .about-me img {
-    max-width: 100px;
-    margin-bottom: 10px;
-  }
-
-  .about-me h3 {
-    font-size: 1em;
-    margin: 15px 0 8px;
-  }
-
-  .search-container {
-    margin: 15px 0;
-  }
-
-  .search-container input[type="text"] {
-    padding: 8px 10px;
-    font-size: 0.85em;
-  }
-
-  .recent-post-item {
-    gap: 8px;
-    padding: 5px;
-  }
-
-  .recent-post-item img {
-    width: 40px;
-    height: 40px;
-  }
-
-  .recent-post-item .post-title {
+  
+  .about-me .sorting-options span {
     font-size: 0.8em;
   }
-
-  .social-icon {
-    padding: 6px 10px;
-    font-size: 0.8em;
+  
+  .about-me .sorting-options select {
+    font-size: 0.75em;
+    padding: 3px 6px;
   }
-
-  #blogPosts h3 {
-    font-size: 1.2em;
-  }
-
-  #blogPosts .post-meta {
-    font-size: 0.8em;
+  
+  .hide-on-mobile {
+    display: none;
   }
 }
 

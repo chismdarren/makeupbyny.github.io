@@ -305,19 +305,26 @@
         padding: 5px;
         width: 100%;
         max-width: 100%;
+        flex-direction: row;
         justify-content: space-between;
       }
       
       /* Position posts on left */
       .posts {
+        max-width: 60%;
+        flex: 60;
         margin-left: 0;
-        align-self: flex-start;
+        padding: 10px;
       }
       
       /* Position about-me on right edge */
       .about-me {
+        max-width: 40%;
+        flex: 40;
         margin-right: 0;
-        align-self: flex-end;
+        padding: 10px;
+        overflow-y: visible;
+        height: auto;
       }
       
       header img {
@@ -332,6 +339,23 @@
       .read-more-btn {
         font-size: 11px;
         padding: 5px 10px;
+      }
+
+      /* Make the about me text larger and more readable */
+      .about-me p {
+        font-size: 0.95em;
+        line-height: 1.6;
+        margin-bottom: 12px;
+        text-align: left;
+      }
+
+      /* Recent posts in sidebar */
+      .recent-posts {
+        margin-top: 15px;
+      }
+
+      .recent-post-item {
+        margin-bottom: 8px;
       }
     }
 
@@ -589,7 +613,7 @@
       <p>
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-      <p>
+      <p class="hide-on-mobile">
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
