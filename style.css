@@ -78,8 +78,6 @@ nav button:hover {
   max-width: 1200px;
   margin: 0 auto;
   justify-content: center;
-  box-sizing: border-box;
-  min-height: 100vh;
 }
 
 /* Posts section */
@@ -91,7 +89,6 @@ nav button:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   position: relative;
   max-width: 700px;
-  box-sizing: border-box;
 }
 
 .posts h2 {
@@ -158,8 +155,6 @@ nav button:hover {
   height: fit-content;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
-  box-sizing: border-box;
-  z-index: 10;
 }
 
 .about-me h3 {
@@ -302,55 +297,27 @@ form textarea {
 }
 
 @media (max-width: 768px) {
-  body, html {
-    overflow-x: hidden;
-    width: 100vw;
-    max-width: 100%;
-  }
-  
-  header {
-    width: 100%;
-    padding: 20px 5px;
-  }
-  
-  header img {
-    max-width: 100%;
-    height: auto;
-  }
-  
   .content {
     flex-direction: row;
-    padding: 15px 5px;
-    gap: 10px;
+    padding: 15px 10px;
+    gap: 15px;
     justify-content: space-between;
-    width: 100%;
-    max-width: 100%;
-    min-height: 100vh;
   }
   
   .posts {
-    max-width: 65%;
-    flex: 65;
+    max-width: 70%;
+    flex: 7;
     padding: 15px;
     margin-left: 0;
-    overflow: hidden;
   }
   
   .about-me {
-    max-width: 35%;
-    flex: 35;
+    max-width: 30%;
+    flex: 3;
     padding: 15px;
-    font-size: 0.9em;
+    font-size: 0.85em;
     margin-top: 0;
     margin-right: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    position: sticky;
-    top: 10px;
-    height: auto;
-    max-height: calc(100vh - 20px);
-    z-index: 10;
-    transition: top 0.2s ease;
   }
   
   .about-me img {
@@ -359,15 +326,17 @@ form textarea {
   }
 
   .about-me p {
-    font-size: 0.95em;
-    line-height: 1.5;
-    margin-bottom: 12px;
-    text-align: left;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+  }
+
+  .social-icon {
+    padding: 8px 12px;
+    font-size: 0.85em;
   }
   
-  /* Hide Recent Posts section on tablets and mobile */
-  .about-me .recent-posts {
-    display: none;
+  header h1 {
+    font-size: 1.8em;
   }
   
   nav {
@@ -383,207 +352,95 @@ form textarea {
     margin: 0 10px;
     font-size: 1em;
   }
-  
-  /* Adjust spacing in About Me section */
-  .about-me .search-container {
-    margin: 15px 0;
-  }
-  
-  .about-me .sorting-options {
-    margin-top: 5px;
-    margin-bottom: 10px;
-  }
-  
-  .about-me .social-links {
-    margin-top: 15px;
-  }
 }
 
 /* For very small screens/mobile */
 @media (max-width: 480px) {
-  body, html {
-    overflow-x: hidden;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-  
-  header {
-    width: 100%;
-    padding: 10px 5px;
-  }
-  
   .content {
     flex-direction: row;
     padding: 10px 5px;
-    gap: 8px;
+    gap: 10px;
     justify-content: space-between;
     align-items: flex-start;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    min-height: 100vh;
   }
   
   .posts {
-    max-width: 58%;
-    flex: 58;
+    max-width: 68%;
+    flex: 68;
     padding: 10px;
     margin-left: 0;
-    overflow-x: hidden;
-    min-height: 120vh;
   }
   
   .about-me {
-    max-width: 42%;
-    flex: 42;
+    max-width: 32%;
+    flex: 32;
     padding: 10px;
-    font-size: 0.9em;
+    font-size: 0.8em;
     margin-right: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: auto;
-    max-height: calc(100vh - 20px);
-    position: sticky;
-    top: 10px;
-    z-index: 10;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: top 0.2s ease;
-    align-self: flex-start;
   }
-  
-  .about-me img {
-    max-width: 80%;
-    width: auto;
+
+  header img {
+    width: 100%;
+    max-width: 400px;
     height: auto;
-    margin: 0 auto 10px;
-    display: block;
-  }
-  
-  .about-me p {
-    font-size: 1em;
-    line-height: 1.4;
     margin-bottom: 10px;
-    text-align: left;
   }
-  
-  .about-me p:first-of-type {
-    font-size: 1em;
-    line-height: 1.4;
-    margin-bottom: 8px;
+
+  nav {
+    padding-bottom: 5px;
   }
-  
+
+  nav a,
+  nav button {
+    margin: 3px 5px;
+    padding: 5px 8px;
+    font-size: 0.9em;
+  }
+
+  .about-me img {
+    max-width: 100px;
+    margin-bottom: 10px;
+  }
+
   .about-me h3 {
     font-size: 1em;
-    margin: 12px 0 8px;
+    margin: 15px 0 8px;
   }
-  
+
   .search-container {
-    margin: 12px 0;
+    margin: 15px 0;
   }
-  
+
   .search-container input[type="text"] {
     padding: 8px 10px;
     font-size: 0.85em;
   }
-  
+
   .recent-post-item {
     gap: 8px;
     padding: 5px;
   }
-  
+
   .recent-post-item img {
     width: 40px;
     height: 40px;
   }
-  
+
   .recent-post-item .post-title {
     font-size: 0.8em;
   }
-  
+
   .social-icon {
     padding: 6px 10px;
     font-size: 0.8em;
   }
-  
-  #blogPosts > div {
-    padding: 0 5px;
-  }
-  
-  #blogPosts img {
-    max-width: 100%;
-    height: auto;
-  }
-  
+
   #blogPosts h3 {
-    font-size: 1.1em;
-    word-wrap: break-word;
+    font-size: 1.2em;
   }
-  
-  #blogPosts p {
-    font-size: 0.9em;
-    word-wrap: break-word;
-  }
-  
-  /* Hide some elements in the sidebar on very small screens to make more room for essential content */
-  .about-me .social-links {
-    margin-top: 10px;
-  }
-  
-  .about-me .social-icons {
-    gap: 5px;
-  }
-  
-  .about-me .sorting-options {
-    padding: 0;
-    margin: 10px 0 5px;
-  }
-  
-  .about-me .sorting-options span {
+
+  #blogPosts .post-meta {
     font-size: 0.8em;
-  }
-  
-  .about-me .sorting-options select {
-    font-size: 0.75em;
-    padding: 3px 6px;
-  }
-  
-  .hide-on-mobile {
-    display: none;
-  }
-  
-  /* Hide Recent Posts section on mobile */
-  .about-me .recent-posts {
-    display: none;
-  }
-  
-  /* Adjust spacing in About Me section */
-  .about-me .search-container {
-    margin: 10px 0;
-  }
-  
-  .about-me .sorting-options {
-    margin-top: 5px;
-    margin-bottom: 8px;
-  }
-  
-  .about-me .social-links {
-    margin-top: 10px;
-  }
-  
-  .about-me .social-links h3 {
-    margin: 10px 0 8px;
-  }
-  
-  /* Hide scrollbar for cleaner appearance while keeping functionality */
-  .about-me::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-  }
-  
-  .about-me {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
   }
 }
 

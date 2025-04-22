@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
   <title>Makeup Blog - Homepage</title>
   <link rel="stylesheet" href="style.css">
   <!-- Google Fonts for Cursive Options -->
@@ -17,23 +17,6 @@
       color: #333;
       line-height: 1.6;
       overflow-x: hidden; /* Prevent horizontal scrolling */
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    html {
-      overflow-x: hidden;
-      width: 100%;
-    }
-
-    * {
-      box-sizing: border-box;
-      max-width: 100%;
-    }
-
-    img {
-      max-width: 100%;
-      height: auto;
     }
 
     /* Avatar Popup Styles */
@@ -251,24 +234,11 @@
       
       #blogPosts h3 {
         font-size: 1.5em;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
       }
 
       #blogPosts img {
         max-width: 100%;
         height: auto;
-      }
-      
-      #blogPosts p {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-      
-      .read-more-btn {
-        font-size: 12px;
-        padding: 6px 12px;
       }
 
       /* Admin dropdown adjustments for mobile */
@@ -302,60 +272,27 @@
       
       /* Ensure content fills the width with proper alignment */
       .content {
-        padding: 5px;
+        padding: 10px 5px;
         width: 100%;
         max-width: 100%;
-        flex-direction: row;
         justify-content: space-between;
       }
       
       /* Position posts on left */
       .posts {
-        max-width: 60%;
-        flex: 60;
         margin-left: 0;
-        padding: 10px;
+        align-self: flex-start;
       }
       
       /* Position about-me on right edge */
       .about-me {
-        max-width: 40%;
-        flex: 40;
         margin-right: 0;
-        padding: 10px;
-        overflow-y: visible;
-        height: auto;
+        align-self: flex-end;
       }
       
       header img {
         max-width: 90%;
         height: auto;
-      }
-      
-      #blogPosts h3 {
-        font-size: 1.1em;
-      }
-      
-      .read-more-btn {
-        font-size: 11px;
-        padding: 5px 10px;
-      }
-
-      /* Make the about me text larger and more readable */
-      .about-me p {
-        font-size: 0.95em;
-        line-height: 1.6;
-        margin-bottom: 12px;
-        text-align: left;
-      }
-
-      /* Recent posts in sidebar */
-      .recent-posts {
-        margin-top: 15px;
-      }
-
-      .recent-post-item {
-        margin-bottom: 8px;
       }
     }
 
@@ -564,7 +501,7 @@
   <!-- Header Section -->
   <header>
     <a href="index.html">
-      <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="max-width: 100%; width: auto; height: auto; max-height: 117px; object-fit: contain;">
+      <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
     </a>
     <nav id="mainNav" style="margin-top: 10px; width: 100%;">
       <a href="index.html">Home</a>
@@ -613,7 +550,7 @@
       <p>
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-      <p class="hide-on-mobile">
+      <p>
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
