@@ -352,8 +352,9 @@ form textarea {
     top: 200px; /* Position below header */
     right: 0;
     z-index: 10;
-    max-height: 70vh;
-    overflow-y: auto;
+    height: auto; /* Let height adjust to content */
+    max-height: none; /* Remove max-height restriction */
+    overflow-y: visible; /* Change from auto to visible */
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   
@@ -454,13 +455,13 @@ form textarea {
     padding: 5px;
     font-size: 0.75em;
     margin: 0;
-    overflow: hidden;
+    overflow: visible; /* Change from auto to visible to prevent scrolling */
     position: fixed; /* Use fixed instead of sticky */
     top: 145px; /* Align with top of posts */
     right: 0; /* Align to right edge */
     z-index: 10;
-    max-height: 70vh;
-    overflow-y: auto;
+    height: auto; /* Let it grow as needed based on content */
+    max-height: none; /* Remove max-height restriction */
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   
@@ -493,13 +494,19 @@ form textarea {
   }
 
   .about-me img {
-    max-width: 100px;
-    margin-bottom: 10px;
+    max-width: 80px; /* Make image slightly smaller */
+    margin-bottom: 8px;
   }
 
   .about-me h3 {
-    font-size: 1em;
-    margin: 15px 0 8px;
+    font-size: 0.9em;
+    margin: 10px 0 5px;
+  }
+
+  .about-me p {
+    font-size: 0.75em;
+    margin-bottom: 5px;
+    line-height: 1.4;
   }
 
   .search-container {
@@ -551,8 +558,9 @@ form textarea {
     top: 170px; /* Align with top of posts section */
     right: 0;
     z-index: 10;
-    max-height: 70vh;
-    overflow-y: auto;
+    max-height: none; /* Remove max-height restriction */
+    overflow-y: visible; /* Change from auto to visible */
+    height: auto; /* Let it adjust to content */
   }
   
   .posts {
