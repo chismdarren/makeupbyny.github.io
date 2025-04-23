@@ -1564,7 +1564,7 @@ async function loadRecentPosts() {
     
     recentPostsList.innerHTML = "";
     
-    querySnapshot.docs.slice(0, 5).forEach(doc => {
+    querySnapshot.docs.slice(0, 3).forEach(doc => {
       const post = doc.data();
       const recentPostElement = document.createElement("a");
       recentPostElement.href = `post.html?postId=${doc.id}`;

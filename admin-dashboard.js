@@ -329,4 +329,8 @@ async function deleteMessage(id) {
     console.error('Error deleting message:', error);
     alert('Failed to delete message. Please try again.');
   }
-} 
+}
+
+// Display recent posts in the dashboard
+const sortedPosts = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date));
+const recentPosts = sortedPosts.slice(0, 3); 

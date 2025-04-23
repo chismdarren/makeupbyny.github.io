@@ -816,6 +816,15 @@
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
+      <!-- Social Media Links -->
+      <div class="social-links">
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="social-icons">
+          <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>
+          <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr" class="social-icon facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
+        </div>
+      </div>
+
       <!-- Search Bar -->
       <div class="search-container">
         <input type="text" placeholder="Search posts..." id="searchInput">
@@ -825,15 +834,6 @@
       <div class="recent-posts">
         <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
         <div id="recentPostsList"></div>
-      </div>
-
-      <!-- Social Media Links -->
-      <div class="social-links">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
-        <div class="social-icons">
-          <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>
-          <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr" class="social-icon facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
-        </div>
       </div>
     </aside>
   </div>
@@ -1413,8 +1413,8 @@
         // Clear existing posts
         recentPostsList.innerHTML = "";
         
-        // Add the first 5 posts
-        querySnapshot.docs.slice(0, 5).forEach(doc => {
+        // Add the first 3 posts
+        querySnapshot.docs.slice(0, 3).forEach(doc => {
           const post = doc.data();
           const recentPostElement = document.createElement("a");
           recentPostElement.href = `post.html?postId=${doc.id}`;

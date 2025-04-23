@@ -53,7 +53,7 @@ logoutBtn.addEventListener("click", async () => {
 // Load recent posts
 async function loadRecentPosts() {
   try {
-    const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(5));
+    const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(3));
     const querySnapshot = await getDocs(postsQuery);
     
     recentPostsList.innerHTML = "";
