@@ -390,6 +390,11 @@ form textarea {
     padding: 0;
   }
   
+  /* Hide recent posts on mobile */
+  .about-me .recent-posts {
+    display: none;
+  }
+  
   .content {
     flex-direction: row;
     padding: 5px;
@@ -510,6 +515,13 @@ form textarea {
 
   #blogPosts .post-meta {
     font-size: 0.8em;
+  }
+}
+
+/* Medium screens - hide recent posts but keep other sidebar elements */
+@media (min-width: 481px) and (max-width: 768px) {
+  .about-me .recent-posts {
+    display: none;
   }
 }
 
