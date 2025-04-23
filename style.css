@@ -420,6 +420,7 @@ form textarea {
     padding: 5px;
     width: 100%;
     overflow: hidden;
+    margin-bottom: 10px; /* Add spacing after header */
   }
   
   nav {
@@ -443,6 +444,7 @@ form textarea {
     margin: 0;
     overflow: hidden;
     float: left; /* Float left to allow about-me to be positioned on right */
+    clear: both;
   }
   
   /* Position about-me section for mobile */
@@ -454,7 +456,7 @@ form textarea {
     margin: 0;
     overflow: hidden;
     position: fixed; /* Use fixed instead of sticky */
-    top: 180px; /* Position below header */
+    top: 145px; /* Align with top of posts */
     right: 0; /* Align to right edge */
     z-index: 10;
     max-height: 70vh;
@@ -546,7 +548,7 @@ form textarea {
   /* Similar fixed positioning for tablets */
   .about-me {
     position: fixed;
-    top: 200px;
+    top: 170px; /* Align with top of posts section */
     right: 0;
     z-index: 10;
     max-height: 70vh;
@@ -733,4 +735,13 @@ input[readonly] {
   color: #555;
   cursor: not-allowed;
   border: 1px solid #ddd;
+}
+
+/* JavaScript to position the about-me section in alignment with posts */
+@media (max-width: 768px) {
+  /* Custom script will be added to ensure About Me aligns with Posts */
+  body::after {
+    content: "";
+    display: none;
+  }
 }

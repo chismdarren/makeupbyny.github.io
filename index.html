@@ -1069,5 +1069,51 @@
     });
   </script>
 
+  <!-- Script for aligning About Me with Posts on mobile -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Function to align About Me with Posts
+      function alignAboutMeWithPosts() {
+        // Only apply on mobile screens
+        if (window.innerWidth <= 768) {
+          const postsSection = document.querySelector('.posts');
+          const aboutMeSection = document.querySelector('.about-me');
+          
+          if (postsSection && aboutMeSection) {
+            // Get the exact position of the posts section
+            const postsRect = postsSection.getBoundingClientRect();
+            const postsTop = postsRect.top + window.scrollY;
+            
+            // Set the About Me position to match
+            aboutMeSection.style.top = postsTop + 'px';
+          }
+        }
+      }
+      
+      // Run on page load
+      alignAboutMeWithPosts();
+      
+      // Run on window resize
+      window.addEventListener('resize', alignAboutMeWithPosts);
+      
+      // Run when content loads
+      window.addEventListener('load', alignAboutMeWithPosts);
+      
+      // Run when scrolling starts (in case headers change size)
+      window.addEventListener('scroll', function() {
+        // Use requestAnimationFrame to limit execution
+        if (!window.requestAnimationFrame) return alignAboutMeWithPosts();
+        
+        if (!this.running) {
+          this.running = true;
+          window.requestAnimationFrame(() => {
+            alignAboutMeWithPosts();
+            this.running = false;
+          });
+        }
+      });
+    });
+  </script>
+
 </body>
 </html>
