@@ -338,6 +338,7 @@ form textarea {
     margin-left: 0;
   }
   
+  /* Make about-me sticky on tablet too */
   .about-me {
     max-width: 35%;
     flex: 35;
@@ -345,6 +346,12 @@ form textarea {
     font-size: 0.85em;
     margin-top: 0;
     margin-right: 0;
+    position: sticky;
+    top: 10px;
+    align-self: flex-start;
+    z-index: 10;
+    max-height: 98vh;
+    overflow-y: auto;
   }
   
   .about-me img {
@@ -434,6 +441,7 @@ form textarea {
     overflow: hidden;
   }
   
+  /* Make about-me sticky on mobile */
   .about-me {
     max-width: 35%;
     flex: 35;
@@ -441,6 +449,12 @@ form textarea {
     font-size: 0.75em;
     margin: 0;
     overflow: hidden;
+    position: sticky;
+    top: 5px;
+    align-self: flex-start;
+    z-index: 10;
+    max-height: 97vh;
+    overflow-y: auto;
   }
   
   #blogPosts {
