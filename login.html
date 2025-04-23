@@ -55,6 +55,26 @@
       text-align: center;
       margin-top: 20px;
     }
+    
+    /* For very small screens */
+    @media (max-width: 480px) {
+      /* Hide about-me sidebar completely on mobile */
+      .about-me {
+        display: none !important;
+      }
+      
+      /* Make login section take full width */
+      .login-section {
+        width: 100%;
+        max-width: 100%;
+      }
+      
+      /* Adjust content layout for mobile */
+      .content {
+        flex-direction: column;
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 <body>
