@@ -311,12 +311,12 @@ form textarea {
 
 @media (max-width: 768px) {
   .content {
-    flex-direction: row;
+    display: block;
+    position: relative;
     padding: 10px 5px;
-    gap: 10px;
-    justify-content: space-between;
     width: 100%;
     max-width: 100%;
+    overflow: hidden;
   }
   
   header {
@@ -329,29 +329,32 @@ form textarea {
     width: 100%;
     max-width: 350px;
     height: auto;
+    margin-bottom: 10px;
   }
   
   .posts {
+    width: 65%;
     max-width: 65%;
-    flex: 65;
     padding: 10px;
     margin-left: 0;
+    float: left;
   }
   
-  /* Make about-me sticky on tablet too */
+  /* Make about-me fixed position on tablets */
   .about-me {
+    width: 35%;
     max-width: 35%;
-    flex: 35;
     padding: 10px;
     font-size: 0.85em;
     margin-top: 0;
     margin-right: 0;
-    position: sticky;
-    top: 10px;
-    align-self: flex-start;
+    position: fixed;
+    top: 200px; /* Position below header */
+    right: 0;
     z-index: 10;
-    max-height: 98vh;
+    max-height: 70vh;
     overflow-y: auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   
   .about-me img {
@@ -402,12 +405,11 @@ form textarea {
     display: none;
   }
   
+  /* Change content layout for mobile */
   .content {
-    flex-direction: row;
+    display: block; /* Change from flex to block */
+    position: relative; /* Enable positioning context */
     padding: 5px;
-    gap: 5px;
-    justify-content: space-between;
-    align-items: flex-start;
     width: 100%;
     margin: 0;
     max-width: 100%;
@@ -433,28 +435,31 @@ form textarea {
     font-size: 0.85em;
   }
   
+  /* Position posts section for mobile */
   .posts {
+    width: 65%;
     max-width: 65%;
-    flex: 65;
     padding: 5px;
     margin: 0;
     overflow: hidden;
+    float: left; /* Float left to allow about-me to be positioned on right */
   }
   
-  /* Make about-me sticky on mobile */
+  /* Position about-me section for mobile */
   .about-me {
+    width: 35%;
     max-width: 35%;
-    flex: 35;
     padding: 5px;
     font-size: 0.75em;
     margin: 0;
     overflow: hidden;
-    position: sticky;
-    top: 5px;
-    align-self: flex-start;
+    position: fixed; /* Use fixed instead of sticky */
+    top: 180px; /* Position below header */
+    right: 0; /* Align to right edge */
     z-index: 10;
-    max-height: 97vh;
+    max-height: 70vh;
     overflow-y: auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   
   #blogPosts {
@@ -532,10 +537,29 @@ form textarea {
   }
 }
 
-/* Medium screens - hide recent posts but keep other sidebar elements */
+/* Medium screens - tablets */
 @media (min-width: 481px) and (max-width: 768px) {
   .about-me .recent-posts {
     display: none;
+  }
+  
+  /* Similar fixed positioning for tablets */
+  .about-me {
+    position: fixed;
+    top: 200px;
+    right: 0;
+    z-index: 10;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .posts {
+    float: left;
+  }
+  
+  .content {
+    display: block;
+    position: relative;
   }
 }
 
