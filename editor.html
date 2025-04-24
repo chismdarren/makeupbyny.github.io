@@ -971,36 +971,6 @@
     @media (max-width: 480px) {
       .admin-dropdown-content {
         right: -50px; /* Adjust position to be more centered on small screens */
-        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
-        overflow-y: auto;
-        width: 180px; /* Fixed width to ensure content fits */
-        position: fixed; /* Change to fixed positioning */
-        /* Positioning will be handled by JavaScript dynamically */
-        z-index: 1001; /* Ensure it appears above other elements */
-        background-color: white; /* Ensure background is opaque */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
-        border: 1px solid #ddd; /* More visible border */
-      }
-
-      /* Fix for dropdown positioning - ensure it's visible on mobile */
-      .admin-dropdown {
-        position: static; /* Change to static so the dropdown positions relative to the nav bar */
-      }
-      
-      /* Ensure dropdown appears over other content */
-      .show-dropdown {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
-        touch-action: manipulation; /* Optimize touch actions */
-      }
-      
-      /* Make dropdown items more touch-friendly on mobile */
-      .admin-dropdown-content a {
-        padding: 15px 16px; /* Larger touch targets */
-        font-size: 0.95em; /* Slightly larger text */
-        border-bottom: 1px solid #eee; /* More visible separators */
       }
 
       .admin-dropdown-btn {
@@ -1008,10 +978,6 @@
         position: relative;
         top: 2px; /* Move down slightly to align with other menu items */
         font-size: 0.85em; /* Match the font size of other nav links on mobile */
-      }
-      
-      .admin-dropdown-btn .dropdown-icon {
-        font-size: 0.85em; /* Make dropdown icon match the text size */
       }
     }
 
@@ -1258,87 +1224,5 @@
   
   <!-- Main JavaScript for the editor -->
   <script type="module" src="editor.js"></script>
-  <script>
-    // Fix for mobile menu tap delays and dropdown positioning
-    document.addEventListener('DOMContentLoaded', function() {
-        // Fix dropdown links for mobile
-        const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
-        dropdownLinks.forEach(link => {
-            link.addEventListener('touchstart', function(e) {
-                // Prevent double-firing of events
-                e.stopPropagation();
-            });
-            
-            link.addEventListener('touchend', function(e) {
-                // Navigate to the link href directly
-                if (this.href) {
-                    window.location.href = this.href;
-                }
-            });
-        });
-        
-        // Enhance dropdown positioning for mobile
-        const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-        if (adminDropdownBtn) {
-            const originalClickHandler = adminDropdownBtn.onclick;
-            
-            // Override click handler for mobile
-            adminDropdownBtn.addEventListener('click', function(e) {
-                if (window.innerWidth <= 480) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Toggle dropdown visibility
-                    const dropdown = document.getElementById('adminDropdownContent');
-                    dropdown.classList.toggle('show-dropdown');
-                    this.classList.toggle('active');
-                    
-                    // Position dropdown under the button
-                    if (dropdown.classList.contains('show-dropdown')) {
-                        const buttonRect = this.getBoundingClientRect();
-                        
-                        dropdown.style.position = 'fixed';
-                        dropdown.style.top = (buttonRect.bottom + 5) + 'px';
-                        dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
-                        dropdown.style.transform = 'translateX(-50%)';
-                        dropdown.style.maxHeight = '80vh';
-                        dropdown.style.zIndex = '9999';
-                    }
-                }
-            }, { capture: true });
-            
-            // Handle click outside to close dropdown
-            document.addEventListener('click', function(e) {
-                // Don't close if clicking on the dropdown itself
-                if (e.target.closest('.admin-dropdown-content')) {
-                    return;
-                }
-                
-                // Only close if clicking outside the dropdown and its button
-                if (!e.target.matches('#adminDropdownBtn') && 
-                    !e.target.matches('.dropdown-icon') && 
-                    !e.target.closest('#adminDropdownBtn')) {
-                    const dropdown = document.getElementById('adminDropdownContent');
-                    const btn = document.getElementById('adminDropdownBtn');
-                    if (dropdown && dropdown.classList.contains('show-dropdown')) {
-                        dropdown.classList.remove('show-dropdown');
-                        btn.classList.remove('active');
-                        
-                        // Reset inline styles when closing dropdown
-                        if (window.innerWidth <= 480) {
-                            setTimeout(() => {
-                                dropdown.style.position = '';
-                                dropdown.style.top = '';
-                                dropdown.style.left = '';
-                                dropdown.style.transform = '';
-                                dropdown.style.maxHeight = '';
-                            }, 300); // Wait for transition to complete
-                        }
-                    }
-                }
-            });
-        }
-    });
-  </script>
 </body>
 </html>
