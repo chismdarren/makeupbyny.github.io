@@ -457,10 +457,21 @@
     #mainNav {
       display: flex;
       align-items: center;
+      justify-content: center; /* Center all navigation items */
+      flex-wrap: wrap;
+      width: 100%;
     }
     
-    #mainNav a, #mainNav button {
-      margin-right: 15px;
+    #mainNav a, 
+    #mainNav button,
+    #mainNav .admin-dropdown {
+      margin: 0 10px;
+      position: relative;
+    }
+    
+    .admin-dropdown {
+      display: inline-flex; /* Change to inline-flex to align with other items */
+      align-items: center;
     }
     
     #logout-btn {
@@ -472,11 +483,6 @@
     }
 
     /* Admin Dropdown Menu Styles */
-    .admin-dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
     .admin-dropdown-btn {
       background: none;
       border: none;
@@ -572,6 +578,21 @@
 
     /* For very small screens */
     @media (max-width: 480px) {
+      /* Navigation layout fixes for mobile */
+      #mainNav {
+        padding: 5px 0;
+        margin: 5px auto;
+        text-align: center;
+      }
+      
+      #mainNav a, 
+      #mainNav button,
+      #mainNav .admin-dropdown {
+        margin: 2px 4px;
+        font-size: 0.85em;
+      }
+      
+      /* Admin dropdown positioning */
       .admin-dropdown-content {
         right: -50px; /* Adjust position to be more centered on small screens */
         max-height: 80vh; /* Limit maximum height and add scrolling if needed */
@@ -843,7 +864,7 @@
     }
   </style>
 </head>
-<body>
+<body class="admin-page">
     <header>
       <a href="index.html">
         <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
