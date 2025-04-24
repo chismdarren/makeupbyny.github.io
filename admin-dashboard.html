@@ -210,18 +210,22 @@
             box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
             border: 1px solid #ddd; /* More visible border */
           }
-
+          
           /* Fix for dropdown positioning - ensure it's visible on mobile */
           .admin-dropdown {
             position: static; /* Change to static so the dropdown positions relative to the nav bar */
           }
           
-          /* Align Admin Dashboard text vertically with other menu items */
+          /* Adjust Admin Dashboard button position to align with other menu items on mobile */
           .admin-dropdown-btn {
             padding: 10px 5px;
             font-size: 0.85em; /* Match the font size of other nav links on mobile */
             position: relative;
-            top: 2px; /* Move down slightly to align with other menu items */
+            top: 2px; /* Shift down slightly to align with other menu items */
+          }
+          
+          .admin-dropdown-btn .dropdown-icon {
+            font-size: 0.85em; /* Make dropdown icon match the text size */
           }
           
           /* Ensure dropdown appears over other content */
@@ -238,10 +242,6 @@
             padding: 15px 16px; /* Larger touch targets */
             font-size: 0.95em; /* Slightly larger text */
             border-bottom: 1px solid #eee; /* More visible separators */
-          }
-
-          .admin-dropdown-btn .dropdown-icon {
-            font-size: 0.85em; /* Make dropdown icon match the text size */
           }
           
           /* Make messages section take full width on mobile */
