@@ -182,11 +182,9 @@
 
         /* This class is toggled via JavaScript */
         .show-dropdown {
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-          -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
-          touch-action: manipulation; /* Optimize touch actions */
+          display: block;
+          opacity: 1;
+          transform: translateY(0);
         }
 
         /* Responsive adjustments for admin dropdown */
@@ -218,22 +216,21 @@
             position: static; /* Change to static so the dropdown positions relative to the nav bar */
           }
           
-          /* Admin dropdown button styling - align with other nav items */
+          /* Align Admin Dashboard text vertically with other menu items */
           .admin-dropdown-btn {
-            padding: 4px 5px 6px; /* Adjusted padding to move text down slightly */
+            padding: 10px 5px;
             font-size: 0.85em; /* Match the font size of other nav links on mobile */
-            line-height: 1.4;
-            vertical-align: middle;
-            display: inline-flex; /* Better alignment control */
-            align-items: center;
             position: relative;
-            top: 1px; /* Nudge down slightly to align with other menu items */
+            top: 2px; /* Move down slightly to align with other menu items */
           }
           
-          .admin-dropdown-btn .dropdown-icon {
-            font-size: 0.85em; /* Make dropdown icon match the text size */
-            position: relative;
-            top: 1px; /* Align icon with text */
+          /* Ensure dropdown appears over other content */
+          .show-dropdown {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+            touch-action: manipulation; /* Optimize touch actions */
           }
           
           /* Make dropdown items more touch-friendly on mobile */
@@ -241,6 +238,10 @@
             padding: 15px 16px; /* Larger touch targets */
             font-size: 0.95em; /* Slightly larger text */
             border-bottom: 1px solid #eee; /* More visible separators */
+          }
+
+          .admin-dropdown-btn .dropdown-icon {
+            font-size: 0.85em; /* Make dropdown icon match the text size */
           }
           
           /* Make messages section take full width on mobile */
