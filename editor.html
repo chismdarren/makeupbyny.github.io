@@ -981,67 +981,7 @@
         box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
         border: 1px solid #ddd; /* More visible border */
       }
-      
-      /* Reposition My Account link on mobile */
-      nav #userAccountLink {
-        order: 2; /* Place it before logout button */
-      }
-      
-      nav #logout-btn {
-        order: 3; /* Place it after My Account link */
-      }
-      
-      /* Make nav use flexbox ordering on mobile */
-      nav#mainNav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 0;
-      }
-      
-      /* More compact navigation items on mobile */
-      nav#mainNav > a, 
-      nav#mainNav > button,
-      nav#mainNav .admin-dropdown-btn {
-        margin: 2px 4px;
-        padding: 6px 8px;
-        white-space: nowrap;
-      }
-      
-      /* Make My Account and Logout buttons visually cohesive */
-      nav#mainNav #userAccountLink,
-      nav#mainNav #logout-btn {
-        display: inline-block;
-        padding: 6px 8px;
-        text-align: center;
-        font-size: 0.85em;
-      }
-      
-      /* Set order for all navigation items */
-      nav#mainNav > a:nth-of-type(1) { /* Home */
-        order: -3;
-      }
-      
-      nav#mainNav > a:nth-of-type(2) { /* About */
-        order: -2;
-      }
-      
-      nav#mainNav > a:nth-of-type(3) { /* Contact */
-        order: -1;
-      }
-      
-      /* Admin dropdown */
-      nav#mainNav .admin-dropdown {
-        order: 0;
-      }
-      
-      /* Login link should be last if visible */
-      nav#mainNav #login-link {
-        order: 4;
-      }
-      
+
       /* Fix for dropdown positioning - ensure it's visible on mobile */
       .admin-dropdown {
         position: static; /* Change to static so the dropdown positions relative to the nav bar */
@@ -1215,10 +1155,10 @@
           <a href="manage-users.html">User Management</a>
         </div>
       </div>
-      <!-- User account link -->
-      <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
+      <!-- User account link -->
+      <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
