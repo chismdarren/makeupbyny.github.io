@@ -199,22 +199,28 @@
     
     /* Admin Dropdown Menu Styles */
     .admin-dropdown {
-      position: relative;
-      display: inline-block;
+      position: static; /* Change to static so the dropdown positions relative to the nav bar */
+      vertical-align: middle !important;
+      margin-top: 5px !important;
+      display: inline-block !important;
     }
 
     .admin-dropdown-btn {
       background: none;
       border: none;
       color: #333;
-      font-size: 1em;
+      font-size: 0.85em !important;
       padding: 10px;
       cursor: pointer;
-      font-family: inherit;
+      font-family: inherit !important;
       text-decoration: none;
       display: flex;
       align-items: center;
       transition: color 0.2s;
+      position: relative !important;
+      top: -2px !important;
+      margin-top: 0 !important;
+      font-weight: normal !important;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -238,13 +244,13 @@
       right: 0;
       top: 100%;
       background-color: white;
-      min-width: 180px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 1;
+      min-width: 180px; /* Fixed width to ensure content fits */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+      z-index: 1001; /* Ensure it appears above other elements */
       border-radius: 4px;
       overflow: hidden;
       margin-top: 5px;
-      border: 1px solid #eee;
+      border: 1px solid #ddd; /* More visible border */
       opacity: 0;
       transform: translateY(-10px);
       transition: opacity 0.3s, transform 0.3s;
@@ -271,10 +277,13 @@
 
     /* This class is toggled via JavaScript */
     .show-dropdown {
-      display: block;
-      opacity: 1;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
       transform: translateY(0);
       z-index: 9999;
+      -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+      touch-action: manipulation; /* Optimize touch actions */
     }
 
     /* Responsive adjustments for admin dropdown */
@@ -291,35 +300,20 @@
         flex-wrap: wrap;
         justify-content: center;
       }
-
-      .admin-dropdown {
-        position: relative;
-      }
     }
 
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
+        width: 180px; /* Fixed width to ensure content fits */
+        position: fixed; /* Change to fixed positioning */
+        /* Positioning will be handled by JavaScript dynamically */
         right: -50px; /* Adjust position to be more centered on small screens */
       }
 
       .admin-dropdown-btn {
         padding: 10px 5px;
       }
-    }
-
-    /* Fix for dropdown positioning - ensure it's visible on mobile */
-    .admin-dropdown {
-      position: static; /* Change to static so the dropdown positions relative to the nav bar */
-    }
-
-    .admin-dropdown-btn {
-      position: relative !important;
-      top: -2px !important;
-      margin-top: 0 !important;
-      font-family: inherit !important;
-      font-weight: normal !important;
-      font-size: 0.85em !important;
     }
 
     /* Dropdown icon styles */
@@ -334,8 +328,14 @@
 
     /* Make dropdown items more touch-friendly on mobile */
     .admin-dropdown-content a {
-      padding: 12px 16px;
-      font-size: 14px;
+      color: #333;
+      padding: 15px 16px; /* Larger touch targets */
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 0.95em; /* Slightly larger text */
     }
 
     /* Center the title */
@@ -561,7 +561,7 @@
     }
   </style>
 </head>
-<body>
+<body class="admin-page">
   <header>
     <a href="index.html">
       <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
@@ -630,8 +630,16 @@
     document.addEventListener('DOMContentLoaded', function() {
       const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
       dropdownLinks.forEach(link => {
-        link.addEventListener('touchstart', function() {
-          this.click();
+        link.addEventListener('touchstart', function(e) {
+          // Prevent double-firing of events
+          e.stopPropagation();
+        });
+        
+        link.addEventListener('touchend', function(e) {
+          // Navigate to the link href directly
+          if (this.href) {
+            window.location.href = this.href;
+          }
         });
       });
     });
