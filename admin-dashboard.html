@@ -209,9 +209,7 @@
             overflow-y: auto;
             width: 180px; /* Fixed width to ensure content fits */
             position: fixed; /* Change to fixed positioning */
-            top: 160px; /* Position directly below header */
-            left: 50%; /* Center it */
-            transform: translateX(-50%); /* True centering */
+            /* Positioning will be handled by JavaScript dynamically */
             z-index: 1001; /* Ensure it appears above other elements */
             background-color: white; /* Ensure background is opaque */
             box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
@@ -223,8 +221,6 @@
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
-            -webkit-transform: translateX(-50%) !important;
-            transform: translateX(-50%) !important;
             -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
             touch-action: manipulation; /* Optimize touch actions */
           }

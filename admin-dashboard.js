@@ -56,31 +56,44 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // For mobile: ensure the dropdown is positioned correctly
       if (window.innerWidth <= 480) {
-        // Slight delay to ensure DOM is updated
-        setTimeout(() => {
+        // Function to position dropdown below button
+        const positionDropdown = () => {
           if (dropdown.classList.contains('show-dropdown')) {
-            dropdown.style.maxHeight = '80vh';
+            const buttonRect = this.getBoundingClientRect();
             
-            // Get the navbar and header heights to position dropdown correctly
-            const header = document.querySelector('header');
-            const headerHeight = header ? header.getBoundingClientRect().height : 0;
-            const navbar = document.querySelector('nav');
-            const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0;
-            
-            // Position dropdown directly below the navbar
             dropdown.style.position = 'fixed';
-            dropdown.style.top = (headerHeight + 10) + 'px';
-            dropdown.style.left = '50%';
+            dropdown.style.top = (buttonRect.bottom + 5) + 'px';
+            dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
             dropdown.style.transform = 'translateX(-50%)';
+            dropdown.style.maxHeight = '80vh';
             dropdown.style.zIndex = '9999';
             
-            // Scroll to ensure the dropdown is visible
             const dropdownRect = dropdown.getBoundingClientRect();
             if (dropdownRect.bottom > window.innerHeight) {
               window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
             }
           }
-        }, 10);
+        };
+        
+        // Position initially
+        setTimeout(positionDropdown, 10);
+        
+        // Track scroll to reposition dropdown if needed
+        const scrollHandler = () => {
+          if (dropdown.classList.contains('show-dropdown')) {
+            positionDropdown();
+          } else {
+            // Remove handler if dropdown is closed
+            window.removeEventListener('scroll', scrollHandler);
+            window._dropdownScrollHandler = null;
+          }
+        };
+        
+        // Store handler globally for later removal
+        window._dropdownScrollHandler = scrollHandler;
+        
+        // Add scroll listener
+        window.addEventListener('scroll', window._dropdownScrollHandler);
       }
     });
     
@@ -110,6 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
               dropdown.style.transform = '';
               dropdown.style.maxHeight = '';
             }, 300); // Wait for transition to complete
+            
+            // Remove any scroll handlers
+            window.removeEventListener('scroll', window._dropdownScrollHandler);
+            window._dropdownScrollHandler = null;
           }
         }
       }
