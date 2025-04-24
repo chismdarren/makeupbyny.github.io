@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // For mobile, ensure positioning is applied when the button becomes visible
         if (window.innerWidth <= 480) {
-          adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: 6px !important; transform: translateY(2px) !important;');
+          adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: -5px !important; margin-top: -2px !important;');
         }
       }
       
@@ -405,7 +405,3 @@ async function deleteMessage(id) {
     alert('Failed to delete message. Please try again.');
   }
 }
-
-// Display recent posts in the dashboard
-const sortedPosts = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date));
-const recentPosts = sortedPosts.slice(0, 3); 
