@@ -881,7 +881,14 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Show admin dropdown only for admin user
         if (isAdmin) {
-          if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+          if (adminDropdownBtn) {
+            adminDropdownBtn.style.display = "inline";
+            
+            // For mobile, ensure positioning is applied when the button becomes visible
+            if (window.innerWidth <= 480) {
+              adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
+            }
+          }
         } else {
           if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
           
@@ -931,18 +938,83 @@ document.addEventListener("DOMContentLoaded", () => {
     adminDropdownBtn.addEventListener("click", function(e) {
       e.preventDefault();
       e.stopPropagation();
-      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      
+      // Toggle dropdown visibility
+      const dropdown = document.getElementById("adminDropdownContent");
+      dropdown.classList.toggle("show-dropdown");
       this.classList.toggle("active");
+      
+      // For mobile: ensure the dropdown is positioned correctly
+      if (window.innerWidth <= 480) {
+        // Function to position dropdown below button
+        const positionDropdown = () => {
+          if (dropdown.classList.contains("show-dropdown")) {
+            const buttonRect = this.getBoundingClientRect();
+            
+            dropdown.style.position = 'fixed';
+            dropdown.style.top = (buttonRect.bottom + 5) + 'px';
+            dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
+            dropdown.style.transform = 'translateX(-50%)';
+            dropdown.style.maxHeight = '80vh';
+            dropdown.style.zIndex = '9999';
+            
+            const dropdownRect = dropdown.getBoundingClientRect();
+            if (dropdownRect.bottom > window.innerHeight) {
+              window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
+            }
+          }
+        };
+        
+        // Position initially
+        setTimeout(positionDropdown, 10);
+        
+        // Store handler globally for later removal
+        window._dropdownScrollHandler = function() {
+          if (dropdown.classList.contains("show-dropdown")) {
+            positionDropdown();
+          } else {
+            // Remove handler if dropdown is closed
+            window.removeEventListener('scroll', window._dropdownScrollHandler);
+            window._dropdownScrollHandler = null;
+          }
+        };
+        
+        // Add scroll listener
+        window.addEventListener('scroll', window._dropdownScrollHandler);
+      }
     });
     
     // Close dropdown when clicking outside
     document.addEventListener("click", function(e) {
-      if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+      // Don't close if clicking on the dropdown itself
+      if (e.target.closest('.admin-dropdown-content')) {
+        return;
+      }
+      
+      // Only close if clicking outside the dropdown and its button
+      if (!e.target.matches('#adminDropdownBtn') && 
+          !e.target.matches('.dropdown-icon') && 
+          !e.target.closest('#adminDropdownBtn')) {
         const dropdown = document.getElementById("adminDropdownContent");
         const btn = document.getElementById("adminDropdownBtn");
         if (dropdown && dropdown.classList.contains("show-dropdown")) {
           dropdown.classList.remove("show-dropdown");
           btn.classList.remove("active");
+          
+          // Reset inline styles when closing dropdown
+          if (window.innerWidth <= 480) {
+            setTimeout(() => {
+              dropdown.style.position = '';
+              dropdown.style.top = '';
+              dropdown.style.left = '';
+              dropdown.style.transform = '';
+              dropdown.style.maxHeight = '';
+            }, 300); // Wait for transition to complete
+            
+            // Remove any scroll handlers
+            window.removeEventListener('scroll', window._dropdownScrollHandler);
+            window._dropdownScrollHandler = null;
+          }
         }
       }
     });
