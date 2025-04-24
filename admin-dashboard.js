@@ -32,7 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const isAdmin = await isAdminUser(user.uid);
     if (isAdmin) {
       // User is admin, show admin dropdown menu
-      if (adminDropdownBtn) adminDropdownBtn.style.display = 'inline';
+      if (adminDropdownBtn) {
+        adminDropdownBtn.style.display = 'inline';
+        
+        // For mobile, ensure positioning is applied when the button becomes visible
+        if (window.innerWidth <= 480) {
+          adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: 6px !important; transform: translateY(2px) !important;');
+        }
+      }
       
       // Load contact messages
       loadContactMessages();

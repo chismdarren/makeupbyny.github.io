@@ -219,15 +219,7 @@
             display: inline-block !important;
           }
           
-          /* Adjust Admin Dashboard button position to align with other menu items on mobile */
-          nav #adminDropdownBtn {
-            padding: 10px 5px;
-            font-size: 0.85em; /* Match the font size of other nav links on mobile */
-            position: relative !important;
-            top: 4px !important; /* Reduced shift to better align with other menu items */
-            display: inline-block !important;
-          }
-          
+          /* Dropdown icon styles */
           .admin-dropdown-btn .dropdown-icon {
             font-size: 0.85em; /* Make dropdown icon match the text size */
           }
@@ -333,7 +325,7 @@
             <a href="contact.html">Contact</a>
             <!-- Admin dropdown menu (initially hidden) -->
             <div class="admin-dropdown">
-                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative; top: 4px;">
+                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: 6px !important; transform: translateY(2px) !important;">
                     Admin Dashboard 
                     <span class="dropdown-icon">▼</span>
                 </a>
@@ -404,34 +396,6 @@
                         window.location.href = this.href;
                     }
                 });
-            });
-            
-            // Fix for Admin Dashboard button alignment on mobile
-            const adminBtn = document.getElementById('adminDropdownBtn');
-            if (adminBtn && window.innerWidth <= 480) {
-                // Apply more noticeable vertical alignment on mobile only
-                adminBtn.style.position = 'relative';
-                adminBtn.style.top = '4px';
-                adminBtn.style.paddingTop = '6px';
-                adminBtn.style.paddingBottom = '6px';
-            }
-            
-            // Ensure alignment is maintained on resize
-            window.addEventListener('resize', function() {
-                if (adminBtn) {
-                    if (window.innerWidth <= 480) {
-                        adminBtn.style.position = 'relative';
-                        adminBtn.style.top = '4px';
-                        adminBtn.style.paddingTop = '6px';
-                        adminBtn.style.paddingBottom = '6px';
-                    } else {
-                        // Reset on larger screens
-                        adminBtn.style.position = '';
-                        adminBtn.style.top = '';
-                        adminBtn.style.paddingTop = '';
-                        adminBtn.style.paddingBottom = '';
-                    }
-                }
             });
         });
     </script>
