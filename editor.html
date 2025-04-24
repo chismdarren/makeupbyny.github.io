@@ -971,8 +971,6 @@
     @media (max-width: 480px) {
       .admin-dropdown-content {
         right: -50px; /* Adjust position to be more centered on small screens */
-        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
-        overflow-y: auto;
         width: 180px; /* Fixed width to ensure content fits */
         background-color: white; /* Ensure background is opaque */
         box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
@@ -1258,7 +1256,6 @@
               adminDropdownContent.style.top = (buttonRect.bottom + 5) + 'px';
               adminDropdownContent.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
               adminDropdownContent.style.transform = 'translateX(-50%)';
-              adminDropdownContent.style.maxHeight = '80vh';
               adminDropdownContent.style.zIndex = '9999';
             }
           });
@@ -1270,7 +1267,6 @@
               adminDropdownContent.style.top = '';
               adminDropdownContent.style.left = '';
               adminDropdownContent.style.transform = '';
-              adminDropdownContent.style.maxHeight = '';
             }
           });
           
