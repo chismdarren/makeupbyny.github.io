@@ -215,6 +215,41 @@
             padding: 15px 10px;
             box-sizing: border-box;
           }
+          
+          /* Ensure message cards take full width too */
+          .message-card {
+            width: 100%;
+            box-sizing: border-box;
+            margin-left: 0;
+            margin-right: 0;
+          }
+          
+          /* Improve content layout on small screens */
+          .content {
+            display: block;
+            padding: 0;
+            width: 100%;
+          }
+          
+          /* Override default mobile styles for admin dashboard */
+          main.posts {
+            width: 100% !important;
+            max-width: 100% !important;
+            float: none !important;
+            clear: none !important;
+            padding: 5px;
+          }
+          
+          /* Hide about-me section in admin dashboard */
+          .admin-dashboard .about-me {
+            display: none;
+          }
+        }
+        
+        /* Add a specific class to the body for the admin dashboard */
+        body.admin-page .posts {
+          width: 100%;
+          max-width: 100%;
         }
 
         /* Settings gear icon styles */
@@ -246,7 +281,7 @@
         }
     </style>
 </head>
-<body>
+<body class="admin-page">
     <header>
         <a href="index.html">
             <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
@@ -283,7 +318,7 @@
         </svg>
     </a>
 
-    <div class="content">
+    <div class="content admin-dashboard">
         <main class="posts">
             <div class="messages-section">
                 <h2>Contact Messages</h2>
