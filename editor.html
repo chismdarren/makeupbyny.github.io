@@ -982,6 +982,12 @@
         border: 1px solid #ddd; /* More visible border */
       }
 
+      /* Make sure My Account and Logout appear next to each other on mobile */
+      #userAccountLink, #logout-btn {
+        display: inline-block;
+        margin: 0 4px;
+      }
+      
       /* Fix for dropdown positioning - ensure it's visible on mobile */
       .admin-dropdown {
         position: static; /* Change to static so the dropdown positions relative to the nav bar */
