@@ -48,13 +48,40 @@ document.addEventListener('DOMContentLoaded', () => {
     adminDropdownBtn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
+      
+      // Toggle dropdown visibility
+      const dropdown = document.getElementById('adminDropdownContent');
+      dropdown.classList.toggle('show-dropdown');
       this.classList.toggle('active');
+      
+      // For mobile: ensure the dropdown is positioned correctly
+      if (window.innerWidth <= 480) {
+        // Slight delay to ensure DOM is updated
+        setTimeout(() => {
+          if (dropdown.classList.contains('show-dropdown')) {
+            dropdown.style.maxHeight = '80vh';
+            
+            // Scroll to ensure the dropdown is visible
+            const dropdownRect = dropdown.getBoundingClientRect();
+            if (dropdownRect.bottom > window.innerHeight) {
+              window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
+            }
+          }
+        }, 10);
+      }
     });
     
     // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
-      if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+      // Don't close if clicking on the dropdown itself
+      if (e.target.closest('.admin-dropdown-content')) {
+        return;
+      }
+      
+      // Only close if clicking outside the dropdown and its button
+      if (!e.target.matches('#adminDropdownBtn') && 
+          !e.target.matches('.dropdown-icon') && 
+          !e.target.closest('#adminDropdownBtn')) {
         const dropdown = document.getElementById('adminDropdownContent');
         const btn = document.getElementById('adminDropdownBtn');
         if (dropdown && dropdown.classList.contains('show-dropdown')) {

@@ -199,8 +199,38 @@
 
         /* For very small screens */
         @media (max-width: 480px) {
+          /* Fix for dropdown positioning - ensure it's visible on mobile */
+          .admin-dropdown {
+            position: static; /* Change to static so the dropdown positions relative to the nav bar */
+          }
+
           .admin-dropdown-content {
-            right: -50px; /* Adjust position to be more centered on small screens */
+            max-height: 80vh; /* Limit maximum height and add scrolling if needed */
+            overflow-y: auto;
+            width: 180px; /* Fixed width to ensure content fits */
+            position: absolute;
+            z-index: 1001; /* Ensure it appears above other elements */
+            right: auto; /* Reset right position */
+            left: 50%; /* Center it */
+            transform: translateX(-50%); /* True centering */
+            top: 100%; /* Position below the navbar */
+            background-color: white; /* Ensure background is opaque */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+            border: 1px solid #ddd; /* More visible border */
+          }
+          
+          /* Ensure dropdown appears over other content */
+          .show-dropdown {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+          }
+          
+          /* Make dropdown items more touch-friendly on mobile */
+          .admin-dropdown-content a {
+            padding: 15px 16px; /* Larger touch targets */
+            font-size: 0.95em; /* Slightly larger text */
+            border-bottom: 1px solid #eee; /* More visible separators */
           }
 
           .admin-dropdown-btn {
@@ -352,5 +382,24 @@
     </div>
 
     <script type="module" src="admin-dashboard.js"></script>
+    <script>
+        // Fix for mobile menu tap delays
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
+            dropdownLinks.forEach(link => {
+                link.addEventListener('touchstart', function(e) {
+                    // Prevent double-firing of events
+                    e.stopPropagation();
+                });
+                
+                link.addEventListener('touchend', function(e) {
+                    // Navigate to the link href directly
+                    if (this.href) {
+                        window.location.href = this.href;
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
