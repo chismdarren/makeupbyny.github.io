@@ -386,8 +386,25 @@ onAuthStateChanged(auth, async (user) => {
   // Sync super admins with Firestore first
   await syncSuperAdmins();
 
+  // Check if user is super admin
   const isUserSuperAdmin = await isSuperAdmin(user.uid);
-  if (!isUserSuperAdmin) {
+  if (isUserSuperAdmin) {
+    // User is admin, show admin dropdown menu
+    if (loginLink) loginLink.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline";
+    if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+    if (userAccountLink) userAccountLink.style.display = "inline";
+    if (settingsIcon) settingsIcon.style.display = "flex";
+    
+    // For mobile, ensure positioning is applied when the button becomes visible
+    if (window.innerWidth <= 480 && adminDropdownBtn) {
+      adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
+    }
+
+    console.log("User is super admin, loading users...");
+    // User is admin, load the users
+    await loadUsers();
+  } else {
     console.log("User is not super admin, redirecting to home page");
     content.innerHTML = '<div class="error-message">Access denied. Super Admin privileges required.</div>';
     setTimeout(() => {
@@ -395,17 +412,6 @@ onAuthStateChanged(auth, async (user) => {
     }, 2000);
     return;
   }
-
-  // Set display state for auth UI elements
-  if (loginLink) loginLink.style.display = "none";
-  if (logoutBtn) logoutBtn.style.display = "inline";
-  if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
-  if (userAccountLink) userAccountLink.style.display = "inline";
-  if (settingsIcon) settingsIcon.style.display = "flex";
-
-  console.log("User is super admin, loading users...");
-  // User is admin, load the users
-  await loadUsers();
 });
 
 // Handle admin dropdown functionality
@@ -413,18 +419,86 @@ if (adminDropdownBtn) {
   adminDropdownBtn.addEventListener("click", function(e) {
     e.preventDefault();
     e.stopPropagation();
-    document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+    
+    // Toggle dropdown visibility
+    const dropdown = document.getElementById("adminDropdownContent");
+    dropdown.classList.toggle("show-dropdown");
     this.classList.toggle("active");
+    
+    // For mobile: ensure the dropdown is positioned correctly
+    if (window.innerWidth <= 480) {
+      // Function to position dropdown below button
+      const positionDropdown = () => {
+        if (dropdown.classList.contains("show-dropdown")) {
+          const buttonRect = this.getBoundingClientRect();
+          
+          dropdown.style.position = 'fixed';
+          dropdown.style.top = (buttonRect.bottom + 5) + 'px';
+          dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
+          dropdown.style.transform = 'translateX(-50%)';
+          dropdown.style.maxHeight = '80vh';
+          dropdown.style.zIndex = '9999';
+          
+          const dropdownRect = dropdown.getBoundingClientRect();
+          if (dropdownRect.bottom > window.innerHeight) {
+            window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
+          }
+        }
+      };
+      
+      // Position initially
+      setTimeout(positionDropdown, 10);
+      
+      // Track scroll to reposition dropdown if needed
+      const scrollHandler = () => {
+        if (dropdown.classList.contains("show-dropdown")) {
+          positionDropdown();
+        } else {
+          // Remove handler if dropdown is closed
+          window.removeEventListener('scroll', scrollHandler);
+          window._dropdownScrollHandler = null;
+        }
+      };
+      
+      // Store handler globally for later removal
+      window._dropdownScrollHandler = scrollHandler;
+      
+      // Add scroll listener
+      window.addEventListener('scroll', window._dropdownScrollHandler);
+    }
   });
   
   // Close dropdown when clicking outside
   document.addEventListener("click", function(e) {
-    if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
+    // Don't close if clicking on the dropdown itself
+    if (e.target.closest('.admin-dropdown-content')) {
+      return;
+    }
+    
+    // Only close if clicking outside the dropdown and its button
+    if (!e.target.matches('#adminDropdownBtn') && 
+        !e.target.matches('.dropdown-icon') && 
+        !e.target.closest('#adminDropdownBtn')) {
       const dropdown = document.getElementById("adminDropdownContent");
       const btn = document.getElementById("adminDropdownBtn");
       if (dropdown && dropdown.classList.contains("show-dropdown")) {
         dropdown.classList.remove("show-dropdown");
         btn.classList.remove("active");
+        
+        // Reset inline styles when closing dropdown
+        if (window.innerWidth <= 480) {
+          setTimeout(() => {
+            dropdown.style.position = '';
+            dropdown.style.top = '';
+            dropdown.style.left = '';
+            dropdown.style.transform = '';
+            dropdown.style.maxHeight = '';
+          }, 300); // Wait for transition to complete
+          
+          // Remove any scroll handlers
+          window.removeEventListener('scroll', window._dropdownScrollHandler);
+          window._dropdownScrollHandler = null;
+        }
       }
     }
   });

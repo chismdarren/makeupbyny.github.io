@@ -274,6 +274,7 @@
       display: block;
       opacity: 1;
       transform: translateY(0);
+      z-index: 9999;
     }
 
     /* Responsive adjustments for admin dropdown */
@@ -305,6 +306,36 @@
       .admin-dropdown-btn {
         padding: 10px 5px;
       }
+    }
+
+    /* Fix for dropdown positioning - ensure it's visible on mobile */
+    .admin-dropdown {
+      position: static; /* Change to static so the dropdown positions relative to the nav bar */
+    }
+
+    .admin-dropdown-btn {
+      position: relative !important;
+      top: -2px !important;
+      margin-top: 0 !important;
+      font-family: inherit !important;
+      font-weight: normal !important;
+      font-size: 0.85em !important;
+    }
+
+    /* Dropdown icon styles */
+    .admin-dropdown-btn .dropdown-icon {
+      font-size: 0.85em; /* Make dropdown icon match the text size */
+    }
+
+    /* Ensure dropdown appears over other content */
+    .show-dropdown {
+      z-index: 9999;
+    }
+
+    /* Make dropdown items more touch-friendly on mobile */
+    .admin-dropdown-content a {
+      padding: 12px 16px;
+      font-size: 14px;
     }
 
     /* Center the title */
@@ -541,7 +572,7 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
@@ -593,5 +624,17 @@
 
   <!-- Include the external JavaScript file -->
   <script type="module" src="manage-users.js"></script>
+  
+  <script>
+    // Fix for mobile menu tap delays
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
+      dropdownLinks.forEach(link => {
+        link.addEventListener('touchstart', function() {
+          this.click();
+        });
+      });
+    });
+  </script>
 </body>
 </html>
