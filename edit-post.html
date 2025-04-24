@@ -573,11 +573,44 @@
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
-        right: -50px; /* Adjust position to be more centered on small screens */
+        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
+        overflow-y: auto;
+        width: 180px; /* Fixed width to ensure content fits */
+        position: fixed; /* Change to fixed positioning */
+        /* Positioning will be handled by JavaScript dynamically */
+        z-index: 1001; /* Ensure it appears above other elements */
+        background-color: white; /* Ensure background is opaque */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+        border: 1px solid #ddd; /* More visible border */
       }
-
-      .admin-dropdown-btn {
-        padding: 10px 5px;
+      
+      /* Fix for dropdown positioning - ensure it's visible on mobile */
+      .admin-dropdown {
+        position: static; /* Change to static so the dropdown positions relative to the nav bar */
+        vertical-align: middle !important;
+        margin-top: 5px !important;
+        display: inline-block !important;
+      }
+      
+      /* Dropdown icon styles */
+      .admin-dropdown-btn .dropdown-icon {
+        font-size: 0.85em; /* Make dropdown icon match the text size */
+      }
+      
+      /* Ensure dropdown appears over other content */
+      .show-dropdown {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+        touch-action: manipulation; /* Optimize touch actions */
+      }
+      
+      /* Make dropdown items more touch-friendly on mobile */
+      .admin-dropdown-content a {
+        padding: 15px 16px; /* Larger touch targets */
+        font-size: 0.95em; /* Slightly larger text */
+        border-bottom: 1px solid #eee; /* More visible separators */
       }
     }
 
@@ -804,6 +837,71 @@
       height: 22px;
       fill: #333;
     }
+    
+    /* Admin Dropdown Menu Mobile Styles */
+    @media (max-width: 768px) {
+      header nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      /* Position logout and user account links on a separate line, centered */
+      #userAccountLink, #logout-btn {
+        margin-top: 5px;
+        display: inline-block;
+        flex-basis: 100%;
+        text-align: center;
+      }
+      
+      #userAccountLink {
+        margin-right: 10px;
+      }
+    }
+    
+    /* For very small screens */
+    @media (max-width: 480px) {
+      .admin-dropdown-content {
+        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
+        overflow-y: auto;
+        width: 180px; /* Fixed width to ensure content fits */
+        position: fixed; /* Change to fixed positioning */
+        /* Positioning will be handled by JavaScript dynamically */
+        z-index: 1001; /* Ensure it appears above other elements */
+        background-color: white; /* Ensure background is opaque */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+        border: 1px solid #ddd; /* More visible border */
+      }
+      
+      /* Fix for dropdown positioning - ensure it's visible on mobile */
+      .admin-dropdown {
+        position: static; /* Change to static so the dropdown positions relative to the nav bar */
+        vertical-align: middle !important;
+        margin-top: 5px !important;
+        display: inline-block !important;
+      }
+      
+      /* Dropdown icon styles */
+      .admin-dropdown-btn .dropdown-icon {
+        font-size: 0.85em; /* Make dropdown icon match the text size */
+      }
+      
+      /* Ensure dropdown appears over other content */
+      .show-dropdown {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+        touch-action: manipulation; /* Optimize touch actions */
+      }
+      
+      /* Make dropdown items more touch-friendly on mobile */
+      .admin-dropdown-content a {
+        padding: 15px 16px; /* Larger touch targets */
+        font-size: 0.95em; /* Slightly larger text */
+        border-bottom: 1px solid #eee; /* More visible separators */
+      }
+    }
   </style>
 </head>
 <body>
@@ -817,7 +915,7 @@
         <a href="contact.html">Contact</a>
         <!-- Admin dropdown menu (initially hidden) -->
         <div class="admin-dropdown">
-          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
             Admin Dashboard 
             <span class="dropdown-icon">▼</span>
           </a>
@@ -955,5 +1053,24 @@
   </footer>
 
   <script type="module" src="edit-post.js"></script>
+  <script>
+    // Fix for mobile menu tap delays
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
+      dropdownLinks.forEach(link => {
+        link.addEventListener('touchstart', function(e) {
+          // Prevent double-firing of events
+          e.stopPropagation();
+        });
+        
+        link.addEventListener('touchend', function(e) {
+          // Navigate to the link href directly
+          if (this.href) {
+            window.location.href = this.href;
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
