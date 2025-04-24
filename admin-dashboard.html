@@ -203,7 +203,46 @@
           .admin-dropdown {
             position: static; /* Change to static so the dropdown positions relative to the nav bar */
           }
-
+          
+          /* Consistent styling for all nav links on mobile */
+          nav a, 
+          nav button,
+          .admin-dropdown-btn {
+            padding: 8px 6px;
+            font-size: 0.85em;
+            line-height: 1.2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            vertical-align: middle;
+            margin: 2px 4px;
+            height: auto;
+          }
+          
+          /* Specific adjustments for admin dropdown button */
+          .admin-dropdown-btn {
+            padding-right: 3px; /* Slightly less right padding to account for dropdown icon */
+            position: relative; /* Enable positioning context for icon */
+          }
+          
+          .admin-dropdown-btn .dropdown-icon {
+            font-size: 0.85em;
+            margin-left: 3px;
+            line-height: 1;
+            display: inline-block;
+            vertical-align: middle;
+            position: relative; /* Fine-tune positioning */
+            top: 0; /* Align with text */
+          }
+          
+          /* Make the admin dashboard link the same width as other links for consistency */
+          .admin-dropdown-btn {
+            min-width: 0; /* Reset min-width */
+            white-space: nowrap; /* Prevent wrapping */
+          }
+          
+          /* Mobile dropdown styles */
           .admin-dropdown-content {
             max-height: 80vh; /* Limit maximum height and add scrolling if needed */
             overflow-y: auto;
@@ -230,15 +269,14 @@
             padding: 15px 16px; /* Larger touch targets */
             font-size: 0.95em; /* Slightly larger text */
             border-bottom: 1px solid #eee; /* More visible separators */
-          }
-
-          .admin-dropdown-btn {
-            padding: 10px 5px;
-            font-size: 0.85em; /* Match the font size of other nav links on mobile */
+            display: block; /* Ensure block display */
+            text-align: center; /* Center align text */
+            white-space: nowrap; /* Prevent text wrapping */
           }
           
-          .admin-dropdown-btn .dropdown-icon {
-            font-size: 0.85em; /* Make dropdown icon match the text size */
+          .admin-dropdown-content a.active {
+            font-weight: bold; /* Highlight current page */
+            background-color: #f9f9f9; /* Subtle background for active item */
           }
           
           /* Make messages section take full width on mobile */
