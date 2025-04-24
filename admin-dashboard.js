@@ -61,6 +61,19 @@ document.addEventListener('DOMContentLoaded', () => {
           if (dropdown.classList.contains('show-dropdown')) {
             dropdown.style.maxHeight = '80vh';
             
+            // Get the navbar and header heights to position dropdown correctly
+            const header = document.querySelector('header');
+            const headerHeight = header ? header.getBoundingClientRect().height : 0;
+            const navbar = document.querySelector('nav');
+            const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0;
+            
+            // Position dropdown directly below the navbar
+            dropdown.style.position = 'fixed';
+            dropdown.style.top = (headerHeight + 10) + 'px';
+            dropdown.style.left = '50%';
+            dropdown.style.transform = 'translateX(-50%)';
+            dropdown.style.zIndex = '9999';
+            
             // Scroll to ensure the dropdown is visible
             const dropdownRect = dropdown.getBoundingClientRect();
             if (dropdownRect.bottom > window.innerHeight) {
@@ -87,6 +100,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dropdown && dropdown.classList.contains('show-dropdown')) {
           dropdown.classList.remove('show-dropdown');
           btn.classList.remove('active');
+          
+          // Reset inline styles when closing dropdown
+          if (window.innerWidth <= 480) {
+            setTimeout(() => {
+              dropdown.style.position = '';
+              dropdown.style.top = '';
+              dropdown.style.left = '';
+              dropdown.style.transform = '';
+              dropdown.style.maxHeight = '';
+            }, 300); // Wait for transition to complete
+          }
         }
       }
     });
