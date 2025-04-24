@@ -965,6 +965,18 @@
       .admin-dropdown {
         position: relative;
       }
+      
+      /* Position logout and user account links on a separate line, centered */
+      #userAccountLink, #logout-btn {
+        margin-top: 5px;
+        display: inline-block;
+        flex-basis: 100%;
+        text-align: center;
+      }
+      
+      #userAccountLink {
+        margin-right: 10px;
+      }
     }
 
     /* For very small screens */
@@ -982,12 +994,6 @@
         border: 1px solid #ddd; /* More visible border */
       }
 
-      /* Make sure My Account and Logout appear next to each other on mobile */
-      #userAccountLink, #logout-btn {
-        display: inline-block;
-        margin: 0 4px;
-      }
-      
       /* Fix for dropdown positioning - ensure it's visible on mobile */
       .admin-dropdown {
         position: static; /* Change to static so the dropdown positions relative to the nav bar */
@@ -1161,10 +1167,10 @@
           <a href="manage-users.html">User Management</a>
         </div>
       </div>
-      <!-- Public links -->
-      <a id="login-link" href="login.html">Login</a>
       <!-- User account link -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html">Login</a>
       <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
