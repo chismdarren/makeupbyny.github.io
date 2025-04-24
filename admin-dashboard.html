@@ -214,14 +214,19 @@
           /* Fix for dropdown positioning - ensure it's visible on mobile */
           .admin-dropdown {
             position: static; /* Change to static so the dropdown positions relative to the nav bar */
+            vertical-align: middle !important;
+            margin-top: 5px !important;
+            display: inline-block !important;
           }
           
           /* Adjust Admin Dashboard button position to align with other menu items on mobile */
-          .admin-dropdown-btn {
+          nav #adminDropdownBtn {
             padding: 10px 5px;
             font-size: 0.85em; /* Match the font size of other nav links on mobile */
-            position: relative;
-            top: 2px; /* Shift down slightly to align with other menu items */
+            position: relative !important;
+            top: 8px !important; /* Further increased shift with !important to override any other styles */
+            margin-top: 4px !important; /* Add margin to increase spacing */
+            display: inline-block !important;
           }
           
           .admin-dropdown-btn .dropdown-icon {
@@ -329,7 +334,7 @@
             <a href="contact.html">Contact</a>
             <!-- Admin dropdown menu (initially hidden) -->
             <div class="admin-dropdown">
-                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative; top: 10px;">
                     Admin Dashboard 
                     <span class="dropdown-icon">▼</span>
                 </a>
@@ -400,6 +405,34 @@
                         window.location.href = this.href;
                     }
                 });
+            });
+            
+            // Fix for Admin Dashboard button alignment on mobile
+            const adminBtn = document.getElementById('adminDropdownBtn');
+            if (adminBtn && window.innerWidth <= 480) {
+                // Apply more noticeable vertical alignment on mobile only
+                adminBtn.style.position = 'relative';
+                adminBtn.style.top = '12px';
+                adminBtn.style.paddingTop = '8px';
+                adminBtn.style.paddingBottom = '8px';
+            }
+            
+            // Ensure alignment is maintained on resize
+            window.addEventListener('resize', function() {
+                if (adminBtn) {
+                    if (window.innerWidth <= 480) {
+                        adminBtn.style.position = 'relative';
+                        adminBtn.style.top = '12px';
+                        adminBtn.style.paddingTop = '8px';
+                        adminBtn.style.paddingBottom = '8px';
+                    } else {
+                        // Reset on larger screens
+                        adminBtn.style.position = '';
+                        adminBtn.style.top = '';
+                        adminBtn.style.paddingTop = '';
+                        adminBtn.style.paddingBottom = '';
+                    }
+                }
             });
         });
     </script>
