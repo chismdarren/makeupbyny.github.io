@@ -583,9 +583,14 @@
 
     /* Mobile-specific styles */
     @media (max-width: 768px) {
-      /* Hide UID on mobile to save space */
-      .user-uid-container {
+      /* Hide UID on mobile to save space, but only in the list view */
+      .user-list .user-uid-container {
         display: none !important;
+      }
+      
+      /* Ensure UID is visible in the modal detail view */
+      .user-details-container .user-uid-container {
+        display: block !important;
       }
       
       /* Make user info display as column on small screens */
@@ -649,7 +654,7 @@
   <main>
     <h1>Manage Users</h1>
     <div id="content">
-      <ul id="user-list">
+      <ul id="user-list" class="user-list">
         <!-- User accounts will be listed here -->
       </ul>
     </div>
