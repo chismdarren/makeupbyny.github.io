@@ -698,15 +698,11 @@ async function loadUsers() {
               ${getAvatarHTML(userData.avatarUrl, userData.username)}
             </div>
             <div class="user-info">
-              <div class="user-info-content">
-                <span class="user-username">${userData.username || 'Not set'}</span>
-                <div class="user-info-grid">
-                  <strong>Email:</strong> <span>${user.email}</span>
-                  <span class="user-uid-container"><strong>UID:</strong> ${user.uid}</span>
-                  <strong>Status:</strong> <span>${user.disabled ? 'Disabled' : 'Active'}</span>
-                  <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
-                </div>
-              </div>
+              <strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> | 
+              <strong>Email:</strong> ${user.email} | 
+              <span class="user-uid-container"><strong>UID:</strong> ${user.uid} | </span>
+              <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
+              <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
             </div>
             <div class="user-actions">
               <button class="view-details-btn" data-uid="${user.uid}">View Details</button>

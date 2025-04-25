@@ -583,179 +583,28 @@
 
     /* Mobile-specific styles */
     @media (max-width: 768px) {
-      /* Hide UID in the main list only */
-      li .user-uid-container {
+      /* Hide UID on mobile to save space */
+      .user-uid-container {
         display: none !important;
       }
       
-      /* Keep UID visible in the modal/details view */
-      .modal .user-uid-container {
-        display: block !important;
-      }
-      
-      /* Mobile-specific user info layout improvements */
-      .user-item {
-        flex-direction: column;
-        align-items: flex-start;
-        position: relative;
-        padding-bottom: 45px;  /* Make room for the view details button */
-      }
-      
-      /* Create a compact header with avatar and information side by side */
+      /* Make user info display as column on small screens */
       .user-info {
         display: flex;
-        flex-direction: row;
-        width: 100%;
-        padding: 8px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        margin-bottom: 10px;
+        flex-direction: column;
+        gap: 5px;
       }
       
-      .user-avatar-container {
-        width: 45px;
-        height: 45px;
-        margin-right: 10px;
-        margin-bottom: 0;
-        align-self: flex-start;
-        flex-shrink: 0;
-      }
-      
-      /* Compact info layout */
-      .user-info-content {
-        flex: 1;
-        min-width: 0; /* Allows proper text truncation */
-      }
-      
-      /* Style the key info for better visibility */
-      .user-info .user-username {
-        font-size: 1em;
-        font-weight: bold;
-        margin-bottom: 4px;
-        color: #222;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: block;
-      }
-      
-      /* Group essential info in a more compact grid */
-      .user-info-grid {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 2px 6px;
-        font-size: 0.85em;
-      }
-      
-      .user-info-grid strong {
-        font-weight: 600;
-        color: #555;
-      }
-      
-      .user-info-grid .user-role {
-        grid-column: 2;
-      }
-
       /* Add more space between user action buttons */
       .user-actions {
         flex-wrap: wrap;
         gap: 8px;
-        width: 100%;
       }
       
       /* Make buttons full width on mobile */
       .user-actions button {
         width: 100%;
         margin-top: 5px;
-        padding: 8px 10px;
-        font-size: 0.9em;
-      }
-      
-      /* Also improve the modal content layout on mobile */
-      .modal-content {
-        padding: 15px;
-        margin: 2% auto;
-        width: 95%;
-      }
-      
-      .user-details-container {
-        gap: 15px;
-      }
-      
-      .section-content p {
-        margin: 5px 0;
-      }
-      
-      /* Make modal action buttons more prominent */
-      .modal .user-actions {
-        position: static;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        padding: 0;
-      }
-      
-      .modal .user-actions button {
-        margin: 5px 0;
-        padding: 10px;
-        border-radius: 4px;
-      }
-      
-      /* Show only View Details button on mobile */
-      .user-actions {
-        position: absolute;
-        bottom: 5px;
-        left: 0;
-        right: 0;
-        padding: 0 15px;
-      }
-      
-      /* Hide admin and delete buttons on mobile list view */
-      .user-actions button:not(.view-details-btn) {
-        display: none !important;
-      }
-      
-      /* Make View Details button stand out */
-      .user-actions .view-details-btn {
-        width: 100%;
-        margin-top: 5px;
-        padding: 8px 10px;
-        font-size: 0.9em;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-      }
-      
-      /* Show all buttons in the modal */
-      .modal .user-actions button {
-        display: block !important;
-      }
-      
-      /* Style the role buttons in the modal */
-      .modal .role-btn.make-admin {
-        background-color: #4CAF50;
-        color: white;
-        order: 1;
-      }
-      
-      .modal .role-btn.make-super-admin {
-        background-color: #9C27B0;
-        color: white;
-        order: 2;
-      }
-      
-      .modal .role-btn.remove-admin,
-      .modal .role-btn.remove-super-admin {
-        background-color: #ff9800;
-        color: white;
-        order: 3;
-      }
-      
-      .modal .delete-btn {
-        background-color: #f44336;
-        color: white;
-        order: 4;
       }
     }
   </style>
