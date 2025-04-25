@@ -700,7 +700,7 @@ async function loadUsers() {
             <div class="user-info">
               <strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> | 
               <strong>Email:</strong> ${user.email} | 
-              <strong>UID:</strong> ${user.uid} | 
+              <span class="user-uid-container"><strong>UID:</strong> ${user.uid} | </span>
               <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
               <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
             </div>
@@ -888,7 +888,7 @@ window.showUserDetails = async function(userId, userData = null) {
           <div class="section-content" id="basic-section-content">
             <p><strong>Username:</strong> <span id="username-display">${userFullData.username || 'Not provided'}</span></p>
           <p><strong>Email:</strong> ${authUserData.email || userFullData.email || 'Not provided'}</p>
-          <p><strong>UID:</strong> ${userId}</p>
+          <p class="user-uid-container"><strong>UID:</strong> ${userId}</p>
             <p><strong>Status:</strong> <span id="status-display">${authUserData.disabled ? 'Disabled' : 'Active'}</span></p>
           <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
           </div>

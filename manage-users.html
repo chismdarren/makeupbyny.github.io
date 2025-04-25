@@ -580,6 +580,38 @@
       padding: 10px 15px;
       border-bottom: 1px solid #ddd;
     }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      /* Hide UID in the main list only */
+      li .user-uid-container {
+        display: none !important;
+      }
+      
+      /* Keep UID visible in the modal/details view */
+      .modal .user-uid-container {
+        display: block !important;
+      }
+      
+      /* Make user info display as column on small screens */
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      
+      /* Add more space between user action buttons */
+      .user-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      /* Make buttons full width on mobile */
+      .user-actions button {
+        width: 100%;
+        margin-top: 5px;
+      }
+    }
   </style>
 </head>
 <body class="admin-page">
