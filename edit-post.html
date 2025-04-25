@@ -463,7 +463,22 @@
       margin-right: 15px;
     }
 
-    /* Position My Account beside logout on mobile */
+    /* Position My Account for desktop */
+    @media (min-width: 481px) {
+      #userAccountLink {
+        order: 3; /* Position after admin dropdown */
+      }
+      
+      #login-link {
+        order: 5; /* Position after My Account */
+      }
+      
+      #logout-btn {
+        order: 6; /* Position after login */
+      }
+    }
+
+    /* Mobile-specific positioning - move My Account beside logout */
     @media (max-width: 480px) {
       #mainNav a, #mainNav button {
         margin: 2px 4px;
@@ -473,6 +488,11 @@
       /* Hide login on mobile */
       #login-link {
         display: none;
+      }
+      
+      /* Add space between My Account and Logout */
+      #userAccountLink {
+        margin-right: 6px;
       }
     }
 
@@ -930,10 +950,10 @@
             <a href="manage-users.html">User Management</a>
           </div>
         </div>
-        <!-- User account link -->
-        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
         <!-- Public links -->
         <a id="login-link" href="login.html">Login</a>
+        <!-- User account link -->
+        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
         <button id="logout-btn" style="display:none;">Logout</button>
       </nav>
     </header>
