@@ -453,32 +453,22 @@
       }
     }
 
-    /* Fix navigation menu order and spacing */
+    /* Fix navigation menu order */
     #mainNav {
       display: flex;
       align-items: center;
-      gap: 10px; /* Consistent spacing between all nav items */
     }
     
-    #mainNav a, 
-    #mainNav button,
-    #mainNav .admin-dropdown {
-      margin: 0; /* Remove default margins */
-      padding: 10px 5px; /* Match admin-dashboard padding */
+    #mainNav a, #mainNav button {
+      margin-right: 15px;
     }
-
-    /* Override for mobile */
-    @media (max-width: 480px) {
-      #mainNav {
-        gap: 6px; /* Tighter spacing on mobile */
-      }
-      
-      #mainNav a, 
-      #mainNav button,
-      #mainNav .admin-dropdown {
-        margin: 0;
-        padding: 4px 2px; /* Smaller padding on mobile */
-      }
+    
+    #logout-btn {
+      /* Position styling if needed */
+    }
+    
+    #login-link {
+      /* Position styling if needed */
     }
 
     /* Admin Dropdown Menu Styles */
@@ -576,7 +566,6 @@
 
     /* For very small screens */
     @media (max-width: 480px) {
-      /* Fix dropdown content */
       .admin-dropdown-content {
         max-height: 80vh; /* Limit maximum height and add scrolling if needed */
         overflow-y: auto;
@@ -593,20 +582,8 @@
       .admin-dropdown {
         position: static; /* Change to static so the dropdown positions relative to the nav bar */
         vertical-align: middle !important;
-        margin-top: 0 !important; /* Change from 5px to 0 to match admin-dashboard */
+        margin-top: 5px !important;
         display: inline-block !important;
-        padding: 0 !important; /* Remove padding from the container */
-      }
-      
-      /* Fix admin dropdown button positioning */
-      .admin-dropdown-btn {
-        position: relative !important;
-        top: 0 !important; /* Change from -2px to 0 to match admin-dashboard */
-        margin-top: 0 !important;
-        font-family: inherit !important;
-        font-weight: normal !important;
-        font-size: 0.85em !important;
-        padding: 8px 5px !important; /* Explicit padding to match admin-dashboard */
       }
       
       /* Dropdown icon styles */
@@ -629,15 +606,14 @@
         font-size: 0.95em; /* Slightly larger text */
         border-bottom: 1px solid #eee; /* More visible separators */
       }
-      
-      /* Account links styling */
-      .account-links {
-        display: inline-flex !important;
-        align-items: center !important;
-        margin-top: 0 !important;
-        padding: 0 !important;
+
+      /* Reduce spacing between nav links on mobile */
+      #mainNav a, #mainNav button {
+        margin: 2px 4px;
+        padding: 4px 6px;
       }
       
+      /* Position My Account beside logout on mobile */
       #userAccountLink {
         margin-right: 2px !important;
         display: inline-block !important;
@@ -650,7 +626,20 @@
       
       /* Hide login on mobile */
       #login-link {
-        display: none !important;
+        display: none;
+      }
+      
+      /* Break the nav items so My Account and Logout appear on their own line */
+      #mainNav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      /* Add a line break before My Account */
+      .admin-dropdown::after {
+        content: "";
+        flex-basis: 100%;
+        height: 0;
       }
     }
 
@@ -910,20 +899,8 @@
       .admin-dropdown {
         position: static; /* Change to static so the dropdown positions relative to the nav bar */
         vertical-align: middle !important;
-        margin-top: 0 !important; /* Change from 5px to 0 to match admin-dashboard */
+        margin-top: 5px !important;
         display: inline-block !important;
-        padding: 0 !important; /* Remove padding from the container */
-      }
-      
-      /* Fix admin dropdown button positioning */
-      .admin-dropdown-btn {
-        position: relative !important;
-        top: 0 !important; /* Change from -2px to 0 to match admin-dashboard */
-        margin-top: 0 !important;
-        font-family: inherit !important;
-        font-weight: normal !important;
-        font-size: 0.85em !important;
-        padding: 8px 5px !important; /* Explicit padding to match admin-dashboard */
       }
       
       /* Dropdown icon styles */
@@ -946,29 +923,6 @@
         font-size: 0.95em; /* Slightly larger text */
         border-bottom: 1px solid #eee; /* More visible separators */
       }
-      
-      /* Account links styling */
-      .account-links {
-        display: inline-flex !important;
-        align-items: center !important;
-        margin-top: 0 !important;
-        padding: 0 !important;
-      }
-      
-      #userAccountLink {
-        margin-right: 2px !important;
-        display: inline-block !important;
-      }
-      
-      #logout-btn {
-        margin-left: 0 !important;
-        display: inline-block !important;
-      }
-      
-      /* Hide login on mobile */
-      #login-link {
-        display: none !important;
-      }
     }
 
     /* Style the account links container */
@@ -980,7 +934,7 @@
     /* For mobile screens */
     @media (max-width: 480px) {
       .account-links {
-        margin-top: 0;
+        margin-top: 5px;
       }
       
       /* Remove the line break we added earlier since we now have a container */
@@ -1001,7 +955,7 @@
         <a href="contact.html">Contact</a>
         <!-- Admin dropdown menu (initially hidden) -->
         <div class="admin-dropdown">
-          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: 0 !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
+          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
             Admin Dashboard 
             <span class="dropdown-icon">▼</span>
           </a>
