@@ -314,6 +314,19 @@
       .admin-dropdown-btn {
         padding: 10px 5px;
       }
+
+      /* Mobile-specific admin dashboard adjustment */
+      #adminDropdownBtn {
+        top: 0px !important; /* Move up 2px from the -2px position */
+        margin-bottom: 2px !important;
+      }
+      
+      /* Adjust admin dropdown container on mobile */
+      .admin-dropdown {
+        vertical-align: top !important;
+        margin-top: 2px !important;
+        line-height: normal !important;
+      }
     }
 
     /* Dropdown icon styles */
@@ -593,7 +606,7 @@
       <a href="contact.html" style="vertical-align: middle !important; position: relative !important; top: -2px !important;">Contact</a>
       <!-- Admin dropdown menu -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important; margin-bottom: 0 !important;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
