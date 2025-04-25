@@ -314,6 +314,10 @@
       .admin-dropdown-btn {
         padding: 10px 5px;
       }
+
+      #login-link:not([style*="display: none"]) {
+        display: none;
+      }
     }
 
     /* Dropdown icon styles */
@@ -559,26 +563,6 @@
       padding: 10px 15px;
       border-bottom: 1px solid #ddd;
     }
-
-    /* Fix for My Account link alignment */
-    #userAccountLink {
-      vertical-align: middle !important;
-      margin-top: 5px !important;
-      position: relative !important;
-      top: -2px !important;
-    }
-
-    /* Ensure consistent navigation alignment */
-    nav a, 
-    nav button,
-    #adminDropdownBtn,
-    #userAccountLink {
-      vertical-align: middle !important;
-      display: inline-block !important;
-      position: relative !important;
-      top: -2px !important;
-      line-height: 1.5em !important;
-    }
   </style>
 </head>
 <body class="admin-page">
@@ -587,9 +571,9 @@
       <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
     </a>
     <nav id="mainNav">
-      <a href="index.html" style="vertical-align: middle !important; position: relative !important; top: -2px !important;">Home</a>
-      <a href="about.html" style="vertical-align: middle !important; position: relative !important; top: -2px !important;">About</a>
-      <a href="contact.html" style="vertical-align: middle !important; position: relative !important; top: -2px !important;">Contact</a>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu -->
       <div class="admin-dropdown">
         <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
@@ -603,11 +587,11 @@
           <a href="manage-users.html" class="active">User Management</a>
         </div>
       </div>
-      <!-- User account link -->
-      <a id="userAccountLink" href="settings.html" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">My Account</a>
       <!-- Public links -->
-      <a id="login-link" href="login.html" style="vertical-align: middle !important; position: relative !important; top: -2px !important;">Login</a>
-      <button id="logout-btn" style="display:none; vertical-align: middle !important; position: relative !important; top: -2px !important;">Logout</button>
+      <a id="login-link" href="login.html">Login</a>
+      <!-- User account link moved next to logout -->
+      <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
+      <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
 
