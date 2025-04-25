@@ -552,21 +552,15 @@
 
     /* Responsive adjustments for admin dropdown */
     @media (max-width: 768px) {
-      .admin-dropdown-content {
-        position: absolute;
-        right: 0;
-        left: auto;
-        width: 200px;
-      }
-
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
       }
-
-      .admin-dropdown {
-        position: relative;
+      
+      /* Position logout and user account links on mobile screens */
+      #userAccountLink, #logout-btn {
+        display: inline-block;
       }
     }
 
@@ -621,16 +615,31 @@
       
       /* Position My Account beside logout on mobile */
       #userAccountLink {
-        margin-right: 5px;
+        margin-right: 2px !important;
+        display: inline-block !important;
       }
       
       #logout-btn {
-        margin-left: 0;
+        margin-left: 0 !important;
+        display: inline-block !important;
       }
       
       /* Hide login on mobile */
       #login-link {
         display: none;
+      }
+      
+      /* Break the nav items so My Account and Logout appear on their own line */
+      #mainNav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      /* Add a line break before My Account */
+      .admin-dropdown::after {
+        content: "";
+        flex-basis: 100%;
+        height: 0;
       }
     }
 
@@ -866,16 +875,9 @@
         justify-content: center;
       }
       
-      /* Position logout and user account links on the same line, centered */
+      /* Position logout and user account links on mobile screens */
       #userAccountLink, #logout-btn {
-        margin-top: 5px;
         display: inline-block;
-        flex-basis: auto;
-        text-align: center;
-      }
-      
-      #userAccountLink {
-        margin-right: 10px;
       }
     }
     
@@ -922,6 +924,24 @@
         border-bottom: 1px solid #eee; /* More visible separators */
       }
     }
+
+    /* Style the account links container */
+    .account-links {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* For mobile screens */
+    @media (max-width: 480px) {
+      .account-links {
+        margin-top: 5px;
+      }
+      
+      /* Remove the line break we added earlier since we now have a container */
+      .admin-dropdown::after {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -948,9 +968,11 @@
         </div>
         <!-- Public links -->
         <a id="login-link" href="login.html">Login</a>
-        <!-- User account link moved next to logout -->
-        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
-        <button id="logout-btn" style="display:none;">Logout</button>
+        <!-- Group My Account and Logout together -->
+        <div class="account-links">
+          <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
+          <button id="logout-btn" style="display:none;">Logout</button>
+        </div>
       </nav>
     </header>
 
