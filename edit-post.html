@@ -464,11 +464,11 @@
     }
     
     #logout-btn {
-      order: 5; /* Position after admin dashboard */
+      /* Position styling if needed */
     }
     
     #login-link {
-      order: 6;
+      /* Position styling if needed */
     }
 
     /* Admin Dropdown Menu Styles */
@@ -621,12 +621,10 @@
       
       /* Position My Account beside logout on mobile */
       #userAccountLink {
-        order: 4; /* Position right before logout button */
         margin-right: 5px;
       }
       
       #logout-btn {
-        order: 5;
         margin-left: 0;
       }
       
@@ -948,10 +946,10 @@
             <a href="manage-users.html">User Management</a>
           </div>
         </div>
-        <!-- User account link -->
-        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
         <!-- Public links -->
         <a id="login-link" href="login.html">Login</a>
+        <!-- User account link moved next to logout -->
+        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
         <button id="logout-btn" style="display:none;">Logout</button>
       </nav>
     </header>
