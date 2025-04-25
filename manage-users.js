@@ -140,13 +140,10 @@ function initializeFilters() {
       <div class="filter-group">
         <span class="filter-label">Sort Users:</span>
         <select id="sort-by" class="filter-control">
-          <option value="username">Name (A-Z)</option>
-          <option value="email">Email</option>
+          <option value="username-asc">Name (A-Z)</option>
+          <option value="username-desc">Name (Z-A)</option>
+          <option value="date-desc">Most Recent</option>
         </select>
-      </div>
-      <div class="sort-direction-mobile">
-        <button id="sort-asc" class="sort-direction-btn active">A to Z</button>
-        <button id="sort-desc" class="sort-direction-btn">Z to A</button>
       </div>
       <div class="filter-group search-filter">
         <input type="text" id="search-input" class="filter-control" placeholder="Search by name or email...">
@@ -210,22 +207,7 @@ function initializeFilters() {
   document.getElementById('sort-by').addEventListener('change', applyFilters);
   
   if (isMobile) {
-    // Mobile sort direction buttons
-    document.getElementById('sort-asc').addEventListener('click', function() {
-      document.getElementById('sort-desc').classList.remove('active');
-      this.classList.add('active');
-      window.sortDirection = 'asc';
-      applyFilters();
-    });
-    
-    document.getElementById('sort-desc').addEventListener('click', function() {
-      document.getElementById('sort-asc').classList.remove('active');
-      this.classList.add('active');
-      window.sortDirection = 'desc';
-      applyFilters();
-    });
-    
-    // Set initial sort direction
+    // Set initial sort direction based on dropdown selection
     window.sortDirection = 'asc';
   } else {
     // Desktop sort direction dropdown
@@ -255,20 +237,17 @@ function initializeFilters() {
 function resetFilters() {
   const isMobile = window.innerWidth <= 768;
   
-  document.getElementById('sort-by').value = 'username';
-  document.getElementById('search-input').value = '';
-  
   if (isMobile) {
-    // Reset sort direction buttons
-    document.getElementById('sort-asc').classList.add('active');
-    document.getElementById('sort-desc').classList.remove('active');
-    window.sortDirection = 'asc';
+    document.getElementById('sort-by').value = 'username-asc';
   } else {
+    document.getElementById('sort-by').value = 'username';
     // Reset desktop filters
     document.getElementById('sort-direction').value = 'asc';
     document.getElementById('filter-status').value = 'all';
     document.getElementById('filter-role').value = 'all';
   }
+  
+  document.getElementById('search-input').value = '';
   
   applyFilters();
 }
@@ -278,8 +257,20 @@ function applyFilters() {
   if (allUsers.length === 0) return;
   
   const isMobile = window.innerWidth <= 768;
-  const sortBy = document.getElementById('sort-by').value;
-  const sortDirection = isMobile ? window.sortDirection : document.getElementById('sort-direction').value;
+  const sortByElement = document.getElementById('sort-by');
+  let sortBy, sortDirection;
+  
+  if (isMobile) {
+    // On mobile, sort value includes direction (e.g., "username-asc")
+    const sortValue = sortByElement.value;
+    const [field, direction] = sortValue.split('-');
+    sortBy = field;
+    sortDirection = direction || 'asc';
+  } else {
+    sortBy = sortByElement.value;
+    sortDirection = document.getElementById('sort-direction').value;
+  }
+  
   const searchTerm = document.getElementById('search-input').value.toLowerCase();
   
   // Filter users
@@ -343,7 +334,7 @@ function applyFilters() {
         valueB = b.userData.isSuperAdmin ? 3 : (b.userData.isAdmin ? 2 : 1);
         break;
       case 'date':
-        // Get timestamp values
+        // Get timestamp values for date sorting
         valueA = getTimestampValue(a.userData.createdAt) || 0;
         valueB = getTimestampValue(b.userData.createdAt) || 0;
         break;
