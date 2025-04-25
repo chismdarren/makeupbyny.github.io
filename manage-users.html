@@ -10,17 +10,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 10px 42px;
-      margin-bottom: 8px;
-      border-width: 1px;
-      border-radius: 6px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      border-radius: 4px;
     }
     .user-info {
       flex: 1;
-      padding: 6px;
-      margin-bottom: 5px;
-      border-radius: 6px;
-      gap: 8px;
     }
     .user-actions {
       display: flex;
@@ -552,8 +548,8 @@
     
     /* User count display */
     .user-avatar-container {
-      width: 42px;
-      height: 42px;
+      width: 50px;
+      height: 50px;
       margin-right: 15px;
       flex-shrink: 0;
     }
@@ -581,10 +577,8 @@
     .user-item {
       display: flex;
       align-items: center;
-      padding: 8px 10px 42px;
-      margin-bottom: 8px;
-      border-width: 1px;
-      border-radius: 6px;
+      padding: 10px 15px;
+      border-bottom: 1px solid #ddd;
     }
 
     /* Mobile-specific styles */
@@ -607,7 +601,7 @@
         padding-bottom: 45px;  /* Make room for the view details button */
       }
       
-      /* Create a more compact layout with avatar beside info */
+      /* Create a compact header with avatar and information side by side */
       .user-info {
         display: flex;
         flex-direction: row;
@@ -616,107 +610,41 @@
         background-color: #f8f9fa;
         border-radius: 8px;
         margin-bottom: 10px;
-        gap: 10px;
       }
       
       .user-avatar-container {
-        width: 42px;
-        height: 42px;
+        width: 45px;
+        height: 45px;
+        margin-right: 10px;
         margin-bottom: 0;
-        align-self: center;
+        align-self: flex-start;
         flex-shrink: 0;
       }
       
-      /* Style the user info content */
+      /* Compact info layout */
       .user-info-content {
         flex: 1;
-        min-width: 0; /* Allow text truncation */
+        min-width: 0; /* Allows proper text truncation */
       }
       
       /* Style the key info for better visibility */
-      .user-username {
+      .user-info .user-username {
         font-size: 1em;
         font-weight: bold;
-        display: block;
         margin-bottom: 4px;
         color: #222;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-      
-      /* Group essential info in a cleaner format */
-      .user-info-grid {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 1px 4px;
-        font-size: 0.85em;
-      }
-      
-      .user-info-grid strong {
-        font-weight: 600;
-        color: #555;
-      }
-      
-      .user-info-grid .user-role {
-        grid-column: 2;
-      }
-      
-      /* Show only View Details button on mobile */
-      .user-actions {
-        position: absolute;
-        bottom: 4px;
-        left: 0;
-        right: 0;
-        padding: 0 10px;
-      }
-      
-      /* Hide admin and delete buttons on mobile list view */
-      .user-actions button:not(.view-details-btn) {
-        display: none !important;
-      }
-      
-      /* Make View Details button stand out */
-      .user-actions .view-details-btn {
-        width: 100%;
-        margin-top: 3px;
-        padding: 6px 8px;
-        font-size: 0.85em;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-      }
-      
-      /* Show all buttons in the modal */
-      .modal .user-actions button {
-        display: block !important;
-      }
-      
-      .user-avatar-container {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 10px;
-        align-self: center;
-      }
-      
-      /* Style the key info for better visibility */
-      .user-info .user-username {
-        font-size: 1.1em;
-        font-weight: bold;
         display: block;
-        margin-bottom: 8px;
-        color: #222;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 4px;
       }
       
-      /* Group essential info in a cleaner format */
+      /* Group essential info in a more compact grid */
       .user-info-grid {
         display: grid;
         grid-template-columns: auto 1fr;
-        gap: 5px 10px;
-        margin-bottom: 8px;
+        gap: 2px 6px;
+        font-size: 0.85em;
       }
       
       .user-info-grid strong {
@@ -746,58 +674,62 @@
       /* Also improve the modal content layout on mobile */
       .modal-content {
         padding: 15px;
-        margin: 1% auto;
+        margin: 2% auto;
         width: 95%;
-        max-height: 90vh;
       }
       
       .user-details-container {
-        gap: 10px;
-      }
-      
-      /* Make user sections more compact */
-      .user-basic-info,
-      .user-personal-info,
-      .user-account-info {
-        padding: 10px;
+        gap: 15px;
       }
       
       .section-content p {
-        margin: 4px 0;
+        margin: 5px 0;
+      }
+      
+      /* Make modal action buttons more prominent */
+      .modal .user-actions {
+        position: static;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+      }
+      
+      .modal .user-actions button {
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 4px;
+      }
+      
+      /* Show only View Details button on mobile */
+      .user-actions {
+        position: absolute;
+        bottom: 5px;
+        left: 0;
+        right: 0;
+        padding: 0 15px;
+      }
+      
+      /* Hide admin and delete buttons on mobile list view */
+      .user-actions button:not(.view-details-btn) {
+        display: none !important;
+      }
+      
+      /* Make View Details button stand out */
+      .user-actions .view-details-btn {
+        width: 100%;
+        margin-top: 5px;
+        padding: 8px 10px;
         font-size: 0.9em;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
       }
       
-      /* Reduce space in section headers */
-      .user-details-container h3 {
-        font-size: 16px;
-        margin-bottom: 8px;
-        padding-bottom: 6px;
-      }
-      
-      /* More compact avatar in modal */
-      .user-avatar-large {
-        width: 70px;
-        height: 70px;
-        margin-bottom: 15px;
-      }
-      
-      /* Two-column layout for basic info in modal */
-      .user-basic-info .section-content {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 5px;
-      }
-      
-      .user-basic-info .section-content p {
-        margin: 3px 0;
-      }
-      
-      .user-basic-info .section-content p:nth-child(odd) {
-        grid-column: 1;
-      }
-      
-      .user-basic-info .section-content p:nth-child(even) {
-        grid-column: 2;
+      /* Show all buttons in the modal */
+      .modal .user-actions button {
+        display: block !important;
       }
       
       /* Style the role buttons in the modal */
@@ -825,76 +757,6 @@
         color: white;
         order: 4;
       }
-    }
-
-    /* Mobile filter section optimizations */
-    .filter-section {
-      flex-direction: column;
-      padding: 10px;
-      gap: 5px;
-    }
-    
-    /* Show only essential filters on mobile */
-    .filter-group {
-      margin-bottom: 10px;
-      width: 100%;
-    }
-    
-    /* Make filter controls full width */
-    .filter-control {
-      width: 100%;
-      padding: 10px;
-      font-size: 0.95em;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background-color: #fff;
-    }
-    
-    /* Style filter labels */
-    .filter-label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      font-size: 0.9em;
-      color: #333;
-    }
-    
-    /* Make search more prominent */
-    .search-filter {
-      margin-top: 10px;
-    }
-    
-    .search-filter input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      font-size: 0.95em;
-    }
-    
-    /* Smaller reset button */
-    .reset-filters {
-      align-self: flex-end;
-      padding: 8px 12px;
-      font-size: 0.9em;
-      margin-top: 10px;
-      background-color: #f8f9fa;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .reset-filters:hover {
-      background-color: #e9ecef;
-    }
-    
-    /* User count display */
-    .user-count {
-      display: block;
-      margin-top: 8px;
-      font-size: 0.85em;
-      color: #6c757d;
-      text-align: right;
     }
   </style>
 </head>
