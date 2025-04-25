@@ -398,7 +398,7 @@ onAuthStateChanged(auth, async (user) => {
     
     // For mobile, ensure positioning is applied when the button becomes visible
     if (window.innerWidth <= 480 && adminDropdownBtn) {
-      adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: -10px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
+      adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
     }
 
     console.log("User is super admin, loading users...");
