@@ -604,6 +604,39 @@
       .user-item {
         flex-direction: column;
         align-items: flex-start;
+        position: relative;
+        padding-bottom: 45px;  /* Make room for the view details button */
+      }
+      
+      /* Show only View Details button on mobile */
+      .user-actions {
+        position: absolute;
+        bottom: 5px;
+        left: 0;
+        right: 0;
+        padding: 0 15px;
+      }
+      
+      /* Hide admin and delete buttons on mobile list view */
+      .user-actions button:not(.view-details-btn) {
+        display: none !important;
+      }
+      
+      /* Make View Details button stand out */
+      .user-actions .view-details-btn {
+        width: 100%;
+        margin-top: 5px;
+        padding: 8px 10px;
+        font-size: 0.9em;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+      }
+      
+      /* Show all buttons in the modal */
+      .modal .user-actions button {
+        display: block !important;
       }
       
       .user-avatar-container {
@@ -669,6 +702,7 @@
       .modal-content {
         padding: 15px;
         margin: 2% auto;
+        width: 95%;
       }
       
       .user-details-container {
@@ -677,6 +711,47 @@
       
       .section-content p {
         margin: 5px 0;
+      }
+      
+      /* Make modal action buttons more prominent */
+      .modal .user-actions {
+        position: static;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+      }
+      
+      .modal .user-actions button {
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 4px;
+      }
+      
+      /* Style the role buttons in the modal */
+      .modal .role-btn.make-admin {
+        background-color: #4CAF50;
+        color: white;
+        order: 1;
+      }
+      
+      .modal .role-btn.make-super-admin {
+        background-color: #9C27B0;
+        color: white;
+        order: 2;
+      }
+      
+      .modal .role-btn.remove-admin,
+      .modal .role-btn.remove-super-admin {
+        background-color: #ff9800;
+        color: white;
+        order: 3;
+      }
+      
+      .modal .delete-btn {
+        background-color: #f44336;
+        color: white;
+        order: 4;
       }
     }
   </style>
