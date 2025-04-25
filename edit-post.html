@@ -465,20 +465,13 @@
 
     /* Position My Account for desktop */
     @media (min-width: 481px) {
-      #userAccountLink {
-        order: 3; /* Position after admin dropdown */
-      }
-      
-      #login-link {
-        order: 5; /* Position after My Account */
-      }
-      
-      #logout-btn {
-        order: 6; /* Position after login */
+      #mainNav {
+        display: flex;
+        align-items: center;
       }
     }
 
-    /* Mobile-specific positioning - move My Account beside logout */
+    /* Mobile-specific positioning */
     @media (max-width: 480px) {
       #mainNav a, #mainNav button {
         margin: 2px 4px;
@@ -488,11 +481,6 @@
       /* Hide login on mobile */
       #login-link {
         display: none;
-      }
-      
-      /* Add space between My Account and Logout */
-      #userAccountLink {
-        margin-right: 6px;
       }
     }
 
@@ -926,6 +914,29 @@
         border-bottom: 1px solid #eee; /* More visible separators */
       }
     }
+
+    /* Account links container styling */
+    .account-links {
+      display: inline-flex !important;
+      align-items: center !important;
+      margin-left: auto;
+    }
+
+    .account-links #userAccountLink {
+      margin-right: 8px !important;
+    }
+
+    /* Mobile-specific account links styling */
+    @media (max-width: 480px) {
+      .account-links {
+        margin-top: 5px !important;
+        margin-left: 0 !important;
+      }
+      
+      .account-links #userAccountLink {
+        margin-right: 6px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -952,9 +963,11 @@
         </div>
         <!-- Public links -->
         <a id="login-link" href="login.html">Login</a>
-        <!-- User account link -->
-        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
-        <button id="logout-btn" style="display:none;">Logout</button>
+        <!-- User account and logout links wrapped in container -->
+        <div class="account-links">
+          <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
+          <button id="logout-btn" style="display:none;">Logout</button>
+        </div>
       </nav>
     </header>
 
