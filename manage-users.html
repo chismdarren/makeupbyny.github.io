@@ -317,15 +317,17 @@
 
       /* Mobile-specific admin dashboard adjustment */
       #adminDropdownBtn {
-        top: 0px !important; /* Move up 2px from the -2px position */
+        top: 2px !important; /* Move up 4px from the -2px position (was 0px) */
         margin-bottom: 2px !important;
       }
       
       /* Adjust admin dropdown container on mobile */
       .admin-dropdown {
         vertical-align: top !important;
-        margin-top: 2px !important;
+        margin-top: 0 !important; /* Was 2px */
         line-height: normal !important;
+        position: relative !important;
+        top: 2px !important; /* Move up a bit more */
       }
     }
 
