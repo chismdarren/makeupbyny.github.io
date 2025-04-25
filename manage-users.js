@@ -707,13 +707,13 @@ async function loadUsers() {
             <div class="user-actions">
               <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
               ${userData.isSuperAdmin ? 
-                `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
+                `<button class="role-btn remove-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
                 userData.isAdmin ? 
-                  `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
-                   <button class="role-btn remove-admin" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
-                  `<button class="role-btn make-admin" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
+                  `<button class="role-btn make-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
+                   <button class="role-btn remove-admin desktop-only-btn" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
+                  `<button class="role-btn make-admin desktop-only-btn" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
               }
-              <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
+              <button class="delete-btn desktop-only-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
             </div>
           `;
           
@@ -1017,6 +1017,17 @@ window.showUserDetails = async function(userId, userData = null) {
         <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
           <h3>User Management</h3>
           <div style="display: flex; gap: 10px; margin-top: 10px;">
+            ${userFullData.isSuperAdmin ? 
+              `<button class="role-btn remove-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
+              userFullData.isAdmin ? 
+                `<button class="role-btn make-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${userId}', true)">Make Super Admin</button>
+                 <button class="role-btn remove-admin desktop-only-btn" onclick="window.updateUserRole('${userId}', false)">Remove Admin</button>` :
+                `<button class="role-btn make-admin desktop-only-btn" onclick="window.updateUserRole('${userId}', true)">Make Admin</button>`
+            }
+            <button class="delete-btn desktop-only-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
+          </div>
+          <!-- Mobile-only user management buttons -->
+          <div class="mobile-only-controls" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
             ${userFullData.isSuperAdmin ? 
               `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
               userFullData.isAdmin ? 
@@ -1702,12 +1713,12 @@ window.updateUserRole = async function(userId, isAdmin) {
         if (viewDetailsBtn) {
           if (isAdmin) {
             const makeSuperAdminBtn = document.createElement('button');
-            makeSuperAdminBtn.className = 'role-btn make-super-admin';
+            makeSuperAdminBtn.className = 'role-btn make-super-admin desktop-only-btn';
             makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
             makeSuperAdminBtn.textContent = 'Make Super Admin';
             
             const removeAdminBtn = document.createElement('button');
-            removeAdminBtn.className = 'role-btn remove-admin';
+            removeAdminBtn.className = 'role-btn remove-admin desktop-only-btn';
             removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
             removeAdminBtn.textContent = 'Remove Admin';
             
@@ -1715,7 +1726,7 @@ window.updateUserRole = async function(userId, isAdmin) {
             userActions.insertBefore(makeSuperAdminBtn, viewDetailsBtn.nextSibling);
           } else {
             const makeAdminBtn = document.createElement('button');
-            makeAdminBtn.className = 'role-btn make-admin';
+            makeAdminBtn.className = 'role-btn make-admin desktop-only-btn';
             makeAdminBtn.onclick = () => window.updateUserRole(userId, true);
             makeAdminBtn.textContent = 'Make Admin';
             
@@ -1825,19 +1836,19 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
         if (viewDetailsBtn) {
           if (makeUserSuperAdmin) {
             const removeSuperAdminBtn = document.createElement('button');
-            removeSuperAdminBtn.className = 'role-btn remove-super-admin';
+            removeSuperAdminBtn.className = 'role-btn remove-super-admin desktop-only-btn';
             removeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, false);
             removeSuperAdminBtn.textContent = 'Remove Super Admin';
             
             userActions.insertBefore(removeSuperAdminBtn, viewDetailsBtn.nextSibling);
           } else {
             const makeSuperAdminBtn = document.createElement('button');
-            makeSuperAdminBtn.className = 'role-btn make-super-admin';
+            makeSuperAdminBtn.className = 'role-btn make-super-admin desktop-only-btn';
             makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
             makeSuperAdminBtn.textContent = 'Make Super Admin';
             
             const removeAdminBtn = document.createElement('button');
-            removeAdminBtn.className = 'role-btn remove-admin';
+            removeAdminBtn.className = 'role-btn remove-admin desktop-only-btn';
             removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
             removeAdminBtn.textContent = 'Remove Admin';
             

@@ -593,6 +593,16 @@
         display: block !important;
       }
       
+      /* Hide desktop-only buttons on mobile */
+      .desktop-only-btn {
+        display: none !important;
+      }
+      
+      /* Show mobile-only controls on mobile */
+      .mobile-only-controls {
+        display: flex !important;
+      }
+      
       /* Make user info display as column on small screens */
       .user-info {
         display: flex;
@@ -607,9 +617,46 @@
       }
       
       /* Make buttons full width on mobile */
-      .user-actions button {
+      .user-actions button, 
+      .mobile-only-controls button {
         width: 100%;
         margin-top: 5px;
+        padding: 12px;
+        font-size: 16px;
+      }
+      
+      /* Optimize modal for mobile */
+      .modal-content {
+        width: 95%;
+        padding: 15px;
+        margin: 10% auto;
+      }
+      
+      /* Make section headers more compact */
+      .user-details-container h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      
+      /* Add spacing between sections */
+      .user-basic-info,
+      .user-personal-info,
+      .user-account-info,
+      .user-password-section {
+        margin-bottom: 20px;
+      }
+    }
+    
+    /* Desktop-specific styles */
+    @media (min-width: 769px) {
+      /* Hide mobile-only controls on desktop */
+      .mobile-only-controls {
+        display: none !important;
+      }
+      
+      /* Show desktop-only buttons on desktop */
+      .desktop-only-btn {
+        display: inline-block !important;
       }
     }
   </style>
