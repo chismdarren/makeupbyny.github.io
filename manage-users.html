@@ -600,16 +600,83 @@
         gap: 5px;
       }
       
+      /* Mobile-specific user info layout improvements */
+      .user-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .user-avatar-container {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 10px;
+        align-self: center;
+      }
+      
+      /* Create a mobile-friendly info grid */
+      .user-info {
+        width: 100%;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      
+      /* Style the key info for better visibility */
+      .user-info .user-username {
+        font-size: 1.1em;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+        color: #222;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 4px;
+      }
+      
+      /* Group essential info in a cleaner format */
+      .user-info-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 5px 10px;
+        margin-bottom: 8px;
+      }
+      
+      .user-info-grid strong {
+        font-weight: 600;
+        color: #555;
+      }
+      
+      .user-info-grid .user-role {
+        grid-column: 2;
+      }
+
       /* Add more space between user action buttons */
       .user-actions {
         flex-wrap: wrap;
         gap: 8px;
+        width: 100%;
       }
       
       /* Make buttons full width on mobile */
       .user-actions button {
         width: 100%;
         margin-top: 5px;
+        padding: 8px 10px;
+        font-size: 0.9em;
+      }
+      
+      /* Also improve the modal content layout on mobile */
+      .modal-content {
+        padding: 15px;
+        margin: 2% auto;
+      }
+      
+      .user-details-container {
+        gap: 15px;
+      }
+      
+      .section-content p {
+        margin: 5px 0;
       }
     }
   </style>
