@@ -462,13 +462,18 @@
     #mainNav a, #mainNav button {
       margin-right: 15px;
     }
-    
-    #logout-btn {
-      /* Position styling if needed */
-    }
-    
-    #login-link {
-      /* Position styling if needed */
+
+    /* Position My Account beside logout on mobile */
+    @media (max-width: 480px) {
+      #mainNav a, #mainNav button {
+        margin: 2px 4px;
+        padding: 4px 6px;
+      }
+      
+      /* Hide login on mobile */
+      #login-link {
+        display: none;
+      }
     }
 
     /* Admin Dropdown Menu Styles */
@@ -552,25 +557,30 @@
 
     /* Responsive adjustments for admin dropdown */
     @media (max-width: 768px) {
+      .admin-dropdown-content {
+        position: absolute;
+        right: 0;
+        left: auto;
+        width: 200px;
+      }
+
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
       }
-      
-      /* Position logout and user account links on mobile screens */
-      #userAccountLink, #logout-btn {
-        display: inline-block;
+
+      .admin-dropdown {
+        position: relative;
       }
     }
 
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
-        max-height: 232.25px; /* Exact height specified */
-        height: 230.250px; /* Content height */
+        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
         overflow-y: auto;
-        width: 178px; /* Exact width specified */
+        width: 180px; /* Fixed width to ensure content fits */
         position: fixed; /* Change to fixed positioning */
         /* Positioning will be handled by JavaScript dynamically */
         z-index: 1001; /* Ensure it appears above other elements */
@@ -606,7 +616,6 @@
         padding: 15px 16px; /* Larger touch targets */
         font-size: 0.95em; /* Slightly larger text */
         border-bottom: 1px solid #eee; /* More visible separators */
-        border-bottom-width: 1px !important;
       }
 
       /* Reduce spacing between nav links on mobile */
@@ -615,33 +624,9 @@
         padding: 4px 6px;
       }
       
-      /* Position My Account beside logout on mobile */
-      #userAccountLink {
-        margin-right: 2px !important;
-        display: inline-block !important;
-      }
-      
-      #logout-btn {
-        margin-left: 0 !important;
-        display: inline-block !important;
-      }
-      
       /* Hide login on mobile */
       #login-link {
         display: none;
-      }
-      
-      /* Break the nav items so My Account and Logout appear on their own line */
-      #mainNav {
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      
-      /* Add a line break before My Account */
-      .admin-dropdown::after {
-        content: "";
-        flex-basis: 100%;
-        height: 0;
       }
     }
 
@@ -876,11 +861,6 @@
         flex-wrap: wrap;
         justify-content: center;
       }
-      
-      /* Position logout and user account links on mobile screens */
-      #userAccountLink, #logout-btn {
-        display: inline-block;
-      }
     }
     
     /* For very small screens */
@@ -926,24 +906,6 @@
         border-bottom: 1px solid #eee; /* More visible separators */
       }
     }
-
-    /* Style the account links container */
-    .account-links {
-      display: inline-flex;
-      align-items: center;
-    }
-
-    /* For mobile screens */
-    @media (max-width: 480px) {
-      .account-links {
-        margin-top: 5px;
-      }
-      
-      /* Remove the line break we added earlier since we now have a container */
-      .admin-dropdown::after {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
@@ -968,13 +930,11 @@
             <a href="manage-users.html">User Management</a>
           </div>
         </div>
+        <!-- User account link -->
+        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
         <!-- Public links -->
         <a id="login-link" href="login.html">Login</a>
-        <!-- Group My Account and Logout together -->
-        <div class="account-links">
-          <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
-          <button id="logout-btn" style="display:none;">Logout</button>
-        </div>
+        <button id="logout-btn" style="display:none;">Logout</button>
       </nav>
     </header>
 

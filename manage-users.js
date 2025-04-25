@@ -390,20 +390,20 @@ onAuthStateChanged(auth, async (user) => {
   const isUserSuperAdmin = await isSuperAdmin(user.uid);
   if (isUserSuperAdmin) {
     // User is admin, show admin dropdown menu
-    if (loginLink) loginLink.style.display = "none";
-    if (logoutBtn) logoutBtn.style.display = "inline";
-    if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
-    if (userAccountLink) userAccountLink.style.display = "inline";
-    if (settingsIcon) settingsIcon.style.display = "flex";
+  if (loginLink) loginLink.style.display = "none";
+  if (logoutBtn) logoutBtn.style.display = "inline";
+  if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+  if (userAccountLink) userAccountLink.style.display = "inline";
+  if (settingsIcon) settingsIcon.style.display = "flex";
     
     // For mobile, ensure positioning is applied when the button becomes visible
     if (window.innerWidth <= 480 && adminDropdownBtn) {
       adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
     }
 
-    console.log("User is super admin, loading users...");
-    // User is admin, load the users
-    await loadUsers();
+  console.log("User is super admin, loading users...");
+  // User is admin, load the users
+  await loadUsers();
   } else {
     console.log("User is not super admin, redirecting to home page");
     content.innerHTML = '<div class="error-message">Access denied. Super Admin privileges required.</div>';
