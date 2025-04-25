@@ -826,6 +826,75 @@
         order: 4;
       }
     }
+
+    /* Mobile filter section optimizations */
+    .filter-section {
+      flex-direction: column;
+      padding: 10px;
+      gap: 5px;
+    }
+    
+    /* Show only essential filters on mobile */
+    .filter-group {
+      margin-bottom: 5px;
+      width: 100%;
+    }
+    
+    /* Make filter controls full width */
+    .filter-control {
+      width: 100%;
+      padding: 6px;
+      font-size: 0.9em;
+    }
+    
+    /* Style the sort direction and search differently */
+    .sort-direction-mobile {
+      display: flex;
+      gap: 5px;
+      margin: 5px 0;
+    }
+    
+    .sort-direction-btn {
+      flex: 1;
+      text-align: center;
+      padding: 6px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    
+    .sort-direction-btn.active {
+      background: #007bff;
+      color: white;
+      border-color: #0062cc;
+    }
+    
+    /* Hide non-essential filters on mobile */
+    .filter-group.non-essential {
+      display: none;
+    }
+    
+    /* Make search more prominent */
+    .search-filter {
+      margin-top: 5px;
+    }
+    
+    .search-filter input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+    }
+    
+    /* Smaller reset button */
+    .reset-filters {
+      align-self: flex-end;
+      padding: 5px 10px;
+      font-size: 0.8em;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body class="admin-page">
