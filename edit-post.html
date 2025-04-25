@@ -928,13 +928,38 @@
 
     /* Mobile-specific account links styling */
     @media (max-width: 480px) {
+      /* Apply consistent spacing to all navigation elements */
+      #mainNav a, 
+      #mainNav button,
+      #mainNav .admin-dropdown,
       .account-links {
+        margin: 2px 4px !important;
+      }
+      
+      /* Ensure consistent spacing between My Account and Logout */
+      .account-links {
+        gap: 8px !important;
         margin-top: 5px !important;
         margin-left: 0 !important;
       }
       
+      /* Remove margin between account links as gap handles spacing */
       .account-links #userAccountLink {
-        margin-right: 6px !important;
+        margin-right: 0 !important;
+      }
+      
+      /* Make all nav elements use same padding for consistency */
+      #mainNav a, 
+      #mainNav button,
+      #mainNav .admin-dropdown-btn,
+      .account-links a,
+      .account-links button {
+        padding: 4px 6px !important;
+      }
+      
+      /* Hide login on mobile */
+      #login-link {
+        display: none;
       }
     }
   </style>
