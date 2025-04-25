@@ -567,9 +567,10 @@
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
-        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
+        max-height: 232.25px; /* Exact height specified */
+        height: 230.250px; /* Content height */
         overflow-y: auto;
-        width: 180px; /* Fixed width to ensure content fits */
+        width: 178px; /* Exact width specified */
         position: fixed; /* Change to fixed positioning */
         /* Positioning will be handled by JavaScript dynamically */
         z-index: 1001; /* Ensure it appears above other elements */
@@ -605,6 +606,7 @@
         padding: 15px 16px; /* Larger touch targets */
         font-size: 0.95em; /* Slightly larger text */
         border-bottom: 1px solid #eee; /* More visible separators */
+        border-bottom-width: 1px !important;
       }
 
       /* Reduce spacing between nav links on mobile */
