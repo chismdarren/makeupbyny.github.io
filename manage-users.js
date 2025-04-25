@@ -694,16 +694,18 @@ async function loadUsers() {
           li.className = "user-item";
           li.setAttribute('data-uid', user.uid);
           li.innerHTML = `
-            <div class="user-avatar-container">
-              ${getAvatarHTML(userData.avatarUrl, userData.username)}
-            </div>
             <div class="user-info">
-              <span class="user-username">${userData.username || 'Not set'}</span>
-              <div class="user-info-grid">
-                <strong>Email:</strong> <span>${user.email}</span>
-                <span class="user-uid-container"><strong>UID:</strong> ${user.uid}</span>
-                <strong>Status:</strong> <span>${user.disabled ? 'Disabled' : 'Active'}</span>
-                <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+              <div class="user-avatar-container">
+                ${getAvatarHTML(userData.avatarUrl, userData.username)}
+              </div>
+              <div class="user-info-content">
+                <span class="user-username">${userData.username || 'Not set'}</span>
+                <div class="user-info-grid">
+                  <strong>Email:</strong> <span>${user.email}</span>
+                  <span class="user-uid-container"><strong>UID:</strong> ${user.uid}</span>
+                  <strong>Status:</strong> <span>${user.disabled ? 'Disabled' : 'Active'}</span>
+                  <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+                </div>
               </div>
             </div>
             <div class="user-actions">

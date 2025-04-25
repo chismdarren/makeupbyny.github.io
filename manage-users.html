@@ -10,13 +10,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px;
-      border: 1px solid #ddd;
-      margin-bottom: 10px;
-      border-radius: 4px;
+      padding: 8px 10px 42px;
+      margin-bottom: 8px;
+      border-width: 1px;
+      border-radius: 6px;
     }
     .user-info {
       flex: 1;
+      padding: 6px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      gap: 8px;
     }
     .user-actions {
       display: flex;
@@ -548,8 +552,8 @@
     
     /* User count display */
     .user-avatar-container {
-      width: 50px;
-      height: 50px;
+      width: 42px;
+      height: 42px;
       margin-right: 15px;
       flex-shrink: 0;
     }
@@ -577,8 +581,10 @@
     .user-item {
       display: flex;
       align-items: center;
-      padding: 10px 15px;
-      border-bottom: 1px solid #ddd;
+      padding: 8px 10px 42px;
+      margin-bottom: 8px;
+      border-width: 1px;
+      border-radius: 6px;
     }
 
     /* Mobile-specific styles */
@@ -593,13 +599,6 @@
         display: block !important;
       }
       
-      /* Make user info display as column on small screens */
-      .user-info {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-      
       /* Mobile-specific user info layout improvements */
       .user-item {
         flex-direction: column;
@@ -608,13 +607,68 @@
         padding-bottom: 45px;  /* Make room for the view details button */
       }
       
+      /* Create a more compact layout with avatar beside info */
+      .user-info {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        gap: 10px;
+      }
+      
+      .user-avatar-container {
+        width: 42px;
+        height: 42px;
+        margin-bottom: 0;
+        align-self: center;
+        flex-shrink: 0;
+      }
+      
+      /* Style the user info content */
+      .user-info-content {
+        flex: 1;
+        min-width: 0; /* Allow text truncation */
+      }
+      
+      /* Style the key info for better visibility */
+      .user-username {
+        font-size: 1em;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 4px;
+        color: #222;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      /* Group essential info in a cleaner format */
+      .user-info-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1px 4px;
+        font-size: 0.85em;
+      }
+      
+      .user-info-grid strong {
+        font-weight: 600;
+        color: #555;
+      }
+      
+      .user-info-grid .user-role {
+        grid-column: 2;
+      }
+      
       /* Show only View Details button on mobile */
       .user-actions {
         position: absolute;
-        bottom: 5px;
+        bottom: 4px;
         left: 0;
         right: 0;
-        padding: 0 15px;
+        padding: 0 10px;
       }
       
       /* Hide admin and delete buttons on mobile list view */
@@ -625,9 +679,9 @@
       /* Make View Details button stand out */
       .user-actions .view-details-btn {
         width: 100%;
-        margin-top: 5px;
-        padding: 8px 10px;
-        font-size: 0.9em;
+        margin-top: 3px;
+        padding: 6px 8px;
+        font-size: 0.85em;
         background-color: #007bff;
         color: white;
         border: none;
@@ -644,15 +698,6 @@
         height: 60px;
         margin-bottom: 10px;
         align-self: center;
-      }
-      
-      /* Create a mobile-friendly info grid */
-      .user-info {
-        width: 100%;
-        padding: 8px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        margin-bottom: 10px;
       }
       
       /* Style the key info for better visibility */
@@ -701,31 +746,58 @@
       /* Also improve the modal content layout on mobile */
       .modal-content {
         padding: 15px;
-        margin: 2% auto;
+        margin: 1% auto;
         width: 95%;
+        max-height: 90vh;
       }
       
       .user-details-container {
-        gap: 15px;
+        gap: 10px;
+      }
+      
+      /* Make user sections more compact */
+      .user-basic-info,
+      .user-personal-info,
+      .user-account-info {
+        padding: 10px;
       }
       
       .section-content p {
-        margin: 5px 0;
+        margin: 4px 0;
+        font-size: 0.9em;
       }
       
-      /* Make modal action buttons more prominent */
-      .modal .user-actions {
-        position: static;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        padding: 0;
+      /* Reduce space in section headers */
+      .user-details-container h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
       }
       
-      .modal .user-actions button {
-        margin: 5px 0;
-        padding: 10px;
-        border-radius: 4px;
+      /* More compact avatar in modal */
+      .user-avatar-large {
+        width: 70px;
+        height: 70px;
+        margin-bottom: 15px;
+      }
+      
+      /* Two-column layout for basic info in modal */
+      .user-basic-info .section-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+      }
+      
+      .user-basic-info .section-content p {
+        margin: 3px 0;
+      }
+      
+      .user-basic-info .section-content p:nth-child(odd) {
+        grid-column: 1;
+      }
+      
+      .user-basic-info .section-content p:nth-child(even) {
+        grid-column: 2;
       }
       
       /* Style the role buttons in the modal */
