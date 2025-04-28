@@ -658,13 +658,7 @@
     @media screen and (max-width: 768px) {
       /* Hide settings gear icon when modal is open */
       body .modal[style*="display: block"] ~ .settings-icon,
-      body .modal:not([style*="display: none"]) ~ .settings-icon,
-      body .settings-icon[data-was-visible="true"] {
-        display: none !important;
-      }
-      
-      /* Hide the personal info (About Me) section on mobile */
-      .user-details-container .user-personal-info {
+      body .modal:not([style*="display: none"]) ~ .settings-icon {
         display: none !important;
       }
       
