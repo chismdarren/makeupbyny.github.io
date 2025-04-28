@@ -677,20 +677,19 @@
         gap: 4px;
       }
       
-      .user-info > * {
+      .user-info > div {
         display: flex;
         align-items: center;
         gap: 4px;
-        margin: 0;
       }
       
       .user-info label {
-        min-width: 60px;
         font-weight: bold;
+        white-space: nowrap;
       }
       
       .user-info span {
-        display: inline;
+        white-space: nowrap;
       }
       
       .user-actions {
@@ -725,17 +724,30 @@
       .user-personal-info p,
       .user-account-info p {
         display: flex;
-        flex-wrap: nowrap;
-        gap: 4px;
         align-items: center;
+        gap: 4px;
         margin: 4px 0;
       }
       
       .user-basic-info label,
       .user-personal-info label,
       .user-account-info label {
-        min-width: 80px;
         font-weight: bold;
+        white-space: nowrap;
+      }
+      
+      .user-basic-info span,
+      .user-personal-info span,
+      .user-account-info span {
+        white-space: nowrap;
+      }
+      
+      /* Remove all vertical separators */
+      .user-info::after,
+      .user-info::before,
+      .user-info > *::after,
+      .user-info > *::before {
+        content: none;
       }
       
       .comments-list {
