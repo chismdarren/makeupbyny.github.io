@@ -706,11 +706,11 @@ async function loadUsers() {
               ${getAvatarHTML(userData.avatarUrl, userData.username)}
             </div>
             <div class="user-info">
-              <strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> | 
-              <strong>Email:</strong> ${user.email} | 
-              <span class="user-uid-container"><strong>UID:</strong> ${user.uid} | </span>
-              <strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} |
-              <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+              <p><strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span> <span class="separator">|</span></p>
+              <p><strong>Email:</strong> ${user.email} <span class="separator">|</span></p>
+              <p class="user-uid-container"><strong>UID:</strong> ${user.uid} <span class="separator">|</span></p>
+              <p><strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'} <span class="separator">|</span></p>
+              <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
             </div>
             <div class="user-actions">
               <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
@@ -1640,11 +1640,11 @@ function updateUserListItemInfo(userId, updates, refreshElement = false) {
       
       // Rebuild the user info HTML with username before email
       userInfo.innerHTML = `
-        <strong>Username:</strong> <span class="user-username">${username}</span> | 
-        <strong>Email:</strong> ${email} | 
-        <strong>UID:</strong> ${uid} | 
-        <strong>Status:</strong> ${status} |
-        <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
+        <p><strong>Username:</strong> <span class="user-username">${username}</span> <span class="separator">|</span></p>
+        <p><strong>Email:</strong> ${email} <span class="separator">|</span></p>
+        <p><strong>UID:</strong> ${uid} <span class="separator">|</span></p>
+        <p><strong>Status:</strong> ${status} <span class="separator">|</span></p>
+        <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
       `;
     } else {
       // Only update specific parts

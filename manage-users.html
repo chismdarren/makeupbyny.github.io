@@ -593,17 +593,45 @@
         display: block !important;
       }
       
+      /* Restructure user item layout for mobile */
+      .user-item {
+        display: flex;
+        padding: 10px;
+        align-items: flex-start;
+        gap: 12px;
+        flex-direction: row;
+      }
+      
+      /* Position avatar to the left */
+      .user-avatar-container {
+        margin-right: 0;
+        align-self: flex-start;
+      }
+      
       /* Make user info display as column on small screens */
       .user-info {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 3px;
+        flex: 1;
+      }
+      
+      .user-info p {
+        margin: 0;
+        line-height: 1.4;
+      }
+      
+      /* Remove any pipe separators in mobile view */
+      .user-info span.separator {
+        display: none !important;
       }
       
       /* Add more space between user action buttons */
       .user-actions {
         flex-wrap: wrap;
         gap: 8px;
+        margin-top: 8px;
+        width: 100%;
       }
       
       /* Make buttons full width on mobile */
@@ -656,135 +684,44 @@
     /* Mobile Optimizations */
     @media screen and (max-width: 768px) {
       .user-item {
-        padding: 8px !important;
-        margin-bottom: 8px !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 12px !important;
-        background-color: #f9f9f9 !important;
-        border-radius: 8px !important;
-      }
-      
-      .user-avatar-container {
-        width: 60px !important;
-        height: 60px !important;
-        margin-right: 12px !important;
-        flex-shrink: 0 !important;
+        padding: 8px;
+        margin-bottom: 8px;
+        align-items: flex-start;
+        gap: 12px;
       }
       
       .user-info {
-        width: calc(100% - 72px) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 4px !important;
-      }
-      
-      /* Specifically hide the pipe characters in the text */
-      .user-info strong + span + :not(strong):not(span),
-      .user-info strong + :not(strong):not(span),
-      .user-info :not(strong):not(span) + strong {
-        display: none !important;
-      }
-      
-      .user-info > div {
-        display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-      }
-      
-      .user-info label {
-        font-weight: bold !important;
-        white-space: nowrap !important;
-        color: #333 !important;
-      }
-      
-      .user-info span {
-        white-space: nowrap !important;
-        color: #666 !important;
-      }
-      
-      /* Create line break after each info item */
-      .user-info strong::after {
-        content: "";
-        display: block !important;
-      }
-      
-      /* Reset any text node styling that might be affecting the pipe characters */
-      .user-info::after,
-      .user-info::before,
-      .user-info > *::after,
-      .user-info > *::before {
-        content: none !important;
-      }
-      
-      .user-actions {
-        width: 100% !important;
-        justify-content: flex-end !important;
-        gap: 8px !important;
-        margin-top: 8px !important;
-      }
-      
-      .user-actions button {
-        padding: 6px 10px !important;
-        font-size: 0.9em !important;
-        border-radius: 4px !important;
-        color: white !important;
+        flex: 1;
       }
       
       .modal-content {
-        margin: 10% auto !important;
-        padding: 15px !important;
-        width: 95% !important;
+        margin: 10% auto;
+        padding: 15px;
+        width: 95%;
       }
       
       .user-details-container {
-        gap: 15px !important;
+        gap: 15px;
       }
       
       .user-basic-info,
       .user-personal-info,
       .user-account-info {
-        padding: 10px !important;
-        border-radius: 8px !important;
-        background-color: #f9f9f9 !important;
-      }
-      
-      .user-basic-info p,
-      .user-personal-info p,
-      .user-account-info p {
-        display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-        margin: 4px 0 !important;
-      }
-      
-      .user-basic-info label,
-      .user-personal-info label,
-      .user-account-info label {
-        font-weight: bold !important;
-        white-space: nowrap !important;
-        color: #333 !important;
-      }
-      
-      .user-basic-info span,
-      .user-personal-info span,
-      .user-account-info span {
-        white-space: nowrap !important;
-        color: #666 !important;
+        padding: 10px;
       }
       
       .comments-list {
-        padding: 10px !important;
+        padding: 10px;
       }
       
       .comment-item {
-        padding: 8px !important;
-        margin-bottom: 8px !important;
+        padding: 8px;
+        margin-bottom: 8px;
       }
       
       .role-btn {
-        padding: 6px 10px !important;
-        font-size: 0.9em !important;
+        padding: 4px 8px;
+        font-size: 0.9em;
       }
     }
   </style>
