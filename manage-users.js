@@ -504,21 +504,29 @@ if (adminDropdownBtn) {
   });
 }
 
-// Close modal when clicking the X
+// Handle closing the modal when the X is clicked
 if (closeBtn) {
   closeBtn.onclick = function() {
-    if (modal) {
     modal.style.display = "none";
-    }
   };
 }
 
-// Close modal when clicking outside
+// Close the modal when clicking outside of it
 window.onclick = function(event) {
-  if (modal && event.target == modal) {
+  if (event.target == modal) {
     modal.style.display = "none";
   }
 };
+
+// Show/hide mobile notes based on screen width
+window.addEventListener('resize', function() {
+  if (modal.style.display === "block") {
+    const mobileNote = document.querySelector('.mobile-note');
+    if (mobileNote) {
+      mobileNote.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+    }
+  }
+});
 
 async function loadUserComments(userId) {
   try {
@@ -707,13 +715,13 @@ async function loadUsers() {
             <div class="user-actions">
               <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
               ${userData.isSuperAdmin ? 
-                `<button class="role-btn remove-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
+                `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
                 userData.isAdmin ? 
-                  `<button class="role-btn make-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
-                   <button class="role-btn remove-admin desktop-only-btn" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
-                  `<button class="role-btn make-admin desktop-only-btn" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
+                  `<button class="role-btn make-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', true)">Make Super Admin</button>
+                   <button class="role-btn remove-admin" onclick="window.updateUserRole('${user.uid}', false)">Remove Admin</button>` :
+                  `<button class="role-btn make-admin" onclick="window.updateUserRole('${user.uid}', true)">Make Admin</button>`
               }
-              <button class="delete-btn desktop-only-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
+              <button class="delete-btn" onclick="window.deleteUser('${user.uid}')">Delete</button>
             </div>
           `;
           
@@ -1016,18 +1024,10 @@ window.showUserDetails = async function(userId, userData = null) {
         
         <div class="user-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
           <h3>User Management</h3>
+          <p class="mobile-note" style="display: none; margin-bottom: 15px; background-color: #f8f9fa; padding: 10px; border-left: 4px solid #007bff; color: #333;">
+            User management actions are available here on mobile devices.
+          </p>
           <div style="display: flex; gap: 10px; margin-top: 10px;">
-            ${userFullData.isSuperAdmin ? 
-              `<button class="role-btn remove-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
-              userFullData.isAdmin ? 
-                `<button class="role-btn make-super-admin desktop-only-btn" onclick="window.updateSuperAdminRole('${userId}', true)">Make Super Admin</button>
-                 <button class="role-btn remove-admin desktop-only-btn" onclick="window.updateUserRole('${userId}', false)">Remove Admin</button>` :
-                `<button class="role-btn make-admin desktop-only-btn" onclick="window.updateUserRole('${userId}', true)">Make Admin</button>`
-            }
-            <button class="delete-btn desktop-only-btn" onclick="window.deleteUser('${userId}')">Delete User</button>
-          </div>
-          <!-- Mobile-only user management buttons -->
-          <div class="mobile-only-controls" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
             ${userFullData.isSuperAdmin ? 
               `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${userId}', false)">Remove Super Admin</button>` :
               userFullData.isAdmin ? 
@@ -1076,6 +1076,12 @@ window.showUserDetails = async function(userId, userData = null) {
         }
       });
     });
+    
+    // Show mobile note for small screens
+    const mobileNote = document.querySelector('.mobile-note');
+    if (mobileNote && window.innerWidth <= 768) {
+      mobileNote.style.display = 'block';
+    }
     
     // Add event listeners for cancel buttons
     document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
@@ -1713,12 +1719,12 @@ window.updateUserRole = async function(userId, isAdmin) {
         if (viewDetailsBtn) {
           if (isAdmin) {
             const makeSuperAdminBtn = document.createElement('button');
-            makeSuperAdminBtn.className = 'role-btn make-super-admin desktop-only-btn';
+            makeSuperAdminBtn.className = 'role-btn make-super-admin';
             makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
             makeSuperAdminBtn.textContent = 'Make Super Admin';
             
             const removeAdminBtn = document.createElement('button');
-            removeAdminBtn.className = 'role-btn remove-admin desktop-only-btn';
+            removeAdminBtn.className = 'role-btn remove-admin';
             removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
             removeAdminBtn.textContent = 'Remove Admin';
             
@@ -1726,7 +1732,7 @@ window.updateUserRole = async function(userId, isAdmin) {
             userActions.insertBefore(makeSuperAdminBtn, viewDetailsBtn.nextSibling);
           } else {
             const makeAdminBtn = document.createElement('button');
-            makeAdminBtn.className = 'role-btn make-admin desktop-only-btn';
+            makeAdminBtn.className = 'role-btn make-admin';
             makeAdminBtn.onclick = () => window.updateUserRole(userId, true);
             makeAdminBtn.textContent = 'Make Admin';
             
@@ -1836,19 +1842,19 @@ window.updateSuperAdminRole = async function(userId, makeUserSuperAdmin) {
         if (viewDetailsBtn) {
           if (makeUserSuperAdmin) {
             const removeSuperAdminBtn = document.createElement('button');
-            removeSuperAdminBtn.className = 'role-btn remove-super-admin desktop-only-btn';
+            removeSuperAdminBtn.className = 'role-btn remove-super-admin';
             removeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, false);
             removeSuperAdminBtn.textContent = 'Remove Super Admin';
             
             userActions.insertBefore(removeSuperAdminBtn, viewDetailsBtn.nextSibling);
           } else {
             const makeSuperAdminBtn = document.createElement('button');
-            makeSuperAdminBtn.className = 'role-btn make-super-admin desktop-only-btn';
+            makeSuperAdminBtn.className = 'role-btn make-super-admin';
             makeSuperAdminBtn.onclick = () => window.updateSuperAdminRole(userId, true);
             makeSuperAdminBtn.textContent = 'Make Super Admin';
             
             const removeAdminBtn = document.createElement('button');
-            removeAdminBtn.className = 'role-btn remove-admin desktop-only-btn';
+            removeAdminBtn.className = 'role-btn remove-admin';
             removeAdminBtn.onclick = () => window.updateUserRole(userId, false);
             removeAdminBtn.textContent = 'Remove Admin';
             

@@ -593,16 +593,6 @@
         display: block !important;
       }
       
-      /* Hide desktop-only buttons on mobile */
-      .desktop-only-btn {
-        display: none !important;
-      }
-      
-      /* Show mobile-only controls on mobile */
-      .mobile-only-controls {
-        display: flex !important;
-      }
-      
       /* Make user info display as column on small screens */
       .user-info {
         display: flex;
@@ -617,46 +607,49 @@
       }
       
       /* Make buttons full width on mobile */
-      .user-actions button, 
-      .mobile-only-controls button {
+      .user-actions button {
         width: 100%;
         margin-top: 5px;
-        padding: 12px;
-        font-size: 16px;
       }
       
-      /* Optimize modal for mobile */
-      .modal-content {
-        width: 95%;
-        padding: 15px;
-        margin: 10% auto;
-      }
-      
-      /* Make section headers more compact */
-      .user-details-container h3 {
-        font-size: 16px;
-        margin-bottom: 8px;
-      }
-      
-      /* Add spacing between sections */
-      .user-basic-info,
-      .user-personal-info,
-      .user-account-info,
-      .user-password-section {
-        margin-bottom: 20px;
-      }
-    }
-    
-    /* Desktop-specific styles */
-    @media (min-width: 769px) {
-      /* Hide mobile-only controls on desktop */
-      .mobile-only-controls {
+      /* Hide Make Admin and Delete buttons on mobile in list view */
+      .user-item .user-actions .make-admin,
+      .user-item .user-actions .remove-admin,
+      .user-item .user-actions .make-super-admin,
+      .user-item .user-actions .remove-super-admin,
+      .user-item .user-actions .delete-btn {
         display: none !important;
       }
       
-      /* Show desktop-only buttons on desktop */
-      .desktop-only-btn {
-        display: inline-block !important;
+      /* Style the user management section in the modal for mobile */
+      .user-details-container .user-actions {
+        margin-top: 15px !important;
+      }
+      
+      .user-details-container .user-actions h3 {
+        margin-bottom: 15px;
+        font-size: 18px;
+        color: #333;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+        text-align: center;
+      }
+      
+      .user-details-container .user-actions div {
+        display: flex;
+        flex-direction: column !important;
+        gap: 12px !important;
+        margin-top: 15px !important;
+      }
+      
+      .user-details-container .user-actions button {
+        padding: 12px !important;
+        font-size: 16px !important;
+        font-weight: bold;
+      }
+      
+      .user-details-container .delete-btn {
+        margin-top: 5px !important;
       }
     }
   </style>
