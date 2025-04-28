@@ -665,12 +665,23 @@
       
       .user-info {
         width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      
+      .user-info > * {
+        display: inline-block;
+        margin-right: 8px;
       }
       
       .user-actions {
         width: 100%;
         justify-content: flex-end;
         gap: 8px;
+        margin-top: 8px;
       }
       
       .user-actions button {
@@ -692,6 +703,16 @@
       .user-personal-info,
       .user-account-info {
         padding: 10px;
+      }
+      
+      .user-basic-info p,
+      .user-personal-info p,
+      .user-account-info p {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+        margin: 4px 0;
       }
       
       .comments-list {
