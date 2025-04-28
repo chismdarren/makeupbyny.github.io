@@ -655,6 +655,44 @@
 
     /* Mobile Optimizations */
     @media screen and (max-width: 768px) {
+      /* Compact filter section for mobile */
+      .filter-section {
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+      }
+      
+      .filter-section .filter-group {
+        width: 100%;
+      }
+      
+      /* Hide unnecessary filters on mobile */
+      .filter-section .filter-group:not(:nth-child(1)):not(:nth-child(5)):not(:last-child) {
+        display: none !important;
+      }
+      
+      /* Make search and sort full width */
+      .filter-section #search-input,
+      .filter-section #sort-by {
+        width: 100%;
+        padding: 10px;
+      }
+      
+      /* Keep reset button visible */
+      .filter-section .reset-filters {
+        margin-top: 5px;
+        width: 100%;
+        padding: 10px;
+      }
+      
+      /* Make user count more prominent */
+      .filter-section .user-count {
+        display: block;
+        text-align: center;
+        margin-top: 5px;
+        width: 100%;
+      }
+      
       .user-item {
         padding: 12px 8px;
         margin-bottom: 8px;

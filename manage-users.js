@@ -130,47 +130,72 @@ function initializeFilters() {
   // Create filter container
   const filterContainer = document.createElement('div');
   filterContainer.className = 'filter-section';
-  filterContainer.innerHTML = `
-    <div class="filter-group">
-      <span class="filter-label">Sort By:</span>
-      <select id="sort-by" class="filter-control">
-        <option value="email">Email</option>
-        <option value="status">Status</option>
-        <option value="role">Role</option>
-        <option value="date">Date Created</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Direction:</span>
-      <select id="sort-direction" class="filter-control">
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Status:</span>
-      <select id="filter-status" class="filter-control">
-        <option value="all">All</option>
-        <option value="active">Active</option>
-        <option value="disabled">Disabled</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Role:</span>
-      <select id="filter-role" class="filter-control">
-        <option value="all">All</option>
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-        <option value="superadmin">Super Admin</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Search:</span>
-      <input type="text" id="search-input" class="filter-control" placeholder="Email or name...">
-    </div>
-    <button id="reset-filters" class="reset-filters">Reset Filters</button>
-    <span id="user-count" class="user-count"></span>
-  `;
+  
+  // Check if we're on mobile
+  const isMobile = window.innerWidth <= 768;
+  
+  // Create different content based on device
+  if (isMobile) {
+    filterContainer.innerHTML = `
+      <div class="filter-group">
+        <span class="filter-label">Sort By:</span>
+        <select id="sort-by" class="filter-control">
+          <option value="email_asc">A-Z (Email)</option>
+          <option value="email_desc">Z-A (Email)</option>
+          <option value="date_asc">Oldest First</option>
+          <option value="date_desc">Newest First</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Search:</span>
+        <input type="text" id="search-input" class="filter-control" placeholder="Email or name...">
+      </div>
+      <button id="reset-filters" class="reset-filters">Reset Filters</button>
+      <span id="user-count" class="user-count"></span>
+    `;
+  } else {
+    filterContainer.innerHTML = `
+      <div class="filter-group">
+        <span class="filter-label">Sort By:</span>
+        <select id="sort-by" class="filter-control">
+          <option value="email">Email</option>
+          <option value="status">Status</option>
+          <option value="role">Role</option>
+          <option value="date">Date Created</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Direction:</span>
+        <select id="sort-direction" class="filter-control">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Status:</span>
+        <select id="filter-status" class="filter-control">
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="disabled">Disabled</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Role:</span>
+        <select id="filter-role" class="filter-control">
+          <option value="all">All</option>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+          <option value="superadmin">Super Admin</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Search:</span>
+        <input type="text" id="search-input" class="filter-control" placeholder="Email or name...">
+      </div>
+      <button id="reset-filters" class="reset-filters">Reset Filters</button>
+      <span id="user-count" class="user-count"></span>
+    `;
+  }
   
   // Insert filter container before the user list
   const userList = document.getElementById('user-list');
@@ -180,21 +205,59 @@ function initializeFilters() {
   
   // Add event listeners for filter controls
   document.getElementById('sort-by').addEventListener('change', applyFilters);
-  document.getElementById('sort-direction').addEventListener('change', applyFilters);
-  document.getElementById('filter-status').addEventListener('change', applyFilters);
-  document.getElementById('filter-role').addEventListener('change', applyFilters);
+  
+  // Only add these listeners if they exist (desktop only)
+  const sortDirElement = document.getElementById('sort-direction');
+  const filterStatusElement = document.getElementById('filter-status');
+  const filterRoleElement = document.getElementById('filter-role');
+  
+  if (sortDirElement) sortDirElement.addEventListener('change', applyFilters);
+  if (filterStatusElement) filterStatusElement.addEventListener('change', applyFilters);
+  if (filterRoleElement) filterRoleElement.addEventListener('change', applyFilters);
+  
   document.getElementById('search-input').addEventListener('input', applyFilters);
   document.getElementById('reset-filters').addEventListener('click', resetFilters);
+  
+  // Handle window resize to update filters
+  window.addEventListener('resize', function() {
+    const currentIsMobile = window.innerWidth <= 768;
+    if (currentIsMobile !== isMobile) {
+      // If mobile state has changed, reinitialize filters
+      const filtersContainer = document.querySelector('.filter-section');
+      if (filtersContainer) {
+        filtersContainer.remove();
+        initializeFilters();
+      }
+    }
+  });
 }
 
 // Reset filters to default values
 function resetFilters() {
-  document.getElementById('sort-by').value = 'email';
-  document.getElementById('sort-direction').value = 'asc';
-  document.getElementById('filter-status').value = 'all';
-  document.getElementById('filter-role').value = 'all';
+  const sortByElement = document.getElementById('sort-by');
+  
+  // Check if we're on mobile based on the sort options
+  const isMobile = sortByElement.value.includes('_');
+  
+  if (isMobile) {
+    // Reset mobile filters
+    sortByElement.value = 'email_asc';
+  } else {
+    // Reset desktop filters
+    sortByElement.value = 'email';
+    const sortDirectionElement = document.getElementById('sort-direction');
+    const filterStatusElement = document.getElementById('filter-status');
+    const filterRoleElement = document.getElementById('filter-role');
+    
+    if (sortDirectionElement) sortDirectionElement.value = 'asc';
+    if (filterStatusElement) filterStatusElement.value = 'all';
+    if (filterRoleElement) filterRoleElement.value = 'all';
+  }
+  
+  // Clear search input for both layouts
   document.getElementById('search-input').value = '';
   
+  // Apply the filters
   applyFilters();
 }
 
@@ -202,10 +265,30 @@ function resetFilters() {
 function applyFilters() {
   if (allUsers.length === 0) return;
   
-  const sortBy = document.getElementById('sort-by').value;
-  const sortDirection = document.getElementById('sort-direction').value;
-  const filterStatus = document.getElementById('filter-status').value;
-  const filterRole = document.getElementById('filter-role').value;
+  const sortByElement = document.getElementById('sort-by');
+  const sortByValue = sortByElement.value;
+  
+  // Check if we're using mobile combined sort values
+  let sortBy, sortDirection;
+  
+  if (sortByValue.includes('_')) {
+    // Mobile format: field_direction
+    const parts = sortByValue.split('_');
+    sortBy = parts[0];
+    sortDirection = parts[1];
+  } else {
+    // Desktop format: separate fields
+    sortBy = sortByValue;
+    const sortDirectionElement = document.getElementById('sort-direction');
+    sortDirection = sortDirectionElement ? sortDirectionElement.value : 'asc';
+  }
+  
+  // Get other filter values if they exist
+  const filterStatusElement = document.getElementById('filter-status');
+  const filterRoleElement = document.getElementById('filter-role');
+  
+  const filterStatus = filterStatusElement ? filterStatusElement.value : 'all';
+  const filterRole = filterRoleElement ? filterRoleElement.value : 'all';
   const searchTerm = document.getElementById('search-input').value.toLowerCase();
   
   // Filter users
