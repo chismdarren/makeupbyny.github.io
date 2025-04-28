@@ -656,90 +656,100 @@
     /* Mobile Optimizations */
     @media screen and (max-width: 768px) {
       .user-item {
-        padding: 8px;
-        margin-bottom: 8px;
-        flex-direction: row;
-        align-items: center;
-        gap: 12px;
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 12px !important;
+        background-color: #f9f9f9 !important;
+        border-radius: 8px !important;
       }
       
       .user-avatar-container {
-        width: 60px;
-        height: 60px;
-        margin-right: 12px;
-        flex-shrink: 0;
+        width: 60px !important;
+        height: 60px !important;
+        margin-right: 12px !important;
+        flex-shrink: 0 !important;
       }
       
       .user-info {
-        width: calc(100% - 72px);
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
+        width: calc(100% - 72px) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
       }
       
       .user-info > div {
-        display: flex;
-        align-items: center;
-        gap: 4px;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
       }
       
       .user-info label {
-        font-weight: bold;
-        white-space: nowrap;
+        font-weight: bold !important;
+        white-space: nowrap !important;
+        color: #333 !important;
       }
       
       .user-info span {
-        white-space: nowrap;
+        white-space: nowrap !important;
+        color: #666 !important;
       }
       
       .user-actions {
-        width: 100%;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-top: 8px;
+        width: 100% !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        margin-top: 8px !important;
       }
       
       .user-actions button {
-        padding: 4px 8px;
-        font-size: 0.9em;
+        padding: 6px 10px !important;
+        font-size: 0.9em !important;
+        border-radius: 4px !important;
+        color: white !important;
       }
       
       .modal-content {
-        margin: 10% auto;
-        padding: 15px;
-        width: 95%;
+        margin: 10% auto !important;
+        padding: 15px !important;
+        width: 95% !important;
       }
       
       .user-details-container {
-        gap: 15px;
+        gap: 15px !important;
       }
       
       .user-basic-info,
       .user-personal-info,
       .user-account-info {
-        padding: 10px;
+        padding: 10px !important;
+        border-radius: 8px !important;
+        background-color: #f9f9f9 !important;
       }
       
       .user-basic-info p,
       .user-personal-info p,
       .user-account-info p {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin: 4px 0;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        margin: 4px 0 !important;
       }
       
       .user-basic-info label,
       .user-personal-info label,
       .user-account-info label {
-        font-weight: bold;
-        white-space: nowrap;
+        font-weight: bold !important;
+        white-space: nowrap !important;
+        color: #333 !important;
       }
       
       .user-basic-info span,
       .user-personal-info span,
       .user-account-info span {
-        white-space: nowrap;
+        white-space: nowrap !important;
+        color: #666 !important;
       }
       
       /* Remove all vertical separators */
@@ -747,21 +757,21 @@
       .user-info::before,
       .user-info > *::after,
       .user-info > *::before {
-        content: none;
+        content: none !important;
       }
       
       .comments-list {
-        padding: 10px;
+        padding: 10px !important;
       }
       
       .comment-item {
-        padding: 8px;
-        margin-bottom: 8px;
+        padding: 8px !important;
+        margin-bottom: 8px !important;
       }
       
       .role-btn {
-        padding: 4px 8px;
-        font-size: 0.9em;
+        padding: 6px 10px !important;
+        font-size: 0.9em !important;
       }
     }
   </style>
