@@ -699,11 +699,21 @@
         justify-content: flex-end;
         gap: 8px;
         margin-top: 8px;
+        display: none !important;
       }
       
-      .user-actions button {
-        padding: 4px 8px;
+      /* Reposition the View Details button below role */
+      .user-item .view-details-btn {
+        display: block !important;
+        margin-top: 10px !important;
+        width: 100%;
+        padding: 6px 10px;
         font-size: 0.9em;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
       }
       
       /* Override previous mobile-specific styles that make buttons full width */

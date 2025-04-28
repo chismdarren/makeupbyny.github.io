@@ -711,9 +711,9 @@ async function loadUsers() {
               <span class="user-uid-container"><strong>UID:</strong> ${user.uid}</span>
               <span><strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'}</span>
               <span><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></span>
+              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
             </div>
             <div class="user-actions">
-              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
               ${userData.isSuperAdmin ? 
                 `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
                 userData.isAdmin ? 
@@ -751,9 +751,11 @@ async function loadUsers() {
     userResults.forEach(result => {
       // Add event listener directly to the button
       const viewDetailsBtn = result.element.querySelector('.view-details-btn');
-      viewDetailsBtn.addEventListener('click', function() {
-        window.showUserDetails(result.uid, result);
-      });
+      if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', function() {
+          window.showUserDetails(result.uid, result);
+        });
+      }
     });
     
     console.log("All users loaded successfully");
