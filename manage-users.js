@@ -631,34 +631,33 @@ if (adminDropdownBtn) {
 // Handle closing the modal when the X is clicked
 if (closeBtn) {
   closeBtn.onclick = function() {
-    modal.style.display = "none";
-    
-    // Show the settings icon again on mobile if it was previously visible
-    if (window.innerWidth <= 768) {
-      const settingsIcon = document.getElementById("settingsIcon");
-      if (settingsIcon && settingsIcon.getAttribute('data-was-visible') === 'true') {
-        settingsIcon.style.display = "flex";
-        settingsIcon.removeAttribute('data-was-visible');
-      }
-    }
+    closeUserModal();
   };
 }
 
 // Close the modal when clicking outside of it
 window.onclick = function(event) {
   if (event.target == modal) {
-    modal.style.display = "none";
-    
-    // Show the settings icon again on mobile if it was previously visible
-    if (window.innerWidth <= 768) {
-      const settingsIcon = document.getElementById("settingsIcon");
-      if (settingsIcon && settingsIcon.getAttribute('data-was-visible') === 'true') {
-        settingsIcon.style.display = "flex";
-        settingsIcon.removeAttribute('data-was-visible');
-      }
-    }
+    closeUserModal();
   }
 };
+
+// Function to close the modal
+function closeUserModal() {
+  modal.style.display = "none";
+  
+  // Remove modal-open class from body to enable scrolling again
+  document.body.classList.remove('modal-open');
+  
+  // Show the settings icon again on mobile if it was previously visible
+  if (window.innerWidth <= 768) {
+    const settingsIcon = document.getElementById("settingsIcon");
+    if (settingsIcon && settingsIcon.getAttribute('data-was-visible') === 'true') {
+      settingsIcon.style.display = "flex";
+      settingsIcon.removeAttribute('data-was-visible');
+    }
+  }
+}
 
 // Show/hide mobile notes based on screen width
 window.addEventListener('resize', function() {
@@ -1193,6 +1192,8 @@ window.showUserDetails = async function(userId, userData = null) {
         </div>
         
         ${commentsHtml}
+        
+        <button type="button" class="modal-close-bottom" onclick="closeUserModal()">Close</button>
       </div>
     `;
     
@@ -1258,36 +1259,36 @@ window.showUserDetails = async function(userId, userData = null) {
         }
       });
     }
-  
-  // Update username when first or last name changes
+    
+    // Update username when first or last name changes
     const firstNameInput = document.getElementById('firstName-edit');
     const lastNameInput = document.getElementById('lastName-edit');
     const usernameInput = document.getElementById('username-edit');
-  
-  if (firstNameInput && lastNameInput && usernameInput) {
-    const updateUsername = function() {
-      const firstName = firstNameInput.value.trim();
-      const lastName = lastNameInput.value.trim();
-      
-      if (firstName) {
-        // Capitalize first letter of first name
-        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-        
-        if (lastName) {
-          // Format as "FirstName. LastInitial"
-          const lastInitial = lastName.charAt(0).toUpperCase();
-          usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
-        } else {
-          // If we only have first name, use with a dot and space
-          usernameInput.value = `${capitalizedFirstName}. `;
-        }
-      }
-    };
     
-    firstNameInput.addEventListener('input', updateUsername);
-    lastNameInput.addEventListener('input', updateUsername);
-  }
-  
+    if (firstNameInput && lastNameInput && usernameInput) {
+      const updateUsername = function() {
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
+        
+        if (firstName) {
+          // Capitalize first letter of first name
+          const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+          
+          if (lastName) {
+            // Format as "FirstName. LastInitial"
+            const lastInitial = lastName.charAt(0).toUpperCase();
+            usernameInput.value = `${capitalizedFirstName}. ${lastInitial}`;
+          } else {
+            // If we only have first name, use with a dot and space
+            usernameInput.value = `${capitalizedFirstName}. `;
+          }
+        }
+      };
+      
+      firstNameInput.addEventListener('input', updateUsername);
+      lastNameInput.addEventListener('input', updateUsername);
+    }
+    
     // Add event listeners for save buttons
     document.querySelectorAll('.save-edit-btn').forEach(btn => {
       btn.addEventListener('click', async function() {
@@ -1424,7 +1425,12 @@ window.showUserDetails = async function(userId, userData = null) {
       });
     });
     
+    // Add the modal-open class to body to prevent background scrolling
+    document.body.classList.add('modal-open');
+    
+    // Show the modal
     modal.style.display = "block";
+    
   } catch (error) {
     console.error('Error loading user details:', error);
     alert('Error loading user details: ' + error.message);
