@@ -658,40 +658,39 @@
       .user-item {
         padding: 8px;
         margin-bottom: 8px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      
-      .user-info {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
       }
       
       .user-avatar-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 8px;
+        width: 60px;
+        height: 60px;
+        margin-right: 12px;
+        flex-shrink: 0;
       }
       
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        margin-right: 0;
-      }
-      
-      .user-details {
+      .user-info {
+        width: calc(100% - 72px);
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
       
-      .user-details > * {
-        display: block;
+      .user-info > * {
+        display: flex;
+        align-items: center;
+        gap: 4px;
         margin: 0;
+      }
+      
+      .user-info label {
+        min-width: 60px;
+        font-weight: bold;
+      }
+      
+      .user-info span {
+        display: inline;
       }
       
       .user-actions {
@@ -726,10 +725,17 @@
       .user-personal-info p,
       .user-account-info p {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 4px;
         align-items: center;
         margin: 4px 0;
+      }
+      
+      .user-basic-info label,
+      .user-personal-info label,
+      .user-account-info label {
+        min-width: 80px;
+        font-weight: bold;
       }
       
       .comments-list {
