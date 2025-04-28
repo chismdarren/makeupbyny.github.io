@@ -711,9 +711,9 @@ async function loadUsers() {
               <p class="user-uid-container"><strong>UID:</strong> ${user.uid}</p>
               <p><strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'}</p>
               <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
+              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
             </div>
             <div class="user-actions">
-              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
               ${userData.isSuperAdmin ? 
                 `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
                 userData.isAdmin ? 
@@ -751,9 +751,11 @@ async function loadUsers() {
     userResults.forEach(result => {
       // Add event listener directly to the button
       const viewDetailsBtn = result.element.querySelector('.view-details-btn');
-      viewDetailsBtn.addEventListener('click', function() {
-        window.showUserDetails(result.uid, result);
-      });
+      if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', function() {
+          window.showUserDetails(result.uid, result);
+        });
+      }
     });
     
     console.log("All users loaded successfully");
@@ -1645,6 +1647,7 @@ function updateUserListItemInfo(userId, updates, refreshElement = false) {
         <p><strong>UID:</strong> ${uid}</p>
         <p><strong>Status:</strong> ${status}</p>
         <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
+        <button class="view-details-btn" data-uid="${userId}">View Details</button>
       `;
     } else {
       // Only update specific parts
