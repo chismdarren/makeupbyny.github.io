@@ -706,7 +706,7 @@ async function loadUsers() {
               ${getAvatarHTML(userData.avatarUrl, userData.username)}
             </div>
             <div class="user-info">
-              <span><strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span></span>
+              <span><strong>Username:</strong> ${userData.username || 'Not set'}</span>
               <span><strong>Email:</strong> ${user.email}</span>
               <span class="user-uid-container"><strong>UID:</strong> ${user.uid}</span>
               <span><strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'}</span>
