@@ -659,6 +659,9 @@ function closeUserModal() {
   }
 }
 
+// Make closeUserModal available globally
+window.closeUserModal = closeUserModal;
+
 // Show/hide mobile notes based on screen width
 window.addEventListener('resize', function() {
   if (modal.style.display === "block") {
