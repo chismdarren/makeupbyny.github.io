@@ -632,6 +632,15 @@ if (adminDropdownBtn) {
 if (closeBtn) {
   closeBtn.onclick = function() {
     modal.style.display = "none";
+    
+    // Show the settings icon again on mobile if it was previously visible
+    if (window.innerWidth <= 768) {
+      const settingsIcon = document.getElementById("settingsIcon");
+      if (settingsIcon && settingsIcon.getAttribute('data-was-visible') === 'true') {
+        settingsIcon.style.display = "flex";
+        settingsIcon.removeAttribute('data-was-visible');
+      }
+    }
   };
 }
 
@@ -639,6 +648,15 @@ if (closeBtn) {
 window.onclick = function(event) {
   if (event.target == modal) {
     modal.style.display = "none";
+    
+    // Show the settings icon again on mobile if it was previously visible
+    if (window.innerWidth <= 768) {
+      const settingsIcon = document.getElementById("settingsIcon");
+      if (settingsIcon && settingsIcon.getAttribute('data-was-visible') === 'true') {
+        settingsIcon.style.display = "flex";
+        settingsIcon.removeAttribute('data-was-visible');
+      }
+    }
   }
 };
 
@@ -892,6 +910,15 @@ async function loadUsers() {
 // Make functions available globally for onclick handlers
 window.showUserDetails = async function(userId, userData = null) {
   currentUserId = userId;
+  
+  // Hide settings icon on mobile
+  if (window.innerWidth <= 768) {
+    const settingsIcon = document.getElementById("settingsIcon");
+    if (settingsIcon && window.getComputedStyle(settingsIcon).display !== 'none') {
+      settingsIcon.setAttribute('data-was-visible', 'true');
+      settingsIcon.style.display = "none";
+    }
+  }
   
   try {
     // Always fetch the latest user data from Firestore

@@ -655,6 +655,12 @@
 
     /* Mobile Optimizations */
     @media screen and (max-width: 768px) {
+      /* Hide settings gear icon when modal is open */
+      body .modal[style*="display: block"] ~ .settings-icon,
+      body .modal:not([style*="display: none"]) ~ .settings-icon {
+        display: none !important;
+      }
+      
       /* Collapsible filter section styles */
       .filter-toggle {
         display: flex;
