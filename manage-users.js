@@ -127,15 +127,26 @@ let allUsers = [];
 
 // Initialize filter UI
 function initializeFilters() {
-  // Create filter container
-  const filterContainer = document.createElement('div');
-  filterContainer.className = 'filter-section';
-  
   // Check if we're on mobile
   const isMobile = window.innerWidth <= 768;
   
-  // Create different content based on device
   if (isMobile) {
+    // Create filter toggle for mobile
+    const filterToggle = document.createElement('div');
+    filterToggle.className = 'filter-toggle';
+    filterToggle.innerHTML = `
+      <span class="filter-toggle-text">Filters</span>
+      <div class="filter-toggle-icon"></div>
+    `;
+    
+    // Create filter container
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'filter-section';
+    
+    // By default filters are hidden on mobile
+    filterContainer.style.display = 'none';
+    
+    // Create the filter content
     filterContainer.innerHTML = `
       <div class="filter-group">
         <span class="filter-label">Sort By:</span>
@@ -153,7 +164,27 @@ function initializeFilters() {
       <button id="reset-filters" class="reset-filters">Reset Filters</button>
       <span id="user-count" class="user-count"></span>
     `;
+    
+    // Insert elements before the user list
+    const userList = document.getElementById('user-list');
+    if (userList) {
+      const parentElement = userList.parentNode;
+      parentElement.insertBefore(filterToggle, userList);
+      parentElement.insertBefore(filterContainer, userList);
+    }
+    
+    // Add toggle functionality
+    filterToggle.addEventListener('click', function() {
+      const isActive = filterContainer.style.display === 'flex';
+      filterContainer.style.display = isActive ? 'none' : 'flex';
+      filterToggle.classList.toggle('active');
+    });
   } else {
+    // Desktop layout - create filter container
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'filter-section';
+    
+    // Create the filter content
     filterContainer.innerHTML = `
       <div class="filter-group">
         <span class="filter-label">Sort By:</span>
@@ -195,12 +226,12 @@ function initializeFilters() {
       <button id="reset-filters" class="reset-filters">Reset Filters</button>
       <span id="user-count" class="user-count"></span>
     `;
-  }
-  
-  // Insert filter container before the user list
-  const userList = document.getElementById('user-list');
-  if (userList) {
-    userList.parentNode.insertBefore(filterContainer, userList);
+    
+    // Insert filter container before the user list
+    const userList = document.getElementById('user-list');
+    if (userList) {
+      userList.parentNode.insertBefore(filterContainer, userList);
+    }
   }
   
   // Add event listeners for filter controls
@@ -218,16 +249,26 @@ function initializeFilters() {
   document.getElementById('search-input').addEventListener('input', applyFilters);
   document.getElementById('reset-filters').addEventListener('click', resetFilters);
   
+  // Apply initial filters to update counts
+  setTimeout(applyFilters, 100);
+  
   // Handle window resize to update filters
   window.addEventListener('resize', function() {
     const currentIsMobile = window.innerWidth <= 768;
     if (currentIsMobile !== isMobile) {
       // If mobile state has changed, reinitialize filters
       const filtersContainer = document.querySelector('.filter-section');
+      const filterToggle = document.querySelector('.filter-toggle');
+      
       if (filtersContainer) {
         filtersContainer.remove();
-        initializeFilters();
       }
+      
+      if (filterToggle) {
+        filterToggle.remove();
+      }
+      
+      initializeFilters();
     }
   });
 }
