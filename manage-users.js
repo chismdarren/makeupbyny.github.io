@@ -706,14 +706,14 @@ async function loadUsers() {
               ${getAvatarHTML(userData.avatarUrl, userData.username)}
             </div>
             <div class="user-info">
-              <p><strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span></p>
-              <p><strong>Email:</strong> ${user.email}</p>
-              <p class="user-uid-container"><strong>UID:</strong> ${user.uid}</p>
-              <p><strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'}</p>
-              <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
-              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
+              <span><strong>Username:</strong> <span class="user-username">${userData.username || 'Not set'}</span></span>
+              <span><strong>Email:</strong> ${user.email}</span>
+              <span class="user-uid-container"><strong>UID:</strong> ${user.uid}</span>
+              <span><strong>Status:</strong> ${user.disabled ? 'Disabled' : 'Active'}</span>
+              <span><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></span>
             </div>
             <div class="user-actions">
+              <button class="view-details-btn" data-uid="${user.uid}">View Details</button>
               ${userData.isSuperAdmin ? 
                 `<button class="role-btn remove-super-admin" onclick="window.updateSuperAdminRole('${user.uid}', false)">Remove Super Admin</button>` :
                 userData.isAdmin ? 
@@ -751,11 +751,9 @@ async function loadUsers() {
     userResults.forEach(result => {
       // Add event listener directly to the button
       const viewDetailsBtn = result.element.querySelector('.view-details-btn');
-      if (viewDetailsBtn) {
-        viewDetailsBtn.addEventListener('click', function() {
-          window.showUserDetails(result.uid, result);
-        });
-      }
+      viewDetailsBtn.addEventListener('click', function() {
+        window.showUserDetails(result.uid, result);
+      });
     });
     
     console.log("All users loaded successfully");
@@ -1642,12 +1640,11 @@ function updateUserListItemInfo(userId, updates, refreshElement = false) {
       
       // Rebuild the user info HTML with username before email
       userInfo.innerHTML = `
-        <p><strong>Username:</strong> <span class="user-username">${username}</span></p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>UID:</strong> ${uid}</p>
-        <p><strong>Status:</strong> ${status}</p>
-        <p><strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span></p>
-        <button class="view-details-btn" data-uid="${userId}">View Details</button>
+        <strong>Username:</strong> <span class="user-username">${username}</span> | 
+        <strong>Email:</strong> ${email} | 
+        <strong>UID:</strong> ${uid} | 
+        <strong>Status:</strong> ${status} |
+        <strong>Role:</strong> <span class="user-role ${roleClass}">${roleDisplay}</span>
       `;
     } else {
       // Only update specific parts
