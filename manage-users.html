@@ -679,6 +679,13 @@
         gap: 4px !important;
       }
       
+      /* Specifically hide the pipe characters in the text */
+      .user-info strong + span + :not(strong):not(span),
+      .user-info strong + :not(strong):not(span),
+      .user-info :not(strong):not(span) + strong {
+        display: none !important;
+      }
+      
       .user-info > div {
         display: flex !important;
         align-items: center !important;
@@ -694,6 +701,20 @@
       .user-info span {
         white-space: nowrap !important;
         color: #666 !important;
+      }
+      
+      /* Create line break after each info item */
+      .user-info strong::after {
+        content: "";
+        display: block !important;
+      }
+      
+      /* Reset any text node styling that might be affecting the pipe characters */
+      .user-info::after,
+      .user-info::before,
+      .user-info > *::after,
+      .user-info > *::before {
+        content: none !important;
       }
       
       .user-actions {
@@ -750,14 +771,6 @@
       .user-account-info span {
         white-space: nowrap !important;
         color: #666 !important;
-      }
-      
-      /* Remove all vertical separators */
-      .user-info::after,
-      .user-info::before,
-      .user-info > *::after,
-      .user-info > *::before {
-        content: none !important;
       }
       
       .comments-list {
