@@ -658,18 +658,16 @@
       .user-item {
         padding: 12px 8px;
         margin-bottom: 8px;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 12px;
       }
       
       .user-avatar-container {
         width: 70px;
         height: 70px;
+        flex-shrink: 0;
         margin-right: 0;
-        margin-bottom: 5px;
-        display: flex;
-        justify-content: center;
       }
       
       .user-avatar {
@@ -681,7 +679,7 @@
       .user-info {
         display: flex;
         flex-direction: column;
-        width: 100%;
+        width: calc(100% - 82px);
         align-items: flex-start;
       }
       
