@@ -826,6 +826,7 @@
       position: relative;
       display: inline-block;
       vertical-align: middle;
+      margin-bottom: -5px;
     }
 
     .admin-dropdown-btn {
@@ -833,13 +834,34 @@
       border: none;
       color: #333;
       font-size: 1em;
-      padding: 10px;
+      padding: 10px 0;
+      margin-bottom: 0;
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
       display: flex;
       align-items: center;
       transition: color 0.2s;
+    }
+    
+    /* Fix navigation spacing */
+    #mainNav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin-top: -5px;
+    }
+    
+    #mainNav a, #mainNav button {
+      margin: 0 10px;
+      padding: 3px 0;
+    }
+
+    /* Ensure second row is closer to first row */
+    #myAccount, #login-link, #logout-btn {
+      margin-top: -5px !important;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -950,6 +972,17 @@
         display: block !important; /* Ensure block display */
       }
     }
+
+    /* Header and navigation layout */
+    header {
+      margin-bottom: 10px;
+    }
+    
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
@@ -960,13 +993,13 @@
           <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
         </a>
       </div>
-      <nav id="mainNav" style="margin-top: 10px; width: 100%;">
+      <nav id="mainNav">
         <a href="index.html">Home</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
         <!-- Admin dropdown menu (initially hidden) -->
         <div class="admin-dropdown" style="position: relative;">
-            <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -7px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
+            <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -4px !important; margin-top: 0 !important; margin-bottom: 0 !important; padding-bottom: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
                 Admin Dashboard 
                 <span class="dropdown-icon">▼</span>
             </a>
@@ -978,10 +1011,10 @@
             </div>
         </div>
         <!-- User account link (initially hidden) -->
-        <a id="myAccount" href="settings.html" style="display:none;">My Account</a>
+        <a id="myAccount" href="settings.html" style="display:none; margin-top: 0; padding-top: 0;">My Account</a>
         <!-- Public links -->
-        <a id="login-link" href="login.html">Login</a>
-        <button id="logout-btn" style="display:none;">Logout</button>
+        <a id="login-link" href="login.html" style="margin-top: 0; padding-top: 0;">Login</a>
+        <button id="logout-btn" style="display:none; margin-top: 0; padding-top: 0;">Logout</button>
       </nav>
     </div>
   </header>
