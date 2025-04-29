@@ -825,6 +825,7 @@
     .admin-dropdown {
       position: relative;
       display: inline-block;
+      vertical-align: middle;
     }
 
     .admin-dropdown-btn {
@@ -864,14 +865,11 @@
       background-color: white;
       min-width: 180px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 1;
+      z-index: 1000;
       border-radius: 4px;
-      overflow: hidden;
+      overflow: visible;
       margin-top: 5px;
       border: 1px solid #eee;
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: opacity 0.3s, transform 0.3s;
     }
 
     .admin-dropdown-content a {
@@ -895,9 +893,10 @@
 
     /* This class is toggled via JavaScript */
     .show-dropdown {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
+      display: block !important;
+      opacity: 1 !important;
+      transform: none !important;
+      visibility: visible !important;
     }
 
     /* Responsive adjustments for admin dropdown */
@@ -968,12 +967,12 @@
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
         <!-- Admin dropdown menu (initially hidden) -->
-        <div class="admin-dropdown">
+        <div class="admin-dropdown" style="position: relative;">
             <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -9px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
                 Admin Dashboard 
                 <span class="dropdown-icon">▼</span>
             </a>
-            <div id="adminDropdownContent" class="admin-dropdown-content">
+            <div id="adminDropdownContent" class="admin-dropdown-content" style="position: absolute; top: 100%; right: 0; z-index: 1000; display: none;">
                 <a href="admin-dashboard.html">Messages</a>
                 <a href="editor.html">Create Post</a>
                 <a href="edit-post.html">Edit Posts</a>
@@ -1666,6 +1665,32 @@
   <!-- JavaScript for Admin Dropdown Menu -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Simple dropdown toggle for admin menu
+        const adminBtn = document.getElementById('adminDropdownBtn');
+        if (adminBtn) {
+            adminBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const dropdownContent = document.getElementById('adminDropdownContent');
+                if (dropdownContent) {
+                    // Direct style manipulation for more reliable display
+                    if (dropdownContent.style.display === 'block') {
+                        dropdownContent.style.display = 'none';
+                    } else {
+                        dropdownContent.style.display = 'block';
+                    }
+                }
+            });
+            
+            // Close dropdown when clicking elsewhere
+            document.addEventListener('click', function(event) {
+                const dropdownContent = document.getElementById('adminDropdownContent');
+                if (dropdownContent && event.target !== adminBtn && !adminBtn.contains(event.target) && !dropdownContent.contains(event.target)) {
+                    dropdownContent.style.display = 'none';
+                }
+            });
+        }
+        
+        // Original complex dropdown code (keeping as backup)
         const adminDropdownBtn = document.getElementById('adminDropdownBtn');
         const adminDropdownContent = document.getElementById('adminDropdownContent');
         
@@ -1674,16 +1699,30 @@
             adminDropdownBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                adminDropdownContent.classList.toggle('show-dropdown');
-                adminDropdownBtn.classList.toggle('active');
+                
+                // Toggle the show-dropdown class
+                if (adminDropdownContent.classList.contains('show-dropdown')) {
+                    adminDropdownContent.classList.remove('show-dropdown');
+                    adminDropdownBtn.classList.remove('active');
+                } else {
+                    adminDropdownContent.classList.add('show-dropdown');
+                    adminDropdownBtn.classList.add('active');
+                    
+                    // Position the dropdown properly
+                    const btnRect = adminDropdownBtn.getBoundingClientRect();
+                    adminDropdownContent.style.top = (btnRect.bottom + window.scrollY) + 'px';
+                    adminDropdownContent.style.right = '0';
+                }
             });
         }
         
         // Close dropdown when clicking elsewhere
         document.addEventListener('click', function(e) {
-            if (adminDropdownContent.classList.contains('show-dropdown')) {
-                adminDropdownContent.classList.remove('show-dropdown');
-                adminDropdownBtn.classList.remove('active');
+            if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
+                if (!adminDropdownBtn.contains(e.target) && !adminDropdownContent.contains(e.target)) {
+                    adminDropdownContent.classList.remove('show-dropdown');
+                    adminDropdownBtn.classList.remove('active');
+                }
             }
         });
         
