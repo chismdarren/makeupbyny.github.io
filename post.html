@@ -851,7 +851,7 @@
       align-items: center;
       justify-content: center;
       gap: 5px;
-      margin-top: 10px;
+      margin-top: -5px;
     }
     
     #mainNav a, #mainNav button {
@@ -933,13 +933,6 @@
 
     /* For very small screens */
     @media (max-width: 480px) {
-      /* Mobile logo size */
-      .logo img {
-        width: 420.400px !important;
-        height: 114.338px !important;
-        object-fit: contain !important;
-      }
-
       .admin-dropdown-content {
         max-height: 80vh; /* Limit maximum height and add scrolling if needed */
         overflow-y: auto;
@@ -997,7 +990,7 @@
     <div class="header-content">
       <div class="logo">
         <a href="index.html">
-          <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 610px; height: 117px; object-fit: contain;">
+          <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 100%; max-width: 610px; height: auto; object-fit: contain;">
         </a>
       </div>
       <nav id="mainNav">
