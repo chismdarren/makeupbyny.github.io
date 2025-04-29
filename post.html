@@ -933,14 +933,18 @@
 
     /* For very small screens */
     @media (max-width: 480px) {
-      /* Add new row gap for menu items */
+      /* Match home page natural spacing by removing custom gaps and negative margins */
       #mainNav {
-        gap: 15px !important;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: normal;
+        margin-top: 0;
       }
       
-      /* Remove negative margin for second row on mobile */
+      /* Remove negative margins for menu items to match home page */
       #myAccount, #login-link, #logout-btn {
-        margin-top: 5px !important;
+        margin-top: 0 !important;
       }
       
       .admin-dropdown-content {
@@ -969,7 +973,7 @@
       .admin-dropdown {
         position: relative !important; /* Use relative for proper positioning */
         vertical-align: middle !important;
-        margin-top: 5px !important;
+        margin-top: 0 !important; /* Match home page by removing margins */
         display: inline-block !important;
       }
       
