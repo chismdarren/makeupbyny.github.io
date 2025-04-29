@@ -817,8 +817,7 @@
         <!-- Existing comments will be appended here -->
         <div id="commentsContainer"></div>
 
-        <h2>Leave a Reply</h2>
-        <p class="comment-description">Sign in to post a comment</p>
+        <h2 id="leaveReplyHeading">Leave a Reply</h2>
 
         <!-- Login required message (shown when user is not logged in) -->
         <div id="loginToComment">
@@ -994,6 +993,9 @@
           commentForm.style.display = "flex";
           loginToComment.style.display = "none";
           
+          // Show the "Leave a Reply" heading for signed-in users
+          document.getElementById("leaveReplyHeading").style.display = "block";
+          
           // Listen for comment form submission
           commentForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -1056,6 +1058,9 @@
           // User is not signed in - hide comment form and show login message
           commentForm.style.display = "none";
           loginToComment.style.display = "block";
+          
+          // Hide the "Leave a Reply" heading for non-signed-in users
+          document.getElementById("leaveReplyHeading").style.display = "none";
         }
       });
     });
