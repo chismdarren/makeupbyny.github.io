@@ -915,11 +915,10 @@
         max-height: 80vh; /* Limit maximum height and add scrolling if needed */
         overflow-y: auto;
         width: 180px; /* Fixed width to ensure content fits */
-        position: absolute !important; /* Use absolute instead of fixed */
-        top: 100% !important; /* Position right below the button */
-        left: 0 !important; /* Align to the left */
+        position: fixed !important; /* Use fixed positioning for mobile */
+        /* Top and left values will be set by JavaScript */
         transform: none !important; /* No transform needed */
-        z-index: 1001 !important; /* Ensure it appears above other elements */
+        z-index: 9999 !important; /* Super high z-index to ensure it appears above everything */
         background-color: white !important; /* Ensure background is opaque */
         box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important; /* Stronger shadow for better visibility */
         border: 1px solid #ddd !important; /* More visible border */
@@ -1680,10 +1679,11 @@
                         } else {
                             // Position dropdown based on screen size
                             if (window.innerWidth <= 480) {
-                                // Mobile positioning - directly under the button
-                                dropdownContent.style.position = 'absolute';
-                                dropdownContent.style.top = '100%';
-                                dropdownContent.style.left = '0';
+                                // Mobile positioning - calculate position but use fixed
+                                const btnRect = adminBtn.getBoundingClientRect();
+                                dropdownContent.style.position = 'fixed';
+                                dropdownContent.style.top = btnRect.bottom + 'px';
+                                dropdownContent.style.left = btnRect.left + 'px';
                                 dropdownContent.style.transform = 'none';
                                 // Force a recalculation to ensure visibility
                                 setTimeout(() => {
