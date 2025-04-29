@@ -983,40 +983,50 @@
       flex-direction: column;
       align-items: center;
     }
+
+    /* Logo styling to ensure proper size */
+    .logo {
+      min-width: 610px;
+      width: 610px;
+      margin: 0 auto;
+    }
+    
+    .logo img {
+      width: 100%;
+      max-width: 610px;
+      height: auto;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
   <header>
-    <div class="header-content">
-      <div class="logo">
-        <a href="index.html">
-          <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 100%; max-width: 610px; height: auto; object-fit: contain;">
-        </a>
+    <a href="index.html">
+      <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 100%; max-width: 610px; height: auto; object-fit: contain;">
+    </a>
+    <nav id="mainNav" style="margin-top: 10px; width: 100%;">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <!-- Admin dropdown menu (initially hidden) -->
+      <div class="admin-dropdown" style="position: relative;">
+          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -4px !important; margin-top: 0 !important; margin-bottom: 0 !important; padding-bottom: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
+              Admin Dashboard 
+              <span class="dropdown-icon">▼</span>
+          </a>
+          <div id="adminDropdownContent" class="admin-dropdown-content" style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none;">
+              <a href="admin-dashboard.html">Messages</a>
+              <a href="editor.html">Create Post</a>
+              <a href="edit-post.html">Edit Posts</a>
+              <a href="manage-users.html">User Management</a>
+          </div>
       </div>
-      <nav id="mainNav">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
-        <!-- Admin dropdown menu (initially hidden) -->
-        <div class="admin-dropdown" style="position: relative;">
-            <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -4px !important; margin-top: 0 !important; margin-bottom: 0 !important; padding-bottom: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
-                Admin Dashboard 
-                <span class="dropdown-icon">▼</span>
-            </a>
-            <div id="adminDropdownContent" class="admin-dropdown-content" style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none;">
-                <a href="admin-dashboard.html">Messages</a>
-                <a href="editor.html">Create Post</a>
-                <a href="edit-post.html">Edit Posts</a>
-                <a href="manage-users.html">User Management</a>
-            </div>
-        </div>
-        <!-- User account link (initially hidden) -->
-        <a id="myAccount" href="settings.html" style="display:none; margin-top: 0; padding-top: 0;">My Account</a>
-        <!-- Public links -->
-        <a id="login-link" href="login.html" style="margin-top: 0; padding-top: 0;">Login</a>
-        <button id="logout-btn" style="display:none; margin-top: 0; padding-top: 0;">Logout</button>
-      </nav>
-    </div>
+      <!-- User account link (initially hidden) -->
+      <a id="myAccount" href="settings.html" style="display:none; margin-top: 0; padding-top: 0;">My Account</a>
+      <!-- Public links -->
+      <a id="login-link" href="login.html" style="margin-top: 0; padding-top: 0;">Login</a>
+      <button id="logout-btn" style="display:none; margin-top: 0; padding-top: 0;">Logout</button>
+    </nav>
   </header>
 
   <div class="content">
