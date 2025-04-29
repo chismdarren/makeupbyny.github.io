@@ -915,10 +915,10 @@
         max-height: 80vh; /* Limit maximum height and add scrolling if needed */
         overflow-y: auto;
         width: 180px; /* Fixed width to ensure content fits */
-        position: fixed !important; /* Force fixed positioning */
-        top: auto !important; /* Override any top value */
-        left: 50% !important; /* Center horizontally */
-        transform: translateX(-50%) !important; /* Center perfectly */
+        position: absolute !important; /* Use absolute instead of fixed */
+        top: 100% !important; /* Position right below the button */
+        left: 0 !important; /* Align to the left */
+        transform: none !important; /* No transform needed */
         z-index: 1001 !important; /* Ensure it appears above other elements */
         background-color: white !important; /* Ensure background is opaque */
         box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important; /* Stronger shadow for better visibility */
@@ -936,7 +936,7 @@
       
       /* Fix for dropdown positioning - ensure it's visible on mobile */
       .admin-dropdown {
-        position: static !important; /* Change to static so the dropdown positions relative to the viewport */
+        position: relative !important; /* Use relative for proper positioning */
         vertical-align: middle !important;
         margin-top: 5px !important;
         display: inline-block !important;
@@ -947,7 +947,7 @@
         padding: 15px 16px !important; /* Larger touch targets */
         font-size: 0.95em !important; /* Slightly larger text */
         border-bottom: 1px solid #eee !important; /* More visible separators */
-        text-align: center !important; /* Center the text */
+        text-align: left !important; /* Left-align the text */
         display: block !important; /* Ensure block display */
       }
     }
@@ -1680,12 +1680,11 @@
                         } else {
                             // Position dropdown based on screen size
                             if (window.innerWidth <= 480) {
-                                // Mobile positioning - center on screen
-                                const btnRect = adminBtn.getBoundingClientRect();
-                                dropdownContent.style.position = 'fixed';
-                                dropdownContent.style.top = (btnRect.bottom + window.scrollY + 5) + 'px';
-                                dropdownContent.style.left = '50%';
-                                dropdownContent.style.transform = 'translateX(-50%)';
+                                // Mobile positioning - directly under the button
+                                dropdownContent.style.position = 'absolute';
+                                dropdownContent.style.top = '100%';
+                                dropdownContent.style.left = '0';
+                                dropdownContent.style.transform = 'none';
                                 // Force a recalculation to ensure visibility
                                 setTimeout(() => {
                                     dropdownContent.style.display = 'block';
