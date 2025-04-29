@@ -860,7 +860,7 @@
     .admin-dropdown-content {
       display: none;
       position: absolute;
-      right: 0;
+      left: 0;
       top: 100%;
       background-color: white;
       min-width: 180px;
@@ -868,7 +868,7 @@
       z-index: 1000;
       border-radius: 4px;
       overflow: visible;
-      margin-top: 5px;
+      margin-top: 0;
       border: 1px solid #eee;
     }
 
@@ -972,7 +972,7 @@
                 Admin Dashboard 
                 <span class="dropdown-icon">▼</span>
             </a>
-            <div id="adminDropdownContent" class="admin-dropdown-content" style="position: absolute; top: 100%; right: 0; z-index: 1000; display: none;">
+            <div id="adminDropdownContent" class="admin-dropdown-content" style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none;">
                 <a href="admin-dashboard.html">Messages</a>
                 <a href="editor.html">Create Post</a>
                 <a href="edit-post.html">Edit Posts</a>
@@ -1676,6 +1676,9 @@
                     if (dropdownContent.style.display === 'block') {
                         dropdownContent.style.display = 'none';
                     } else {
+                        // Position directly under the button
+                        dropdownContent.style.left = '0';
+                        dropdownContent.style.top = '100%';
                         dropdownContent.style.display = 'block';
                     }
                 }
