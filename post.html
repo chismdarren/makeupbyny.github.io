@@ -933,6 +933,16 @@
 
     /* For very small screens */
     @media (max-width: 480px) {
+      /* Add new row gap for menu items */
+      #mainNav {
+        gap: 15px !important;
+      }
+      
+      /* Remove negative margin for second row on mobile */
+      #myAccount, #login-link, #logout-btn {
+        margin-top: 5px !important;
+      }
+      
       .admin-dropdown-content {
         max-height: 80vh; /* Limit maximum height and add scrolling if needed */
         overflow-y: auto;
