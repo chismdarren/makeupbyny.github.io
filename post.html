@@ -915,41 +915,40 @@
         max-height: 80vh; /* Limit maximum height and add scrolling if needed */
         overflow-y: auto;
         width: 180px; /* Fixed width to ensure content fits */
-        position: fixed; /* Change to fixed positioning */
-        /* Positioning will be handled by JavaScript dynamically */
-        z-index: 1001; /* Ensure it appears above other elements */
-        background-color: white; /* Ensure background is opaque */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
-        border: 1px solid #ddd; /* More visible border */
+        position: fixed !important; /* Force fixed positioning */
+        top: auto !important; /* Override any top value */
+        left: 50% !important; /* Center horizontally */
+        transform: translateX(-50%) !important; /* Center perfectly */
+        z-index: 1001 !important; /* Ensure it appears above other elements */
+        background-color: white !important; /* Ensure background is opaque */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important; /* Stronger shadow for better visibility */
+        border: 1px solid #ddd !important; /* More visible border */
+        display: none; /* Hide by default */
+      }
+      
+      /* When shown, make sure it's visible */
+      .admin-dropdown-content.show-dropdown,
+      .admin-dropdown-content[style*="display: block"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
       /* Fix for dropdown positioning - ensure it's visible on mobile */
       .admin-dropdown {
-        position: static; /* Change to static so the dropdown positions relative to the nav bar */
+        position: static !important; /* Change to static so the dropdown positions relative to the viewport */
         vertical-align: middle !important;
         margin-top: 5px !important;
         display: inline-block !important;
       }
       
-      /* Dropdown icon styles */
-      .admin-dropdown-btn .dropdown-icon {
-        font-size: 0.85em; /* Make dropdown icon match the text size */
-      }
-      
-      /* Ensure dropdown appears over other content */
-      .show-dropdown {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
-        touch-action: manipulation; /* Optimize touch actions */
-      }
-      
       /* Make dropdown items more touch-friendly on mobile */
       .admin-dropdown-content a {
-        padding: 15px 16px; /* Larger touch targets */
-        font-size: 0.95em; /* Slightly larger text */
-        border-bottom: 1px solid #eee; /* More visible separators */
+        padding: 15px 16px !important; /* Larger touch targets */
+        font-size: 0.95em !important; /* Slightly larger text */
+        border-bottom: 1px solid #eee !important; /* More visible separators */
+        text-align: center !important; /* Center the text */
+        display: block !important; /* Ensure block display */
       }
     }
   </style>
@@ -1668,82 +1667,68 @@
         // Simple dropdown toggle for admin menu
         const adminBtn = document.getElementById('adminDropdownBtn');
         if (adminBtn) {
-            adminBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const dropdownContent = document.getElementById('adminDropdownContent');
-                if (dropdownContent) {
-                    // Direct style manipulation for more reliable display
-                    if (dropdownContent.style.display === 'block') {
-                        dropdownContent.style.display = 'none';
-                    } else {
-                        // Position directly under the button
-                        dropdownContent.style.left = '0';
-                        dropdownContent.style.top = '100%';
-                        dropdownContent.style.display = 'block';
+            // For both click and touch events
+            ['click', 'touchend'].forEach(eventType => {
+                adminBtn.addEventListener(eventType, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const dropdownContent = document.getElementById('adminDropdownContent');
+                    if (dropdownContent) {
+                        // Direct style manipulation for more reliable display
+                        if (dropdownContent.style.display === 'block') {
+                            dropdownContent.style.display = 'none';
+                        } else {
+                            // Position dropdown based on screen size
+                            if (window.innerWidth <= 480) {
+                                // Mobile positioning - center on screen
+                                const btnRect = adminBtn.getBoundingClientRect();
+                                dropdownContent.style.position = 'fixed';
+                                dropdownContent.style.top = (btnRect.bottom + window.scrollY + 5) + 'px';
+                                dropdownContent.style.left = '50%';
+                                dropdownContent.style.transform = 'translateX(-50%)';
+                                // Force a recalculation to ensure visibility
+                                setTimeout(() => {
+                                    dropdownContent.style.display = 'block';
+                                }, 0);
+                            } else {
+                                // Desktop positioning - under button
+                                dropdownContent.style.position = 'absolute';
+                                dropdownContent.style.left = '0';
+                                dropdownContent.style.top = '100%';
+                                dropdownContent.style.transform = 'none';
+                                dropdownContent.style.display = 'block';
+                            }
+                        }
                     }
-                }
+                });
             });
             
-            // Close dropdown when clicking elsewhere
-            document.addEventListener('click', function(event) {
-                const dropdownContent = document.getElementById('adminDropdownContent');
-                if (dropdownContent && event.target !== adminBtn && !adminBtn.contains(event.target) && !dropdownContent.contains(event.target)) {
-                    dropdownContent.style.display = 'none';
-                }
+            // Close dropdown when clicking or touching elsewhere
+            ['click', 'touchend'].forEach(eventType => {
+                document.addEventListener(eventType, function(event) {
+                    const dropdownContent = document.getElementById('adminDropdownContent');
+                    if (dropdownContent && event.target !== adminBtn && !adminBtn.contains(event.target) && !dropdownContent.contains(event.target)) {
+                        dropdownContent.style.display = 'none';
+                    }
+                });
             });
-        }
-        
-        // Original complex dropdown code (keeping as backup)
-        const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-        const adminDropdownContent = document.getElementById('adminDropdownContent');
-        
-        // Toggle dropdown on click
-        if (adminDropdownBtn) {
-            adminDropdownBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+            
+            // Fix for mobile menu tap delays on dropdown links
+            const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
+            dropdownLinks.forEach(link => {
+                link.addEventListener('touchstart', function(e) {
+                    // Prevent double-firing of events
+                    e.stopPropagation();
+                });
                 
-                // Toggle the show-dropdown class
-                if (adminDropdownContent.classList.contains('show-dropdown')) {
-                    adminDropdownContent.classList.remove('show-dropdown');
-                    adminDropdownBtn.classList.remove('active');
-                } else {
-                    adminDropdownContent.classList.add('show-dropdown');
-                    adminDropdownBtn.classList.add('active');
-                    
-                    // Position the dropdown properly
-                    const btnRect = adminDropdownBtn.getBoundingClientRect();
-                    adminDropdownContent.style.top = (btnRect.bottom + window.scrollY) + 'px';
-                    adminDropdownContent.style.right = '0';
-                }
+                link.addEventListener('touchend', function(e) {
+                    // Navigate to the link href directly
+                    if (this.href) {
+                        window.location.href = this.href;
+                    }
+                });
             });
         }
-        
-        // Close dropdown when clicking elsewhere
-        document.addEventListener('click', function(e) {
-            if (adminDropdownContent && adminDropdownContent.classList.contains('show-dropdown')) {
-                if (!adminDropdownBtn.contains(e.target) && !adminDropdownContent.contains(e.target)) {
-                    adminDropdownContent.classList.remove('show-dropdown');
-                    adminDropdownBtn.classList.remove('active');
-                }
-            }
-        });
-        
-        // Fix for mobile menu tap delays
-        const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
-        dropdownLinks.forEach(link => {
-            link.addEventListener('touchstart', function(e) {
-                // Prevent double-firing of events
-                e.stopPropagation();
-            });
-            
-            link.addEventListener('touchend', function(e) {
-                // Navigate to the link href directly
-                if (this.href) {
-                    window.location.href = this.href;
-                }
-            });
-        });
     });
   </script>
 </body>
