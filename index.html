@@ -281,7 +281,6 @@
       }
 
       .admin-dropdown-btn {
-        display: inline !important; 
         position: relative !important;
         top: 2px !important;
         margin-top: 0 !important;
@@ -419,9 +418,8 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
-      display: none;
+      display: none; /* Hide by default, JS will show for admins */
       transition: color 0.2s;
-      display: flex;
       align-items: center;
     }
 
@@ -559,7 +557,7 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: 0px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
@@ -819,7 +817,7 @@
           const isAdmin = await isAdminUser(user.uid);
           if (isAdmin) {
             // Show admin dropdown button
-            document.getElementById("adminDropdownBtn").style.display = "inline";
+            document.getElementById("adminDropdownBtn").style.display = "flex";
           } else {
             // Hide admin dropdown button for regular users
             document.getElementById("adminDropdownBtn").style.display = "none";
