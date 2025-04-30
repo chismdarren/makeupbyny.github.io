@@ -281,8 +281,14 @@
       }
 
       .admin-dropdown-btn {
+        display: inline !important; 
+        position: relative !important;
+        top: -2px !important;
+        margin-top: 0 !important;
+        font-family: inherit !important;
+        font-weight: normal !important;
+        font-size: 0.85em !important;
         padding: 10px 5px;
-        font-size: 0.85em; /* Reduce font size to match other pages on mobile */
       }
       
       /* Ensure content fits perfectly */
@@ -553,7 +559,7 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
