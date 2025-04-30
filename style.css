@@ -460,12 +460,6 @@ form textarea {
     text-align: center;
   }
   
-  nav a, nav button {
-    margin: 2px 4px;
-    padding: 4px 6px;
-    font-size: 0.85em;
-  }
-  
   /* Position posts section for mobile */
   .posts {
     width: 65%;
