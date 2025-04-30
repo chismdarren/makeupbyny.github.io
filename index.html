@@ -280,9 +280,15 @@
         right: -50px; /* Adjust position to be more centered on small screens */
       }
 
-      .admin-dropdown-btn {
+      /* Admin button specific styling for mobile */
+      #adminDropdownBtn {
+        position: relative !important;
+        top: -2px !important; 
+        margin-top: 0 !important;
+        font-family: inherit !important;
+        font-weight: normal !important;
+        font-size: 0.85em !important;
         padding: 10px 5px;
-        font-size: 0.85em !important; /* Make sure font size is enforced on mobile */
       }
       
       /* Ensure dropdown elements are properly styled on mobile */
@@ -570,7 +576,7 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
