@@ -282,7 +282,24 @@
 
       .admin-dropdown-btn {
         padding: 10px 5px;
-        font-size: 0.85em; /* Reduce font size to match other pages on mobile */
+        font-size: 0.85em !important; /* Make sure font size is enforced on mobile */
+      }
+      
+      /* Ensure dropdown elements are properly styled on mobile */
+      .admin-dropdown {
+        position: relative !important;
+        vertical-align: middle !important;
+        margin-top: 0 !important;
+        display: inline-block !important;
+      }
+      
+      /* Make dropdown items more touch-friendly on mobile */
+      .admin-dropdown-content a {
+        padding: 15px 16px !important;
+        font-size: 0.95em !important;
+        border-bottom: 1px solid #eee !important;
+        text-align: left !important;
+        display: block !important;
       }
       
       /* Ensure content fits perfectly */
@@ -553,7 +570,7 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
@@ -813,7 +830,7 @@
           const isAdmin = await isAdminUser(user.uid);
           if (isAdmin) {
             // Show admin dropdown button
-            document.getElementById("adminDropdownBtn").style.display = "inline";
+            document.getElementById("adminDropdownBtn").style.display = "inline-block";
           } else {
             // Hide admin dropdown button for regular users
             document.getElementById("adminDropdownBtn").style.display = "none";
