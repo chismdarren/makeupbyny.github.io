@@ -291,39 +291,39 @@
         padding: 10px 5px;
       }
       
-      /* Mobile-specific account links styling */
-      .account-links {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        margin-top: 5px;
-        gap: 10px;
-      }
-      
-      .account-links #userAccountLink {
-        margin-right: 0;
-      }
-      
-      /* Force nav items to wrap after first row */
-      #mainNav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      
-      #mainNav > a:nth-child(1),
-      #mainNav > a:nth-child(2), 
-      #mainNav > a:nth-child(3),
-      #mainNav > .admin-dropdown {
-        flex: 0 1 auto;
-      }
-      
       /* Ensure dropdown elements are properly styled on mobile */
       .admin-dropdown {
         position: relative !important;
         vertical-align: middle !important;
         margin-top: 0 !important;
         display: inline-block !important;
+      }
+      
+      /* Position user account and logout on second row */
+      #userAccountLink, #logout-btn {
+        margin-top: 5px !important;
+        display: inline-block !important;
+        flex-basis: 100% !important;
+      }
+      
+      /* Position the links more evenly */
+      #mainNav {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+      }
+      
+      /* First row: Home, About, Contact, Admin */
+      #mainNav > a:nth-of-type(1),
+      #mainNav > a:nth-of-type(2),
+      #mainNav > a:nth-of-type(3),
+      .admin-dropdown {
+        margin-bottom: 8px !important;
+      }
+      
+      /* Second row: My Account, Logout */
+      #userAccountLink {
+        margin-right: 10px !important;
       }
       
       /* Make dropdown items more touch-friendly on mobile */
@@ -452,16 +452,6 @@
     .admin-dropdown {
       position: relative;
       display: inline-block;
-    }
-
-    /* Account links container styling */
-    .account-links {
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .account-links #userAccountLink {
-      margin-right: 8px;
     }
 
     .admin-dropdown-btn {
@@ -624,13 +614,11 @@
           <a href="manage-users.html">User Management</a>
         </div>
       </div>
+      <!-- User account link (initially hidden) -->
+      <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
-      <!-- User account and logout links wrapped in container -->
-      <div class="account-links">
-        <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
-        <button id="logout-btn" style="display:none;">Logout</button>
-      </div>
+      <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
 
