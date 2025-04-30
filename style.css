@@ -454,16 +454,7 @@ form textarea {
   }
   
   nav {
-    width: 100%;
-    padding: 5px 0;
-    margin: 5px auto;
     text-align: center;
-  }
-  
-  nav a, nav button {
-    margin: 2px 4px;
-    padding: 4px 6px;
-    font-size: 0.85em;
   }
   
   /* Position posts section for mobile */
