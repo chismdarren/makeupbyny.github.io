@@ -280,32 +280,9 @@
         right: -50px; /* Adjust position to be more centered on small screens */
       }
 
-      /* Admin button specific styling for mobile */
-      #adminDropdownBtn {
-        position: relative !important;
-        top: -2px !important; 
-        margin-top: 0 !important;
-        font-family: inherit !important;
-        font-weight: normal !important;
-        font-size: 0.85em !important;
+      .admin-dropdown-btn {
         padding: 10px 5px;
-      }
-      
-      /* Ensure dropdown elements are properly styled on mobile */
-      .admin-dropdown {
-        position: relative !important;
-        vertical-align: middle !important;
-        margin-top: 0 !important;
-        display: inline-block !important;
-      }
-      
-      /* Make dropdown items more touch-friendly on mobile */
-      .admin-dropdown-content a {
-        padding: 15px 16px !important;
-        font-size: 0.95em !important;
-        border-bottom: 1px solid #eee !important;
-        text-align: left !important;
-        display: block !important;
+        font-size: 0.85em; /* Reduce font size to match other pages on mobile */
       }
       
       /* Ensure content fits perfectly */
@@ -836,7 +813,7 @@
           const isAdmin = await isAdminUser(user.uid);
           if (isAdmin) {
             // Show admin dropdown button
-            document.getElementById("adminDropdownBtn").style.display = "inline-block";
+            document.getElementById("adminDropdownBtn").style.display = "inline";
           } else {
             // Hide admin dropdown button for regular users
             document.getElementById("adminDropdownBtn").style.display = "none";
