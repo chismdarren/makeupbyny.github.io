@@ -262,6 +262,12 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
+        row-gap: 0px; /* Reduce the gap between rows */
+      }
+
+      header nav a, header nav button, header nav .admin-dropdown {
+        margin: 0px 4px; /* Reduce margin around nav items */
+        padding: 5px 8px; /* Make each navigation item more compact */
       }
 
       .admin-dropdown {
@@ -458,7 +464,7 @@
 
     .admin-dropdown-content a {
       color: #333;
-      padding: 8px 16px;
+      padding: 12px 16px;
       text-decoration: none;
       display: block;
       text-align: left;
@@ -920,215 +926,68 @@
               <a href="post.html?postId=${post.id}" class="read-more-btn">Read More <span style="display: inline-block; margin-left: 5px;">▶</span></a>
             </div>
           `;
+
+          // Append post element to container
           blogPostsContainer.appendChild(postElement);
-          
-          // Add a bottom border to separate posts (except the last one)
-          if (i < posts.length - 1) {
-            postElement.style.borderBottom = "1px solid #000";
-            postElement.style.paddingBottom = "30px";
-            postElement.style.marginBottom = "30px";
-          }
         }
       };
 
-      // Function to sort posts based on selected option
-      const sortPosts = (sortOption) => {
-        let sortedPosts = [...allPosts]; // Create a copy of the posts array
-        
-        // Helper function to get comparable date from a post
-        const getPostDate = (post) => {
-          if (post.postDate) {
-            // If postDate exists, it could be a string or a timestamp
-            return typeof post.postDate === 'string' 
-              ? new Date(post.postDate) 
-              : new Date(post.postDate);
-          } else {
-            // Fall back to createdAt, which is a Firestore timestamp
-            return post.createdAt.toDate();
-          }
-        };
-        
-        switch(sortOption) {
-          case 'newest':
-            sortedPosts.sort((a, b) => {
-              return getPostDate(b) - getPostDate(a); // Newest first
-            });
-            break;
-          case 'oldest':
-            sortedPosts.sort((a, b) => {
-              return getPostDate(a) - getPostDate(b); // Oldest first
-            });
-            break;
-          case 'comments':
-            sortedPosts.sort((a, b) => b.commentCount - a.commentCount); // Most comments first
-            break;
+      // Function to fetch posts based on selected sort order
+      const fetchPosts = async () => {
+        const sortOrder = document.getElementById("sortPosts").value;
+        let posts;
+
+        if (sortOrder === "newest") {
+          posts = await getNewestPosts();
+        } else if (sortOrder === "oldest") {
+          posts = await getOldestPosts();
+        } else if (sortOrder === "comments") {
+          posts = await getMostCommentsPosts();
         }
-        
-        renderPosts(sortedPosts);
+
+        renderPosts(posts);
       };
 
-      // Add event listener to sort dropdown
-      document.getElementById('sortPosts').addEventListener('change', (e) => {
-        sortPosts(e.target.value);
-        
-        // Update the visual indicator
-        const indicator = document.getElementById('activeSortIndicator');
-        indicator.style.display = 'inline';
-        
-        // Set the indicator text based on selected option
-        switch(e.target.value) {
-          case 'newest':
-            indicator.textContent = 'Newest';
-            break;
-          case 'oldest':
-            indicator.textContent = 'Oldest';
-            break;
-          case 'comments':
-            indicator.textContent = 'Most Comments';
-            break;
-        }
-      });
-      
-      // Async function to fetch and display posts
-      (async () => {
-        try {
-          // Query posts collection, ordered by creation date (newest first)
-          const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-          const querySnapshot = await getDocs(q);
-          
-          // Store all posts in an array
-          allPosts = [];
-          querySnapshot.forEach((doc) => {
-            allPosts.push({ id: doc.id, ...doc.data() });
-          });
+      // Function to get newest posts
+      const getNewestPosts = async () => {
+        const postsCollection = collection(db, "posts");
+        const q = query(postsCollection, orderBy("createdAt", "desc"));
+        const postsSnapshot = await getDocs(q);
+        const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return postsData;
+      };
 
-          // Populate the recent posts sidebar (first 3 posts)
-          const recentPostsList = document.getElementById("recentPostsList");
-          
-          // Sort posts by date for recent posts display (newest first)
-          const sortedForRecent = [...allPosts].sort((a, b) => {
-            // Helper function to get comparable date from a post
-            const getPostDate = (post) => {
-              if (post.postDate) {
-                // If postDate exists, it could be a string or a timestamp
-                return typeof post.postDate === 'string' 
-                  ? new Date(post.postDate) 
-                  : new Date(post.postDate);
-              } else {
-                // Fall back to createdAt, which is a Firestore timestamp
-                return post.createdAt.toDate();
-              }
-            };
-            
-            return getPostDate(b) - getPostDate(a); // Newest first
-          });
-          
-          sortedForRecent.slice(0, 3).forEach(post => {
-            const recentPostElement = document.createElement("a");
-            recentPostElement.href = `post.html?postId=${post.id}`;
-            recentPostElement.className = "recent-post-item";
-            
-            // Create thumbnail image or placeholder
-            const imageHtml = post.imageUrl 
-              ? `<img src="${post.imageUrl}" alt="${post.title}">`
-              : `<div style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 8px;"></div>`;
-            
-            // Get date for display
-            const getPostDate = (post) => {
-              if (post.postDate) {
-                // If postDate exists, it could be a string or a timestamp
-                return typeof post.postDate === 'string' 
-                  ? new Date(post.postDate) 
-                  : new Date(post.postDate);
-              } else {
-                // Fall back to createdAt, which is a Firestore timestamp
-                return post.createdAt.toDate();
-              }
-            };
-            
-            const displayDate = getPostDate(post);
-            
-            // Set up recent post item HTML
-            recentPostElement.innerHTML = `
-              ${imageHtml}
-              <div>
-                <div class="post-title">${post.title}</div>
-                <div style="font-size: 0.8em; color: #666;">
-                  ${displayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </div>
-              </div>
-            `;
-            
-            recentPostsList.appendChild(recentPostElement);
-          });
+      // Function to get oldest posts
+      const getOldestPosts = async () => {
+        const postsCollection = collection(db, "posts");
+        const q = query(postsCollection, orderBy("createdAt", "asc"));
+        const postsSnapshot = await getDocs(q);
+        const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return postsData;
+      };
 
-          // Fetch comment counts for all posts
-          for (const post of allPosts) {
-            const commentsQuery = query(collection(db, `posts/${post.id}/comments`));
-            const commentsSnapshot = await getDocs(commentsQuery);
-            post.commentCount = commentsSnapshot.size;
-          }
+      // Function to get posts with the most comments
+      const getMostCommentsPosts = async () => {
+        const postsCollection = collection(db, "posts");
+        const q = query(postsCollection, orderBy("commentCount", "desc"));
+        const postsSnapshot = await getDocs(q);
+        const postsData = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return postsData;
+      };
 
-          // Initial sort by newest (default)
-          sortPosts('newest');
-          
-          // Show initial sort indicator
-          document.getElementById('activeSortIndicator').style.display = 'inline';
-          
-        } catch (error) {
-          // Handle any errors during post loading
-          console.error("Error fetching posts:", error);
-          blogPostsContainer.innerHTML = "<p>Error loading posts.</p>";
-        }
-      })();
-    });
-  </script>
+      // Initial fetch and render
+      fetchPosts();
 
-  <!-- Script for aligning About Me with Posts on mobile -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // Function to align About Me with Posts
-      function alignAboutMeWithPosts() {
-        // Only apply on mobile screens
-        if (window.innerWidth <= 768) {
-          const postsSection = document.querySelector('.posts');
-          const aboutMeSection = document.querySelector('.about-me');
-          
-          if (postsSection && aboutMeSection) {
-            // Get the exact position of the posts section
-            const postsRect = postsSection.getBoundingClientRect();
-            const postsTop = postsRect.top + window.scrollY;
-            
-            // Set the About Me position to match
-            aboutMeSection.style.top = postsTop + 'px';
-          }
-        }
-      }
-      
-      // Run on page load
-      alignAboutMeWithPosts();
-      
-      // Run on window resize
-      window.addEventListener('resize', alignAboutMeWithPosts);
-      
-      // Run when content loads
-      window.addEventListener('load', alignAboutMeWithPosts);
-      
-      // Run when scrolling starts (in case headers change size)
-      window.addEventListener('scroll', function() {
-        // Use requestAnimationFrame to limit execution
-        if (!window.requestAnimationFrame) return alignAboutMeWithPosts();
-        
-        if (!this.running) {
-          this.running = true;
-          window.requestAnimationFrame(() => {
-            alignAboutMeWithPosts();
-            this.running = false;
-          });
-        }
+      // Add event listener for sorting options
+      document.getElementById("sortPosts").addEventListener("change", fetchPosts);
+
+      // Add event listener for search input
+      document.getElementById("searchInput").addEventListener("input", () => {
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        const filteredPosts = allPosts.filter(post => post.title.toLowerCase().includes(searchTerm) || post.content.toLowerCase().includes(searchTerm));
+        renderPosts(filteredPosts);
       });
     });
   </script>
-
 </body>
 </html>
