@@ -263,20 +263,17 @@
     /* Responsive adjustments for admin dropdown */
     @media (max-width: 768px) {
       .admin-dropdown-content {
-        position: fixed; /* Change to fixed positioning on mobile */
-        top: auto; /* Reset top position */
-        left: 0; /* Start from left edge */
-        right: 0; /* Extend to right edge */
-        width: 100%; /* Full width */
-        max-width: 100%;
+        position: absolute;
+        right: 0;
+        left: auto;
+        width: 200px;
         z-index: 2000; /* Much higher z-index for mobile */
         box-shadow: 0 8px 16px rgba(0,0,0,0.2);
       }
 
       .admin-dropdown {
-        position: static; /* Change positioning context */
+        position: relative;
         z-index: 1500;
-        width: 100%; /* Full width on mobile */
       }
       
       header nav {
