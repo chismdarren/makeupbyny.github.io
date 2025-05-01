@@ -263,20 +263,36 @@
     /* Responsive adjustments for admin dropdown */
     @media (max-width: 768px) {
       .admin-dropdown-content {
-        position: absolute;
-        right: 0;
-        left: auto;
-        width: 200px;
+        position: fixed; /* Change to fixed positioning on mobile */
+        top: auto; /* Reset top position */
+        left: 0; /* Start from left edge */
+        right: 0; /* Extend to right edge */
+        width: 100%; /* Full width */
+        max-width: 100%;
+        z-index: 2000; /* Much higher z-index for mobile */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
       }
 
+      .admin-dropdown {
+        position: static; /* Change positioning context */
+        z-index: 1500;
+        width: 100%; /* Full width on mobile */
+      }
+      
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-      }
-
-      .admin-dropdown {
         position: relative;
+        z-index: auto; /* Reset any z-index that might be interfering */
+      }
+      
+      /* Ensure the dropdown shows on top of everything when active */
+      .show-dropdown {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        z-index: 9999 !important; /* Extremely high z-index */
       }
     }
 
