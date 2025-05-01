@@ -267,35 +267,16 @@
         right: 0;
         left: auto;
         width: 200px;
-        z-index: 1005 !important; /* Even higher z-index for mobile */
       }
 
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        position: relative; /* Ensure proper positioning context */
       }
 
       .admin-dropdown {
         position: relative;
-        z-index: 1004 !important; /* Higher z-index for mobile */
-        display: inline-block !important; /* Ensure it's displayed */
-      }
-      
-      .admin-dropdown-btn {
-        display: flex !important; /* Ensure button is visible on mobile */
-      }
-      
-      /* Make the dropdown display more prominent on mobile */
-      .show-dropdown {
-        display: block !important;
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-        z-index: 1006 !important; /* Highest z-index when shown */
-        position: absolute !important;
-        top: 100% !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important; /* Stronger shadow */
       }
     }
 
@@ -303,14 +284,10 @@
     @media (max-width: 480px) {
       .admin-dropdown-content {
         right: -50px; /* Adjust position to be more centered on small screens */
-        z-index: 1005 !important;
-        width: 220px !important; /* Slightly wider on small screens */
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25) !important; /* Even stronger shadow */
       }
 
       .admin-dropdown-btn {
         padding: 10px 5px;
-        display: flex !important; /* Ensure visibility */
       }
       
       /* Hide about-me sidebar completely on mobile */
