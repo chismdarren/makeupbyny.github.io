@@ -257,8 +257,9 @@
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
-      pointer-events: auto !important;
+      transform: translateY(0) !important;
       z-index: 99999 !important; /* Extremely high z-index */
+      pointer-events: auto !important;
     }
 
     /* Mobile-specific override styles added to ensure dropdown visibility */
@@ -272,8 +273,7 @@
       /* Position the dropdown content differently on mobile */
       .admin-dropdown-content {
         position: absolute;
-        right: auto;
-        left: 0;
+        right: 0;
         top: 100%;
         min-width: 200px;
         z-index: 9500 !important;
@@ -284,13 +284,12 @@
       
       /* Override any styles that might be hiding the dropdown */
       .admin-dropdown-content.show-dropdown {
-        position: absolute !important; /* Return to absolute positioning */
-        top: 100% !important; /* Position right below the button */
-        left: 0 !important; /* Align with left edge of button */
-        right: auto !important;
-        transform: none !important; /* Remove centering transform */
-        width: 200px !important;
-        max-width: none !important;
+        position: fixed !important; /* Try fixed positioning as a last resort */
+        top: 120px !important; /* Position it below the header */
+        right: 10px !important;
+        left: auto !important;
+        width: 80% !important; /* Wider for mobile */
+        max-width: 300px !important;
       }
       
       header nav {
