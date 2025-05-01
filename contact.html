@@ -272,7 +272,8 @@
       /* Position the dropdown content differently on mobile */
       .admin-dropdown-content {
         position: absolute;
-        right: 0;
+        right: auto;
+        left: 0;
         top: 100%;
         min-width: 200px;
         z-index: 9500 !important;
@@ -283,13 +284,13 @@
       
       /* Override any styles that might be hiding the dropdown */
       .admin-dropdown-content.show-dropdown {
-        position: fixed !important; /* Try fixed positioning as a last resort */
-        top: 120px !important; /* Position it below the header */
-        right: auto !important; /* Override right alignment */
-        left: 50% !important; /* Center horizontally */
-        transform: translateX(-50%) !important; /* Center adjustment */
-        width: 80% !important; /* Wider for mobile */
-        max-width: 300px !important;
+        position: absolute !important; /* Return to absolute positioning */
+        top: 100% !important; /* Position right below the button */
+        left: 0 !important; /* Align with left edge of button */
+        right: auto !important;
+        transform: none !important; /* Remove centering transform */
+        width: 200px !important;
+        max-width: none !important;
       }
       
       header nav {
