@@ -257,9 +257,8 @@
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
-      transform: translateY(0) !important;
-      z-index: 99999 !important; /* Extremely high z-index */
       pointer-events: auto !important;
+      z-index: 99999 !important; /* Extremely high z-index */
     }
 
     /* Mobile-specific override styles added to ensure dropdown visibility */
@@ -286,8 +285,9 @@
       .admin-dropdown-content.show-dropdown {
         position: fixed !important; /* Try fixed positioning as a last resort */
         top: 120px !important; /* Position it below the header */
-        right: 10px !important;
-        left: auto !important;
+        right: auto !important; /* Override right alignment */
+        left: 50% !important; /* Center horizontally */
+        transform: translateX(-50%) !important; /* Center adjustment */
         width: 80% !important; /* Wider for mobile */
         max-width: 300px !important;
       }
