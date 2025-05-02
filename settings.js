@@ -443,28 +443,41 @@ function showNotification(message, type) {
 
 // Set up dropdowns
 function setupDropdowns() {
-    // Admin dropdown (reusing existing behavior)
+    // Admin dropdown 
     if (adminDropdownBtn) {
         adminDropdownBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            document.getElementById('adminDropdownContent').classList.toggle('show-dropdown');
+            
+            // Toggle active class for button styling
             this.classList.toggle('active');
+            
+            // Toggle white box dropdown
+            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
+            
+            if (whiteBoxDropdown.style.display === 'none' || !whiteBoxDropdown.style.display) {
+                // Position the dropdown
+                const btnRect = this.getBoundingClientRect();
+                whiteBoxDropdown.style.top = (btnRect.bottom + 2) + 'px';
+                whiteBoxDropdown.style.left = (btnRect.left - 130) + 'px';
+                whiteBoxDropdown.style.display = 'block';
+            } else {
+                whiteBoxDropdown.style.display = 'none';
+            }
         });
     }
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.matches('.admin-dropdown-btn')) {
-            const dropdowns = document.querySelectorAll('.admin-dropdown-content');
-            dropdowns.forEach(dropdown => {
-                if (dropdown.classList.contains('show-dropdown')) {
-                    dropdown.classList.remove('show-dropdown');
-                    
-                    // Also remove active class from buttons
-                    if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-                }
-            });
+            // Hide white box dropdown
+            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
+            if (whiteBoxDropdown) {
+                whiteBoxDropdown.style.display = 'none';
+            }
+            
+            // Remove active class from button
+            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
         }
     });
 }
