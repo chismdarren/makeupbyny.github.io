@@ -96,27 +96,52 @@ async function handleAuthStateChange(user) {
 function setupDropdowns() {
   // Admin dropdown
   if (adminDropdownBtn) {
-    adminDropdownBtn.addEventListener("click", function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
-      this.classList.toggle("active");
+    // Add both click and touchstart events for better mobile support
+    ["click", "touchstart"].forEach(eventType => {
+      adminDropdownBtn.addEventListener(eventType, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const dropdownContent = document.getElementById("adminDropdownContent");
+        
+        // Toggle dropdown with direct style application for better mobile support
+        if (dropdownContent.classList.contains("show-dropdown")) {
+          dropdownContent.classList.remove("show-dropdown");
+          dropdownContent.style.display = "none";
+          this.classList.remove("active");
+        } else {
+          dropdownContent.classList.add("show-dropdown");
+          dropdownContent.style.display = "block";
+          dropdownContent.style.opacity = "1";
+          dropdownContent.style.visibility = "visible";
+          dropdownContent.style.transform = "translateY(0)";
+          dropdownContent.style.pointerEvents = "auto";
+          this.classList.add("active");
+          
+          // Force browser reflow to ensure styles are applied
+          void dropdownContent.offsetWidth;
+        }
+      });
     });
   }
   
   // Close dropdowns when clicking outside
-  document.addEventListener("click", function(e) {
-    if (!e.target.matches(".admin-dropdown-btn")) {
-      const dropdowns = document.querySelectorAll(".admin-dropdown-content");
-      dropdowns.forEach(dropdown => {
-        if (dropdown.classList.contains("show-dropdown")) {
-          dropdown.classList.remove("show-dropdown");
-          
-          // Also remove active class from buttons
-          if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
-        }
-      });
-    }
+  ["click", "touchstart"].forEach(eventType => {
+    document.addEventListener(eventType, function(e) {
+      if (!e.target.matches(".admin-dropdown-btn") && !e.target.closest(".admin-dropdown-content")) {
+        const dropdowns = document.querySelectorAll(".admin-dropdown-content");
+        dropdowns.forEach(dropdown => {
+          if (dropdown.classList.contains("show-dropdown")) {
+            dropdown.classList.remove("show-dropdown");
+            dropdown.style.display = "none";
+            dropdown.style.visibility = "hidden";
+            
+            // Also remove active class from buttons
+            if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
+          }
+        });
+      }
+    });
   });
 }
 
