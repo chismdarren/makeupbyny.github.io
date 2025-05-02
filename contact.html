@@ -175,18 +175,6 @@
       }
     }
 
-    /* Add this to ensure header sits above all other content */
-    header {
-      position: relative;
-      z-index: 9999; /* Extremely high z-index to ensure it sits above everything */
-    }
-
-    /* Adjust main content area to respect header's stacking context */
-    .content {
-      position: relative;
-      z-index: 1; /* Lower than header */
-    }
-
     /* Admin Dropdown Menu Styles */
     .admin-dropdown {
       position: relative;
@@ -269,25 +257,39 @@
       display: block !important;
       opacity: 1 !important;
       transform: translateY(0) !important;
-      z-index: 1002 !important; /* Highest z-index when shown */
+      z-index: 99999 !important; /* Ultra high z-index */
+      -webkit-transform: translate3d(0,0,1000px) !important; /* Force 3D rendering layer */
+      transform: translate3d(0,0,1000px) !important;
+      isolation: isolate !important; /* Create a new stacking context */
+      position: relative !important; /* Ensure it creates a new stacking context */
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)) !important; /* Force rendering in a new layer */
     }
 
-    /* Modify this for better mobile display */
+    /* Additional insurance for mobile devices */
     @media (max-width: 768px) {
+      /* Apply a temporary style to force all other elements below the dropdown */
+      body.dropdown-active > *:not(header) {
+        z-index: 1 !important;
+        position: relative !important;
+      }
+      
+      /* Force the dropdown to the absolute front */
       .admin-dropdown-content {
         position: absolute;
         right: 0;
         left: auto;
         width: 200px;
-        z-index: 2000; /* Higher z-index for mobile */
+        z-index: 99999 !important; /* Ultra high z-index */
+        box-shadow: 0 8px 26px rgba(0,0,0,0.8) !important;
+        -webkit-transform: translate3d(0,0,1000px) !important; /* Force 3D rendering layer */
+        transform: translate3d(0,0,1000px) !important;
+        will-change: transform !important; /* Hint to browser to handle as separate layer */
       }
 
-      /* Fix for mobile dropdown visibility */
-      #adminDropdownContent.show-dropdown {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
+      /* Add this to the end of your CSS */
+      .admin-dropdown-content a {
+        z-index: 99999 !important;
+        position: relative !important;
       }
     }
 
@@ -343,9 +345,6 @@
   </style>
 </head>
 <body>
-  <!-- Mobile dropdown container - only shows content on mobile -->
-  <div id="mobile-dropdown-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 0; overflow: visible; z-index: 99999; pointer-events: none;"></div>
-  
   <!-- Header Section -->
   <header>
     <a href="index.html">
@@ -501,99 +500,5 @@
 
   <!-- Load contact.js for page-specific functionality -->
   <script type="module" src="contact.js"></script>
-
-  <!-- Add this script right before the closing body tag -->
-  <script>
-    // Function to handle mobile dropdown positioning
-    function setupMobileDropdownContainer() {
-      // Only run on mobile
-      const isMobile = window.innerWidth <= 768;
-      if (!isMobile) return;
-      
-      const container = document.getElementById('mobile-dropdown-container');
-      const dropdown = document.getElementById('adminDropdownContent');
-      const adminBtn = document.getElementById('adminDropdownBtn');
-      
-      if (!container || !dropdown || !adminBtn) return;
-      
-      // Create a wrapper for the dropdown in the mobile container
-      let wrapper = document.getElementById('mobile-dropdown-wrapper');
-      if (!wrapper) {
-        wrapper = document.createElement('div');
-        wrapper.id = 'mobile-dropdown-wrapper';
-        wrapper.style.position = 'absolute';
-        wrapper.style.display = 'none';
-        wrapper.style.zIndex = '99999';
-        wrapper.style.pointerEvents = 'auto';
-        container.appendChild(wrapper);
-      }
-      
-      // Position the wrapper relative to the admin button
-      function positionWrapper() {
-        if (adminBtn.style.display !== 'none') {
-          const rect = adminBtn.getBoundingClientRect();
-          wrapper.style.top = (rect.bottom + window.scrollY) + 'px';
-          wrapper.style.right = (window.innerWidth - rect.right) + 'px';
-        }
-      }
-      
-      // Clone the dropdown into the wrapper when shown
-      const originalToggleDropdown = window.toggleAdminDropdown;
-      window.toggleAdminDropdown = function(show) {
-        if (show === undefined) {
-          show = !wrapper.contains(dropdown.cloneNode(true));
-        }
-        
-        if (show) {
-          // Position and show the wrapper
-          positionWrapper();
-          wrapper.style.display = 'block';
-          
-          // Clone the dropdown into the wrapper
-          const clone = dropdown.cloneNode(true);
-          clone.style.display = 'block';
-          clone.style.opacity = '1';
-          clone.style.visibility = 'visible';
-          clone.style.transform = 'translateY(0)';
-          wrapper.innerHTML = '';
-          wrapper.appendChild(clone);
-          
-          // Add click handlers to the cloned links
-          Array.from(clone.querySelectorAll('a')).forEach(link => {
-            link.addEventListener('click', function(e) {
-              // Navigate to the href
-              window.location.href = this.getAttribute('href');
-            });
-          });
-        } else {
-          // Hide the wrapper
-          wrapper.style.display = 'none';
-          wrapper.innerHTML = '';
-        }
-      };
-      
-      // Override the admin button click handler for mobile
-      adminBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        window.toggleAdminDropdown();
-      });
-      
-      // Close when clicking outside
-      document.addEventListener('click', function(e) {
-        if (wrapper.style.display === 'block' && 
-            e.target !== adminBtn && 
-            !wrapper.contains(e.target)) {
-          window.toggleAdminDropdown(false);
-        }
-      });
-      
-      // Handle window resize
-      window.addEventListener('resize', positionWrapper);
-    }
-    
-    // Initialize after DOM is loaded
-    document.addEventListener('DOMContentLoaded', setupMobileDropdownContainer);
-  </script>
 </body>
 </html> 
