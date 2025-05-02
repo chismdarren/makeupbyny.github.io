@@ -524,26 +524,27 @@
       const adminDropdownContent = document.getElementById('adminDropdownContent');
       const blackBox = document.querySelector('.black-box');
       
-      // Toggle dropdown and black box when dropdown button is clicked
-      adminDropdownBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Toggle dropdown
-        adminDropdownContent.classList.toggle('show-dropdown');
-        
-        // Toggle black box
-        if (adminDropdownContent.classList.contains('show-dropdown')) {
-          blackBox.style.display = 'block';
-        } else {
-          blackBox.style.display = 'none';
-        }
+      // Watch for the show-dropdown class to control the black box
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            if (adminDropdownContent.classList.contains('show-dropdown')) {
+              blackBox.style.display = 'block';
+            } else {
+              blackBox.style.display = 'none';
+            }
+          }
+        });
       });
       
-      // Close dropdown and hide black box when clicking outside
+      // Observe the dropdown content for class changes
+      observer.observe(adminDropdownContent, { attributes: true });
+      
+      // Add additional click handler to the document to ensure the black box 
+      // gets hidden when clicking elsewhere
       document.addEventListener('click', function(e) {
-        if (!adminDropdownBtn.contains(e.target) && !adminDropdownContent.contains(e.target)) {
-          adminDropdownContent.classList.remove('show-dropdown');
+        // When dropdown is hidden, also hide black box
+        if (!adminDropdownContent.classList.contains('show-dropdown')) {
           blackBox.style.display = 'none';
         }
       });
