@@ -2,11 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
   <title>Contact - Makeup by NY</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
+    /* Critical fix for dropdown visibility - DO NOT REMOVE */
+    #adminDropdownContent.show-dropdown {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: fixed !important;
+      z-index: 99999999 !important;
+      top: auto !important;
+      left: auto !important;
+      background: white !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+      border: 1px solid #ccc !important;
+      overflow: visible !important;
+      pointer-events: auto !important;
+    }
+    
+    @media (max-width: 768px) {
+      body * {
+        overflow: visible !important;
+      }
+      
+      .admin-dropdown {
+        position: static !important;
+      }
+      
+      #adminDropdownBtn {
+        position: relative !important;
+        z-index: 9999998 !important;
+      }
+      
+      #adminDropdownContent {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90% !important;
+        max-width: 300px !important;
+      }
+      
+      #adminDropdownContent.show-dropdown {
+        display: block !important;
+      }
+    }
+
     /* Additional styles specific to the contact page */
     .contact-content {
       max-width: 800px;
@@ -392,11 +436,11 @@
       <a href="contact.html" class="active">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
-        <div id="adminDropdownContent" class="admin-dropdown-content">
+        <div id="adminDropdownContent" class="admin-dropdown-content" style="position: absolute !important; z-index: 9999999 !important;">
           <a href="admin-dashboard.html">Messages</a>
           <a href="editor.html">Create Post</a>
           <a href="edit-post.html">Edit Posts</a>
@@ -536,5 +580,146 @@
 
   <!-- Load contact.js for page-specific functionality -->
   <script type="module" src="contact.js"></script>
+
+  <!-- Fix for mobile dropdown visibility - Modified approach -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // This function will force the dropdown to be visible
+      function fixMobileDropdown() {
+        // Check if we're on mobile
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile) return;
+        
+        const adminBtn = document.getElementById('adminDropdownBtn');
+        
+        // If admin button exists and is displayed
+        if (adminBtn && getComputedStyle(adminBtn).display !== 'none') {
+          // Modify the button to create a special click handler
+          adminBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Create a full-page overlay directly attached to the body
+            // This ensures it's outside any problematic stacking contexts
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-color: rgba(0,0,0,0.6);
+              z-index: 2147483647;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            `;
+            
+            // Create a menu container
+            const menu = document.createElement('div');
+            menu.style.cssText = `
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              width: 90%;
+              max-width: 300px;
+              box-shadow: 0 0 20px rgba(0,0,0,0.3);
+              position: relative;
+            `;
+            
+            // Add a title
+            const title = document.createElement('h3');
+            title.textContent = 'Admin Dashboard';
+            title.style.cssText = `
+              margin: 0 0 15px 0;
+              padding-bottom: 10px;
+              border-bottom: 1px solid #eee;
+              color: #333;
+              font-size: 18px;
+            `;
+            menu.appendChild(title);
+            
+            // Add a close button
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = `
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              background: none;
+              border: none;
+              font-size: 24px;
+              cursor: pointer;
+              color: #333;
+            `;
+            menu.appendChild(closeBtn);
+            
+            // Add admin menu items
+            const menuItems = [
+              { text: 'Messages', url: 'admin-dashboard.html' },
+              { text: 'Create Post', url: 'editor.html' },
+              { text: 'Edit Posts', url: 'edit-post.html' },
+              { text: 'User Management', url: 'manage-users.html' }
+            ];
+            
+            menuItems.forEach(item => {
+              const link = document.createElement('a');
+              link.href = item.url;
+              link.textContent = item.text;
+              link.style.cssText = `
+                display: block;
+                padding: 12px 0;
+                color: #333;
+                text-decoration: none;
+                border-bottom: 1px solid #f5f5f5;
+                font-size: 16px;
+              `;
+              link.addEventListener('mouseenter', function() {
+                this.style.color = '#a07';
+              });
+              link.addEventListener('mouseleave', function() {
+                this.style.color = '#333';
+              });
+              menu.appendChild(link);
+            });
+            
+            // Add overlay and menu to the body
+            overlay.appendChild(menu);
+            document.body.appendChild(overlay);
+            
+            // Handle close actions
+            closeBtn.addEventListener('click', function() {
+              document.body.removeChild(overlay);
+            });
+            
+            overlay.addEventListener('click', function(e) {
+              if (e.target === overlay) {
+                document.body.removeChild(overlay);
+              }
+            });
+          });
+        }
+      }
+      
+      // Run the fix immediately
+      fixMobileDropdown();
+      
+      // Also set up a MutationObserver to detect when the admin button becomes visible
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' && 
+              mutation.attributeName === 'style' &&
+              mutation.target.id === 'adminDropdownBtn') {
+            fixMobileDropdown();
+          }
+        });
+      });
+      
+      const adminBtn = document.getElementById('adminDropdownBtn');
+      if (adminBtn) {
+        observer.observe(adminBtn, { attributes: true });
+      }
+    });
+  </script>
 </body>
 </html> 
