@@ -342,6 +342,71 @@
       height: 22px;
       fill: #333;
     }
+
+    /* Mobile Center Admin Dropdown */
+    .mobile-admin-dropdown {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      z-index: 3000;
+      width: 80%;
+      max-width: 300px;
+      text-align: center;
+    }
+
+    .mobile-admin-dropdown-btn {
+      background: #333;
+      color: white;
+      font-size: 1em;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .mobile-admin-dropdown-content {
+      display: none;
+      width: 100%;
+      background-color: white;
+      z-index: 3001;
+      border-radius: 4px;
+      overflow: hidden;
+      opacity: 1;
+    }
+
+    .mobile-admin-dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .mobile-admin-dropdown-content a:last-child {
+      border-bottom: none;
+    }
+
+    .mobile-admin-dropdown-content a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
+    }
+
+    @media (min-width: 769px) {
+      .mobile-admin-dropdown {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -384,6 +449,20 @@
 
   <!-- Main Content Area -->
   <div class="content">
+    <!-- Duplicate Admin Dropdown for Mobile (Middle of Page) -->
+    <div class="mobile-admin-dropdown" id="mobileAdminDropdown" style="display:none;">
+      <button id="mobileAdminDropdownBtn" class="mobile-admin-dropdown-btn">
+        Admin Dashboard 
+        <span class="dropdown-icon">▼</span>
+      </button>
+      <div id="mobileAdminDropdownContent" class="mobile-admin-dropdown-content">
+        <a href="admin-dashboard.html">Messages</a>
+        <a href="editor.html">Create Post</a>
+        <a href="edit-post.html">Edit Posts</a>
+        <a href="manage-users.html">User Management</a>
+      </div>
+    </div>
+
     <!-- Main Contact Content -->
     <main class="posts">
       <!-- About Page Navigation -->
@@ -500,5 +579,34 @@
 
   <!-- Load contact.js for page-specific functionality -->
   <script type="module" src="contact.js"></script>
+
+  <script type="module">
+    // Add this to your contact.js or include at the end of the HTML
+    document.addEventListener('DOMContentLoaded', function() {
+      const mobileAdminBtn = document.getElementById('mobileAdminDropdownBtn');
+      const mobileAdminContent = document.getElementById('mobileAdminDropdownContent');
+      const mobileAdminDropdown = document.getElementById('mobileAdminDropdown');
+      
+      // Show mobile admin dropdown only for admin users (use same logic as your existing admin display)
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          // Check if user is admin (using your existing admin checking logic)
+          const userEmail = user.email;
+          if (userEmail === 'admin@example.com' || userEmail === 'nbeautyvault@gmail.com') {
+            mobileAdminDropdown.style.display = 'block';
+          }
+        }
+      });
+      
+      // Toggle dropdown when button is clicked
+      mobileAdminBtn.addEventListener('click', function() {
+        if (mobileAdminContent.style.display === 'block') {
+          mobileAdminContent.style.display = 'none';
+        } else {
+          mobileAdminContent.style.display = 'block';
+        }
+      });
+    });
+  </script>
 </body>
 </html> 
