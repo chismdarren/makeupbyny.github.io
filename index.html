@@ -282,20 +282,25 @@
 
       .admin-dropdown-btn {
         position: relative !important;
-        bottom: -8px !important; /* Using bottom instead of top to match the desktop style */
+        bottom: -8px !important; /* Keep the same bottom positioning */
         margin-top: 0 !important;
         font-family: inherit !important;
         font-weight: normal !important;
         font-size: 1em !important; /* Increased from 0.85em to 1em */
         padding: 10px 5px;
-        z-index: 1000 !important; /* Ensure z-index is maintained */
+        z-index: 1000 !important; /* Maintain z-index */
       }
       
-      /* Additional styles to ensure custom dropdown positioning on mobile */
+      /* Custom dropdown adjustment for mobile */
       #customDropdown {
-        min-width: 200px !important;
-        max-width: calc(100vw - 40px) !important;
-        right: -50px !important;
+        top: 42px !important; /* Adjust to accommodate larger font size */
+      }
+      
+      /* Style for very small screens */
+      #customDropdown {
+        min-width: 200px !important; /* Override the inline style */
+        max-width: calc(100vw - 40px) !important; /* Prevent overflow */
+        margin: 0 auto;
       }
       
       /* Ensure content fits perfectly */
@@ -430,7 +435,7 @@
       transition: color 0.2s;
       align-items: center;
       position: relative;
-      bottom: -8px;
+      bottom: -8px; /* Standard positioning for all screen sizes */
       z-index: 1000;
     }
 
@@ -447,6 +452,29 @@
     .admin-dropdown-btn:hover, 
     .admin-dropdown-btn.active {
       color: #a07;
+    }
+    
+    /* Additional responsive styles to keep Admin Dashboard text at exact position */
+    @media (min-width: 481px) and (max-width: 768px) {
+      .admin-dropdown-btn {
+        bottom: -8px !important;
+        font-size: 1em !important;
+      }
+      
+      #customDropdown {
+        top: 42px !important;
+      }
+    }
+    
+    @media (min-width: 769px) {
+      .admin-dropdown-btn {
+        bottom: -8px !important;
+        font-size: 1em !important;
+      }
+      
+      #customDropdown {
+        top: 40px !important;
+      }
     }
 
     .admin-dropdown-content {
@@ -568,7 +596,7 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="position: relative; bottom: -8px; z-index: 1000;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
@@ -831,8 +859,9 @@
           // Check if user is admin
           const isAdmin = await isAdminUser(user.uid);
           if (isAdmin) {
-            // Show admin dropdown button
+            // Show admin dropdown button with correct display style
             document.getElementById("adminDropdownBtn").style.display = "flex";
+            document.getElementById("adminDropdownBtn").style.alignItems = "center";
           } else {
             // Hide admin dropdown button for regular users
             document.getElementById("adminDropdownBtn").style.display = "none";
