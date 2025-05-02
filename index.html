@@ -407,6 +407,7 @@
     .admin-dropdown {
       position: relative;
       display: inline-block;
+      z-index: 1000; /* Ensure dropdown appears in front of other elements */
     }
 
     .admin-dropdown-btn {
@@ -418,9 +419,13 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
-      display: none; /* Hide by default, JS will show for admins */
+      display: none;
       transition: color 0.2s;
+      display: flex;
       align-items: center;
+      position: relative;
+      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
+      z-index: 1000; /* Ensure button appears in front */
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -438,25 +443,23 @@
       color: #a07;
     }
 
-    .admin-dropdown-content {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 100%;
+    /* White box mimicking the dropdown */
+    .black-box {
+      position: fixed;
       background-color: white;
-      min-width: 180px;
+      z-index: 999;
+      display: none; /* Hidden by default */
+      width: auto;
+      height: auto;
+      min-width: 180px; /* Match dropdown width */
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 1;
       border-radius: 4px;
       overflow: hidden;
-      margin-top: 5px;
       border: 1px solid #eee;
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: opacity 0.3s, transform 0.3s;
     }
-
-    .admin-dropdown-content a {
+    
+    /* Menu items in the white box */
+    .black-box a {
       color: #333;
       padding: 12px 16px;
       text-decoration: none;
@@ -465,56 +468,16 @@
       transition: background-color 0.2s, color 0.2s;
       border-bottom: 1px solid #f5f5f5;
     }
-
-    .admin-dropdown-content a:last-child {
+    
+    .black-box a:last-child {
       border-bottom: none;
     }
-
-    .admin-dropdown-content a:hover {
+    
+    .black-box a:hover {
       background-color: #f9f9f9;
       color: #a07;
     }
 
-    /* This class is toggled via JavaScript */
-    .show-dropdown {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .read-more-btn {
-      display: inline-block;
-      padding: 8px 16px;
-      background: transparent;
-      border: 2px solid #222;
-      color: #222;
-      font-size: 14px;
-      font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      margin-top: 10px;
-    }
-    
-    .read-more-btn:hover {
-      background: #222;
-      color: white;
-    }
-
-    /* Make sure no extra lines appear between meta and content */
-    .post-meta {
-      border-bottom: none !important;
-      padding-bottom: 0 !important;
-      margin-bottom: 15px !important;
-    }
-    
-    .post-meta + * {
-      border-top: none !important;
-      padding-top: 0 !important;
-      margin-top: 0 !important;
-    }
-    
     /* Settings gear icon styles */
     .settings-icon {
       position: fixed;
@@ -557,22 +520,12 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="position: relative; bottom: -8px; z-index: 1000;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
-        <!-- Custom dropdown box (replaces original dropdown) -->
-        <div id="customDropdown" style="display: none; position: absolute; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); border-radius: 4px; z-index: 999; width: 180px; right: 0; top: 40px;">
-          <a href="admin-dashboard.html" style="display: block; padding: 10px 15px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">Messages</a>
-          <a href="editor.html" style="display: block; padding: 10px 15px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">Create Post</a>
-          <a href="edit-post.html" style="display: block; padding: 10px 15px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">Edit Posts</a>
-          <a href="manage-users.html" style="display: block; padding: 10px 15px; text-decoration: none; color: #333;">User Management</a>
-        </div>
-        <div id="adminDropdownContent" class="admin-dropdown-content" style="display: none;">
-          <!-- Keep this empty as we're using the custom dropdown instead -->
-        </div>
       </div>
-      <!-- User account link (initially hidden) -->
+      <!-- User account link -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
@@ -589,6 +542,14 @@
 
   <!-- Main Content Area -->
   <div class="content">
+    <!-- Black box in the middle of the page -->
+    <div class="black-box">
+      <a href="admin-dashboard.html">Messages</a>
+      <a href="editor.html">Create Post</a>
+      <a href="edit-post.html">Edit Posts</a>
+      <a href="manage-users.html">User Management</a>
+    </div>
+    
     <!-- Posts Section -->
     <main class="posts">
       <!-- Container where posts will be loaded -->
@@ -843,34 +804,6 @@
         auth.signOut().then(() => {
           window.location.href = "index.html";
         });
-      });
-
-      // Toggle dropdown menu on click - REPLACE this block with custom dropdown code
-      document.getElementById("adminDropdownBtn").addEventListener("click", function(e) {
-        e.preventDefault(); // Prevent default link behavior
-        const customDropdown = document.getElementById("customDropdown");
-        
-        // Toggle dropdown visibility
-        if (customDropdown.style.display === "none" || !customDropdown.style.display) {
-          customDropdown.style.display = "block";
-          this.classList.add("active");
-        } else {
-          customDropdown.style.display = "none";
-          this.classList.remove("active");
-        }
-      });
-
-      // Close dropdown when clicking outside
-      window.addEventListener("click", function(e) {
-        if (!e.target.matches('#adminDropdownBtn') && !e.target.closest('#adminDropdownBtn')) {
-          const customDropdown = document.getElementById("customDropdown");
-          const btn = document.getElementById("adminDropdownBtn");
-          
-          if (customDropdown.style.display === "block") {
-            customDropdown.style.display = "none";
-            btn.classList.remove("active");
-          }
-        }
       });
 
       // Get container for blog posts
@@ -1138,6 +1071,54 @@
             alignAboutMeWithPosts();
             this.running = false;
           });
+        }
+      });
+    });
+  </script>
+
+  <!-- Admin dropdown control script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+      const whiteBox = document.querySelector('.black-box');
+      
+      // Function to position white box under Admin Dashboard
+      function positionWhiteBox() {
+        if (adminDropdownBtn) {
+          const rect = adminDropdownBtn.getBoundingClientRect();
+          whiteBox.style.top = (rect.bottom) + 'px';
+          whiteBox.style.left = rect.left + 'px';
+          whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
+        }
+      }
+      
+      // Position white box initially
+      positionWhiteBox();
+      
+      // Reposition on window resize
+      window.addEventListener('resize', positionWhiteBox);
+      
+      // Toggle dropdown when Admin Dashboard is clicked
+      adminDropdownBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Toggle white box display
+        if (whiteBox.style.display === 'block') {
+          whiteBox.style.display = 'none';
+          this.classList.remove('active');
+        } else {
+          positionWhiteBox(); // Position before showing
+          whiteBox.style.display = 'block';
+          this.classList.add('active');
+        }
+      });
+      
+      // Hide dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!adminDropdownBtn.contains(e.target) && !whiteBox.contains(e.target)) {
+          whiteBox.style.display = 'none';
+          adminDropdownBtn.classList.remove('active');
         }
       });
     });
