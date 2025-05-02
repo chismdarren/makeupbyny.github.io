@@ -281,12 +281,12 @@
       }
 
       .admin-dropdown-btn {
-        position: relative;
-        top: -4px;
-        margin-top: 0;
-        font-family: inherit;
-        font-weight: normal;
-        font-size: 0.85em;
+        position: relative !important;
+        top: -4px !important; /* Moving down 2px from previous -6px */
+        margin-top: 0 !important;
+        font-family: inherit !important;
+        font-weight: normal !important;
+        font-size: 0.85em !important;
         padding: 10px 5px;
       }
       
@@ -350,14 +350,6 @@
         max-width: 100%;
         height: auto;
       }
-
-      /* Add matching styling for the user account link */
-      #userAccountLink {
-        font-size: 0.85em;
-        position: relative;
-        top: -4px;
-        bottom: auto;
-      }
     }
 
     .posts {
@@ -418,24 +410,6 @@
       margin-bottom: 3px;
     }
 
-    /* Styles for user account link to match admin dropdown */
-    #userAccountLink {
-      font-family: inherit;
-      font-weight: normal;
-      font-size: 1em;
-      position: relative;
-      bottom: -8px;
-    }
-    
-    @media (max-width: 480px) {
-      #userAccountLink {
-        font-size: 0.85em;
-        position: relative;
-        top: -4px;
-        bottom: auto;
-      }
-    }
-
     /* Admin Dropdown Menu Styles */
     .admin-dropdown {
       position: relative;
@@ -446,7 +420,7 @@
       background: none;
       border: none;
       color: #333;
-      font-size: 1em;
+      font-size: 0.85em;
       padding: 10px;
       cursor: pointer;
       font-family: inherit;
@@ -457,7 +431,6 @@
       position: relative;
       bottom: -8px;
       z-index: 1000;
-      font-weight: normal;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -613,10 +586,10 @@
         <a href="manage-users.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">User Management</a>
       </div>
       <!-- User account link (initially hidden) -->
-      <a id="userAccountLink" href="settings.html" style="display:none; font-family: inherit; font-weight: normal; font-size: 1em; position: relative; bottom: -8px;">My Account</a>
+      <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
-      <a id="login-link" href="login.html" style="font-family: inherit; font-weight: normal; font-size: 1em; position: relative; bottom: -8px;">Login</a>
-      <button id="logout-btn" style="display:none; background: none; border: none; color: #333; font-size: 1em; cursor: pointer; font-family: inherit; padding: 10px; position: relative; bottom: -8px; font-weight: normal;">Logout</button>
+      <a id="login-link" href="login.html">Login</a>
+      <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
 
@@ -753,10 +726,7 @@
           // Hide login button, show logout button and account link
           document.getElementById("login-link").style.display = "none";
           document.getElementById("logout-btn").style.display = "inline";
-          
-          // Show user account link while preserving its styling
-          const userAccountLink = document.getElementById("userAccountLink");
-          userAccountLink.style.display = "inline";
+          document.getElementById("userAccountLink").style.display = "inline";
           
           // Show settings icon for logged in users
           document.getElementById("settingsIcon").style.display = "flex";
@@ -940,46 +910,7 @@
       window.addEventListener("resize", function() {
         const whiteBoxDropdown = document.getElementById("adminWhiteBoxDropdown");
         const btn = document.getElementById("adminDropdownBtn");
-        const userLink = document.getElementById("userAccountLink");
-        const loginLink = document.getElementById("login-link");
-        const logoutBtn = document.getElementById("logout-btn");
         
-        // Update nav items styling for mobile
-        if (window.innerWidth <= 480) {
-          if (userLink) {
-            userLink.style.bottom = "auto";
-            userLink.style.top = "-4px";
-            userLink.style.fontSize = "0.85em";
-          }
-          if (loginLink) {
-            loginLink.style.bottom = "auto";
-            loginLink.style.top = "-4px";
-            loginLink.style.fontSize = "0.85em";
-          }
-          if (logoutBtn) {
-            logoutBtn.style.bottom = "auto";
-            logoutBtn.style.top = "-4px";
-            logoutBtn.style.fontSize = "0.85em";
-          }
-        } else {
-          if (userLink) {
-            userLink.style.top = "auto";
-            userLink.style.bottom = "-8px";
-            userLink.style.fontSize = "1em";
-          }
-          if (loginLink) {
-            loginLink.style.top = "auto";
-            loginLink.style.bottom = "-8px";
-            loginLink.style.fontSize = "1em";
-          }
-          if (logoutBtn) {
-            logoutBtn.style.top = "auto";
-            logoutBtn.style.bottom = "-8px";
-            logoutBtn.style.fontSize = "1em";
-          }
-        }
-        
-        // Handle dropdown repositioning
         if (whiteBoxDropdown && whiteBoxDropdown.style.display === "block" && btn) {
           // Position the dropdown
           const btnRect = btn.getBoundingClientRect();
@@ -996,31 +927,6 @@
           }
           
           whiteBoxDropdown.style.top = (btnRect.bottom + 2) + "px";
-        }
-      });
-
-      // Adjust styles on page load to handle initial screen size
-      document.addEventListener("DOMContentLoaded", function() {
-        if (window.innerWidth <= 480) {
-          const userLink = document.getElementById("userAccountLink");
-          const loginLink = document.getElementById("login-link");
-          const logoutBtn = document.getElementById("logout-btn");
-          
-          if (userLink) {
-            userLink.style.bottom = "auto";
-            userLink.style.top = "-4px";
-            userLink.style.fontSize = "0.85em";
-          }
-          if (loginLink) {
-            loginLink.style.bottom = "auto";
-            loginLink.style.top = "-4px";
-            loginLink.style.fontSize = "0.85em";
-          }
-          if (logoutBtn) {
-            logoutBtn.style.bottom = "auto";
-            logoutBtn.style.top = "-4px";
-            logoutBtn.style.fontSize = "0.85em";
-          }
         }
       });
 
