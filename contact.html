@@ -264,48 +264,21 @@
 
     /* Mobile-specific override styles added to ensure dropdown visibility */
     @media (max-width: 768px) {
-      /* Create a special mobile-specific style for the dropdown */
+      /* Keep everything the same but adjust layer ordering */
       .admin-dropdown {
         position: relative;
-        z-index: 9000 !important;
+        z-index: 9999; /* Very high z-index for the container */
       }
 
-      /* Position the dropdown content differently on mobile */
-      .admin-dropdown-content {
-        position: absolute;
-        right: 0;
-        top: 100%;
-        min-width: 200px;
-        z-index: 9500 !important;
-        background-color: white !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-        border: 2px solid #999 !important; /* More visible border */
-      }
-      
-      /* Override any styles that might be hiding the dropdown */
+      /* Add highest possible z-index to dropdown content when shown */
       .admin-dropdown-content.show-dropdown {
-        position: absolute !important; /* Use absolute instead of fixed */
-        top: 100% !important; /* Position right below the admin button */
-        left: 50% !important; /* Center horizontally */
-        right: auto !important;
-        transform: translateX(-50%) !important; /* Center the dropdown properly */
-        width: 200px !important; /* Maintain consistent width */
-        max-width: 90% !important; /* Don't let it get too wide */
-        z-index: 999999 !important; /* Ultra high z-index to ensure it's on top of everything */
-        background-color: white !important; /* Ensure background is solid */
-        box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important; /* Enhanced shadow for better visibility */
+        z-index: 9999999 !important; /* Ultra high z-index to ensure it's on top of everything */
       }
       
-      header nav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      /* Give about-nav a lower z-index to ensure dropdown appears on top */
+      /* Ensure the welcome menu stays behind the dropdown */
       .about-nav {
-        z-index: 1 !important;
-        position: relative !important;
+        z-index: 1;
+        position: relative;
       }
     }
 
