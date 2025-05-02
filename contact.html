@@ -17,14 +17,12 @@
     /* Black box in the middle of the page */
     .black-box {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 300px;
-      height: 200px;
       background-color: black;
       z-index: 999;
       display: none; /* Hidden by default */
+      width: auto;
+      height: auto;
+      min-width: 180px; /* Match dropdown width */
     }
 
     .contact-section {
@@ -524,11 +522,29 @@
       const adminDropdownContent = document.getElementById('adminDropdownContent');
       const blackBox = document.querySelector('.black-box');
       
+      // Function to position black box under Admin Dashboard
+      function positionBlackBox() {
+        if (adminDropdownBtn) {
+          const rect = adminDropdownBtn.getBoundingClientRect();
+          blackBox.style.top = (rect.bottom) + 'px';
+          blackBox.style.left = rect.left + 'px';
+          blackBox.style.width = rect.width + 'px';
+          blackBox.style.height = adminDropdownContent.offsetHeight + 'px';
+        }
+      }
+      
+      // Position black box initially
+      positionBlackBox();
+      
+      // Reposition on window resize
+      window.addEventListener('resize', positionBlackBox);
+      
       // Watch for the show-dropdown class to control the black box
       const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
           if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
             if (adminDropdownContent.classList.contains('show-dropdown')) {
+              positionBlackBox(); // Position before showing
               blackBox.style.display = 'block';
             } else {
               blackBox.style.display = 'none';
