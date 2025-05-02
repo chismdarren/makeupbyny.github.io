@@ -282,8 +282,7 @@
 
       .admin-dropdown-btn {
         position: relative;
-        top: 0;
-        bottom: -8px; /* Consistent with desktop styling */
+        top: -4px;
         margin-top: 0;
         font-family: inherit;
         font-weight: normal;
@@ -351,6 +350,14 @@
         max-width: 100%;
         height: auto;
       }
+
+      /* Add matching styling for the user account link */
+      #userAccountLink {
+        font-size: 0.85em;
+        position: relative;
+        top: -4px;
+        bottom: auto;
+      }
     }
 
     .posts {
@@ -409,6 +416,24 @@
       font-size: 0.9em;
       line-height: 1.4;
       margin-bottom: 3px;
+    }
+
+    /* Styles for user account link to match admin dropdown */
+    #userAccountLink {
+      font-family: inherit;
+      font-weight: normal;
+      font-size: 1em;
+      position: relative;
+      bottom: -8px;
+    }
+    
+    @media (max-width: 480px) {
+      #userAccountLink {
+        font-size: 0.85em;
+        position: relative;
+        top: -4px;
+        bottom: auto;
+      }
     }
 
     /* Admin Dropdown Menu Styles */
