@@ -282,12 +282,20 @@
 
       .admin-dropdown-btn {
         position: relative !important;
-        top: -4px !important; /* Moving down 2px from previous -6px */
+        bottom: -8px !important; /* Using bottom instead of top to match the desktop style */
         margin-top: 0 !important;
         font-family: inherit !important;
         font-weight: normal !important;
         font-size: 1em !important; /* Increased from 0.85em to 1em */
         padding: 10px 5px;
+        z-index: 1000 !important; /* Ensure z-index is maintained */
+      }
+      
+      /* Additional styles to ensure custom dropdown positioning on mobile */
+      #customDropdown {
+        min-width: 200px !important;
+        max-width: calc(100vw - 40px) !important;
+        right: -50px !important;
       }
       
       /* Ensure content fits perfectly */
@@ -421,6 +429,9 @@
       display: none; /* Hide by default, JS will show for admins */
       transition: color 0.2s;
       align-items: center;
+      position: relative;
+      bottom: -8px;
+      z-index: 1000;
     }
 
     .admin-dropdown-btn .dropdown-icon {
