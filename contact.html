@@ -274,20 +274,28 @@
 
     /* Modify this for better mobile display */
     @media (max-width: 768px) {
-      .admin-dropdown-content {
+      /* Hide the original dropdown on mobile - we'll use our cloned version instead */
+      .admin-dropdown > .admin-dropdown-content {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+      
+      /* Make sure our container is super visible */
+      #mobile-dropdown-container {
+        z-index: 999999 !important;
+      }
+      
+      /* Style for our mobile dropdown wrapper */
+      #mobile-dropdown-wrapper .admin-dropdown-content {
         position: absolute;
         right: 0;
-        left: auto;
         width: 200px;
-        z-index: 2000; /* Higher z-index for mobile */
-      }
-
-      /* Fix for mobile dropdown visibility */
-      #adminDropdownContent.show-dropdown {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        border: 1px solid #eee;
       }
     }
 
