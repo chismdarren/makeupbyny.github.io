@@ -274,42 +274,37 @@
 
     /* Modify this for better mobile display */
     @media (max-width: 768px) {
-      /* Don't hide the button */
-      .admin-dropdown-btn {
-        display: inline-block !important;
+      /* Keep original dropdown visible */
+      .admin-dropdown-content {
+        position: absolute;
+        right: 0;
+        left: auto;
+        width: 200px;
+        z-index: 2000; /* Higher z-index for mobile */
       }
       
-      /* Only hide the original dropdown content when our mobile container is ready */
-      .admin-dropdown > .admin-dropdown-content {
-        display: none !important;
+      /* Make sure our mobile container works but doesn't interfere */
+      #mobile-dropdown-container {
+        z-index: 999999 !important;
       }
       
-      /* Make sure our mobile wrapper shows content properly */
+      /* Style for our mobile dropdown wrapper */
       #mobile-dropdown-wrapper .admin-dropdown-content {
-        display: block !important;
         position: absolute;
         right: 0;
         width: 200px;
         background-color: white;
         border-radius: 4px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         border: 1px solid #eee;
+      }
+      
+      /* Fix for mobile dropdown visibility */
+      #adminDropdownContent.show-dropdown {
+        display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
-      }
-      
-      /* Style the links in the mobile dropdown */
-      #mobile-dropdown-wrapper .admin-dropdown-content a {
-        display: block;
-        padding: 12px 16px;
-        color: #333;
-        text-decoration: none;
-        border-bottom: 1px solid #f5f5f5;
-      }
-      
-      #mobile-dropdown-wrapper .admin-dropdown-content a:hover {
-        background-color: #f9f9f9;
       }
     }
 
@@ -538,8 +533,6 @@
       
       if (!container || !dropdown || !adminBtn) return;
       
-      console.log("Mobile dropdown setup running", { container, dropdown, adminBtn });
-      
       // Create a wrapper for the dropdown in the mobile container
       let wrapper = document.getElementById('mobile-dropdown-wrapper');
       if (!wrapper) {
@@ -547,7 +540,7 @@
         wrapper.id = 'mobile-dropdown-wrapper';
         wrapper.style.position = 'absolute';
         wrapper.style.display = 'none';
-        wrapper.style.zIndex = '999999';
+        wrapper.style.zIndex = '99999';
         wrapper.style.pointerEvents = 'auto';
         container.appendChild(wrapper);
       }
@@ -558,52 +551,43 @@
           const rect = adminBtn.getBoundingClientRect();
           wrapper.style.top = (rect.bottom + window.scrollY) + 'px';
           wrapper.style.right = (window.innerWidth - rect.right) + 'px';
-          console.log("Positioned wrapper at", wrapper.style.top, wrapper.style.right);
         }
       }
       
-      // Create a toggle function if it doesn't exist
-      if (!window.toggleAdminDropdown) {
-        window.toggleAdminDropdown = function(show) {
-          if (show === undefined) {
-            show = wrapper.style.display !== 'block';
-          }
+      // Clone the dropdown into the wrapper when shown
+      const originalToggleDropdown = window.toggleAdminDropdown;
+      window.toggleAdminDropdown = function(show) {
+        if (show === undefined) {
+          show = !wrapper.contains(dropdown.cloneNode(true));
+        }
+        
+        if (show) {
+          // Position and show the wrapper
+          positionWrapper();
+          wrapper.style.display = 'block';
           
-          console.log("Toggling dropdown", show);
+          // Clone the dropdown into the wrapper
+          const clone = dropdown.cloneNode(true);
+          clone.style.display = 'block';
+          clone.style.opacity = '1';
+          clone.style.visibility = 'visible';
+          clone.style.transform = 'translateY(0)';
+          wrapper.innerHTML = '';
+          wrapper.appendChild(clone);
           
-          if (show) {
-            // Position and show the wrapper
-            positionWrapper();
-            wrapper.style.display = 'block';
-            
-            // Clone the dropdown into the wrapper
-            const clone = dropdown.cloneNode(true);
-            clone.classList.add('show-dropdown');
-            clone.style.display = 'block';
-            clone.style.opacity = '1';
-            clone.style.visibility = 'visible';
-            clone.style.transform = 'translateY(0)';
-            clone.style.pointerEvents = 'auto';
-            wrapper.innerHTML = '';
-            wrapper.appendChild(clone);
-            
-            console.log("Dropdown shown", clone);
-            
-            // Add click handlers to the cloned links
-            Array.from(clone.querySelectorAll('a')).forEach(link => {
-              link.addEventListener('click', function(e) {
-                // Navigate to the href
-                window.location.href = this.getAttribute('href');
-              });
+          // Add click handlers to the cloned links
+          Array.from(clone.querySelectorAll('a')).forEach(link => {
+            link.addEventListener('click', function(e) {
+              // Navigate to the href
+              window.location.href = this.getAttribute('href');
             });
-          } else {
-            // Hide the wrapper
-            wrapper.style.display = 'none';
-            wrapper.innerHTML = '';
-            console.log("Dropdown hidden");
-          }
-        };
-      }
+          });
+        } else {
+          // Hide the wrapper
+          wrapper.style.display = 'none';
+          wrapper.innerHTML = '';
+        }
+      };
       
       // Override the admin button click handler for mobile
       adminBtn.addEventListener('click', function(e) {
@@ -623,12 +607,9 @@
       
       // Handle window resize
       window.addEventListener('resize', positionWrapper);
-      
-      console.log("Mobile dropdown setup complete");
     }
     
-    // Initialize immediately and after DOM is loaded
-    setupMobileDropdownContainer();
+    // Initialize after DOM is loaded
     document.addEventListener('DOMContentLoaded', setupMobileDropdownContainer);
   </script>
 </body>
