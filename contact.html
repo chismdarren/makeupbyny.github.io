@@ -284,10 +284,11 @@
       
       /* Override any styles that might be hiding the dropdown */
       .admin-dropdown-content.show-dropdown {
-        position: fixed !important; /* Try fixed positioning as a last resort */
-        top: 120px !important; /* Position it below the header */
-        right: 10px !important;
-        left: auto !important;
+        position: absolute !important; /* Use absolute instead of fixed */
+        top: 100% !important; /* Position directly below the button */
+        left: 50% !important; /* Center horizontally */
+        right: auto !important;
+        transform: translateX(-50%) !important; /* Center adjustment */
         width: 80% !important; /* Wider for mobile */
         max-width: 300px !important;
       }
