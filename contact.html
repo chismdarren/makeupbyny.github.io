@@ -175,6 +175,18 @@
       }
     }
 
+    /* Add this to ensure header sits above all other content */
+    header {
+      position: relative;
+      z-index: 9999; /* Extremely high z-index to ensure it sits above everything */
+    }
+
+    /* Adjust main content area to respect header's stacking context */
+    .content {
+      position: relative;
+      z-index: 1; /* Lower than header */
+    }
+
     /* Admin Dropdown Menu Styles */
     .admin-dropdown {
       position: relative;
@@ -260,36 +272,22 @@
       z-index: 1002 !important; /* Highest z-index when shown */
     }
 
-    /* Responsive adjustments for admin dropdown */
+    /* Modify this for better mobile display */
     @media (max-width: 768px) {
       .admin-dropdown-content {
         position: absolute;
         right: 0;
         left: auto;
         width: 200px;
-        z-index: 2000; /* Much higher z-index for mobile */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        z-index: 2000; /* Higher z-index for mobile */
       }
 
-      .admin-dropdown {
-        position: relative;
-        z-index: 1500;
-      }
-
-      header nav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        position: relative;
-        z-index: auto; /* Reset any z-index that might be interfering */
-      }
-      
-      /* Ensure the dropdown shows on top of everything when active */
-      .show-dropdown {
+      /* Fix for mobile dropdown visibility */
+      #adminDropdownContent.show-dropdown {
         display: block !important;
+        visibility: visible !important;
         opacity: 1 !important;
-        transform: translateY(0) !important;
-        z-index: 9999 !important; /* Extremely high z-index */
+        pointer-events: auto !important;
       }
     }
 
