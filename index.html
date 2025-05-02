@@ -290,6 +290,13 @@
         padding: 10px 5px;
       }
       
+      /* Style for white box dropdown on very small screens */
+      #adminWhiteBoxDropdown {
+        min-width: 200px !important; /* Override the inline style */
+        max-width: calc(100vw - 40px) !important; /* Prevent overflow */
+        margin: 0 auto;
+      }
+      
       /* Ensure content fits perfectly */
       .content {
         padding: 0;
@@ -421,6 +428,9 @@
       display: none; /* Hide by default, JS will show for admins */
       transition: color 0.2s;
       align-items: center;
+      position: relative;
+      bottom: -8px;
+      z-index: 1000;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -446,7 +456,7 @@
       background-color: white;
       min-width: 180px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 1;
+      z-index: 999;
       border-radius: 4px;
       overflow: hidden;
       margin-top: 5px;
@@ -567,6 +577,13 @@
           <a href="edit-post.html">Edit Posts</a>
           <a href="manage-users.html">User Management</a>
         </div>
+      </div>
+      <!-- White box dropdown replacement -->
+      <div id="adminWhiteBoxDropdown" style="display: none; position: absolute; background-color: white; min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 999; border-radius: 4px; overflow: hidden; border: 1px solid #eee; transition: opacity 0.3s ease;">
+        <a href="admin-dashboard.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Messages</a>
+        <a href="editor.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Create Post</a>
+        <a href="edit-post.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Edit Posts</a>
+        <a href="manage-users.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">User Management</a>
       </div>
       <!-- User account link (initially hidden) -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
@@ -844,19 +861,72 @@
       // Toggle dropdown menu on click
       document.getElementById("adminDropdownBtn").addEventListener("click", function(e) {
         e.preventDefault(); // Prevent default link behavior
+        e.stopPropagation(); // Stop propagation
+        
+        // Toggle active class for button styling
         this.classList.toggle("active");
-        document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+        
+        // Toggle white box dropdown
+        const whiteBoxDropdown = document.getElementById("adminWhiteBoxDropdown");
+        
+        if (whiteBoxDropdown.style.display === "none" || !whiteBoxDropdown.style.display) {
+          // Position the dropdown
+          const btnRect = this.getBoundingClientRect();
+          
+          // Check if mobile view (using width as indicator)
+          if (window.innerWidth <= 768) {
+            // Center the dropdown under the button for mobile
+            const dropdownWidth = 200; // Width from CSS (min-width value)
+            const leftPosition = btnRect.left + (btnRect.width / 2) - (dropdownWidth / 2);
+            whiteBoxDropdown.style.left = Math.max(10, leftPosition) + "px"; // Ensure it's not too far left
+          } else {
+            // Desktop positioning
+            whiteBoxDropdown.style.left = (btnRect.left - 130) + "px";
+          }
+          
+          whiteBoxDropdown.style.top = (btnRect.bottom + 2) + "px";
+          whiteBoxDropdown.style.display = "block";
+        } else {
+          whiteBoxDropdown.style.display = "none";
+        }
       });
 
       // Close dropdown when clicking outside
       window.addEventListener("click", function(e) {
         if (!e.target.matches('#adminDropdownBtn')) {
-          const dropdown = document.getElementById("adminDropdownContent");
-          const btn = document.getElementById("adminDropdownBtn");
-          if (dropdown.classList.contains("show-dropdown")) {
-            dropdown.classList.remove("show-dropdown");
-            btn.classList.remove("active");
+          // Hide white box dropdown
+          const whiteBoxDropdown = document.getElementById("adminWhiteBoxDropdown");
+          if (whiteBoxDropdown) {
+            whiteBoxDropdown.style.display = "none";
           }
+          
+          // Remove active class from button
+          const btn = document.getElementById("adminDropdownBtn");
+          if (btn) btn.classList.remove("active");
+        }
+      });
+      
+      // Handle window resize to reposition dropdown if it's open
+      window.addEventListener("resize", function() {
+        const whiteBoxDropdown = document.getElementById("adminWhiteBoxDropdown");
+        const btn = document.getElementById("adminDropdownBtn");
+        
+        if (whiteBoxDropdown && whiteBoxDropdown.style.display === "block" && btn) {
+          // Position the dropdown
+          const btnRect = btn.getBoundingClientRect();
+          
+          // Check if mobile view (using width as indicator)
+          if (window.innerWidth <= 768) {
+            // Center the dropdown under the button for mobile
+            const dropdownWidth = 200; // Width from CSS (min-width value)
+            const leftPosition = btnRect.left + (btnRect.width / 2) - (dropdownWidth / 2);
+            whiteBoxDropdown.style.left = Math.max(10, leftPosition) + "px"; // Ensure it's not too far left
+          } else {
+            // Desktop positioning
+            whiteBoxDropdown.style.left = (btnRect.left - 130) + "px";
+          }
+          
+          whiteBoxDropdown.style.top = (btnRect.bottom + 2) + "px";
         }
       });
 
