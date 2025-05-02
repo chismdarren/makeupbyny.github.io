@@ -14,15 +14,39 @@
       padding: 30px 20px;
     }
 
-    /* Black box in the middle of the page */
+    /* White box mimicking the dropdown */
     .black-box {
       position: fixed;
-      background-color: black;
+      background-color: white;
       z-index: 999;
       display: none; /* Hidden by default */
       width: auto;
       height: auto;
       min-width: 180px; /* Match dropdown width */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+    
+    /* Menu items in the white box */
+    .black-box a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .black-box a:last-child {
+      border-bottom: none;
+    }
+    
+    .black-box a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
     }
 
     .contact-section {
@@ -396,7 +420,12 @@
   <!-- Main Content Area -->
   <div class="content">
     <!-- Black box in the middle of the page -->
-    <div class="black-box"></div>
+    <div class="black-box">
+      <a href="admin-dashboard.html">Messages</a>
+      <a href="editor.html">Create Post</a>
+      <a href="edit-post.html">Edit Posts</a>
+      <a href="manage-users.html">User Management</a>
+    </div>
     
     <!-- Main Contact Content -->
     <main class="posts">
