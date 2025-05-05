@@ -5,42 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Contact Messages</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* White box mimicking the dropdown */
-        .black-box {
-          position: fixed;
-          background-color: white;
-          z-index: 999;
-          display: none; /* Hidden by default */
-          width: auto;
-          height: auto;
-          min-width: 180px; /* Match dropdown width */
-          box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-          border-radius: 4px;
-          overflow: hidden;
-          border: 1px solid #eee;
-        }
-        
-        /* Menu items in the white box */
-        .black-box a {
-          color: #333;
-          padding: 12px 16px;
-          text-decoration: none;
-          display: block;
-          text-align: left;
-          transition: background-color 0.2s, color 0.2s;
-          border-bottom: 1px solid #f5f5f5;
-        }
-        
-        .black-box a:last-child {
-          border-bottom: none;
-        }
-        
-        .black-box a:hover {
-          background-color: #f9f9f9;
-          color: #a07;
-        }
-
         /* Admin Dropdown Menu Styles */
         .admin-dropdown {
           position: relative;
@@ -81,25 +47,23 @@
           color: #a07;
         }
 
-        .admin-dropdown-content {
-          display: none;
-          position: absolute;
-          right: 0;
-          top: 100%;
+        /* White box mimicking the dropdown */
+        .black-box {
+          position: fixed;
           background-color: white;
-          min-width: 180px;
+          z-index: 999;
+          display: none; /* Hidden by default */
+          width: auto;
+          height: auto;
+          min-width: 180px; /* Match dropdown width */
           box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-          z-index: 1001; /* Even higher than the dropdown container */
           border-radius: 4px;
           overflow: hidden;
-          margin-top: 5px;
           border: 1px solid #eee;
-          opacity: 0;
-          transform: translateY(-10px);
-          transition: opacity 0.3s, transform 0.3s;
         }
-
-        .admin-dropdown-content a {
+        
+        /* Menu items in the white box */
+        .black-box a {
           color: #333;
           padding: 12px 16px;
           text-decoration: none;
@@ -108,27 +72,19 @@
           transition: background-color 0.2s, color 0.2s;
           border-bottom: 1px solid #f5f5f5;
         }
-
-        .admin-dropdown-content a:last-child {
+        
+        .black-box a:last-child {
           border-bottom: none;
         }
-
-        .admin-dropdown-content a:hover {
+        
+        .black-box a:hover {
           background-color: #f9f9f9;
           color: #a07;
         }
 
-        /* This class is toggled via JavaScript */
-        .show-dropdown {
-          display: block !important;
-          opacity: 1 !important;
-          transform: translateY(0) !important;
-          z-index: 1002 !important; /* Highest z-index when shown */
-        }
-
         /* Responsive adjustments for admin dropdown */
         @media (max-width: 768px) {
-          .admin-dropdown-content {
+          .black-box {
             position: absolute;
             right: 0;
             left: auto;
@@ -149,19 +105,11 @@
             position: relative;
             z-index: auto; /* Reset any z-index that might be interfering */
           }
-          
-          /* Ensure the dropdown shows on top of everything when active */
-          .show-dropdown {
-            display: block !important;
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-            z-index: 9999 !important; /* Extremely high z-index */
-          }
         }
 
         /* For very small screens */
         @media (max-width: 480px) {
-          .admin-dropdown-content {
+          .black-box {
             right: -50px; /* Adjust position to be more centered on small screens */
           }
 
@@ -198,7 +146,7 @@
           height: 22px;
           fill: #333;
         }
-
+        
         .messages-section {
             margin: 20px;
             padding: 20px;
@@ -297,25 +245,11 @@
         .message-modal-close:hover {
             color: #777;
         }
-        .message-modal-close:focus {
-          color: black;
-          text-decoration: none;
-          cursor: pointer;
-        }
         .message-full-content {
             margin: 20px 0;
         }
         
-        /* Responsive adjustments for mobile */
-        @media (max-width: 768px) {
-          /* Adjust message cards for mobile */
-          .message-card {
-            padding: 12px 15px;
-            margin-bottom: 15px;
-          }
-        }
-
-        /* For very small screens - mobile optimization */
+        /* For very small screens */
         @media (max-width: 480px) {
           /* Make messages section take full width on mobile */
           .messages-section {
@@ -376,8 +310,8 @@
             <!-- Admin dropdown menu (initially hidden) -->
             <div class="admin-dropdown">
                 <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
-                Admin Dashboard 
-                <span class="dropdown-icon">▼</span>
+                    Admin Dashboard 
+                    <span class="dropdown-icon">▼</span>
                 </a>
             </div>
             <!-- User account link -->
@@ -395,16 +329,15 @@
         </svg>
     </a>
 
-    <!-- Main Content Area -->
     <div class="content admin-dashboard">
-        <!-- Black box in the middle of the page -->
+        <!-- Black box dropdown content -->
         <div class="black-box">
             <a href="admin-dashboard.html">Messages</a>
             <a href="editor.html">Create Post</a>
             <a href="edit-post.html">Edit Posts</a>
             <a href="manage-users.html">User Management</a>
         </div>
-
+        
         <main class="posts">
             <div class="messages-section">
                 <h2>Contact Messages</h2>
@@ -432,6 +365,10 @@
         </div>
     </div>
 
+    <!-- Load firebase.js first to initialize Firebase -->
+    <script type="module" src="firebase.js"></script>
+    
+    <!-- Load admin-dashboard.js for page-specific functionality -->
     <script type="module" src="admin-dashboard.js"></script>
 
     <!-- Admin dropdown control script -->
@@ -474,15 +411,7 @@
             
             // Hide dropdown when clicking outside
             document.addEventListener('click', function(e) {
-                // Don't close if clicking on the dropdown itself
-                if (e.target.closest('.black-box')) {
-                    return;
-                }
-                
-                // Only close if clicking outside the dropdown button
-                if (!e.target.matches('#adminDropdownBtn') && 
-                    !e.target.matches('.dropdown-icon') && 
-                    !e.target.closest('#adminDropdownBtn')) {
+                if (!adminDropdownBtn.contains(e.target) && !whiteBox.contains(e.target)) {
                     whiteBox.style.display = 'none';
                     adminDropdownBtn.classList.remove('active');
                 }
