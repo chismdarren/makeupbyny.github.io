@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // For mobile, ensure positioning is applied when the button becomes visible
         if (window.innerWidth <= 480) {
-          adminDropdownBtn.setAttribute('style', 'display: flex; position: relative !important; bottom: 2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
+          adminDropdownBtn.setAttribute('style', 'display: flex; position: relative !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
         }
       }
       
@@ -56,22 +56,32 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
       
-      // Toggle dropdown visibility
-      const dropdown = document.getElementById('adminDropdownContent');
-      dropdown.classList.toggle('show-dropdown');
-      this.classList.toggle('active');
+      // Toggle dropdown visibility - using black-box instead of adminDropdownContent
+      const dropdown = document.querySelector('.black-box');
+      if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+        this.classList.remove('active');
+      } else {
+        // Position before showing
+        const rect = this.getBoundingClientRect();
+        dropdown.style.top = (rect.bottom) + 'px';
+        dropdown.style.left = rect.left + 'px';
+        dropdown.style.width = (rect.width < 180 ? 180 : rect.width) + 'px';
+        
+        dropdown.style.display = 'block';
+        this.classList.add('active');
+      }
       
       // For mobile: ensure the dropdown is positioned correctly
       if (window.innerWidth <= 480) {
         // Function to position dropdown below button
         const positionDropdown = () => {
-          if (dropdown.classList.contains('show-dropdown')) {
+          if (dropdown.style.display === 'block') {
             const buttonRect = this.getBoundingClientRect();
             
             dropdown.style.position = 'fixed';
             dropdown.style.top = (buttonRect.bottom + 5) + 'px';
-            dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
-            dropdown.style.transform = 'translateX(-50%)';
+            dropdown.style.left = (buttonRect.left) + 'px';
             dropdown.style.maxHeight = '80vh';
             dropdown.style.zIndex = '9999';
             
@@ -87,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Track scroll to reposition dropdown if needed
         const scrollHandler = () => {
-          if (dropdown.classList.contains('show-dropdown')) {
+          if (dropdown.style.display === 'block') {
             positionDropdown();
           } else {
             // Remove handler if dropdown is closed
@@ -107,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
       // Don't close if clicking on the dropdown itself
-      if (e.target.closest('.admin-dropdown-content')) {
+      if (e.target.closest('.black-box')) {
         return;
       }
       
@@ -115,11 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!e.target.matches('#adminDropdownBtn') && 
           !e.target.matches('.dropdown-icon') && 
           !e.target.closest('#adminDropdownBtn')) {
-        const dropdown = document.getElementById('adminDropdownContent');
+        const dropdown = document.querySelector('.black-box');
         const btn = document.getElementById('adminDropdownBtn');
-        if (dropdown && dropdown.classList.contains('show-dropdown')) {
-          dropdown.classList.remove('show-dropdown');
-          btn.classList.remove('active');
+        if (dropdown && dropdown.style.display === 'block') {
+          dropdown.style.display = 'none';
+          if (btn) btn.classList.remove('active');
           
           // Reset inline styles when closing dropdown
           if (window.innerWidth <= 480) {
