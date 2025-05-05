@@ -821,204 +821,6 @@
       display: block;
     }
     
-    /* Admin Dropdown Menu Styles */
-    .admin-dropdown {
-      position: relative;
-      display: inline-block;
-      vertical-align: middle;
-      margin-bottom: -5px;
-    }
-
-    .admin-dropdown-btn {
-      background: none;
-      border: none;
-      color: #333;
-      font-size: 1em;
-      padding: 10px;
-      cursor: pointer;
-      font-family: inherit;
-      text-decoration: none;
-      display: none;
-      transition: color 0.2s;
-      display: flex;
-      align-items: center;
-      position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-      z-index: 1000; /* Ensure button appears in front */
-    }
-    
-    /* Fix navigation spacing */
-    #mainNav {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      margin-top: -5px;
-    }
-    
-    #mainNav a, #mainNav button {
-      margin: 0 10px;
-      padding: 3px 0;
-    }
-
-    /* Ensure second row is closer to first row */
-    #myAccount, #login-link, #logout-btn {
-      margin-top: -5px !important;
-    }
-
-    .admin-dropdown-btn .dropdown-icon {
-      display: inline-block;
-      margin-left: 5px;
-      transition: transform 0.3s ease;
-    }
-
-    .admin-dropdown-btn.active .dropdown-icon {
-      transform: rotate(180deg);
-    }
-
-    .admin-dropdown-btn:hover, 
-    .admin-dropdown-btn.active {
-      color: #a07;
-    }
-
-    .admin-dropdown-content {
-      display: none;
-      position: absolute;
-      left: 0;
-      top: 100%;
-      background-color: white;
-      min-width: 180px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 1000;
-      border-radius: 4px;
-      overflow: visible;
-      margin-top: 0;
-      border: 1px solid #eee;
-    }
-
-    .admin-dropdown-content a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      text-align: left;
-      transition: background-color 0.2s, color 0.2s;
-      border-bottom: 1px solid #f5f5f5;
-    }
-
-    .admin-dropdown-content a:last-child {
-      border-bottom: none;
-    }
-
-    .admin-dropdown-content a:hover {
-      background-color: #f9f9f9;
-      color: #a07;
-    }
-
-    /* This class is toggled via JavaScript */
-    .show-dropdown {
-      display: block !important;
-      opacity: 1 !important;
-      transform: none !important;
-      visibility: visible !important;
-    }
-
-    /* Responsive adjustments for admin dropdown */
-    @media (max-width: 768px) {
-      .admin-dropdown-content {
-        position: absolute;
-        right: 0;
-        left: auto;
-        width: 200px;
-      }
-    }
-
-    /* For very small screens */
-    @media (max-width: 480px) {
-      /* Match home page natural spacing by removing custom gaps and negative margins */
-      #mainNav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 0;
-      }
-      
-      /* Remove negative margins for menu items to match home page */
-      #myAccount, #login-link, #logout-btn {
-        margin-top: 0 !important;
-      }
-      
-      .admin-dropdown-content {
-        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
-        overflow-y: auto;
-        width: 180px; /* Fixed width to ensure content fits */
-        position: fixed !important; /* Use fixed positioning for mobile */
-        /* Top and left values will be set by JavaScript */
-        transform: none !important; /* No transform needed */
-        z-index: 9999 !important; /* Super high z-index to ensure it appears above everything */
-        background-color: white !important; /* Ensure background is opaque */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important; /* Stronger shadow for better visibility */
-        border: 1px solid #ddd !important; /* More visible border */
-        display: none; /* Hide by default */
-      }
-      
-      /* When shown, make sure it's visible */
-      .admin-dropdown-content.show-dropdown,
-      .admin-dropdown-content[style*="display: block"] {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-      }
-      
-      /* Fix for dropdown positioning - ensure it's visible on mobile */
-      .admin-dropdown {
-        position: relative !important; /* Use relative for proper positioning */
-        vertical-align: middle !important;
-        margin-top: 0 !important; /* Match home page by removing margins */
-        display: inline-block !important;
-      }
-      
-      /* Make dropdown items more touch-friendly on mobile */
-      .admin-dropdown-content a {
-        padding: 15px 16px !important; /* Larger touch targets */
-        font-size: 0.95em !important; /* Slightly larger text */
-        border-bottom: 1px solid #eee !important; /* More visible separators */
-        text-align: left !important; /* Left-align the text */
-        display: block !important; /* Ensure block display */
-      }
-
-      .admin-dropdown-btn {
-        padding: 10px 5px;
-        bottom: 2px; /* Raise the Admin Dashboard text on mobile to match index.html */
-      }
-    }
-
-    /* Header and navigation layout */
-    header {
-      margin-bottom: 10px;
-    }
-    
-    .header-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* Logo styling to ensure proper size */
-    .logo {
-      min-width: 610px;
-      width: 610px;
-      margin: 0 auto;
-    }
-    
-    .logo img {
-      width: 100%;
-      max-width: 610px;
-      height: auto;
-      object-fit: contain;
-    }
-
     /* White box mimicking the dropdown */
     .black-box {
       position: fixed;
@@ -1052,6 +854,119 @@
     .black-box a:hover {
       background-color: #f9f9f9;
       color: #a07;
+    }
+
+    /* Admin Dropdown Menu Styles */
+    .admin-dropdown {
+      position: relative;
+      display: inline-block;
+      z-index: 1000; /* Ensure dropdown appears in front of other elements */
+    }
+
+    .admin-dropdown-btn {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 1em;
+      padding: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      display: none;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      position: relative;
+      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
+      z-index: 1000; /* Ensure button appears in front */
+    }
+
+    .admin-dropdown-btn .dropdown-icon {
+      display: inline-block;
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    .admin-dropdown-btn.active .dropdown-icon {
+      transform: rotate(180deg);
+    }
+
+    .admin-dropdown-btn:hover, 
+    .admin-dropdown-btn.active {
+      color: #a07;
+    }
+
+    /* Responsive adjustments for admin dropdown */
+    @media (max-width: 768px) {
+      .admin-dropdown-content {
+        position: absolute;
+        right: 0;
+        left: auto;
+        width: 200px;
+        z-index: 2000; /* Much higher z-index for mobile */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      }
+
+      .admin-dropdown {
+        position: relative;
+        z-index: 1500;
+      }
+
+      header nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        position: relative;
+        z-index: auto; /* Reset any z-index that might be interfering */
+      }
+      
+      /* Ensure the dropdown shows on top of everything when active */
+      .show-dropdown {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        z-index: 9999 !important; /* Extremely high z-index */
+      }
+    }
+
+    /* For very small screens */
+    @media (max-width: 480px) {
+      .admin-dropdown-content {
+        right: -50px; /* Adjust position to be more centered on small screens */
+      }
+
+      .admin-dropdown-btn {
+        padding: 10px 5px;
+        bottom: 2px; /* Raise the Admin Dashboard text on mobile */
+      }
+    }
+    
+    /* Settings gear icon styles */
+    .settings-icon {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .settings-icon:hover {
+      transform: rotate(30deg);
+    }
+
+    .settings-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: #333;
     }
   </style>
 </head>
@@ -1179,10 +1094,13 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { db, auth, isAdminUser } from "./firebase-config.js";
+    import { db, auth } from "./firebase-config.js";
+
+    // Define admin user ID
+    const adminUID = "yuoaYY14sINHaqtNK5EAz4nl8cc2";
 
     // Check authentication state
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in
         document.getElementById("login-link").style.display = "none";
@@ -1191,15 +1109,9 @@
         document.getElementById("settingsIcon").style.display = "flex";
         
         // Check if user is admin
-        try {
-          const isAdmin = await isAdminUser(user.uid);
-          if (isAdmin) {
-            document.getElementById("adminDropdownBtn").style.display = "flex";
-          } else {
-            document.getElementById("adminDropdownBtn").style.display = "none";
-          }
-        } catch (error) {
-          console.error("Error checking admin status:", error);
+        if (user.uid === adminUID) {
+          document.getElementById("adminDropdownBtn").style.display = "flex";
+        } else {
           document.getElementById("adminDropdownBtn").style.display = "none";
         }
       } else {
@@ -1600,7 +1512,9 @@
           
           const submitButton = commentDiv.querySelector('.reply-submit');
           if (submitButton) {
-            submitReply(comment.id);
+            submitButton.addEventListener('click', () => {
+              submitReply(comment.id);
+            });
           }
         }
       }
@@ -1772,7 +1686,7 @@
     }
   </script>
 
-  <!-- JavaScript for Admin Dropdown Menu -->
+  <!-- Admin dropdown control script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const adminDropdownBtn = document.getElementById('adminDropdownBtn');
