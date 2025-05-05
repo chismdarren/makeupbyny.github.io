@@ -872,6 +872,7 @@
     .admin-dropdown {
       position: relative;
       display: inline-block;
+      z-index: 1000; /* Ensure dropdown appears in front of other elements */
     }
 
     .admin-dropdown-btn {
@@ -883,9 +884,13 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
+      display: none;
+      transition: color 0.2s;
       display: flex;
       align-items: center;
-      transition: color 0.2s;
+      position: relative;
+      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
+      z-index: 1000; /* Ensure button appears in front */
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -954,28 +959,29 @@
         right: 0;
         left: auto;
         width: 200px;
+        z-index: 2000; /* Much higher z-index for mobile */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      }
+
+      .admin-dropdown {
+        position: relative;
+        z-index: 1500;
       }
 
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-      }
-
-      .admin-dropdown {
         position: relative;
+        z-index: auto; /* Reset any z-index that might be interfering */
       }
       
-      /* Position logout and user account links on a separate line, centered */
-      #userAccountLink, #logout-btn {
-        margin-top: 5px;
-        display: inline-block;
-        flex-basis: 100%;
-        text-align: center;
-      }
-      
-      #userAccountLink {
-        margin-right: 10px;
+      /* Ensure the dropdown shows on top of everything when active */
+      .show-dropdown {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        z-index: 9999 !important; /* Extremely high z-index */
       }
     }
 
@@ -983,55 +989,10 @@
     @media (max-width: 480px) {
       .admin-dropdown-content {
         right: -50px; /* Adjust position to be more centered on small screens */
-        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
-        overflow-y: auto;
-        width: 180px; /* Fixed width to ensure content fits */
-        position: fixed; /* Change to fixed positioning */
-        /* Positioning will be handled by JavaScript dynamically */
-        z-index: 1001; /* Ensure it appears above other elements */
-        background-color: white; /* Ensure background is opaque */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
-        border: 1px solid #ddd; /* More visible border */
-      }
-
-      /* Fix for dropdown positioning - ensure it's visible on mobile */
-      .admin-dropdown {
-        position: static; /* Change to static so the dropdown positions relative to the nav bar */
-        vertical-align: middle !important;
-        margin-top: 5px !important;
-        display: inline-block !important;
       }
 
       .admin-dropdown-btn {
         padding: 10px 5px;
-        font-size: 0.85em; /* Match the font size of other nav links on mobile */
-        position: relative !important;
-        top: -2px !important;
-        margin-top: 0 !important;
-        font-family: inherit !important;
-        font-weight: normal !important;
-        font-size: 0.85em !important;
-      }
-      
-      /* Dropdown icon styles */
-      .admin-dropdown-btn .dropdown-icon {
-        font-size: 0.85em; /* Make dropdown icon match the text size */
-      }
-      
-      /* Ensure dropdown appears over other content */
-      .show-dropdown {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
-        touch-action: manipulation; /* Optimize touch actions */
-      }
-      
-      /* Make dropdown items more touch-friendly on mobile */
-      .admin-dropdown-content a {
-        padding: 15px 16px; /* Larger touch targets */
-        font-size: 0.95em; /* Slightly larger text */
-        border-bottom: 1px solid #eee; /* More visible separators */
       }
     }
 
@@ -1143,6 +1104,41 @@
       height: 22px;
       fill: #333;
     }
+
+    /* White box mimicking the dropdown */
+    .black-box {
+      position: fixed;
+      background-color: white;
+      z-index: 999;
+      display: none; /* Hidden by default */
+      width: auto;
+      height: auto;
+      min-width: 180px; /* Match dropdown width */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+    
+    /* Menu items in the white box */
+    .black-box a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .black-box a:last-child {
+      border-bottom: none;
+    }
+    
+    .black-box a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
+    }
   </style>
 </head>
 <body>
@@ -1156,24 +1152,16 @@
       <a href="contact.html">Contact</a>
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
-        <div id="adminDropdownContent" class="admin-dropdown-content">
-          <a href="admin-dashboard.html">Messages</a>
-          <a href="editor.html" class="active">Create Post</a>
-          <a href="edit-post.html">Edit Posts</a>
-          <a href="manage-users.html">User Management</a>
-        </div>
       </div>
+      <!-- User account link -->
+      <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
       <a id="login-link" href="login.html">Login</a>
-      <!-- User account and logout links grouped together -->
-      <span style="display:block; width:100%; text-align:center; margin-top:5px;">
-        <a id="userAccountLink" href="settings.html" style="display:none; margin-right:10px;">My Account</a>
-        <button id="logout-btn" style="display:none;">Logout</button>
-      </span>
+      <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
 
@@ -1185,6 +1173,14 @@
   </a>
 
   <div class="content">
+    <!-- Black box in the middle of the page -->
+    <div class="black-box">
+      <a href="admin-dashboard.html">Messages</a>
+      <a href="editor.html" class="active">Create Post</a>
+      <a href="edit-post.html">Edit Posts</a>
+      <a href="manage-users.html">User Management</a>
+    </div>
+    
     <main class="editor-container">
       <button class="preview-button" id="previewBtn" type="button" title="Show Preview">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -1298,6 +1294,54 @@
                 }
             });
         });
+    });
+  </script>
+  
+  <!-- Admin dropdown control script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+      const whiteBox = document.querySelector('.black-box');
+      
+      // Function to position white box under Admin Dashboard
+      function positionWhiteBox() {
+        if (adminDropdownBtn) {
+          const rect = adminDropdownBtn.getBoundingClientRect();
+          whiteBox.style.top = (rect.bottom) + 'px';
+          whiteBox.style.left = rect.left + 'px';
+          whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
+        }
+      }
+      
+      // Position white box initially
+      positionWhiteBox();
+      
+      // Reposition on window resize
+      window.addEventListener('resize', positionWhiteBox);
+      
+      // Toggle dropdown when Admin Dashboard is clicked
+      adminDropdownBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Toggle white box display
+        if (whiteBox.style.display === 'block') {
+          whiteBox.style.display = 'none';
+          this.classList.remove('active');
+        } else {
+          positionWhiteBox(); // Position before showing
+          whiteBox.style.display = 'block';
+          this.classList.add('active');
+        }
+      });
+      
+      // Hide dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!adminDropdownBtn.contains(e.target) && !whiteBox.contains(e.target)) {
+          whiteBox.style.display = 'none';
+          adminDropdownBtn.classList.remove('active');
+        }
+      });
     });
   </script>
 </body>
