@@ -502,9 +502,6 @@
       display: flex;
       align-items: center;
       transition: color 0.2s;
-      position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-      z-index: 1000; /* Ensure button appears in front */
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -1007,9 +1004,18 @@
     }
     
     .black-box a.active {
-      background-color: #f1f1f1;
+      background-color: #f5f5f5;
       color: #a07;
       font-weight: bold;
+    }
+
+    /* Admin Dropdown Button Styles */
+    .admin-dropdown-btn {
+      position: relative !important;
+      bottom: -8px !important;
+      margin-top: 0 !important;
+      font-family: inherit !important;
+      font-weight: normal !important;
     }
   </style>
 </head>
@@ -1045,6 +1051,7 @@
     </a>
 
     <main>
+      <div class="editor-container">
       <!-- Black box in the middle of the page -->
       <div class="black-box">
         <a href="admin-dashboard.html">Messages</a>
@@ -1053,7 +1060,6 @@
         <a href="manage-users.html">User Management</a>
       </div>
       
-      <div class="editor-container">
       <div class="posts-sidebar">
         <h2>Posts</h2>
         <div class="sorting-controls">
@@ -1226,7 +1232,7 @@
       
       // Hide dropdown when clicking outside
       document.addEventListener('click', function(e) {
-        if (adminDropdownBtn && !adminDropdownBtn.contains(e.target) && !whiteBox.contains(e.target)) {
+        if (adminDropdownBtn && whiteBox && !adminDropdownBtn.contains(e.target) && !whiteBox.contains(e.target)) {
           whiteBox.style.display = 'none';
           adminDropdownBtn.classList.remove('active');
         }
