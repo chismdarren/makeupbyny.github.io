@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // For mobile, ensure positioning is applied when the button becomes visible
         if (window.innerWidth <= 480) {
-          adminDropdownBtn.setAttribute('style', 'display: flex; position: relative !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important;');
+          adminDropdownBtn.setAttribute('style', 'display: flex; position: relative !important; margin-top: -4px !important; font-family: inherit !important; font-weight: normal !important;');
         }
       }
       
