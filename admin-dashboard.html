@@ -5,148 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Contact Messages</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* Admin Dropdown Menu Styles */
-        .admin-dropdown {
-          position: relative;
-          display: inline-block;
-          z-index: 1000; /* Ensure dropdown appears in front of other elements */
-        }
-
-        .admin-dropdown-btn {
-          background: none;
-          border: none;
-          color: #333;
-          font-size: 1em;
-          padding: 10px;
-          cursor: pointer;
-          font-family: inherit;
-          text-decoration: none;
-          display: none;
-          transition: color 0.2s;
-          display: flex;
-          align-items: center;
-          position: relative;
-          bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-          z-index: 1000; /* Ensure button appears in front */
-        }
-
-        .admin-dropdown-btn .dropdown-icon {
-          display: inline-block;
-          margin-left: 5px;
-          transition: transform 0.3s ease;
-        }
-
-        .admin-dropdown-btn.active .dropdown-icon {
-          transform: rotate(180deg);
-        }
-
-        .admin-dropdown-btn:hover, 
-        .admin-dropdown-btn.active {
-          color: #a07;
-        }
-
-        /* White box mimicking the dropdown */
-        .black-box {
-          position: fixed;
-          background-color: white;
-          z-index: 999;
-          display: none; /* Hidden by default */
-          width: auto;
-          height: auto;
-          min-width: 180px; /* Match dropdown width */
-          box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-          border-radius: 4px;
-          overflow: hidden;
-          border: 1px solid #eee;
-        }
-        
-        /* Menu items in the white box */
-        .black-box a {
-          color: #333;
-          padding: 12px 16px;
-          text-decoration: none;
-          display: block;
-          text-align: left;
-          transition: background-color 0.2s, color 0.2s;
-          border-bottom: 1px solid #f5f5f5;
-        }
-        
-        .black-box a:last-child {
-          border-bottom: none;
-        }
-        
-        .black-box a:hover {
-          background-color: #f9f9f9;
-          color: #a07;
-        }
-
-        /* Responsive adjustments for admin dropdown */
-        @media (max-width: 768px) {
-          .black-box {
-            position: absolute;
-            right: 0;
-            left: auto;
-            width: 200px;
-            z-index: 2000; /* Much higher z-index for mobile */
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-          }
-
-          .admin-dropdown {
-            position: relative;
-            z-index: 1500;
-          }
-
-          header nav {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            position: relative;
-            z-index: auto; /* Reset any z-index that might be interfering */
-          }
-        }
-
-        /* For very small screens */
-        @media (max-width: 480px) {
-          .black-box {
-            right: -50px; /* Adjust position to be more centered on small screens */
-          }
-
-          .admin-dropdown-btn {
-            padding: 10px 5px;
-            bottom: 2px; /* Raise the Admin Dashboard text on mobile */
-          }
-        }
-
-        /* Settings gear icon styles */
-        .settings-icon {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background-color: rgba(255, 255, 255, 0.8);
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-          z-index: 100;
-          transition: transform 0.3s ease;
-          cursor: pointer;
-        }
-
-        .settings-icon:hover {
-          transform: rotate(30deg);
-        }
-
-        .settings-icon svg {
-          width: 22px;
-          height: 22px;
-          fill: #333;
-        }
-        
         .messages-section {
             margin: 20px;
             padding: 20px;
@@ -249,8 +108,126 @@
             margin: 20px 0;
         }
         
+        /* Admin Dropdown Menu Styles */
+        .admin-dropdown {
+          position: relative;
+        }
+
+        .admin-dropdown-btn {
+          background: none;
+          border: none;
+          color: #333;
+          font-size: 1em;
+          padding: 10px;
+          cursor: pointer;
+          font-family: inherit;
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          transition: color 0.2s;
+        }
+
+        .admin-dropdown-btn .dropdown-icon {
+          display: inline-block;
+          margin-left: 5px;
+          transition: transform 0.3s ease;
+        }
+
+        .admin-dropdown-btn.active .dropdown-icon {
+          transform: rotate(180deg);
+        }
+
+        .admin-dropdown-btn:hover, 
+        .admin-dropdown-btn.active {
+          color: #a07;
+        }
+
+        .admin-dropdown-content {
+          position: absolute;
+          right: 0;
+          left: auto;
+          width: 200px;
+        }
+
+        .admin-dropdown-content a {
+          color: #333;
+          padding: 12px 16px;
+          text-decoration: none;
+          display: block;
+          text-align: left;
+          transition: background-color 0.2s, color 0.2s;
+          border-bottom: 1px solid #f5f5f5;
+        }
+
+        .admin-dropdown-content a:last-child {
+          border-bottom: none;
+        }
+
+        .admin-dropdown-content a:hover {
+          background-color: #f9f9f9;
+          color: #a07;
+        }
+
+        /* This class is toggled via JavaScript */
+        .show-dropdown {
+          display: block;
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Responsive adjustments for admin dropdown */
+        @media (max-width: 768px) {
+          .admin-dropdown-content {
+            position: absolute;
+            right: 0;
+            left: auto;
+            width: 200px;
+          }
+        }
+
         /* For very small screens */
         @media (max-width: 480px) {
+          .admin-dropdown-content {
+            max-height: 80vh; /* Limit maximum height and add scrolling if needed */
+            overflow-y: auto;
+            width: 180px; /* Fixed width to ensure content fits */
+            position: fixed; /* Change to fixed positioning */
+            /* Positioning will be handled by JavaScript dynamically */
+            z-index: 1001; /* Ensure it appears above other elements */
+            background-color: white; /* Ensure background is opaque */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+            border: 1px solid #ddd; /* More visible border */
+          }
+          
+          /* Fix for dropdown positioning - ensure it's visible on mobile */
+          .admin-dropdown {
+            position: static; /* Change to static so the dropdown positions relative to the nav bar */
+            vertical-align: middle !important;
+            margin-top: 5px !important;
+            display: inline-block !important;
+          }
+          
+          /* Dropdown icon styles */
+          .admin-dropdown-btn .dropdown-icon {
+            font-size: 0.85em; /* Make dropdown icon match the text size */
+          }
+          
+          /* Ensure dropdown appears over other content */
+          .show-dropdown {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+            touch-action: manipulation; /* Optimize touch actions */
+          }
+          
+          /* Make dropdown items more touch-friendly on mobile */
+          .admin-dropdown-content a {
+            padding: 15px 16px; /* Larger touch targets */
+            font-size: 0.95em; /* Slightly larger text */
+            border-bottom: 1px solid #eee; /* More visible separators */
+          }
+          
           /* Make messages section take full width on mobile */
           .messages-section {
             width: 100%;
@@ -295,10 +272,37 @@
           width: 100%;
           max-width: 100%;
         }
+
+        /* Settings gear icon styles */
+        .settings-icon {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background-color: rgba(255, 255, 255, 0.8);
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+          z-index: 100;
+          transition: transform 0.3s ease;
+          cursor: pointer;
+        }
+
+        .settings-icon:hover {
+          transform: rotate(30deg);
+        }
+
+        .settings-icon svg {
+          width: 22px;
+          height: 22px;
+          fill: #333;
+        }
     </style>
 </head>
 <body class="admin-page">
-    <!-- Header Section -->
     <header>
         <a href="index.html">
             <img src="nbvlogo.png" alt="Ny's Beauty Vault Logo" style="width: 100%; max-width: 610px; height: auto; object-fit: contain;">
@@ -309,10 +313,16 @@
             <a href="contact.html">Contact</a>
             <!-- Admin dropdown menu (initially hidden) -->
             <div class="admin-dropdown">
-                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;">
                     Admin Dashboard 
                     <span class="dropdown-icon">▼</span>
                 </a>
+                <div id="adminDropdownContent" class="admin-dropdown-content">
+                    <a href="admin-dashboard.html" class="active">Messages</a>
+                    <a href="editor.html">Create Post</a>
+                    <a href="edit-post.html">Edit Posts</a>
+                    <a href="manage-users.html">User Management</a>
+                </div>
             </div>
             <!-- User account link -->
             <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
@@ -330,14 +340,6 @@
     </a>
 
     <div class="content admin-dashboard">
-        <!-- Black box dropdown content -->
-        <div class="black-box">
-            <a href="admin-dashboard.html">Messages</a>
-            <a href="editor.html">Create Post</a>
-            <a href="edit-post.html">Edit Posts</a>
-            <a href="manage-users.html">User Management</a>
-        </div>
-        
         <main class="posts">
             <div class="messages-section">
                 <h2>Contact Messages</h2>
@@ -365,56 +367,23 @@
         </div>
     </div>
 
-    <!-- Load firebase.js first to initialize Firebase -->
-    <script type="module" src="firebase.js"></script>
-    
-    <!-- Load admin-dashboard.js for page-specific functionality -->
     <script type="module" src="admin-dashboard.js"></script>
-
-    <!-- Admin dropdown control script -->
     <script>
+        // Fix for mobile menu tap delays
         document.addEventListener('DOMContentLoaded', function() {
-            const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-            const whiteBox = document.querySelector('.black-box');
-            
-            // Function to position white box under Admin Dashboard
-            function positionWhiteBox() {
-                if (adminDropdownBtn) {
-                    const rect = adminDropdownBtn.getBoundingClientRect();
-                    whiteBox.style.top = (rect.bottom) + 'px';
-                    whiteBox.style.left = rect.left + 'px';
-                    whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
-                }
-            }
-            
-            // Position white box initially
-            positionWhiteBox();
-            
-            // Reposition on window resize
-            window.addEventListener('resize', positionWhiteBox);
-            
-            // Toggle dropdown when Admin Dashboard is clicked
-            adminDropdownBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+            const dropdownLinks = document.querySelectorAll('.admin-dropdown-content a');
+            dropdownLinks.forEach(link => {
+                link.addEventListener('touchstart', function(e) {
+                    // Prevent double-firing of events
+                    e.stopPropagation();
+                });
                 
-                // Toggle white box display
-                if (whiteBox.style.display === 'block') {
-                    whiteBox.style.display = 'none';
-                    this.classList.remove('active');
-                } else {
-                    positionWhiteBox(); // Position before showing
-                    whiteBox.style.display = 'block';
-                    this.classList.add('active');
-                }
-            });
-            
-            // Hide dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!adminDropdownBtn.contains(e.target) && !whiteBox.contains(e.target)) {
-                    whiteBox.style.display = 'none';
-                    adminDropdownBtn.classList.remove('active');
-                }
+                link.addEventListener('touchend', function(e) {
+                    // Navigate to the link href directly
+                    if (this.href) {
+                        window.location.href = this.href;
+                    }
+                });
             });
         });
     </script>
