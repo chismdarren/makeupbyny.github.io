@@ -2,45 +2,46 @@ import { db, auth, isAdminUser } from './firebase-config.js';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
+// DOM elements
+const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+const userAccountLink = document.getElementById("userAccountLink");
+const loginLink = document.getElementById("login-link");
+const logoutBtn = document.getElementById("logout-btn");
+const settingsIcon = document.getElementById("settingsIcon");
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Get DOM elements
-  const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-  const loginLink = document.getElementById('login-link');
-  const logoutBtn = document.getElementById('logout-btn');
-  const userAccountLink = document.getElementById('userAccountLink');
-  const settingsIcon = document.getElementById('settingsIcon');
-
   // Initially hide user account link and settings icon until auth check completes
-  if (userAccountLink) userAccountLink.style.display = 'none';
-  if (settingsIcon) settingsIcon.style.display = 'none';
-
+  if (userAccountLink) userAccountLink.style.display = "none";
+  if (settingsIcon) settingsIcon.style.display = "none";
+  
+  // Setup dropdowns
+  setupDropdowns();
+  
+  // Setup logout button
+  setupLogout();
+  
   // Handle authentication state
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      // Not logged in, redirect to login page
-      window.location.href = 'login.html';
-      return;
-    }
+  onAuthStateChanged(auth, handleAuthStateChange);
+});
 
-    // User is logged in
-    if (loginLink) loginLink.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'inline';
-    if (userAccountLink) userAccountLink.style.display = 'inline';
-    if (settingsIcon) settingsIcon.style.display = 'flex';
-
-    // Check if user is admin
+// Handle authentication state changes
+async function handleAuthStateChange(user) {
+  if (user) {
+    console.log("User is logged in:", user.email);
+    
+    // Update UI based on user role
+    if (loginLink) loginLink.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "inline";
+    if (userAccountLink) userAccountLink.style.display = "inline";
+    
+    // Show admin dropdown based on role
     const isAdmin = await isAdminUser(user.uid);
+    if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? "inline" : "none";
+    
+    // Show settings icon when user is logged in
+    if (settingsIcon) settingsIcon.style.display = "flex";
+    
     if (isAdmin) {
-      // User is admin, show admin dropdown menu
-      if (adminDropdownBtn) {
-        adminDropdownBtn.style.display = 'inline';
-        
-        // For mobile, ensure positioning is applied when the button becomes visible
-        if (window.innerWidth <= 480) {
-          adminDropdownBtn.setAttribute('style', 'display: flex; position: relative !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
-        }
-      }
-      
       // Load contact messages
       loadContactMessages();
     } else {
@@ -48,120 +49,65 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Access denied. Admin privileges required.');
       window.location.href = 'index.html';
     }
-  });
+  } else {
+    console.log("User is not logged in");
+    
+    // Update UI for logged out state
+    if (loginLink) loginLink.style.display = "inline";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (userAccountLink) userAccountLink.style.display = "none";
+    if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+    if (settingsIcon) settingsIcon.style.display = "none";
+    
+    // Not logged in, redirect to login page
+    window.location.href = 'login.html';
+  }
+}
 
-  // Handle admin dropdown toggle
+// Set up dropdowns
+function setupDropdowns() {
+  // Admin dropdown
   if (adminDropdownBtn) {
-    adminDropdownBtn.addEventListener('click', function(e) {
+    adminDropdownBtn.addEventListener("click", function(e) {
       e.preventDefault();
       e.stopPropagation();
-      
-      // Toggle dropdown visibility - using black-box instead of adminDropdownContent
-      const dropdown = document.querySelector('.black-box');
-      if (dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-        this.classList.remove('active');
-      } else {
-        // Position before showing
-        const rect = this.getBoundingClientRect();
-        dropdown.style.top = (rect.bottom) + 'px';
-        dropdown.style.left = rect.left + 'px';
-        dropdown.style.width = (rect.width < 180 ? 180 : rect.width) + 'px';
-        
-        dropdown.style.display = 'block';
-        this.classList.add('active');
-      }
-      
-      // For mobile: ensure the dropdown is positioned correctly
-      if (window.innerWidth <= 480) {
-        // Function to position dropdown below button
-        const positionDropdown = () => {
-          if (dropdown.style.display === 'block') {
-            const buttonRect = this.getBoundingClientRect();
-            
-            dropdown.style.position = 'fixed';
-            dropdown.style.top = (buttonRect.bottom + 5) + 'px';
-            dropdown.style.left = (buttonRect.left) + 'px';
-            dropdown.style.maxHeight = '80vh';
-            dropdown.style.zIndex = '9999';
-            
-            const dropdownRect = dropdown.getBoundingClientRect();
-            if (dropdownRect.bottom > window.innerHeight) {
-              window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
-            }
-          }
-        };
-        
-        // Position initially
-        setTimeout(positionDropdown, 10);
-        
-        // Track scroll to reposition dropdown if needed
-        const scrollHandler = () => {
-          if (dropdown.style.display === 'block') {
-            positionDropdown();
-          } else {
-            // Remove handler if dropdown is closed
-            window.removeEventListener('scroll', scrollHandler);
-            window._dropdownScrollHandler = null;
-          }
-        };
-        
-        // Store handler globally for later removal
-        window._dropdownScrollHandler = scrollHandler;
-        
-        // Add scroll listener
-        window.addEventListener('scroll', window._dropdownScrollHandler);
-      }
+      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      this.classList.toggle("active");
     });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-      // Don't close if clicking on the dropdown itself
-      if (e.target.closest('.black-box')) {
-        return;
-      }
-      
-      // Only close if clicking outside the dropdown and its button
-      if (!e.target.matches('#adminDropdownBtn') && 
-          !e.target.matches('.dropdown-icon') && 
-          !e.target.closest('#adminDropdownBtn')) {
-        const dropdown = document.querySelector('.black-box');
-        const btn = document.getElementById('adminDropdownBtn');
-        if (dropdown && dropdown.style.display === 'block') {
-          dropdown.style.display = 'none';
-          if (btn) btn.classList.remove('active');
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener("click", function(e) {
+    if (!e.target.matches(".admin-dropdown-btn")) {
+      const dropdowns = document.querySelectorAll(".admin-dropdown-content");
+      dropdowns.forEach(dropdown => {
+        if (dropdown.classList.contains("show-dropdown")) {
+          dropdown.classList.remove("show-dropdown");
           
-          // Reset inline styles when closing dropdown
-          if (window.innerWidth <= 480) {
-            setTimeout(() => {
-              dropdown.style.position = '';
-              dropdown.style.top = '';
-              dropdown.style.left = '';
-              dropdown.style.transform = '';
-              dropdown.style.maxHeight = '';
-            }, 300); // Wait for transition to complete
-            
-            // Remove any scroll handlers
-            window.removeEventListener('scroll', window._dropdownScrollHandler);
-            window._dropdownScrollHandler = null;
-          }
+          // Also remove active class from buttons
+          if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
         }
-      }
-    });
-  }
+      });
+    }
+  });
+}
 
-  // Handle logout
+// Set up logout
+function setupLogout() {
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await signOut(auth);
-        window.location.href = 'index.html';
-      } catch (error) {
-        console.error('Error signing out:', error);
-      }
-    });
+    logoutBtn.addEventListener("click", handleLogout);
   }
-});
+}
+
+// Handle logout
+function handleLogout() {
+  signOut(auth).then(() => {
+    console.log("User signed out");
+    window.location.href = "index.html";
+  }).catch(error => {
+    console.error("Error signing out:", error);
+  });
+}
 
 // Load and display contact messages
 function loadContactMessages() {
