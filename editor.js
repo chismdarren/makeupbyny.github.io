@@ -886,7 +886,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // For mobile, ensure positioning is applied when the button becomes visible
             if (window.innerWidth <= 480) {
-              adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important; font-size: 0.85em !important;');
+              adminDropdownBtn.setAttribute('style', 'display: inline; position: relative !important; bottom: -8px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important;');
             }
           }
         } else {
