@@ -313,52 +313,41 @@ document.addEventListener("DOMContentLoaded", () => {
             const imageRef = ref(storage, `images/${Date.now()}_${file.name}`);
             const uploadTask = uploadBytes(imageRef, blob);
             
-            uploadTask.on('state_changed',
-              (snapshot) => {
-                // Update progress
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                const progressElement = document.querySelector(`#temp-${tempId} .upload-progress`);
-                if (progressElement) {
-                  progressElement.textContent = `Uploading... ${Math.round(progress)}%`;
+            uploadTask.then(async () => {
+              try {
+                // Get download URL
+                const downloadURL = await getDownloadURL(imageRef);
+                
+                // Replace temporary preview with final image
+                const finalImgHtml = `<img src="${downloadURL}" alt="Preview" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" title="Click to edit image" data-image-id="${tempId}">`;
+                
+                // Update preview
+                if (previewContent) {
+                  const tempElement = previewContent.querySelector(`#temp-${tempId}`);
+                  if (tempElement) {
+                    tempElement.outerHTML = finalImgHtml;
+                  }
                 }
-              },
-              (error) => {
-                console.error('Upload error:', error);
+                
+                // Update content editor
+                if (contentElement) {
+                  const tempElement = contentElement.querySelector(`#temp-${tempId}`);
+                  if (tempElement) {
+                    tempElement.outerHTML = finalImgHtml;
+                  }
+                }
+                
+                hideLoading(contentElement);
+                hideLoading(previewContent);
+                resolve(downloadURL);
+              } catch (error) {
+                console.error('Error getting download URL:', error);
                 reject(error);
-              },
-              async () => {
-                try {
-                  // Get download URL
-                  const downloadURL = await getDownloadURL(imageRef);
-                  
-                  // Replace temporary preview with final image
-                  const finalImgHtml = `<img src="${downloadURL}" alt="Preview" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" title="Click to edit image" data-image-id="${tempId}">`;
-                  
-                  // Update preview
-                  if (previewContent) {
-                    const tempElement = previewContent.querySelector(`#temp-${tempId}`);
-                    if (tempElement) {
-                      tempElement.outerHTML = finalImgHtml;
-                    }
-                  }
-                  
-                  // Update content editor
-                  if (contentElement) {
-                    const tempElement = contentElement.querySelector(`#temp-${tempId}`);
-                    if (tempElement) {
-                      tempElement.outerHTML = finalImgHtml;
-                    }
-                  }
-                  
-                  hideLoading(contentElement);
-                  hideLoading(previewContent);
-                  resolve(downloadURL);
-                } catch (error) {
-                  console.error('Error getting download URL:', error);
-                  reject(error);
-                }
               }
-            );
+            }).catch(error => {
+              console.error('Upload error:', error);
+              reject(error);
+            });
           }, 'image/jpeg', 0.8); // Compress to JPEG with 80% quality
         };
         img.src = e.target.result;
@@ -663,7 +652,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         alert("Post updated successfully!");
-        window.location.href = "admin-dashboard.html";
+        window.location.href = "index.html";
       } catch (error) {
         console.error("Error updating post:", error);
         alert("Error updating post. Please try again.");
@@ -691,148 +680,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
-  // DOM elements for auth-related UI
-  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
-  const userAccountLink = document.getElementById("userAccountLink");
-  const loginLink = document.getElementById("login-link");
-  const logoutBtn = document.getElementById("logout-btn");
-  const settingsIcon = document.getElementById("settingsIcon");
-
-  // Initially hide user account link and settings gear icon
-  if (userAccountLink) userAccountLink.style.display = "none";
-  if (settingsIcon) settingsIcon.style.display = "none";
-
-  // Authentication state change handler
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      // User is logged in
-      if (loginLink) loginLink.style.display = "none";
-      if (logoutBtn) logoutBtn.style.display = "inline";
-      if (userAccountLink) userAccountLink.style.display = "inline";
-      if (settingsIcon) settingsIcon.style.display = "flex";
-
-      // Check if user is admin
-      const isAdmin = await isAdminUser(user.uid);
-      if (isAdmin) {
-        // User is admin, show admin dropdown and editor features
-        if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
-
-        // Initialize post editor functionality
-        initPostEditor();
-      } else {
-        // User is not admin, redirect to home
-        console.warn("Non-admin user attempted to access post editor");
-        alert("Access denied. Admin privileges required.");
-        window.location.href = "index.html";
-      }
-    } else {
-      // User is not logged in, redirect to login
-      window.location.href = "login.html";
-    }
-  });
-
-  // Set up logout functionality
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      signOut(auth).then(() => {
-        console.log("User signed out");
-        window.location.href = "index.html";
-      }).catch(error => {
-        console.error("Error signing out:", error);
-      });
-    });
-  }
-
-  // Set up dropdown functionality
-  if (adminDropdownBtn) {
-    adminDropdownBtn.addEventListener("click", function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Toggle dropdown visibility
-      const dropdown = document.getElementById("adminDropdownContent");
-      dropdown.classList.toggle("show-dropdown");
-      this.classList.toggle("active");
-      
-      // For mobile: ensure the dropdown is positioned correctly
-      if (window.innerWidth <= 480) {
-        // Function to position dropdown below button
-        const positionDropdown = () => {
-          if (dropdown.classList.contains("show-dropdown")) {
-            const buttonRect = this.getBoundingClientRect();
-            
-            dropdown.style.position = 'fixed';
-            dropdown.style.top = (buttonRect.bottom + 5) + 'px';
-            dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
-            dropdown.style.transform = 'translateX(-50%)';
-            dropdown.style.maxHeight = '80vh';
-            dropdown.style.zIndex = '9999';
-            
-            const dropdownRect = dropdown.getBoundingClientRect();
-            if (dropdownRect.bottom > window.innerHeight) {
-              window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
-            }
-          }
-        };
-        
-        // Position initially
-        setTimeout(positionDropdown, 10);
-        
-        // Track scroll to reposition dropdown if needed
-        const scrollHandler = () => {
-          if (dropdown.classList.contains("show-dropdown")) {
-            positionDropdown();
-          } else {
-            // Remove handler if dropdown is closed
-            window.removeEventListener('scroll', scrollHandler);
-            window._dropdownScrollHandler = null;
-          }
-        };
-        
-        // Store handler globally for later removal
-        window._dropdownScrollHandler = scrollHandler;
-        
-        // Add scroll listener
-        window.addEventListener('scroll', window._dropdownScrollHandler);
-      }
-    });
-  }
-
-  // Close dropdown when clicking outside
-  document.addEventListener("click", function(e) {
-    // Don't close if clicking on the dropdown itself
-    if (e.target.closest('.admin-dropdown-content')) {
-      return;
-    }
-    
-    // Only close if clicking outside the dropdown and its button
-    if (!e.target.matches('#adminDropdownBtn') && 
-        !e.target.matches('.dropdown-icon') && 
-        !e.target.closest('#adminDropdownBtn')) {
-      const dropdown = document.getElementById("adminDropdownContent");
-      const btn = document.getElementById("adminDropdownBtn");
-      if (dropdown && dropdown.classList.contains("show-dropdown")) {
-        dropdown.classList.remove("show-dropdown");
-        if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
-        
-        // Reset inline styles when closing dropdown
-        if (window.innerWidth <= 480) {
-          setTimeout(() => {
-            dropdown.style.position = '';
-            dropdown.style.top = '';
-            dropdown.style.left = '';
-            dropdown.style.transform = '';
-            dropdown.style.maxHeight = '';
-          }, 300); // Wait for transition to complete
-          
-          // Remove any scroll handlers
-          window.removeEventListener('scroll', window._dropdownScrollHandler);
-          window._dropdownScrollHandler = null;
-        }
-      }
-    }
-  });
 
   // Function to load all posts for the sidebar
   async function loadAllPosts() {
@@ -1022,7 +869,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   loadPostData(nextPostId);
                 } else {
                   // No posts left, redirect to dashboard
-                  window.location.href = "admin-dashboard.html";
+                  window.location.href = "index.html";
                 }
               }
             } catch (error) {
@@ -1129,6 +976,27 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Authentication state change handler
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // User is logged in
+      // Check if user is admin
+      const isAdmin = await isAdminUser(user.uid);
+      if (isAdmin) {
+        // Initialize post editor functionality
+        initPostEditor();
+      } else {
+        // User is not admin, redirect to home
+        console.warn("Non-admin user attempted to access post editor");
+        alert("Access denied. Admin privileges required.");
+        window.location.href = "index.html";
+      }
+    } else {
+      // User is not logged in, redirect to login
+      window.location.href = "login.html";
+    }
+  });
 
   // Initialize
   setupTextFormatting();
