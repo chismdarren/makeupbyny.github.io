@@ -50,20 +50,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleHiddenInput = document.getElementById("title");
   const titleFontSelect = document.getElementById("titleFont");
   const dateInput = document.getElementById("postDate");
-  
+
   // Navigation and authentication elements
   const adminDropdownBtn = document.getElementById("adminDropdownBtn");
   const userAccountLink = document.getElementById("userAccountLink");
   const loginLink = document.getElementById("login-link");
   const logoutBtn = document.getElementById("logout-btn");
   const settingsIcon = document.getElementById("settingsIcon");
-  
+
   // Preview popup elements
   const previewBtn = document.getElementById('previewBtn');
   const closePreviewBtn = document.getElementById('closePreviewBtn');
   const previewSection = document.getElementById('previewSection');
   const previewOverlay = document.getElementById('previewOverlay');
-  
+
   // Initialize SunEditor
   if (contentElement) {
     editor = SUNEDITOR.create(contentElement, {
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
       videoWidth: '100%',
       youtubeQuery: 'autoplay=0&mute=0',
       tabDisable: false,
-      callBackSave: function(contents) {
+      callBackSave: function (contents) {
         console.log('SunEditor contents saved:', contents);
       },
       // Use the language pack if available, otherwise use null
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Handle SunEditor events
-    editor.onChange = function(contents) {
+    editor.onChange = function (contents) {
       if (previewContent) {
         previewContent.innerHTML = contents;
       }
@@ -108,24 +108,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle title field and font
   if (titleField && titleHiddenInput) {
     // Handle input in the title field
-    titleField.addEventListener('input', function() {
+    titleField.addEventListener('input', function () {
       // Create a temporary div to decode HTML entities
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = this.innerHTML;
       const decodedText = tempDiv.textContent || tempDiv.innerText || '';
-      
+
       // Replace &nbsp; with regular spaces and trim
       const cleanTitle = decodedText.replace(/&nbsp;/g, ' ').trim();
-      
+
       // Update hidden input for form submission with clean text
       titleHiddenInput.value = cleanTitle;
-      
+
       // Update the preview title
       updateTitlePreview(this.innerHTML);
     });
-    
+
     // Prevent line breaks in title field
-    titleField.addEventListener('keydown', function(e) {
+    titleField.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         return false;
@@ -135,10 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle font changes for the title
   if (titleFontSelect && titleField) {
-    titleFontSelect.addEventListener('change', function() {
+    titleFontSelect.addEventListener('change', function () {
       const selectedFont = this.value;
       titleField.style.fontFamily = selectedFont;
-      
+
       // Update preview title font
       const previewTitle = document.getElementById('previewTitle');
       if (previewTitle) {
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewTitle = document.getElementById('previewTitle');
     if (previewTitle) {
       previewTitle.innerHTML = contents || 'Post Title';
-      
+
       // Apply the selected font to the preview title
       if (titleFontSelect) {
         previewTitle.style.fontFamily = titleFontSelect.value;
@@ -163,10 +163,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Get post ID from URL
   const params = new URLSearchParams(window.location.search);
   const currentPostId = params.get("postId");
-  
+
   // Variable to keep track of the latest post
   let latestPostId = null;
-  
+
   // Handle sorting change
   if (sortBySelect) {
     sortBySelect.addEventListener('change', () => {
@@ -229,21 +229,21 @@ document.addEventListener("DOMContentLoaded", () => {
         contentElement.focus();
       });
     }
-    
+
     if (italicBtn) {
       italicBtn.addEventListener('click', () => {
         document.execCommand('italic', false, null);
         contentElement.focus();
       });
     }
-    
+
     if (underlineBtn) {
       underlineBtn.addEventListener('click', () => {
         document.execCommand('underline', false, null);
         contentElement.focus();
       });
     }
-    
+
     // Font family
     if (fontFamilySelect) {
       fontFamilySelect.addEventListener('change', () => {
@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contentElement.focus();
       });
     }
-    
+
     // Font size
     if (fontSizeSelect) {
       fontSizeSelect.addEventListener('change', () => {
@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="upload-progress">Uploading... 0%</div>
         <img src="${URL.createObjectURL(file)}" alt="Uploading..." style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
       </div>`;
-      
+
       // Add temporary preview
       if (previewContent) {
         previewContent.innerHTML = tempImgHtml + previewContent.innerHTML;
@@ -296,12 +296,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Compress image
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          
+
           // Calculate new dimensions (max 1200px width)
           let width = img.width;
           let height = img.height;
@@ -309,25 +309,25 @@ document.addEventListener("DOMContentLoaded", () => {
             height = (height * 1200) / width;
             width = 1200;
           }
-          
+
           canvas.width = width;
           canvas.height = height;
-          
+
           // Draw and compress
           ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(function(blob) {
+          canvas.toBlob(function (blob) {
             // Upload to Firebase Storage
             const imageRef = ref(storage, `images/${Date.now()}_${file.name}`);
             const uploadTask = uploadBytes(imageRef, blob);
-            
+
             uploadTask.then(async () => {
               try {
                 // Get download URL
                 const downloadURL = await getDownloadURL(imageRef);
-                
+
                 // Replace temporary preview with final image
                 const finalImgHtml = `<img src="${downloadURL}" alt="Preview" style="max-width: 100%; height: auto; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" title="Click to edit image" data-image-id="${tempId}">`;
-                
+
                 // Update preview
                 if (previewContent) {
                   const tempElement = previewContent.querySelector(`#temp-${tempId}`);
@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     tempElement.outerHTML = finalImgHtml;
                   }
                 }
-                
+
                 // Update content editor
                 if (contentElement) {
                   const tempElement = contentElement.querySelector(`#temp-${tempId}`);
@@ -343,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     tempElement.outerHTML = finalImgHtml;
                   }
                 }
-                
+
                 hideLoading(contentElement);
                 hideLoading(previewContent);
                 resolve(downloadURL);
@@ -371,21 +371,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle image editing
   function setupImageEditing() {
     if (contentElement) {
-      contentElement.addEventListener('click', function(e) {
+      contentElement.addEventListener('click', function (e) {
         if (e.target.tagName === 'IMG') {
           const img = e.target;
           const action = prompt('What would you like to do?\n1. Remove image\n2. Edit alt text\n3. Change position\n4. Resize image\n5. Cancel');
-          
+
           if (!action) return;
-          
-          switch(action) {
+
+          switch (action) {
             case '1':
               if (confirm('Remove this image?')) {
                 img.remove();
                 updatePreview();
               }
               break;
-              
+
             case '2':
               const altText = prompt('Enter alt text for the image:', img.alt);
               if (altText !== null) {
@@ -393,11 +393,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 updatePreview();
               }
               break;
-              
+
             case '3':
               const position = prompt('Choose position:\n1. Left\n2. Center\n3. Right', '2');
               if (position) {
-                switch(position) {
+                switch (position) {
                   case '1':
                     img.style.float = 'left';
                     img.style.margin = '0 20px 10px 0';
@@ -415,7 +415,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 updatePreview();
               }
               break;
-              
+
             case '4':
               const width = prompt('Enter new width in pixels (e.g., 300):', img.style.width);
               if (width) {
@@ -442,8 +442,8 @@ document.addEventListener("DOMContentLoaded", () => {
     insertImageBtn.addEventListener("click", () => {
       imageUploadInput.click();
     });
-    
-    imageUploadInput.addEventListener("change", async function(event) {
+
+    imageUploadInput.addEventListener("change", async function (event) {
       const files = event.target.files;
       if (files) {
         try {
@@ -458,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Live update for content
   if (contentElement) {
-    contentElement.addEventListener("input", function() {
+    contentElement.addEventListener("input", function () {
       updatePreview();
       updateCharacterCount();
     });
@@ -467,7 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Live update for title
   const titleInput = document.getElementById("title");
   if (titleInput) {
-    titleInput.addEventListener("input", function() {
+    titleInput.addEventListener("input", function () {
       const previewTitle = document.getElementById("previewTitle");
       if (previewTitle) {
         previewTitle.textContent = this.value || "Post Title Preview";
@@ -478,7 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Live update for tags
   const tagsInput = document.getElementById("tags");
   if (tagsInput) {
-    tagsInput.addEventListener("input", function() {
+    tagsInput.addEventListener("input", function () {
       const previewTags = document.getElementById("previewTags");
       if (previewTags) {
         previewTags.textContent = this.value ? `Tags: ${this.value}` : "";
@@ -488,15 +488,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle date input change
   if (dateInput) {
-    dateInput.addEventListener('change', function() {
+    dateInput.addEventListener('change', function () {
       const selectedDate = new Date(this.value);
       const previewDate = document.getElementById('previewDate');
-      
+
       if (previewDate) {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         previewDate.textContent = selectedDate.toLocaleDateString('en-US', options);
       }
-      
+
       // Update the post date in real-time
       if (currentPostId) {
         try {
@@ -526,17 +526,17 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       // Update the current post ID
       window.currentPostId = postId;
-      
+
       showLoading(editPostForm);
       console.log("Loading post data for ID:", postId);
-      
+
       const postDocRef = doc(db, "posts", postId);
       const postSnapshot = await getDoc(postDocRef);
-      
+
       if (postSnapshot.exists()) {
         const postData = postSnapshot.data();
         console.log("Post data loaded:", postData);
-        
+
         // Populate form fields
         const titleInput = document.getElementById("title");
         const titleField = document.getElementById("titleField");
@@ -544,31 +544,31 @@ document.addEventListener("DOMContentLoaded", () => {
         const tagsInput = document.getElementById("tags");
         const dateInput = document.getElementById("postDate");
         const statusInputs = document.querySelectorAll('input[name="status"]');
-        
+
         // Update title field and font
         if (titleField) {
           titleField.innerHTML = postData.title || '';
-          
+
           // Set title font if specified
           if (postData.titleFont && titleFontSelect) {
             titleFontSelect.value = postData.titleFont;
             titleField.style.fontFamily = postData.titleFont;
           }
         }
-        
+
         // Update hidden title input
         if (titleInput) {
           titleInput.value = postData.title || '';
         }
-        
+
         // Update content in SunEditor
         if (editor) {
           editor.setContents(postData.content || '');
         }
-        
+
         if (tagsInput) tagsInput.value = postData.tags || '';
         if (dateInput) dateInput.value = postData.postDate || new Date().toISOString().split('T')[0];
-        
+
         // Set status radio button
         if (statusInputs) {
           const status = postData.status || 'draft';
@@ -576,24 +576,24 @@ document.addEventListener("DOMContentLoaded", () => {
             input.checked = input.value === status;
           });
         }
-        
+
         // Update preview
         const previewTitle = document.getElementById("previewTitle");
         const previewContent = document.getElementById("previewContent");
         const previewTags = document.getElementById("previewTags");
         const previewDate = document.getElementById("previewDate");
-        
+
         if (previewTitle) {
           previewTitle.textContent = postData.title || "Post Title Preview";
           if (postData.titleFont) {
             previewTitle.style.fontFamily = postData.titleFont;
           }
         }
-        
+
         if (previewContent) {
           previewContent.innerHTML = postData.content || "Post content preview will appear here...";
         }
-        
+
         if (previewTags) previewTags.textContent = postData.tags ? `Tags: ${postData.tags}` : '';
         if (previewDate) {
           const date = postData.postDate || postData.lastModified || postData.createdAt;
@@ -605,7 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
             previewDate.textContent = '';
           }
         }
-        
+
         // Highlight the active post in the sidebar
         document.querySelectorAll('.post-item').forEach(item => {
           item.classList.remove('active');
@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
             item.classList.add('active');
           }
         });
-        
+
         console.log("Post data loaded successfully");
       } else {
         console.error("Post not found for ID:", postId);
@@ -631,18 +631,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle form submission
   if (editPostForm) {
-    editPostForm.addEventListener("submit", async function(event) {
+    editPostForm.addEventListener("submit", async function (event) {
       event.preventDefault();
 
       // Get title from the hidden input (already cleaned)
       const title = document.getElementById("title").value;
-      
+
       // Get title font
       const titleFont = document.getElementById("titleFont").value;
-      
+
       // Get content from SunEditor
       const content = editor ? editor.getContents() : '';
-      
+
       const tags = document.getElementById("tags").value;
       const status = document.querySelector('input[name="status"]:checked').value;
       const postDate = document.getElementById("postDate").value;
@@ -696,14 +696,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const postsRef = collection(db, "posts");
       const q = query(postsRef, orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
-      
+
       if (querySnapshot.empty) {
         if (postsList) {
           postsList.innerHTML = '<div class="no-posts">No posts found</div>';
         }
         return;
       }
-      
+
       // Store posts for sorting
       allPosts = querySnapshot.docs.map(doc => {
         const data = doc.data();
@@ -714,18 +714,18 @@ document.addEventListener("DOMContentLoaded", () => {
           commentCount: 0 // Will be populated if needed
         };
       });
-      
+
       // Store the ID of the most recent post
       if (allPosts.length > 0) {
         latestPostId = allPosts[0].id;
       }
-      
+
       // Load comment counts for each post
       await loadCommentCounts();
-      
+
       // Initial sort by newest (default)
       sortAndRenderPosts('newest');
-      
+
     } catch (error) {
       console.error("Error loading posts:", error);
       if (postsList) {
@@ -733,7 +733,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-  
+
   // Function to load comment counts for all posts
   async function loadCommentCounts() {
     try {
@@ -742,7 +742,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const commentsRef = collection(db, "posts", post.id, "comments");
         const q = query(commentsRef);
         const querySnapshot = await getDocs(q);
-        
+
         // Store the comment count
         post.commentCount = querySnapshot.size;
       }
@@ -750,21 +750,21 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error loading comment counts:", error);
     }
   }
-  
+
   // Function to sort and render posts in the sidebar
   function sortAndRenderPosts(sortType) {
     if (!postsList) return;
-    
+
     let sortedPosts = [...allPosts];
-    
+
     // Filter posts by search term if search input exists and has value
     if (searchInput && searchInput.value.trim() !== '') {
       const searchTerm = searchInput.value.trim().toLowerCase();
-      sortedPosts = sortedPosts.filter(post => 
+      sortedPosts = sortedPosts.filter(post =>
         post.title.toLowerCase().includes(searchTerm)
       );
     }
-    
+
     switch (sortType) {
       case 'newest':
         sortedPosts.sort((a, b) => b.createdAt - a.createdAt);
@@ -779,34 +779,34 @@ document.addEventListener("DOMContentLoaded", () => {
         sortedPosts.sort((a, b) => b.commentCount - a.commentCount);
         break;
     }
-    
+
     // Clear the posts list
     postsList.innerHTML = '';
-    
+
     // Show message if no posts match search
     if (sortedPosts.length === 0) {
       postsList.innerHTML = '<div class="no-posts">No posts found</div>';
       return;
     }
-    
+
     // Add each post to the list
     sortedPosts.forEach(post => {
       const postElement = document.createElement('div');
       postElement.className = 'post-item';
       postElement.dataset.postId = post.id;
-      
+
       // Mark as active if this is the current post
       if (post.id === (currentPostId || latestPostId)) {
         postElement.classList.add('active');
       }
-      
+
       // Format date
       const date = post.createdAt.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
       });
-      
+
       postElement.innerHTML = `
         <div class="post-item-title">${post.title}</div>
         <div class="post-item-meta">
@@ -818,62 +818,62 @@ document.addEventListener("DOMContentLoaded", () => {
           <button class="post-action-btn delete-post-btn" title="Delete Post">Delete</button>
         </div>
       `;
-      
+
       // Add click event to load the post
       postElement.querySelector('.post-item-title').addEventListener('click', () => {
         // Change URL without page refresh
         const url = new URL(window.location);
         url.searchParams.set('postId', post.id);
         window.history.pushState({}, '', url);
-        
+
         // Load the selected post
         loadPostData(post.id);
-        
+
         // Update active state in sidebar
         document.querySelectorAll('.post-item').forEach(item => {
           item.classList.remove('active');
         });
         postElement.classList.add('active');
       });
-      
+
       // Add click event for the meta info to also load the post
       postElement.querySelector('.post-item-meta').addEventListener('click', () => {
         postElement.querySelector('.post-item-title').click();
       });
-      
+
       // Add delete button handler
       const deleteBtn = postElement.querySelector('.delete-post-btn');
       if (deleteBtn) {
         deleteBtn.addEventListener('click', async (e) => {
           e.stopPropagation(); // Prevent post selection
-          
+
           if (confirm(`Are you sure you want to delete "${post.title}"? This action cannot be undone.`)) {
             try {
               await deleteDoc(doc(db, "posts", post.id));
-              
+
               // Remove from DOM
               postElement.remove();
-              
+
               // Remove from allPosts array
               const index = allPosts.findIndex(p => p.id === post.id);
               if (index >= 0) {
                 allPosts.splice(index, 1);
               }
-              
+
               // Notify user
               alert("Post deleted successfully!");
-              
+
               // If deleted post is currently loaded, redirect to latest post
               if (post.id === currentPostId) {
                 if (allPosts.length > 0) {
                   // Load another post
                   const nextPostId = allPosts[0].id;
-                  
+
                   // Update URL
                   const url = new URL(window.location);
                   url.searchParams.set('postId', nextPostId);
                   window.history.pushState({}, '', url);
-                  
+
                   // Load the post
                   loadPostData(nextPostId);
                 } else {
@@ -888,27 +888,27 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       }
-      
+
       // Add archive button handler
       const archiveBtn = postElement.querySelector('.archive-post-btn');
       if (archiveBtn) {
         archiveBtn.addEventListener('click', async (e) => {
           e.stopPropagation(); // Prevent post selection
-          
+
           try {
             // Update post to archived status
             await updateDoc(doc(db, "posts", post.id), {
               status: 'archived',
               lastModified: serverTimestamp()
             });
-            
+
             // Update visual indication
             archiveBtn.textContent = "Archived";
             archiveBtn.disabled = true;
-            
+
             // Notify user
             alert(`"${post.title}" has been archived.`);
-            
+
             // If this is the current post, reload it to show updated status
             if (post.id === currentPostId) {
               loadPostData(post.id);
@@ -919,7 +919,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       }
-      
+
       postsList.appendChild(postElement);
     });
   }
@@ -927,34 +927,34 @@ document.addEventListener("DOMContentLoaded", () => {
   // Preview popup functionality
   if (previewBtn && previewSection) {
     // Open preview
-    previewBtn.addEventListener('click', function() {
+    previewBtn.addEventListener('click', function () {
       previewSection.classList.add('open');
       previewOverlay.classList.add('open');
       document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
     });
-    
+
     // Close preview when clicking the close button
     if (closePreviewBtn) {
-      closePreviewBtn.addEventListener('click', function() {
+      closePreviewBtn.addEventListener('click', function () {
         closePreview();
       });
     }
-    
+
     // Close preview when clicking the overlay
     if (previewOverlay) {
-      previewOverlay.addEventListener('click', function() {
+      previewOverlay.addEventListener('click', function () {
         closePreview();
       });
     }
-    
+
     // Close preview with escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && previewSection.classList.contains('open')) {
         closePreview();
       }
     });
   }
-  
+
   // Close preview function
   function closePreview() {
     if (previewSection && previewOverlay) {
@@ -974,7 +974,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const url = new URL(window.location);
         url.searchParams.set('postId', latestPostId);
         window.history.pushState({}, '', url);
-        
+
         // Load the latest post
         loadPostData(latestPostId);
       } else if (currentPostId) {
@@ -990,40 +990,40 @@ document.addEventListener("DOMContentLoaded", () => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       console.log("User is logged in:", user.email);
-      
+
       // Update UI based on user role
       if (loginLink) loginLink.style.display = "none";
       if (logoutBtn) logoutBtn.style.display = "inline";
       if (userAccountLink) userAccountLink.style.display = "inline";
       if (settingsIcon) settingsIcon.style.display = "flex";
-      
+
       // Show admin dropdown based on role
       const isAdmin = await isAdminUser(user.uid);
       if (adminDropdownBtn) {
         adminDropdownBtn.style.display = isAdmin ? "flex" : "none";
         console.log("Admin status:", isAdmin ? "Is admin" : "Not admin");
       }
-      
+
       // Initialize the editor functionality
       initPostEditor();
     } else {
       console.log("User is not logged in");
-      
+
       // Update UI for logged out state
       if (loginLink) loginLink.style.display = "inline";
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userAccountLink) userAccountLink.style.display = "none";
       if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
       if (settingsIcon) settingsIcon.style.display = "none";
-      
+
       // Redirect to login page - they shouldn't be here if not logged in
       window.location.href = "login.html";
     }
   });
-  
+
   // Setup logout button
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", function() {
+    logoutBtn.addEventListener("click", function () {
       signOut(auth).then(() => {
         console.log("User signed out");
         window.location.href = "index.html";
