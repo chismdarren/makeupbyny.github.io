@@ -721,13 +721,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Initialize post editor functionality
         initPostEditor();
       } else {
-        // Redirect non-admin users to the home page
-        alert('Access denied. Admin privileges required.');
-        window.location.href = 'index.html';
+        // User is not admin, redirect to home
+        console.warn("Non-admin user attempted to access post editor");
+        alert("Access denied. Admin privileges required.");
+        window.location.href = "index.html";
       }
     } else {
-      // User is not logged in, redirect to login page
-      window.location.href = 'login.html';
+      // User is not logged in, redirect to login
+      window.location.href = "login.html";
     }
   });
 
@@ -749,19 +750,86 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       e.stopPropagation();
       
-      // Toggle active class on button
+      // Toggle dropdown visibility
+      const dropdown = document.getElementById("adminDropdownContent");
+      dropdown.classList.toggle("show-dropdown");
       this.classList.toggle("active");
+      
+      // For mobile: ensure the dropdown is positioned correctly
+      if (window.innerWidth <= 480) {
+        // Function to position dropdown below button
+        const positionDropdown = () => {
+          if (dropdown.classList.contains("show-dropdown")) {
+            const buttonRect = this.getBoundingClientRect();
+            
+            dropdown.style.position = 'fixed';
+            dropdown.style.top = (buttonRect.bottom + 5) + 'px';
+            dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
+            dropdown.style.transform = 'translateX(-50%)';
+            dropdown.style.maxHeight = '80vh';
+            dropdown.style.zIndex = '9999';
+            
+            const dropdownRect = dropdown.getBoundingClientRect();
+            if (dropdownRect.bottom > window.innerHeight) {
+              window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
+            }
+          }
+        };
+        
+        // Position initially
+        setTimeout(positionDropdown, 10);
+        
+        // Track scroll to reposition dropdown if needed
+        const scrollHandler = () => {
+          if (dropdown.classList.contains("show-dropdown")) {
+            positionDropdown();
+          } else {
+            // Remove handler if dropdown is closed
+            window.removeEventListener('scroll', scrollHandler);
+            window._dropdownScrollHandler = null;
+          }
+        };
+        
+        // Store handler globally for later removal
+        window._dropdownScrollHandler = scrollHandler;
+        
+        // Add scroll listener
+        window.addEventListener('scroll', window._dropdownScrollHandler);
+      }
     });
   }
 
   // Close dropdown when clicking outside
   document.addEventListener("click", function(e) {
-    // Only close if clicking outside the dropdown button
+    // Don't close if clicking on the dropdown itself
+    if (e.target.closest('.admin-dropdown-content')) {
+      return;
+    }
+    
+    // Only close if clicking outside the dropdown and its button
     if (!e.target.matches('#adminDropdownBtn') && 
+        !e.target.matches('.dropdown-icon') && 
         !e.target.closest('#adminDropdownBtn')) {
-      // Remove active class from button
-      if (adminDropdownBtn) {
-        adminDropdownBtn.classList.remove("active");
+      const dropdown = document.getElementById("adminDropdownContent");
+      const btn = document.getElementById("adminDropdownBtn");
+      if (dropdown && dropdown.classList.contains("show-dropdown")) {
+        dropdown.classList.remove("show-dropdown");
+        if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
+        
+        // Reset inline styles when closing dropdown
+        if (window.innerWidth <= 480) {
+          setTimeout(() => {
+            dropdown.style.position = '';
+            dropdown.style.top = '';
+            dropdown.style.left = '';
+            dropdown.style.transform = '';
+            dropdown.style.maxHeight = '';
+          }, 300); // Wait for transition to complete
+          
+          // Remove any scroll handlers
+          window.removeEventListener('scroll', window._dropdownScrollHandler);
+          window._dropdownScrollHandler = null;
+        }
       }
     }
   });

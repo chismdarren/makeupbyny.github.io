@@ -473,12 +473,6 @@
 
     /* Mobile-specific positioning */
     @media (max-width: 480px) {
-      #mainNav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      
       #mainNav a, #mainNav button {
         margin: 2px 4px;
         padding: 4px 6px;
@@ -494,7 +488,6 @@
     .admin-dropdown {
       position: relative;
       display: inline-block;
-      z-index: 1000; /* Ensure dropdown appears in front of other elements */
     }
 
     .admin-dropdown-btn {
@@ -506,13 +499,13 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
-      display: none;
-      transition: color 0.2s;
       display: flex;
       align-items: center;
-      position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-      z-index: 1000; /* Ensure button appears in front */
+      transition: color 0.2s;
+      position: relative !important;
+      bottom: -8px !important;
+      margin-top: 0 !important;
+      font-weight: normal !important;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -538,7 +531,7 @@
       background-color: white;
       min-width: 180px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 1001; /* Even higher than the dropdown container */
+      z-index: 1001;
       border-radius: 4px;
       overflow: hidden;
       margin-top: 5px;
@@ -567,47 +560,18 @@
       color: #a07;
     }
 
+    .admin-dropdown-content a.active {
+      background-color: #f5f5f5;
+      color: #a07;
+      font-weight: bold;
+    }
+
     /* This class is toggled via JavaScript */
     .show-dropdown {
       display: block !important;
       opacity: 1 !important;
       transform: translateY(0) !important;
-      z-index: 1002 !important; /* Highest z-index when shown */
-    }
-
-    /* White box mimicking the dropdown */
-    .black-box {
-      position: fixed;
-      background-color: white;
-      z-index: 999;
-      display: none; /* Hidden by default */
-      width: auto;
-      height: auto;
-      min-width: 180px; /* Match dropdown width */
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      border-radius: 4px;
-      overflow: hidden;
-      border: 1px solid #eee;
-    }
-    
-    /* Menu items in the white box */
-    .black-box a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      text-align: left;
-      transition: background-color 0.2s, color 0.2s;
-      border-bottom: 1px solid #f5f5f5;
-    }
-    
-    .black-box a:last-child {
-      border-bottom: none;
-    }
-    
-    .black-box a:hover {
-      background-color: #f9f9f9;
-      color: #a07;
+      z-index: 9999 !important;
     }
 
     /* Responsive adjustments for admin dropdown */
@@ -617,46 +581,66 @@
         right: 0;
         left: auto;
         width: 200px;
-        z-index: 2000; /* Much higher z-index for mobile */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      }
-
-      .admin-dropdown {
-        position: relative;
-        z-index: 1500;
       }
 
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        position: relative;
-        z-index: auto; /* Reset any z-index that might be interfering */
       }
-      
-      /* Ensure the dropdown shows on top of everything when active */
-      .show-dropdown {
-        display: block !important;
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-        z-index: 9999 !important; /* Extremely high z-index */
+
+      .admin-dropdown {
+        position: relative;
       }
     }
 
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
-        right: -50px; /* Adjust position to be more centered on small screens */
-      }
-
-      .admin-dropdown-btn {
-        padding: 10px 5px;
+        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
+        overflow-y: auto;
+        width: 180px; /* Fixed width to ensure content fits */
+        position: fixed; /* Change to fixed positioning */
+        /* Positioning will be handled by JavaScript dynamically */
+        z-index: 1001; /* Ensure it appears above other elements */
+        background-color: white; /* Ensure background is opaque */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+        border: 1px solid #ddd; /* More visible border */
       }
       
+      /* Fix for dropdown positioning - ensure it's visible on mobile */
       .admin-dropdown {
-        flex-basis: 100%; /* Force dropdown to take full width and wrap to next line */
-        width: 100%;
-        margin-top: 10px;
+        position: static; /* Change to static so the dropdown positions relative to the nav bar */
+        vertical-align: middle !important;
+        margin-top: 5px !important;
+        display: inline-block !important;
+      }
+      
+      /* Dropdown icon styles */
+      .admin-dropdown-btn .dropdown-icon {
+        font-size: 0.85em; /* Make dropdown icon match the text size */
+      }
+      
+      /* Ensure dropdown appears over other content */
+      .show-dropdown {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+        touch-action: manipulation; /* Optimize touch actions */
+      }
+      
+      /* Make dropdown items more touch-friendly on mobile */
+      .admin-dropdown-content a {
+        padding: 15px 16px; /* Larger touch targets */
+        font-size: 0.95em; /* Slightly larger text */
+        border-bottom: 1px solid #eee; /* More visible separators */
+      }
+
+      /* Reduce spacing between nav links on mobile */
+      #mainNav a, #mainNav button {
+        margin: 2px 4px;
+        padding: 15px 16px;
       }
       
       /* Hide login on mobile */
@@ -888,6 +872,153 @@
       height: 22px;
       fill: #333;
     }
+    
+    /* Admin Dropdown Menu Mobile Styles */
+    @media (max-width: 768px) {
+      header nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+    
+    /* For very small screens */
+    @media (max-width: 480px) {
+      .admin-dropdown-content {
+        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
+        overflow-y: auto;
+        width: 180px; /* Fixed width to ensure content fits */
+        position: fixed; /* Change to fixed positioning */
+        /* Positioning will be handled by JavaScript dynamically */
+        z-index: 1001; /* Ensure it appears above other elements */
+        background-color: white; /* Ensure background is opaque */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+        border: 1px solid #ddd; /* More visible border */
+      }
+      
+      /* Fix for dropdown positioning - ensure it's visible on mobile */
+      .admin-dropdown {
+        position: static; /* Change to static so the dropdown positions relative to the nav bar */
+        vertical-align: middle !important;
+        margin-top: 5px !important;
+        display: inline-block !important;
+      }
+      
+      /* Dropdown icon styles */
+      .admin-dropdown-btn .dropdown-icon {
+        font-size: 0.85em; /* Make dropdown icon match the text size */
+      }
+      
+      /* Ensure dropdown appears over other content */
+      .show-dropdown {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+        touch-action: manipulation; /* Optimize touch actions */
+      }
+      
+      /* Make dropdown items more touch-friendly on mobile */
+      .admin-dropdown-content a {
+        padding: 15px 16px; /* Larger touch targets */
+        font-size: 0.95em; /* Slightly larger text */
+        border-bottom: 1px solid #eee; /* More visible separators */
+      }
+    }
+
+    /* Account links container styling */
+    .account-links {
+      display: inline-flex !important;
+      align-items: center !important;
+      margin-left: auto;
+    }
+
+    .account-links #userAccountLink {
+      margin-right: 8px !important;
+    }
+
+    /* Mobile-specific account links styling */
+    @media (max-width: 480px) {
+      /* Apply consistent spacing to all navigation elements */
+      #mainNav a, 
+      #mainNav button,
+      #mainNav .admin-dropdown,
+      .account-links {
+        margin: 2px 4px !important;
+      }
+      
+      /* Ensure consistent spacing between My Account and Logout */
+      .account-links {
+        gap: 8px !important;
+        margin-top: 5px !important;
+        margin-left: 0 !important;
+      }
+      
+      /* Remove margin between account links as gap handles spacing */
+      .account-links #userAccountLink {
+        margin-right: 0 !important;
+      }
+      
+      /* Make all nav elements use same padding for consistency */
+      #mainNav a, 
+      #mainNav button,
+      #mainNav .admin-dropdown-btn,
+      .account-links a,
+      .account-links button {
+        padding: 4px 6px !important;
+      }
+      
+      /* Set specific padding for admin dropdown items */
+      #mainNav .admin-dropdown-content a {
+        padding: 15px 16px !important; /* Larger touch targets for dropdown items */
+      }
+      
+      /* Hide login on mobile */
+      #login-link {
+        display: none;
+      }
+    }
+
+    /* White box mimicking the dropdown */
+    .black-box {
+      position: fixed;
+      background-color: white;
+      z-index: 999;
+      display: none; /* Hidden by default */
+      width: auto;
+      height: auto;
+      min-width: 180px; /* Match dropdown width */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+    
+    /* Menu items in the white box */
+    .black-box a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .black-box a:last-child {
+      border-bottom: none;
+    }
+    
+    .black-box a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
+    }
+    
+    .black-box a.active {
+      background-color: #f5f5f5;
+      color: #a07;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -901,10 +1032,16 @@
         <a href="contact.html">Contact</a>
         <!-- Admin dropdown menu (initially hidden) -->
         <div class="admin-dropdown">
-          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; bottom: -8px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important;">
             Admin Dashboard 
             <span class="dropdown-icon">▼</span>
           </a>
+          <div id="adminDropdownContent" class="admin-dropdown-content">
+            <a href="admin-dashboard.html">Messages</a>
+            <a href="editor.html">Create Post</a>
+            <a href="edit-post.html" class="active">Edit Posts</a>
+            <a href="manage-users.html">User Management</a>
+          </div>
         </div>
         <!-- User account link -->
         <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
@@ -921,123 +1058,120 @@
       </svg>
     </a>
 
-    <!-- Black box in the middle of the page -->
-    <div class="black-box">
-      <a href="admin-dashboard.html">Messages</a>
-      <a href="editor.html">Create Post</a>
-      <a href="edit-post.html" class="active">Edit Posts</a>
-      <a href="manage-users.html">User Management</a>
-    </div>
-    
-    <!-- Main Content Area -->
-    <div class="content">
-      <main>
-        <div class="editor-container">
-          <div class="posts-sidebar">
-            <h2>Posts</h2>
-            <div class="sorting-controls">
-              <input type="text" id="searchPosts" placeholder="Search posts..." class="search-input">
-              <label for="sortBy">Sort by:</label>
-              <select id="sortBy">
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="title">Title</option>
-                <option value="comments">Most Comments</option>
+    <main>
+      <div class="editor-container">
+      <!-- Black box in the middle of the page -->
+      <div class="black-box">
+        <a href="admin-dashboard.html">Messages</a>
+        <a href="editor.html">Create Post</a>
+        <a href="edit-post.html" class="active">Edit Posts</a>
+        <a href="manage-users.html">User Management</a>
+      </div>
+      
+      <div class="posts-sidebar">
+        <h2>Posts</h2>
+        <div class="sorting-controls">
+          <input type="text" id="searchPosts" placeholder="Search posts..." class="search-input">
+          <label for="sortBy">Sort by:</label>
+          <select id="sortBy">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="title">Title</option>
+            <option value="comments">Most Comments</option>
+          </select>
+        </div>
+        <div class="posts-list">
+          <!-- Posts will be dynamically added here -->
+        </div>
+      </div>
+
+        <div class="editor-section">
+          <h2>Edit Post</h2>
+        <button class="preview-button" id="previewBtn" title="Show Preview">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+          <form id="editPostForm">
+            <div class="form-group">
+              <label for="title">Title</label>
+            <div class="title-controls">
+              <select id="titleFont" class="title-font-select">
+                <option value="Arial">Arial</option>
+                <option value="Calibri">Calibri</option>
+                <option value="Comic Sans">Comic Sans</option>
+                <option value="Courier">Courier</option>
+                <option value="Garamond">Garamond</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Impact">Impact</option>
+                <option value="Lucida Console">Lucida Console</option>
+                <option value="Tahoma">Tahoma</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Dancing Script">Dancing Script</option>
+                <option value="Great Vibes">Great Vibes</option>
+                <option value="Pacifico">Pacifico</option>
+                <option value="Satisfy">Satisfy</option>
+                <option value="Allura">Allura</option>
+                <option value="Brush Script MT">Brush Script MT</option>
+                <option value="Monsieur La Doulaise">Monsieur La Doulaise</option>
+                <option value="Tangerine">Tangerine</option>
+                <option value="Alex Brush">Alex Brush</option>
+                <option value="Pinyon Script">Pinyon Script</option>
               </select>
             </div>
-            <div class="posts-list">
-              <!-- Posts will be dynamically added here -->
+            <div id="titleField" contenteditable="true" class="title-field" placeholder="Enter post title here..."></div>
+            <input type="hidden" id="title" name="title" />
             </div>
-          </div>
 
-          <div class="editor-section">
-            <h2>Edit Post</h2>
-            <button class="preview-button" id="previewBtn" title="Show Preview">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
-            <form id="editPostForm">
-              <div class="form-group">
-                <label for="title">Title</label>
-                <div class="title-controls">
-                  <select id="titleFont" class="title-font-select">
-                    <option value="Arial">Arial</option>
-                    <option value="Calibri">Calibri</option>
-                    <option value="Comic Sans">Comic Sans</option>
-                    <option value="Courier">Courier</option>
-                    <option value="Garamond">Garamond</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Impact">Impact</option>
-                    <option value="Lucida Console">Lucida Console</option>
-                    <option value="Tahoma">Tahoma</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Verdana">Verdana</option>
-                    <option value="Dancing Script">Dancing Script</option>
-                    <option value="Great Vibes">Great Vibes</option>
-                    <option value="Pacifico">Pacifico</option>
-                    <option value="Satisfy">Satisfy</option>
-                    <option value="Allura">Allura</option>
-                    <option value="Brush Script MT">Brush Script MT</option>
-                    <option value="Monsieur La Doulaise">Monsieur La Doulaise</option>
-                    <option value="Tangerine">Tangerine</option>
-                    <option value="Alex Brush">Alex Brush</option>
-                    <option value="Pinyon Script">Pinyon Script</option>
-                  </select>
-                </div>
-                <div id="titleField" contenteditable="true" class="title-field" placeholder="Enter post title here..."></div>
-                <input type="hidden" id="title" name="title" />
-              </div>
-
-              <div class="form-group">
-                <label for="tags">Tags (comma-separated)</label>
-                <input type="text" id="tags" name="tags">
-              </div>
-
-              <div class="form-group">
-                <label for="postDate">Post Date</label>
-                <input type="date" id="postDate" name="postDate" required>
-              </div>
-
-              <div class="form-group">
-                <label for="status">Status</label>
-                <div class="status-group">
-                  <label>
-                    <input type="radio" name="status" value="draft" checked> Draft
-                  </label>
-                  <label>
-                    <input type="radio" name="status" value="published"> Published
-                  </label>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="content">Content</label>
-                <textarea id="content" name="content"></textarea>
-              </div>
-
-              <div class="button-group">
-                <button type="submit" class="save-btn">Save Changes</button>
-                <button type="button" class="cancel-btn" onclick="window.location.href='index.html'">Cancel</button>
-                <button type="button" class="delete-btn" id="deletePostBtn">Delete Post</button>
-              </div>
-            </form>
-          </div>
-
-          <div class="preview-overlay" id="previewOverlay"></div>
-          <div class="preview-section" id="previewSection">
-            <button class="close-btn" id="closePreviewBtn">&times;</button>
-            <h2>Preview</h2>
-            <div class="preview-content">
-              <div id="previewTitle" class="preview-title">Post Title Preview</div>
-              <div id="previewMeta" class="preview-meta">
-                <span id="previewDate"></span>
-              </div>
-              <div id="previewTags" class="preview-tags"></div>
-              <div id="previewContent">Post content preview will appear here...</div>
+            <div class="form-group">
+              <label for="tags">Tags (comma-separated)</label>
+              <input type="text" id="tags" name="tags">
             </div>
+
+            <div class="form-group">
+              <label for="postDate">Post Date</label>
+              <input type="date" id="postDate" name="postDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="status">Status</label>
+              <div class="status-group">
+                <label>
+                  <input type="radio" name="status" value="draft" checked> Draft
+                </label>
+                <label>
+                  <input type="radio" name="status" value="published"> Published
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+            <label for="content">Content</label>
+            <textarea id="content" name="content"></textarea>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="save-btn">Save Changes</button>
+              <button type="button" class="cancel-btn" onclick="window.location.href='index.html'">Cancel</button>
+              <button type="button" class="delete-btn" id="deletePostBtn">Delete Post</button>
+            </div>
+          </form>
+        </div>
+
+      <div class="preview-overlay" id="previewOverlay"></div>
+      <div class="preview-section" id="previewSection">
+        <button class="close-btn" id="closePreviewBtn">&times;</button>
+          <h2>Preview</h2>
+          <div class="preview-content">
+            <div id="previewTitle" class="preview-title">Post Title Preview</div>
+            <div id="previewMeta" class="preview-meta">
+              <span id="previewDate"></span>
+            </div>
+            <div id="previewTags" class="preview-tags"></div>
+            <div id="previewContent">Post content preview will appear here...</div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
 
   <footer>
     <p>&copy; 2025 Makeup by NY</p>
@@ -1068,6 +1202,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+      const adminDropdown = document.getElementById('adminDropdownContent');
       const whiteBox = document.querySelector('.black-box');
       
       // Function to position white box under Admin Dashboard
@@ -1087,32 +1222,52 @@
       window.addEventListener('resize', positionWhiteBox);
       
       // Toggle dropdown when Admin Dashboard is clicked
-      adminDropdownBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Toggle white box display
-        if (whiteBox.style.display === 'block') {
-          whiteBox.style.display = 'none';
-        } else {
-          positionWhiteBox(); // Position before showing
-          whiteBox.style.display = 'block';
-        }
-        
-        // Toggle active class on button
-        this.classList.toggle('active');
-      });
+      if (adminDropdownBtn) {
+        adminDropdownBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Toggle dropdown content
+          if (adminDropdown) {
+            adminDropdown.classList.toggle('show-dropdown');
+          }
+          
+          // Toggle white box display
+          if (whiteBox) {
+            if (whiteBox.style.display === 'block') {
+              whiteBox.style.display = 'none';
+            } else {
+              positionWhiteBox(); // Position before showing
+              whiteBox.style.display = 'block';
+            }
+          }
+          
+          // Toggle active class on button
+          this.classList.toggle('active');
+        });
+      }
       
       // Hide dropdown when clicking outside
       document.addEventListener('click', function(e) {
-        if (!adminDropdownBtn.contains(e.target) && 
-            !whiteBox.contains(e.target)) {
+        if (adminDropdownBtn && 
+            !adminDropdownBtn.contains(e.target) && 
+            (!adminDropdown || !adminDropdown.contains(e.target)) && 
+            (!whiteBox || !whiteBox.contains(e.target))) {
+          
+          // Hide dropdown content
+          if (adminDropdown && adminDropdown.classList.contains('show-dropdown')) {
+            adminDropdown.classList.remove('show-dropdown');
+          }
           
           // Hide white box
-          whiteBox.style.display = 'none';
+          if (whiteBox) {
+            whiteBox.style.display = 'none';
+          }
           
           // Remove active class from button
-          adminDropdownBtn.classList.remove('active');
+          if (adminDropdownBtn) {
+            adminDropdownBtn.classList.remove('active');
+          }
         }
       });
     });
