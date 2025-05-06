@@ -473,6 +473,12 @@
 
     /* Mobile-specific positioning */
     @media (max-width: 480px) {
+      #mainNav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
       #mainNav a, #mainNav button {
         margin: 2px 4px;
         padding: 4px 6px;
@@ -645,6 +651,12 @@
 
       .admin-dropdown-btn {
         padding: 10px 5px;
+      }
+      
+      .admin-dropdown {
+        flex-basis: 100%; /* Force dropdown to take full width and wrap to next line */
+        width: 100%;
+        margin-top: 10px;
       }
       
       /* Hide login on mobile */
