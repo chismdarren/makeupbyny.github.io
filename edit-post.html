@@ -705,7 +705,6 @@
       display: flex;
       align-items: center;
       position: relative;
-      bottom: 2px; /* Lower the Admin Dashboard text by 2px */
       z-index: 1000; /* Ensure button appears in front */
     }
 
@@ -722,6 +721,12 @@
     .admin-dropdown-btn:hover, 
     .admin-dropdown-btn.active {
       color: #a07;
+    }
+    
+    /* Add specific styling for the logout button to raise it by 2px */
+    #logout-btn {
+      position: relative;
+      top: -2px; /* Raise the text by 2px */
     }
     
     /* Settings gear icon styles */
@@ -794,12 +799,6 @@
       .admin-dropdown-btn {
         padding: 10px 5px;
       }
-    }
-
-    /* Add style for user account link to match admin dashboard */
-    #userAccountLink {
-      position: relative;
-      bottom: 2px; /* Lower the My Account text by 2px */
     }
   </style>
 </head>
