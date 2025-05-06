@@ -51,6 +51,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleFontSelect = document.getElementById("titleFont");
   const dateInput = document.getElementById("postDate");
   
+  // Navigation and authentication elements
+  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+  const userAccountLink = document.getElementById("userAccountLink");
+  const loginLink = document.getElementById("login-link");
+  const logoutBtn = document.getElementById("logout-btn");
+  const settingsIcon = document.getElementById("settingsIcon");
+  
   // Preview popup elements
   const previewBtn = document.getElementById('previewBtn');
   const closePreviewBtn = document.getElementById('closePreviewBtn');
@@ -979,19 +986,52 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Authentication state change handler
+  // Handle authentication state changes
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // User is logged in - directly initialize the editor
+      console.log("User is logged in:", user.email);
+      
+      // Update UI based on user role
+      if (loginLink) loginLink.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "inline";
+      if (userAccountLink) userAccountLink.style.display = "inline";
+      if (settingsIcon) settingsIcon.style.display = "flex";
+      
+      // Show admin dropdown based on role
+      const isAdmin = await isAdminUser(user.uid);
+      if (adminDropdownBtn) {
+        adminDropdownBtn.style.display = isAdmin ? "flex" : "none";
+        console.log("Admin status:", isAdmin ? "Is admin" : "Not admin");
+      }
+      
+      // Initialize the editor functionality
       initPostEditor();
     } else {
-      // Initialize editor anyway without redirecting
-      initPostEditor();
+      console.log("User is not logged in");
+      
+      // Update UI for logged out state
+      if (loginLink) loginLink.style.display = "inline";
+      if (logoutBtn) logoutBtn.style.display = "none";
+      if (userAccountLink) userAccountLink.style.display = "none";
+      if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+      if (settingsIcon) settingsIcon.style.display = "none";
+      
+      // Redirect to login page - they shouldn't be here if not logged in
+      window.location.href = "login.html";
     }
   });
-
-  // Initialize right away regardless of auth state
-  initPostEditor();
+  
+  // Setup logout button
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function() {
+      signOut(auth).then(() => {
+        console.log("User signed out");
+        window.location.href = "index.html";
+      }).catch(error => {
+        console.error("Error signing out:", error);
+      });
+    });
+  }
 
   // Initialize
   setupTextFormatting();
