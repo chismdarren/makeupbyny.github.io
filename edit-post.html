@@ -488,6 +488,7 @@
     .admin-dropdown {
       position: relative;
       display: inline-block;
+      z-index: 1000; /* Ensure dropdown appears in front of other elements */
     }
 
     .admin-dropdown-btn {
@@ -499,13 +500,9 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
+      transition: color 0.2s;
       display: flex;
       align-items: center;
-      transition: color 0.2s;
-      position: relative !important;
-      bottom: -8px !important;
-      margin-top: 0 !important;
-      font-weight: normal !important;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -571,7 +568,7 @@
       display: block !important;
       opacity: 1 !important;
       transform: translateY(0) !important;
-      z-index: 9999 !important;
+      z-index: 9999 !important; /* Extremely high z-index */
     }
 
     /* Responsive adjustments for admin dropdown */
@@ -581,66 +578,40 @@
         right: 0;
         left: auto;
         width: 200px;
+        z-index: 2000; /* Much higher z-index for mobile */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      }
+
+      .admin-dropdown {
+        position: relative;
+        z-index: 1500;
       }
 
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-      }
-
-      .admin-dropdown {
         position: relative;
+        z-index: auto; /* Reset any z-index that might be interfering */
+      }
+      
+      /* Ensure the dropdown shows on top of everything when active */
+      .show-dropdown {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        z-index: 9999 !important; /* Extremely high z-index */
       }
     }
 
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
-        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
-        overflow-y: auto;
-        width: 180px; /* Fixed width to ensure content fits */
-        position: fixed; /* Change to fixed positioning */
-        /* Positioning will be handled by JavaScript dynamically */
-        z-index: 1001; /* Ensure it appears above other elements */
-        background-color: white; /* Ensure background is opaque */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
-        border: 1px solid #ddd; /* More visible border */
-      }
-      
-      /* Fix for dropdown positioning - ensure it's visible on mobile */
-      .admin-dropdown {
-        position: static; /* Change to static so the dropdown positions relative to the nav bar */
-        vertical-align: middle !important;
-        margin-top: 5px !important;
-        display: inline-block !important;
-      }
-      
-      /* Dropdown icon styles */
-      .admin-dropdown-btn .dropdown-icon {
-        font-size: 0.85em; /* Make dropdown icon match the text size */
-      }
-      
-      /* Ensure dropdown appears over other content */
-      .show-dropdown {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
-        touch-action: manipulation; /* Optimize touch actions */
-      }
-      
-      /* Make dropdown items more touch-friendly on mobile */
-      .admin-dropdown-content a {
-        padding: 15px 16px; /* Larger touch targets */
-        font-size: 0.95em; /* Slightly larger text */
-        border-bottom: 1px solid #eee; /* More visible separators */
+        right: -50px; /* Adjust position to be more centered on small screens */
       }
 
-      /* Reduce spacing between nav links on mobile */
-      #mainNav a, #mainNav button {
-        margin: 2px 4px;
-        padding: 15px 16px;
+      .admin-dropdown-btn {
+        padding: 10px 5px;
       }
       
       /* Hide login on mobile */
@@ -898,10 +869,8 @@
       
       /* Fix for dropdown positioning - ensure it's visible on mobile */
       .admin-dropdown {
-        position: static; /* Change to static so the dropdown positions relative to the nav bar */
-        vertical-align: middle !important;
-        margin-top: 5px !important;
-        display: inline-block !important;
+        position: relative;
+        display: inline-block;
       }
       
       /* Dropdown icon styles */
@@ -923,54 +892,6 @@
         padding: 15px 16px; /* Larger touch targets */
         font-size: 0.95em; /* Slightly larger text */
         border-bottom: 1px solid #eee; /* More visible separators */
-      }
-    }
-
-    /* Account links container styling */
-    .account-links {
-      display: inline-flex !important;
-      align-items: center !important;
-      margin-left: auto;
-    }
-
-    .account-links #userAccountLink {
-      margin-right: 8px !important;
-    }
-
-    /* Mobile-specific account links styling */
-    @media (max-width: 480px) {
-      /* Apply consistent spacing to all navigation elements */
-      #mainNav a, 
-      #mainNav button,
-      #mainNav .admin-dropdown,
-      .account-links {
-        margin: 2px 4px !important;
-      }
-      
-      /* Ensure consistent spacing between My Account and Logout */
-      .account-links {
-        gap: 8px !important;
-        margin-top: 5px !important;
-        margin-left: 0 !important;
-      }
-      
-      /* Remove margin between account links as gap handles spacing */
-      .account-links #userAccountLink {
-        margin-right: 0 !important;
-      }
-      
-      /* Make all nav elements use same padding for consistency */
-      #mainNav a, 
-      #mainNav button,
-      #mainNav .admin-dropdown-btn,
-      .account-links a,
-      .account-links button {
-        padding: 4px 6px !important;
-      }
-      
-      /* Set specific padding for admin dropdown items */
-      #mainNav .admin-dropdown-content a {
-        padding: 15px 16px !important; /* Larger touch targets for dropdown items */
       }
       
       /* Hide login on mobile */
@@ -1032,7 +953,7 @@
         <a href="contact.html">Contact</a>
         <!-- Admin dropdown menu (initially hidden) -->
         <div class="admin-dropdown">
-          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; bottom: -8px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important;">
+          <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
             Admin Dashboard 
             <span class="dropdown-icon">▼</span>
           </a>

@@ -754,48 +754,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const dropdown = document.getElementById("adminDropdownContent");
       dropdown.classList.toggle("show-dropdown");
       this.classList.toggle("active");
-      
-      // For mobile: ensure the dropdown is positioned correctly
-      if (window.innerWidth <= 480) {
-        // Function to position dropdown below button
-        const positionDropdown = () => {
-          if (dropdown.classList.contains("show-dropdown")) {
-            const buttonRect = this.getBoundingClientRect();
-            
-            dropdown.style.position = 'fixed';
-            dropdown.style.top = (buttonRect.bottom + 5) + 'px';
-            dropdown.style.left = (buttonRect.left + (buttonRect.width / 2)) + 'px';
-            dropdown.style.transform = 'translateX(-50%)';
-            dropdown.style.maxHeight = '80vh';
-            dropdown.style.zIndex = '9999';
-            
-            const dropdownRect = dropdown.getBoundingClientRect();
-            if (dropdownRect.bottom > window.innerHeight) {
-              window.scrollBy(0, dropdownRect.bottom - window.innerHeight + 20);
-            }
-          }
-        };
-        
-        // Position initially
-        setTimeout(positionDropdown, 10);
-        
-        // Track scroll to reposition dropdown if needed
-        const scrollHandler = () => {
-          if (dropdown.classList.contains("show-dropdown")) {
-            positionDropdown();
-          } else {
-            // Remove handler if dropdown is closed
-            window.removeEventListener('scroll', scrollHandler);
-            window._dropdownScrollHandler = null;
-          }
-        };
-        
-        // Store handler globally for later removal
-        window._dropdownScrollHandler = scrollHandler;
-        
-        // Add scroll listener
-        window.addEventListener('scroll', window._dropdownScrollHandler);
-      }
     });
   }
 
@@ -815,21 +773,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (dropdown && dropdown.classList.contains("show-dropdown")) {
         dropdown.classList.remove("show-dropdown");
         if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
-        
-        // Reset inline styles when closing dropdown
-        if (window.innerWidth <= 480) {
-          setTimeout(() => {
-            dropdown.style.position = '';
-            dropdown.style.top = '';
-            dropdown.style.left = '';
-            dropdown.style.transform = '';
-            dropdown.style.maxHeight = '';
-          }, 300); // Wait for transition to complete
-          
-          // Remove any scroll handlers
-          window.removeEventListener('scroll', window._dropdownScrollHandler);
-          window._dropdownScrollHandler = null;
-        }
       }
     }
   });
