@@ -716,22 +716,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const isAdmin = await isAdminUser(user.uid);
       if (isAdmin) {
         // User is admin, show admin dropdown and editor features
-        if (adminDropdownBtn) {
-          adminDropdownBtn.style.display = "inline";
-          // No additional styling
-        }
+        if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
 
         // Initialize post editor functionality
         initPostEditor();
       } else {
-        // User is not admin, redirect to home
-        console.warn("Non-admin user attempted to access post editor");
-        alert("Access denied. Admin privileges required.");
-        window.location.href = "index.html";
+        // Redirect non-admin users to the home page
+        alert('Access denied. Admin privileges required.');
+        window.location.href = 'index.html';
       }
     } else {
-      // User is not logged in, redirect to login
-      window.location.href = "login.html";
+      // User is not logged in, redirect to login page
+      window.location.href = 'login.html';
     }
   });
 
