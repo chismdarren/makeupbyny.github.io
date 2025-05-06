@@ -610,8 +610,9 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Post data loaded successfully");
       } else {
         console.error("Post not found for ID:", postId);
-        alert("Post not found. Redirecting to home page...");
-        window.location.href = "index.html";
+        alert("Post not found.");
+        // Load all posts instead of redirecting
+        loadAllPosts();
       }
     } catch (error) {
       console.error("Error loading post:", error);
@@ -652,7 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         alert("Post updated successfully!");
-        window.location.href = "index.html";
+        // Stay on the same page
       } catch (error) {
         console.error("Error updating post:", error);
         alert("Error updating post. Please try again.");
@@ -670,7 +671,8 @@ document.addEventListener("DOMContentLoaded", () => {
           showLoading(editPostForm);
           await deleteDoc(doc(db, "posts", currentPostId));
           alert("Post deleted successfully!");
-          window.location.href = "index.html";
+          // Stay on the same page and refresh posts
+          loadAllPosts();
         } catch (error) {
           console.error("Error deleting post:", error);
           alert("Error deleting post. Please try again.");
@@ -869,7 +871,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   loadPostData(nextPostId);
                 } else {
                   // No posts left, redirect to dashboard
-                  window.location.href = "index.html";
+                  loadAllPosts();
                 }
               }
             } catch (error) {
@@ -980,23 +982,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Authentication state change handler
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // User is logged in
-      // Check if user is admin
-      const isAdmin = await isAdminUser(user.uid);
-      if (isAdmin) {
-        // Initialize post editor functionality
-        initPostEditor();
-      } else {
-        // User is not admin, redirect to home
-        console.warn("Non-admin user attempted to access post editor");
-        alert("Access denied. Admin privileges required.");
-        window.location.href = "index.html";
-      }
+      // User is logged in - directly initialize the editor
+      initPostEditor();
     } else {
-      // User is not logged in, redirect to login
-      window.location.href = "login.html";
+      // Initialize editor anyway without redirecting
+      initPostEditor();
     }
   });
+
+  // Initialize right away regardless of auth state
+  initPostEditor();
 
   // Initialize
   setupTextFormatting();
