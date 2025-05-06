@@ -287,6 +287,34 @@
           background-color: #f9f9f9;
           color: #a07;
         }
+        
+        /* Admin-specific mobile styles to ensure full width */
+        @media (max-width: 768px) {
+          /* Override default mobile layout for admin dashboard */
+          .admin-dashboard .posts {
+            width: 100% !important;
+            max-width: 100% !important;
+            float: none !important;
+          }
+          
+          /* Hide about-me section in admin pages */
+          .admin-dashboard .about-me {
+            display: none !important;
+          }
+          
+          /* Make messages section take full width */
+          .messages-section {
+            width: 100% !important;
+            margin: 10px 0 !important;
+            padding: 10px !important;
+          }
+          
+          /* Ensure modal is properly sized on mobile */
+          .message-modal-content {
+            width: 95% !important;
+            margin: 5% auto !important;
+          }
+        }
     </style>
 </head>
 <body class="admin-page">
