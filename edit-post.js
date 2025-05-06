@@ -716,7 +716,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const isAdmin = await isAdminUser(user.uid);
       if (isAdmin) {
         // User is admin, show admin dropdown and editor features
-        if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+        if (adminDropdownBtn) {
+          adminDropdownBtn.style.display = "inline";
+          // No additional styling
+        }
 
         // Initialize post editor functionality
         initPostEditor();
@@ -750,29 +753,19 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       e.stopPropagation();
       
-      // Toggle dropdown visibility
-      const dropdown = document.getElementById("adminDropdownContent");
-      dropdown.classList.toggle("show-dropdown");
+      // Toggle active class on button
       this.classList.toggle("active");
     });
   }
 
   // Close dropdown when clicking outside
   document.addEventListener("click", function(e) {
-    // Don't close if clicking on the dropdown itself
-    if (e.target.closest('.admin-dropdown-content')) {
-      return;
-    }
-    
-    // Only close if clicking outside the dropdown and its button
+    // Only close if clicking outside the dropdown button
     if (!e.target.matches('#adminDropdownBtn') && 
-        !e.target.matches('.dropdown-icon') && 
         !e.target.closest('#adminDropdownBtn')) {
-      const dropdown = document.getElementById("adminDropdownContent");
-      const btn = document.getElementById("adminDropdownBtn");
-      if (dropdown && dropdown.classList.contains("show-dropdown")) {
-        dropdown.classList.remove("show-dropdown");
-        if (adminDropdownBtn) adminDropdownBtn.classList.remove("active");
+      // Remove active class from button
+      if (adminDropdownBtn) {
+        adminDropdownBtn.classList.remove("active");
       }
     }
   });

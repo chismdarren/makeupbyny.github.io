@@ -603,7 +603,7 @@
         z-index: 9999 !important; /* Extremely high z-index */
       }
     }
-
+    
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
@@ -612,6 +612,12 @@
 
       .admin-dropdown-btn {
         padding: 10px 5px;
+      }
+      
+      .admin-dropdown {
+        width: 100%;
+        margin-top: 10px;
+        flex-basis: 100%; /* Force to take full width and create a new row */
       }
       
       /* Hide login on mobile */
@@ -844,62 +850,6 @@
       fill: #333;
     }
     
-    /* Admin Dropdown Menu Mobile Styles */
-    @media (max-width: 768px) {
-      header nav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-    }
-    
-    /* For very small screens */
-    @media (max-width: 480px) {
-      .admin-dropdown-content {
-        max-height: 80vh; /* Limit maximum height and add scrolling if needed */
-        overflow-y: auto;
-        width: 180px; /* Fixed width to ensure content fits */
-        position: fixed; /* Change to fixed positioning */
-        /* Positioning will be handled by JavaScript dynamically */
-        z-index: 1001; /* Ensure it appears above other elements */
-        background-color: white; /* Ensure background is opaque */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
-        border: 1px solid #ddd; /* More visible border */
-      }
-      
-      /* Fix for dropdown positioning - ensure it's visible on mobile */
-      .admin-dropdown {
-        position: relative;
-        display: inline-block;
-      }
-      
-      /* Dropdown icon styles */
-      .admin-dropdown-btn .dropdown-icon {
-        font-size: 0.85em; /* Make dropdown icon match the text size */
-      }
-      
-      /* Ensure dropdown appears over other content */
-      .show-dropdown {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
-        touch-action: manipulation; /* Optimize touch actions */
-      }
-      
-      /* Make dropdown items more touch-friendly on mobile */
-      .admin-dropdown-content a {
-        padding: 15px 16px; /* Larger touch targets */
-        font-size: 0.95em; /* Slightly larger text */
-        border-bottom: 1px solid #eee; /* More visible separators */
-      }
-      
-      /* Hide login on mobile */
-      #login-link {
-        display: none;
-      }
-    }
-
     /* White box mimicking the dropdown */
     .black-box {
       position: fixed;
@@ -957,12 +907,6 @@
             Admin Dashboard 
             <span class="dropdown-icon">▼</span>
           </a>
-          <div id="adminDropdownContent" class="admin-dropdown-content">
-            <a href="admin-dashboard.html">Messages</a>
-            <a href="editor.html">Create Post</a>
-            <a href="edit-post.html" class="active">Edit Posts</a>
-            <a href="manage-users.html">User Management</a>
-          </div>
         </div>
         <!-- User account link -->
         <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
@@ -1123,7 +1067,6 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-      const adminDropdown = document.getElementById('adminDropdownContent');
       const whiteBox = document.querySelector('.black-box');
       
       // Function to position white box under Admin Dashboard
@@ -1148,11 +1091,6 @@
           e.preventDefault();
           e.stopPropagation();
           
-          // Toggle dropdown content
-          if (adminDropdown) {
-            adminDropdown.classList.toggle('show-dropdown');
-          }
-          
           // Toggle white box display
           if (whiteBox) {
             if (whiteBox.style.display === 'block') {
@@ -1172,13 +1110,7 @@
       document.addEventListener('click', function(e) {
         if (adminDropdownBtn && 
             !adminDropdownBtn.contains(e.target) && 
-            (!adminDropdown || !adminDropdown.contains(e.target)) && 
             (!whiteBox || !whiteBox.contains(e.target))) {
-          
-          // Hide dropdown content
-          if (adminDropdown && adminDropdown.classList.contains('show-dropdown')) {
-            adminDropdown.classList.remove('show-dropdown');
-          }
           
           // Hide white box
           if (whiteBox) {
