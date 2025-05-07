@@ -157,7 +157,7 @@ async function handleFormSubmit(e) {
       name: nameInput.value,
       email: emailInput.value,
       message: messageInput.value,
-      createdAt: serverTimestamp(),
+      timestamp: serverTimestamp(),
       read: false
     });
     
