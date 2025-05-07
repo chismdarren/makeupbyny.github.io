@@ -1250,9 +1250,13 @@
                 createdAt: serverTimestamp(),
               });
 
-              alert("Comment submitted!");
+              // Show a small faded 'Post submitted' message
+              const submittedMsg = document.createElement('div');
+              submittedMsg.textContent = 'Post submitted';
+              submittedMsg.style.cssText = 'font-size:12px;color:#666;background:#f5f5f5;padding:4px 10px;border-radius:4px;margin:10px 0;text-align:center;opacity:0.7;transition:opacity 1s;';
+              commentForm.parentNode.insertBefore(submittedMsg, commentForm);
+              setTimeout(() => { submittedMsg.style.opacity = '0'; setTimeout(() => submittedMsg.remove(), 1000); }, 2000);
               commentForm.reset();
-              
               // Re-fetch comments so the user sees their new comment immediately
               await fetchAndDisplayComments(postId);
 
@@ -1483,7 +1487,7 @@
       const actionsHtml = isReply ? 
         `<div class="comment-actions"></div>` : 
         `<div class="comment-actions">
-          <a href="#" class="comment-action reply-action" data-comment-id="${comment.id}">Reply</a>
+          <a href="#" class="comment-action reply-action" data-comment-id="${comment.id}" style="font-size:13px;color:#df3d85;">Reply</a>
         </div>
         <div class="reply-form" id="replyForm-${comment.id}">
           <textarea placeholder="Write your reply..." id="replyText-${comment.id}"></textarea>
