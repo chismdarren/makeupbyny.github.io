@@ -1455,9 +1455,14 @@
       let dateText;
 
       if (diffInDays > 30) {
-        dateText = `${date.toLocaleDateString()}`;
-      } else if (diffInDays > 0) {
-        dateText = `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+        dateText = date.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true
+        });
       } else if (diffInHours > 0) {
         dateText = `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
       } else if (diffInMinutes > 0) {
@@ -1486,8 +1491,8 @@
             <div class="comment-avatar">${avatarHTML}</div>
           </div>
           <div class="comment-info">
-            <div class="comment-author">${comment.name}</div>
-            <div class="comment-date">${dateText}</div>
+            <div class="comment-author" style="font-family: 'Dancing Script', cursive; font-weight: 400; font-size: 1.15em; color: #222; margin-bottom: 0.1em;">${comment.name} says</div>
+            <div class="comment-date" style="font-family: 'Dancing Script', cursive; color: #df3d85; font-size: 1.05em; font-weight: 400;">${dateText}</div>
           </div>
         </div>
         <div class="comment-content">${comment.text}</div>
