@@ -1172,6 +1172,10 @@
           const date = new Date(postData.postDate);
           const options = { year: 'numeric', month: 'long', day: 'numeric' };
           postDateElement.textContent = date.toLocaleDateString('en-US', options);
+          // Make am/pm superscript
+          postDateElement.textContent = postDateElement.textContent.replace(/(\s)(am|pm)$/i, function(match, p1, p2) {
+            return p1 + '<sup style="font-size: 0.7em; vertical-align: super;">' + p2 + '</sup>';
+          });
         }
         
         document.getElementById("postContent").innerHTML = postData.content;
@@ -1463,6 +1467,10 @@
           minute: 'numeric',
           hour12: true
         });
+        // Make am/pm superscript
+        dateText = dateText.replace(/(\s)(am|pm)$/i, function(match, p1, p2) {
+          return p1 + '<sup style="font-size: 0.7em; vertical-align: super;">' + p2 + '</sup>';
+        });
       } else if (diffInHours > 0) {
         dateText = `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
       } else if (diffInMinutes > 0) {
@@ -1495,7 +1503,7 @@
             <div class="comment-date" style="font-family: Georgia, serif; color: #df3d85; font-size: 13px; font-weight: 400;">${dateText}</div>
           </div>
         </div>
-        <div class="comment-content">${comment.text}</div>
+        <div class="comment-content" style="font-size: 13px;">${comment.text}</div>
         ${actionsHtml}
       `;
       
