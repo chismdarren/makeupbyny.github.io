@@ -158,7 +158,7 @@ async function handleFormSubmit(e) {
       email: emailInput.value,
       message: messageInput.value,
       timestamp: serverTimestamp(),
-      read: false
+      status: "new"
     });
     
     // Clear form
@@ -180,7 +180,11 @@ async function handleFormSubmit(e) {
 function showNotification(message, type) {
   notification.textContent = message;
   notification.className = `notification ${type}`;
-  notification.style.display = "block";
+  notification.style.cssText = "display:block;background-color:" + (type === "success" ? "#4CAF50" : "#F44336") + 
+                             ";color:white;padding:15px;border-radius:4px;margin-bottom:20px;font-weight:bold;text-align:center;";
+  
+  // Make the notification visible by scrolling to it
+  notification.scrollIntoView({ behavior: "smooth", block: "center" });
   
   // Hide notification after 5 seconds
   setTimeout(() => {
