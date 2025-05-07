@@ -78,6 +78,47 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Set up logout button
     setupLogout();
+
+    // === Admin Custom Avatar Upload Logic ===
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return;
+        // Check admin status (reuse your admin logic)
+        const isAdmin = await isSuperAdmin(user.uid) || (userData && userData.isAdmin === true);
+        if (isAdmin) {
+            const adminUploadDiv = document.getElementById('admin-avatar-upload');
+            if (adminUploadDiv) adminUploadDiv.style.display = 'block';
+
+            // File input and button
+            const fileInput = document.getElementById('customAvatarInput');
+            const previewDiv = document.getElementById('customAvatarPreview');
+            const uploadBtn = document.getElementById('uploadCustomAvatarBtn');
+
+            if (fileInput && uploadBtn) {
+                fileInput.addEventListener('change', function() {
+                    if (fileInput.files && fileInput.files[0]) {
+                        // Show button
+                        uploadBtn.style.display = 'block';
+                        // Preview image
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewDiv.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width:100px; max-height:100px; border-radius:50%;" />`;
+                        };
+                        reader.readAsDataURL(fileInput.files[0]);
+                    } else {
+                        uploadBtn.style.display = 'none';
+                        previewDiv.innerHTML = '';
+                    }
+                });
+                uploadBtn.addEventListener('click', async function() {
+                    if (fileInput.files && fileInput.files[0]) {
+                        // TODO: Replace this with your upload logic (e.g., Firebase Storage upload)
+                        alert('Upload logic goes here!');
+                        // Example: uploadCustomAvatar(fileInput.files[0]);
+                    }
+                });
+            }
+        }
+    });
 });
 
 // Handle authentication state changes
