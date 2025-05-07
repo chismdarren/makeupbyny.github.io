@@ -88,13 +88,21 @@
         }
         .message-modal-content {
             background-color: white;
-            margin: 10% auto;
-            padding: 20px;
+            margin: 5% auto;
+            padding: 15px;
             width: 80%;
             max-width: 600px;
             border-radius: 5px;
             max-height: 80vh;
             overflow-y: auto;
+        }
+        .message-modal-content p {
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+        .message-modal-content a {
+            padding: 2px 0;
+            display: inline-block;
         }
         .message-modal-close {
             float: right;
@@ -105,7 +113,7 @@
             color: #777;
         }
         .message-full-content {
-            margin: 20px 0;
+            margin: 10px 0;
         }
         
         /* Admin Dropdown Menu Styles */
@@ -314,6 +322,39 @@
             width: 95% !important;
             margin: 5% auto !important;
           }
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .message-modal-content {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                max-height: 100%;
+                border-radius: 0;
+                padding: 12px;
+            }
+            
+            .message-modal-content h2 {
+                font-size: 1.2em;
+                margin-top: 5px;
+                padding-right: 30px; /* Make room for close button */
+            }
+            
+            .message-modal-close {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+            }
+            
+            .message-full-content {
+                margin: 5px 0;
+            }
+            
+            .message-full-content div {
+                padding: 8px !important;
+                font-size: 0.95em;
+            }
         }
     </style>
 </head>

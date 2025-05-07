@@ -326,11 +326,13 @@ function showMessageDetails(id, message) {
   // Update modal content
   modalContent.innerHTML = `
     <div>
-      <p><strong>From:</strong> ${message.name || 'Unknown'}</p>
-      <p><strong>Email:</strong> <a href="mailto:${message.email || ''}" style="color: #222; text-decoration: underline;">${message.email || 'No email provided'}</a></p>
-      <p><strong>Phone:</strong> <a href="tel:${message.phone || ''}" style="color: #222; text-decoration: underline;">${message.phone || 'No phone provided'}</a></p>
-      <p><strong>Preferred Contact Method:</strong> ${message.contactPreference || 'Not specified'}</p>
-      <p><strong>Time:</strong> ${timestampDisplay}</p>
+      <div style="display: grid; grid-template-columns: auto 1fr; gap: 5px 10px; margin-bottom: 10px;">
+        <span><strong>From:</strong></span> <span>${message.name || 'Unknown'}</span>
+        <span><strong>Email:</strong></span> <span><a href="mailto:${message.email || ''}" style="color: #222; text-decoration: underline;">${message.email || 'No email provided'}</a></span>
+        <span><strong>Phone:</strong></span> <span><a href="tel:${message.phone || ''}" style="color: #222; text-decoration: underline;">${message.phone || 'No phone provided'}</a></span>
+        <span><strong>Preferred:</strong></span> <span>${message.contactPreference || 'Not specified'}</span>
+        <span><strong>Time:</strong></span> <span>${timestampDisplay}</span>
+      </div>
       <div class="message-full-content">
         <p><strong>Message:</strong></p>
         <div style="background-color: #f9f9f9; padding: 10px; border-radius: 4px; margin-top: 5px;">
