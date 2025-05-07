@@ -510,16 +510,6 @@
             <div id="profile" class="tab-content active">
                 <h2>Avatar Settings</h2>
 
-                <div id="admin-avatar-upload" style="display:none; margin-bottom: 20px;">
-                  <h3>Upload Custom Avatar (Admin Only)</h3>
-                  <form id="customAvatarForm" style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
-                    <input type="file" id="customAvatarInput" accept="image/png, image/jpeg" style="font-size: 1em;" />
-                    <div id="customAvatarPreview" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #ddd; display: none;"></div>
-                    <button type="submit" id="uploadCustomAvatarBtn" class="save-button" style="width: auto;" disabled>Upload Avatar</button>
-                    <small>JPG or PNG, square image recommended, max 2MB.</small>
-                  </form>
-                </div>
-
                 <div class="avatar-settings">
                     <div class="current-avatar">
                         <h3>Current Avatar</h3>
@@ -530,6 +520,11 @@
 
                     <div class="avatar-selection">
                         <h3>Choose New Avatar</h3>
+                        <div id="admin-avatar-upload" style="display:none; margin-bottom: 15px;">
+                            <label for="customAvatarInput" style="font-weight: 500; display: block; margin-bottom: 5px;">Upload Custom Avatar (Admin Only)</label>
+                            <input type="file" id="customAvatarInput" accept="image/*" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; font-size: 16px;" />
+                            <div id="customAvatarPreview" style="margin-top: 10px;"></div>
+                        </div>
                         <div class="avatar-options">
                             <div class="avatar-option" data-avatar="avatar1.jpg">
                                 <img src="images/avatar-icons/avatar1.jpg" alt="Avatar 1">

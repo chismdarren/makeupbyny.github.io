@@ -14,7 +14,6 @@ import {
     deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { initializeConnectionMonitoring } from './firebase-connection-handler.js';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js';
 
 // Connection handler
 let connectionHandler;
@@ -79,9 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Set up logout button
     setupLogout();
-    
-    // Set up admin avatar upload
-    setupAdminAvatarUpload();
 });
 
 // Handle authentication state changes
@@ -114,11 +110,6 @@ async function handleAuthStateChange(user) {
         // Only show admin dropdown for admins
         if (adminDropdownBtn) {
             adminDropdownBtn.style.display = userIsAdmin ? 'inline' : 'none';
-        }
-        
-        // Show admin avatar upload if admin
-        if (userIsAdmin) {
-            document.getElementById('admin-avatar-upload').style.display = 'block';
         }
     } catch (error) {
         console.error('Error checking admin status:', error);
@@ -538,76 +529,5 @@ function handleLogout() {
         window.location.href = 'index.html';
     }).catch(error => {
         console.error('Error signing out:', error);
-    });
-}
-
-// Set up admin avatar upload
-function setupAdminAvatarUpload() {
-    const form = document.getElementById('customAvatarForm');
-    const input = document.getElementById('customAvatarInput');
-    const preview = document.getElementById('customAvatarPreview');
-    const uploadBtn = document.getElementById('uploadCustomAvatarBtn');
-    if (!form || !input || !preview || !uploadBtn) return;
-
-    let selectedFile = null;
-
-    input.addEventListener('change', function() {
-        const file = this.files[0];
-        if (!file) {
-            preview.style.display = 'none';
-            uploadBtn.disabled = true;
-            return;
-        }
-        if (!file.type.match(/^image\/(jpeg|png)$/)) {
-            showNotification('Only JPG or PNG images allowed.', 'error');
-            input.value = '';
-            preview.style.display = 'none';
-            uploadBtn.disabled = true;
-            return;
-        }
-        if (file.size > 2 * 1024 * 1024) {
-            showNotification('Image must be less than 2MB.', 'error');
-            input.value = '';
-            preview.style.display = 'none';
-            uploadBtn.disabled = true;
-            return;
-        }
-        selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="Avatar Preview">`;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-        uploadBtn.disabled = false;
-    });
-
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        if (!selectedFile) return;
-        uploadBtn.disabled = true;
-        uploadBtn.textContent = 'Uploading...';
-        try {
-            const storage = getStorage();
-            const ext = selectedFile.name.split('.').pop();
-            const filePath = `avatars/${currentUser.uid}_custom.${ext}`;
-            const fileRef = storageRef(storage, filePath);
-            await uploadBytes(fileRef, selectedFile);
-            const url = await getDownloadURL(fileRef);
-            // Update Firestore
-            const userRef = doc(db, 'users', currentUser.uid);
-            await updateDoc(userRef, { avatarUrl: url, hasSelectedAvatar: true });
-            // Update UI
-            document.getElementById('currentAvatarImg').src = url;
-            showNotification('Custom avatar uploaded successfully!', 'success');
-            uploadBtn.textContent = 'Upload Avatar';
-            uploadBtn.disabled = true;
-            input.value = '';
-            preview.style.display = 'none';
-        } catch (err) {
-            showNotification('Upload failed: ' + err.message, 'error');
-            uploadBtn.textContent = 'Upload Avatar';
-            uploadBtn.disabled = false;
-        }
     });
 }
