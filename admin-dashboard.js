@@ -208,12 +208,16 @@ function loadContactMessages() {
   const closeBtn = document.querySelector('.message-modal-close');
   closeBtn.addEventListener('click', () => {
     modal.style.display = 'none';
+    // Allow scrolling on the body again
+    document.body.classList.remove('modal-open');
   });
   
   // Close modal when clicking outside
   window.addEventListener('click', (event) => {
     if (event.target === modal) {
       modal.style.display = 'none';
+      // Allow scrolling on the body again
+      document.body.classList.remove('modal-open');
     }
   });
 
@@ -382,6 +386,8 @@ function showMessageDetails(id, message) {
   
   // Show modal
   modal.style.display = 'block';
+  // Prevent scrolling on the body
+  document.body.classList.add('modal-open');
 }
 
 // Update message status
