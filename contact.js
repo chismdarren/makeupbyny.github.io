@@ -13,6 +13,9 @@ const contactForm = document.getElementById("contactForm");
 const nameInput = document.getElementById("name");
 const emailInput = document.getElementById("email");
 const messageInput = document.getElementById("message");
+const phoneInput = document.getElementById("phone");
+const contactPreferenceInput = document.getElementById("contactPreference");
+const subjectInput = document.getElementById("subject");
 const submitBtn = document.getElementById("submitBtn");
 const notification = document.getElementById("notification");
 const adminDropdownBtn = document.getElementById("adminDropdownBtn");
@@ -142,8 +145,9 @@ async function handleFormSubmit(e) {
   e.preventDefault();
   
   // Validate form
-  if (!nameInput.value || !emailInput.value || !messageInput.value) {
-    showNotification("Please fill out all fields.", "error");
+  if (!nameInput.value || !emailInput.value || !phoneInput.value || 
+      !contactPreferenceInput.value || !subjectInput.value || !messageInput.value) {
+    showNotification("Please fill out all required fields.", "error");
     return;
   }
   
@@ -156,6 +160,9 @@ async function handleFormSubmit(e) {
     await addDoc(collection(db, "contact_messages"), {
       name: nameInput.value,
       email: emailInput.value,
+      phone: phoneInput.value,
+      contactPreference: contactPreferenceInput.value,
+      subject: subjectInput.value,
       message: messageInput.value,
       timestamp: serverTimestamp(),
       status: "new"
