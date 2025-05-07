@@ -98,10 +98,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (fileInput.files && fileInput.files[0]) {
                         // Show button
                         uploadBtn.style.display = 'block';
-                        // Preview image
+                        // Preview image with delete (X) button
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            previewDiv.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width:100px; max-height:100px; border-radius:50%;" />`;
+                            previewDiv.innerHTML = `
+                                <img src="${e.target.result}" alt="Preview" style="max-width:100px; max-height:100px; border-radius:50%; display:block; margin:auto;" />
+                                <button id='clearCustomAvatarBtn' title='Remove' style='position:absolute; top:0; right:0; background:#fff; border:none; color:#df3d85; font-size:20px; border-radius:50%; width:28px; height:28px; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; z-index:2;'>×</button>
+                            `;
+                            // Add event for the X button
+                            const clearBtn = document.getElementById('clearCustomAvatarBtn');
+                            if (clearBtn) {
+                                clearBtn.addEventListener('click', function(ev) {
+                                    ev.preventDefault();
+                                    fileInput.value = '';
+                                    previewDiv.innerHTML = '';
+                                    uploadBtn.style.display = 'none';
+                                });
+                            }
                         };
                         reader.readAsDataURL(fileInput.files[0]);
                     } else {
@@ -245,59 +258,100 @@ function setupAvatarSelection() {
     let selectedAvatar = null;
     const saveAvatarBtn = document.getElementById('save-avatar-btn');
     const avatarOptions = document.querySelectorAll('.avatar-option');
-    
+    const fileInput = document.getElementById('customAvatarInput');
+    const previewDiv = document.getElementById('customAvatarPreview');
+
     // Add click handlers to avatar options
     avatarOptions.forEach(option => {
         option.addEventListener('click', () => {
             // Remove selected class from all options
             avatarOptions.forEach(opt => opt.classList.remove('selected'));
-            
             // Add selected class to clicked option
             option.classList.add('selected');
-            
             // Store selected avatar
             selectedAvatar = option.getAttribute('data-avatar');
-            
             // Show preview of selected avatar
             document.getElementById('currentAvatarImg').src = `images/avatar-icons/${selectedAvatar}`;
-            
             // Enable save button
             saveAvatarBtn.disabled = false;
+            // Clear custom file input and preview if a preset is chosen
+            if (fileInput) {
+                fileInput.value = '';
+                previewDiv.innerHTML = '';
+            }
         });
     });
-    
-    // Handle save button click
+
+    // Handle file input for custom avatar
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files && fileInput.files[0]) {
+                // Enable save button
+                saveAvatarBtn.disabled = false;
+                // Preview image with delete (X) button
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview" style="max-width:100px; max-height:100px; border-radius:50%; display:block; margin:auto;" />
+                        <button id='clearCustomAvatarBtn' title='Remove' style='position:absolute; top:0; right:0; background:#fff; border:none; color:#df3d85; font-size:20px; border-radius:50%; width:28px; height:28px; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); display:flex; align-items:center; justify-content:center; z-index:2;'>×</button>
+                    `;
+                    // Add event for the X button
+                    const clearBtn = document.getElementById('clearCustomAvatarBtn');
+                    if (clearBtn) {
+                        clearBtn.addEventListener('click', function(ev) {
+                            ev.preventDefault();
+                            fileInput.value = '';
+                            previewDiv.innerHTML = '';
+                            saveAvatarBtn.disabled = true;
+                        });
+                    }
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+                // Deselect any preset avatar
+                avatarOptions.forEach(opt => opt.classList.remove('selected'));
+                selectedAvatar = null;
+            } else {
+                saveAvatarBtn.disabled = true;
+                previewDiv.innerHTML = '';
+            }
+        });
+    }
+
+    // Handle save button click for both custom and preset avatars
     saveAvatarBtn.addEventListener('click', async () => {
-        if (!selectedAvatar) return;
-        
-        try {
-            // Show loading state
-            saveAvatarBtn.textContent = 'Saving...';
-            saveAvatarBtn.disabled = true;
-            
-            // Update user's profile in Firestore
-            const userRef = doc(db, 'users', currentUser.uid);
-            await updateDoc(userRef, {
-                avatarUrl: selectedAvatar,
-                hasSelectedAvatar: true
-            });
-            
-            // Update local user data
-            userData.avatarUrl = selectedAvatar;
-            
-            // Show success message
-            showNotification('Avatar updated successfully', 'success');
-            
-            // Reset button
-            saveAvatarBtn.textContent = 'Update Avatar';
-            saveAvatarBtn.disabled = true;
-        } catch (error) {
-            console.error('Error updating avatar:', error);
-            showNotification('Error updating avatar: ' + error.message, 'error');
-            
-            // Reset button
-            saveAvatarBtn.textContent = 'Update Avatar';
-            saveAvatarBtn.disabled = false;
+        // Custom avatar upload
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            // TODO: Replace this with your upload logic (e.g., Firebase Storage upload)
+            alert('Custom avatar upload logic goes here!');
+            // Example: uploadCustomAvatar(fileInput.files[0]);
+            return;
+        }
+        // Preset avatar
+        if (selectedAvatar) {
+            try {
+                // Show loading state
+                saveAvatarBtn.textContent = 'Saving...';
+                saveAvatarBtn.disabled = true;
+                // Update user's profile in Firestore
+                const userRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(userRef, {
+                    avatarUrl: selectedAvatar,
+                    hasSelectedAvatar: true
+                });
+                // Update local user data
+                userData.avatarUrl = selectedAvatar;
+                // Show success message
+                showNotification('Avatar updated successfully', 'success');
+                // Reset button
+                saveAvatarBtn.textContent = 'Update Avatar';
+                saveAvatarBtn.disabled = true;
+            } catch (error) {
+                console.error('Error updating avatar:', error);
+                showNotification('Error updating avatar: ' + error.message, 'error');
+                // Reset button
+                saveAvatarBtn.textContent = 'Update Avatar';
+                saveAvatarBtn.disabled = false;
+            }
         }
     });
 }
