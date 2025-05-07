@@ -510,6 +510,16 @@
             <div id="profile" class="tab-content active">
                 <h2>Avatar Settings</h2>
 
+                <div id="admin-avatar-upload" style="display:none; margin-bottom: 20px;">
+                  <h3>Upload Custom Avatar (Admin Only)</h3>
+                  <form id="customAvatarForm" style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+                    <input type="file" id="customAvatarInput" accept="image/png, image/jpeg" style="font-size: 1em;" />
+                    <div id="customAvatarPreview" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #ddd; display: none;"></div>
+                    <button type="submit" id="uploadCustomAvatarBtn" class="save-button" style="width: auto;" disabled>Upload Avatar</button>
+                    <small>JPG or PNG, square image recommended, max 2MB.</small>
+                  </form>
+                </div>
+
                 <div class="avatar-settings">
                     <div class="current-avatar">
                         <h3>Current Avatar</h3>
