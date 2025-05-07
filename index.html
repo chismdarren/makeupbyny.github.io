@@ -910,8 +910,8 @@
             <a href="post.html?postId=${post.id}" style="text-decoration: none; color: inherit;">
               <h3 style="${post.titleFont ? `font-family: '${post.titleFont}', cursive` : ''}">${post.title}</h3>
               <hr style="width: 30%; margin: 10px auto; border-top: 1px solid #000; border-bottom: none;">
-              <div class="post-meta" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
-                ${displayDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} by Ny - ${post.commentCount} comment${post.commentCount !== 1 ? 's' : ''}
+              <div class="post-meta" style="font-size: 0.9em; margin-bottom: 10px;">
+                <span style="color: #000;">${displayDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span> <span style="color: #000;">by</span> <span style="color: #d99ca4;">Ny</span> <span style="color: #000;">-</span> <a href="post.html?postId=${post.id}#comments" style="color: #d99ca4; text-decoration: none;"><span style="color: #d99ca4;">${post.commentCount} comment${post.commentCount !== 1 ? 's' : ''}</span></a>
               </div>
               ${imageHtml}
               <p>${contentPreview}</p>
