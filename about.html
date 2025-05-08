@@ -173,10 +173,8 @@
       transition: color 0.2s;
       align-items: center;
       position: relative;
-      bottom: -8; /* Lower the Admin Dashboard text to match other items */
+      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
       z-index: 1000; /* Ensure button appears in front */
-      transform: translateY(0); /* Prevent movement */
-      display: flex; /* Ensure consistent rendering */
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -266,10 +264,6 @@
 
       .admin-dropdown-btn {
         padding: 10px 5px;
-        bottom: 2px; /* Raise the Admin Dashboard text on mobile */
-        transform: translateY(0); /* Prevent movement */
-        position: relative; /* Ensure positioning works */
-        display: flex; /* Ensure consistent rendering */
       }
       
       /* Hide about-me sidebar completely on mobile */
