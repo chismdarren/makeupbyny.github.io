@@ -192,6 +192,13 @@
       color: #a07;
     }
 
+    /* Desktop position for admin dashboard text */
+    @media (min-width: 768px) {
+      .admin-dropdown-btn {
+        bottom: 0px; /* Move text higher up for desktop view */
+      }
+    }
+
     .admin-dropdown-content {
       display: none;
       position: absolute;
@@ -629,7 +636,6 @@
         if (loginLink) loginLink.style.display = 'inline';
         if (logoutBtn) logoutBtn.style.display = 'none';
         if (userAccountLink) userAccountLink.style.display = 'none';
-        if (adminDropdownBtn) adminDropdownBtn.style.display = 'none';
         
         // Hide settings icon
         if (settingsIcon) settingsIcon.style.display = 'none';
