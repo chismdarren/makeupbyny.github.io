@@ -1301,9 +1301,9 @@
           // Set the width based on the dropdown type
           if (isContactDropdown) {
             // For contact dropdown, use the width of the button but with a minimum width
-            // to ensure the dropdown content (like "Booking") fits properly
-            const minWidth = 80; // Smaller minimum width
-            const boxWidth = Math.max(minWidth, rect.width * 0.7); // Shrink to 70% of the button width
+            // to ensure the dropdown content fits
+            const minWidth = 70; // Very small minimum width
+            const boxWidth = Math.max(minWidth, rect.width * 0.5); // Shrink to 50% of the button width
             
             blackBox.style.width = boxWidth + 'px';
             
