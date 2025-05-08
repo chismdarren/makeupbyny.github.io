@@ -46,7 +46,7 @@
     /* Menu items in the white box */
     .black-box a {
       color: #333;
-      padding: 8px 8px;
+      padding: 8px 2px;
       text-decoration: none;
       display: block;
       text-align: center;
@@ -58,6 +58,7 @@
       width: 100%;
       box-sizing: border-box;
       font-size: 0.9em;
+      line-height: 1.2;
     }
     
     .black-box a:last-child {
@@ -673,7 +674,7 @@
     
     .black-box a {
       color: #333;
-      padding: 8px 8px;
+      padding: 8px 2px;
       text-decoration: none;
       display: block;
       text-align: center;
@@ -685,6 +686,7 @@
       width: 100%;
       box-sizing: border-box;
       font-size: 0.9em;
+      line-height: 1.2;
     }
     
     .black-box a:last-child {
@@ -1307,10 +1309,14 @@
           // Position directly below the text with a small margin
           blackBox.style.top = (rect.bottom + 5) + 'px';
           
-          // Use an even narrower fixed width for the dropdown
-          const finalWidth = 90; // Even narrower fixed width
+          // Get the exact width of the button text
+          const textWidth = rect.width;
           
-          // Calculate the centered position
+          // If it's extremely narrow (less than 60px), add a little padding
+          // but still honor the intent to match the text width
+          const finalWidth = textWidth < 60 ? Math.min(textWidth + 10, 70) : textWidth;
+          
+          // Calculate the position to center directly under the text
           const buttonCenter = rect.left + (rect.width / 2);
           const leftPosition = buttonCenter - (finalWidth / 2);
           
