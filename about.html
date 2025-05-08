@@ -266,6 +266,10 @@
 
       .admin-dropdown-btn {
         padding: 10px 5px;
+        bottom: 2px; /* Raise the Admin Dashboard text on mobile */
+        transform: translateY(0); /* Prevent movement */
+        position: relative; /* Ensure positioning works */
+        display: flex; /* Ensure consistent rendering */
       }
       
       /* Hide about-me sidebar completely on mobile */
