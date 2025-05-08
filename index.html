@@ -655,6 +655,14 @@
       overflow: hidden;
       margin-top: 5px;
       border: 1px solid #eee;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    
+    .black-box.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
     
     .black-box a {
@@ -1284,9 +1292,35 @@
       function positionBlackBox(button, items) {
         if (button) {
           const rect = button.getBoundingClientRect();
-          blackBox.style.top = (rect.bottom) + 'px';
-          blackBox.style.left = rect.left + 'px';
-          blackBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
+          // Position directly below the text with a small margin
+          blackBox.style.top = (rect.bottom + 5) + 'px';
+          
+          // Center the dropdown under the text for a cleaner look
+          const buttonWidth = rect.width;
+          const boxWidth = Math.max(180, buttonWidth); // Minimum width of 180px
+          
+          // Calculate the centered position (button center minus half of box width)
+          const buttonCenter = rect.left + (buttonWidth / 2);
+          const leftPosition = buttonCenter - (boxWidth / 2);
+          
+          // Check if dropdown would go off-screen on the right
+          const viewportWidth = window.innerWidth;
+          const rightEdge = leftPosition + boxWidth;
+          
+          // Adjust position if dropdown would go off screen
+          let adjustedLeftPosition = leftPosition;
+          if (rightEdge > viewportWidth - 10) {
+            adjustedLeftPosition = viewportWidth - boxWidth - 10; // 10px from right edge
+          }
+          
+          // Ensure dropdown doesn't go off-screen on the left
+          if (adjustedLeftPosition < 10) {
+            adjustedLeftPosition = 10; // 10px from left edge
+          }
+          
+          // Apply the position
+          blackBox.style.left = adjustedLeftPosition + 'px';
+          blackBox.style.width = boxWidth + 'px';
           
           // Hide all dropdown item containers
           adminDropdownItems.style.display = 'none';
@@ -1316,13 +1350,24 @@
           
           // Toggle black box display
           if (blackBox.style.display === 'block' && adminDropdownItems.style.display === 'block') {
-            blackBox.style.display = 'none';
+            // Hide with animation
+            blackBox.classList.remove('visible');
+            setTimeout(() => {
+              blackBox.style.display = 'none';
+            }, 200); // Match transition duration
+            
             this.classList.remove('active');
             contactDropdownBtn.classList.remove('active');
             activeDropdown = null; // Reset active dropdown
           } else {
             positionBlackBox(this, adminDropdownItems); // Position before showing
             blackBox.style.display = 'block';
+            
+            // Trigger animation after a tiny delay to ensure display block has taken effect
+            setTimeout(() => {
+              blackBox.classList.add('visible');
+            }, 10);
+            
             this.classList.add('active');
             contactDropdownBtn.classList.remove('active');
             
@@ -1340,13 +1385,24 @@
           
           // Toggle black box display
           if (blackBox.style.display === 'block' && contactDropdownItems.style.display === 'block') {
-            blackBox.style.display = 'none';
+            // Hide with animation
+            blackBox.classList.remove('visible');
+            setTimeout(() => {
+              blackBox.style.display = 'none';
+            }, 200); // Match transition duration
+            
             this.classList.remove('active');
             if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
             activeDropdown = null; // Reset active dropdown
           } else {
             positionBlackBox(this, contactDropdownItems); // Position before showing
             blackBox.style.display = 'block';
+            
+            // Trigger animation after a tiny delay to ensure display block has taken effect
+            setTimeout(() => {
+              blackBox.classList.add('visible');
+            }, 10);
+            
             this.classList.add('active');
             if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
             
@@ -1362,7 +1418,12 @@
             !adminDropdownBtn.contains(e.target) && 
             !contactDropdownBtn.contains(e.target) && 
             !blackBox.contains(e.target)) {
-          blackBox.style.display = 'none';
+          // Hide with animation
+          blackBox.classList.remove('visible');
+          setTimeout(() => {
+            blackBox.style.display = 'none';
+          }, 200); // Match transition duration
+          
           if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
           contactDropdownBtn.classList.remove('active');
           activeDropdown = null; // Reset active dropdown tracking
