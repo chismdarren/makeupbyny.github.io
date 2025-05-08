@@ -660,6 +660,11 @@
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
     
+    /* Make contact dropdown narrower */
+    #contact-dropdown-items {
+      width: 120px;
+    }
+    
     .black-box.visible {
       opacity: 1;
       transform: translateY(0);
@@ -1303,7 +1308,7 @@
             // For contact dropdown, use the width of the button but with a minimum width
             // to ensure the dropdown content fits
             const minWidth = 70; // Very small minimum width
-            const boxWidth = Math.max(minWidth, rect.width * 0.5); // Shrink to 50% of the button width
+            const boxWidth = Math.max(minWidth, rect.width * 0.3); // Shrink to just 30% of the button width
             
             blackBox.style.width = boxWidth + 'px';
             
