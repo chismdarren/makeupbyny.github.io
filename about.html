@@ -918,8 +918,11 @@
       async function saveContentToFirebase(updatedContent) {
         console.log("Saving content to Firebase:", updatedContent);
         
+        // Use page-specific document ID to prevent cross-page content sharing
+        const pageDocId = "about_page_content";
+        
         // Create/update content document in Firestore
-        const contentRef = doc(db, "site_content", "editable_content");
+        const contentRef = doc(db, "site_content", pageDocId);
         
         try {
           // Check if document exists
@@ -999,9 +1002,12 @@
     // Load saved content when the page loads
     document.addEventListener('DOMContentLoaded', async function() {
       try {
-        console.log("Loading saved content...");
+        // Use page-specific document ID to prevent cross-page content sharing
+        const pageDocId = "about_page_content";
+        
+        console.log("Loading saved content for about page...");
         // Get the content document from Firestore
-        const contentRef = doc(db, "site_content", "editable_content");
+        const contentRef = doc(db, "site_content", pageDocId);
         const docSnap = await getDoc(contentRef);
         
         if (docSnap.exists() && docSnap.data().content) {
