@@ -244,6 +244,124 @@
       }
     }
     
+    /* Content visibility control */
+    .content-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .content-loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #a07;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Hide editable content until loaded */
+    .editable-container {
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.3s ease, opacity 0.3s ease;
+    }
+
+    .editable-container.loaded {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    /* Edit mode button styles */
+    #edit-mode-toggle {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: none; /* Hidden by default, shown only for admins */
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 9999;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    #edit-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    #edit-mode-toggle.active {
+      background-color: #ff69b4;
+      color: white;
+    }
+
+    /* Save Status Indicator */
+    #save-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #save-status.show {
+      opacity: 1;
+    }
+
+    #save-status.success {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    #save-status.error {
+      background-color: #F44336;
+      color: white;
+    }
+
+    #save-status.saving {
+      background-color: #FFC107;
+      color: black;
+    }
+
+    /* Editable content styles */
+    .editable {
+      transition: outline 0.3s ease, background-color 0.3s ease;
+    }
+
+    .editable.edit-mode {
+      outline: 2px solid #ff69b4;
+      outline-offset: 2px;
+      background-color: rgba(255, 105, 180, 0.05);
+    }
+    
     /* Settings gear icon styles */
     .settings-icon {
       position: fixed;
@@ -323,6 +441,11 @@
   </style>
 </head>
 <body>
+  <!-- Loading spinner overlay -->
+  <div id="contentLoader" class="content-loader">
+    <div class="loader-spinner"></div>
+  </div>
+  
   <!-- Header Section -->
   <header>
     <a href="index.html">
@@ -360,6 +483,14 @@
     </svg>
   </a>
 
+  <!-- Edit Mode Button (Admin only) -->
+  <div id="edit-mode-toggle" style="display:none;">
+    <i class="fas fa-pencil-alt"></i>
+  </div>
+
+  <!-- Save Status Indicator -->
+  <div id="save-status">Saving changes...</div>
+
   <!-- Main Content Area -->
   <div class="content">
     <!-- White box dropdown replacement -->
@@ -392,33 +523,45 @@
       <div class="about-content">
         <section class="about-section">
           <h2>Disclaimer</h2>
-          <p>
-            The information provided on Makeup by NY is for general informational purposes only. While we strive to keep the information up to date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the website or the information, products, services, or related graphics contained on the website for any purpose.
-          </p>
+          <div class="editable-container">
+            <p class="editable">
+              The information provided on Makeup by NY is for general informational purposes only. While we strive to keep the information up to date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the website or the information, products, services, or related graphics contained on the website for any purpose.
+            </p>
+          </div>
 
           <h3>Product Reviews and Recommendations</h3>
-          <p>
-            Any product reviews, recommendations, or opinions expressed on this blog are based on personal experience and research. We are not affiliated with any of the brands or companies mentioned unless explicitly stated. Some posts may contain affiliate links, which means we may receive a small commission if you make a purchase through these links.
-          </p>
+          <div class="editable-container">
+            <p class="editable">
+              Any product reviews, recommendations, or opinions expressed on this blog are based on personal experience and research. We are not affiliated with any of the brands or companies mentioned unless explicitly stated. Some posts may contain affiliate links, which means we may receive a small commission if you make a purchase through these links.
+            </p>
+          </div>
 
           <h3>Medical and Health Information</h3>
-          <p>
-            The beauty and skincare advice provided on this blog is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
-          </p>
+          <div class="editable-container">
+            <p class="editable">
+              The beauty and skincare advice provided on this blog is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
+            </p>
+          </div>
 
           <h3>External Links</h3>
-          <p>
-            Our website may contain links to external websites that are not provided or maintained by or in any way affiliated with Makeup by NY. Please note that we do not guarantee the accuracy, relevance, timeliness, or completeness of any information on these external websites.
-          </p>
+          <div class="editable-container">
+            <p class="editable">
+              Our website may contain links to external websites that are not provided or maintained by or in any way affiliated with Makeup by NY. Please note that we do not guarantee the accuracy, relevance, timeliness, or completeness of any information on these external websites.
+            </p>
+          </div>
 
           <h3>Changes to This Disclaimer</h3>
-          <p>
-            We reserve the right to update or change our disclaimer at any time. Any changes will be posted on this page with an updated revision date.
-          </p>
+          <div class="editable-container">
+            <p class="editable">
+              We reserve the right to update or change our disclaimer at any time. Any changes will be posted on this page with an updated revision date.
+            </p>
+          </div>
 
-          <p>
-            Last updated: March 2024
-          </p>
+          <div class="editable-container">
+            <p class="editable">
+              Last updated: March 2024
+            </p>
+          </div>
         </section>
       </div>
     </main>
@@ -427,16 +570,20 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <p>
-        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
-      </p>
-      <p>
-        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
-      </p>
+      <div class="editable-container">
+        <p class="editable">
+          Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+        </p>
+        <p class="editable">
+          Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+        </p>
+      </div>
 
       <!-- Social Media Links -->
       <div class="social-links">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <div class="editable-container">
+          <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Follow Me</h3>
+        </div>
         <div class="social-icons">
           <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>
           <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr" class="social-icon facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
@@ -450,7 +597,9 @@
 
       <!-- Recent Posts -->
       <div class="recent-posts">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
+        <div class="editable-container">
+          <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Recent Posts</h3>
+        </div>
         <div id="recentPostsList"></div>
       </div>
     </aside>
@@ -458,7 +607,9 @@
 
   <!-- Footer Section -->
   <footer>
-    <p>&copy; 2025 Makeup by NY</p>
+    <div class="editable-container">
+      <p class="editable">&copy; 2025 Makeup by NY</p>
+    </div>
   </footer>
 
   <!-- Load firebase.js first to initialize Firebase -->
@@ -587,6 +738,111 @@
         }
       });
     });
+
+    // Function to generate a unique path for each element based on its position in the DOM
+    function getElementPath(element) {
+      if (!element) return '';
+      
+      // Start with the tag name
+      let path = element.tagName.toLowerCase();
+      
+      // Add id if it exists
+      if (element.id) {
+        path += '#' + element.id;
+        return path; // ID should be unique, so we can stop here
+      }
+      
+      // Add classes
+      if (element.className && typeof element.className === 'string') {
+        const classes = element.className.trim().split(/\s+/);
+        if (classes.length > 0 && classes[0] !== '') {
+          path += '.' + classes.join('.');
+        }
+      }
+      
+      // Get the index of the element among its siblings of the same type
+      if (element.parentNode) {
+        const siblings = Array.from(element.parentNode.children);
+        const sameSiblings = siblings.filter(sibling => sibling.tagName === element.tagName);
+        if (sameSiblings.length > 1) {
+          const index = sameSiblings.indexOf(element);
+          path += `:nth-of-type(${index + 1})`;
+        }
+      }
+      
+      // Add text content hash for better identification
+      if (element.textContent) {
+        // Create a simple hash of the first 30 chars of text content
+        const textSample = element.textContent.trim().substring(0, 30).replace(/\s+/g, ' ');
+        if (textSample) {
+          // Using simple hash for brevity
+          let hash = 0;
+          for (let i = 0; i < textSample.length; i++) {
+            hash = ((hash << 5) - hash) + textSample.charCodeAt(i);
+            hash |= 0; // Convert to 32bit integer
+          }
+          path += `[text="${hash}"]`;
+        }
+      }
+      
+      // Handle special case for footer copyright
+      if (element.parentNode && element.parentNode.tagName.toLowerCase() === 'footer' && 
+          element.textContent && element.textContent.includes('©')) {
+        return 'footer-copyright';
+      }
+      
+      return path;
+    }
+
+    // Function to save edited content to Firebase
+    function saveContentToFirebase(elements, db) {
+      return new Promise((resolve, reject) => {
+        if (!window.firebase || !db) {
+          console.error("Firebase is not initialized");
+          reject("Firebase is not initialized");
+          return;
+        }
+        
+        try {
+          const batch = db.batch();
+          const contentRef = db.collection('siteContent');
+          const pagePath = window.location.pathname.split('/').pop() || 'index.html';
+          
+          // Save each element's content
+          elements.forEach(element => {
+            const path = getElementPath(element);
+            if (!path) return;
+            
+            const docId = `${pagePath}_${path}`;
+            const docRef = contentRef.doc(docId);
+            
+            batch.set(docRef, {
+              content: element.innerHTML,
+              path: path,
+              page: pagePath,
+              lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Also save to localStorage as backup
+            localStorage.setItem(docId, element.innerHTML);
+          });
+          
+          // Commit the batch
+          batch.commit()
+            .then(() => {
+              console.log("Content saved successfully");
+              resolve();
+            })
+            .catch(error => {
+              console.error("Error saving content: ", error);
+              reject(error);
+            });
+        } catch (error) {
+          console.error("Error in saveContentToFirebase: ", error);
+          reject(error);
+        }
+      });
+    }
   </script>
 </body>
 </html> 
