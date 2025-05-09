@@ -397,6 +397,44 @@
       background-color: #f9f9f9;
       color: #a07;
     }
+
+    /* Edit mode button styles */
+    #edit-mode-toggle {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: none; /* Hidden by default, shown only for admins */
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 9999;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    #edit-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    #edit-mode-toggle.active {
+      background-color: #ff69b4;
+      color: white;
+    }
+
+    /* Editable content styles */
+    .editable {
+      transition: outline 0.3s ease, background-color 0.3s ease;
+    }
+
+    .editable.edit-mode {
+      outline: 2px solid #ff69b4;
+      outline-offset: 2px;
+      background-color: rgba(255, 105, 180, 0.05);
+    }
   </style>
 </head>
 <body>
@@ -437,6 +475,11 @@
     </svg>
   </a>
 
+  <!-- Edit Mode Button (Admin only) -->
+  <div id="edit-mode-toggle" style="display:none;">
+    <i class="fas fa-pencil-alt"></i>
+  </div>
+
   <!-- Main Content Area -->
   <div class="content">
     <!-- White box dropdown replacement -->
@@ -471,13 +514,13 @@
         <section class="about-section" id="welcome">
           <h2>About Me</h2>
           <img src="nyredhair.jpg" alt="Ny Red Hair" class="about-image">
-          <p>
+          <p class="editable">
             Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty. My journey in the world of makeup began with a simple curiosity and has evolved into a passionate pursuit of helping others discover their natural beauty.
           </p>
-          <p>
+          <p class="editable">
             Through this blog, I share my experiences, tips, and tricks that I've learned along the way. Whether you're a makeup novice or a seasoned pro, there's something here for everyone. I believe that makeup should be fun, accessible, and most importantly, a way to express yourself.
           </p>
-          <p>
+          <p class="editable">
             When I'm not experimenting with new products or creating tutorials, you can find me exploring the latest beauty trends, attending makeup workshops, or sharing my favorite finds with my growing community of beauty enthusiasts.
           </p>
         </section>
@@ -485,21 +528,21 @@
         <!-- My Mission Section -->
         <section class="about-section">
           <h2>My Mission</h2>
-          <p>
+          <p class="editable">
             My mission is to empower everyone to feel confident and beautiful in their own skin. I believe that makeup is not about hiding who you are, but rather enhancing your natural beauty and expressing your unique style.
           </p>
           <div class="about-grid">
             <div class="about-card">
               <h3>Education</h3>
-              <p>I'm constantly learning and staying up-to-date with the latest beauty trends and techniques through professional courses and workshops. From basic application to advanced techniques, I'm always expanding my knowledge to share with you.</p>
+              <p class="editable">I'm constantly learning and staying up-to-date with the latest beauty trends and techniques through professional courses and workshops. From basic application to advanced techniques, I'm always expanding my knowledge to share with you.</p>
             </div>
             <div class="about-card">
               <h3>Experience</h3>
-              <p>With years of personal experience and countless hours of practice, I've developed a deep understanding of makeup application and product selection. I've worked with various skin types and tones, helping people achieve their desired looks.</p>
+              <p class="editable">With years of personal experience and countless hours of practice, I've developed a deep understanding of makeup application and product selection. I've worked with various skin types and tones, helping people achieve their desired looks.</p>
             </div>
             <div class="about-card">
               <h3>Community</h3>
-              <p>I'm passionate about building a supportive community where everyone can share their beauty journey and learn from each other. Join our growing community of beauty enthusiasts and share your own tips and experiences!</p>
+              <p class="editable">I'm passionate about building a supportive community where everyone can share their beauty journey and learn from each other. Join our growing community of beauty enthusiasts and share your own tips and experiences!</p>
             </div>
           </div>
         </section>
@@ -510,15 +553,15 @@
           <div class="about-grid">
             <div class="about-card">
               <h3>Skincare First</h3>
-              <p>Always start with a clean, well-moisturized face. Good makeup starts with good skincare!</p>
+              <p class="editable">Always start with a clean, well-moisturized face. Good makeup starts with good skincare!</p>
             </div>
             <div class="about-card">
               <h3>Tools Matter</h3>
-              <p>Invest in quality brushes and sponges. They make a world of difference in application.</p>
+              <p class="editable">Invest in quality brushes and sponges. They make a world of difference in application.</p>
             </div>
             <div class="about-card">
               <h3>Less is More</h3>
-              <p>Start with a light hand and build up gradually. It's easier to add than to remove!</p>
+              <p class="editable">Start with a light hand and build up gradually. It's easier to add than to remove!</p>
             </div>
           </div>
         </section>
@@ -526,7 +569,7 @@
         <!-- Contact Section -->
         <section class="about-section">
           <h2>Get in Touch</h2>
-          <p>
+          <p class="editable">
             I love connecting with my readers! Whether you have questions about specific products, want to share your own beauty tips, or just want to say hello, feel free to reach out.
           </p>
           <div class="social-links">
@@ -543,16 +586,16 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <p>
+      <p class="editable">
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-      <p>
+      <p class="editable">
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
       <!-- Social Media Links -->
       <div class="social-links">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Follow Me</h3>
         <div class="social-icons">
           <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>
           <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr" class="social-icon facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
@@ -566,7 +609,7 @@
 
       <!-- Recent Posts -->
       <div class="recent-posts">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Recent Posts</h3>
         <div id="recentPostsList"></div>
       </div>
     </aside>
@@ -574,7 +617,7 @@
 
   <!-- Footer Section -->
   <footer>
-    <p>&copy; 2025 Makeup by NY</p>
+    <p class="editable">&copy; 2025 Makeup by NY</p>
   </footer>
 
   <!-- Load firebase.js first to initialize Firebase -->
@@ -755,6 +798,285 @@
         console.error('Error signing out:', error);
       });
     }
+  </script>
+
+  <!-- Edit Mode Script -->
+  <script type="module">
+    // Import Firebase modules
+    import { auth, isAdminUser, db } from './firebase-config.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+    import { doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const editButton = document.getElementById('edit-mode-toggle');
+      const editableElements = document.querySelectorAll('.editable');
+      let editModeActive = false;
+      
+      // Store original content for each editable element
+      const originalContent = {};
+      editableElements.forEach((element, index) => {
+        originalContent[index] = element.innerHTML;
+      });
+
+      // Show edit button for admin users only
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const isAdmin = await isAdminUser(user.uid);
+          if (isAdmin && editButton) {
+            editButton.style.display = 'flex';
+          }
+        }
+      });
+
+      // Toggle edit mode when pencil icon is clicked
+      if (editButton) {
+        editButton.addEventListener('click', function() {
+          editModeActive = !editModeActive;
+          
+          // Toggle button appearance
+          if (editModeActive) {
+            // Enter edit mode
+            editButton.classList.add('active');
+            editButton.innerHTML = '<i class="fas fa-save"></i>';
+            
+            // Toggle contenteditable and visual style for all editable elements
+            editableElements.forEach(element => {
+              element.setAttribute('contenteditable', 'true');
+              element.classList.add('edit-mode');
+            });
+          } else {
+            // Exit edit mode and save changes
+            editButton.classList.remove('active');
+            editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+            
+            // Create an object to store the changes
+            const updatedContent = {};
+            let hasChanges = false;
+            
+            // Check which elements have been changed
+            editableElements.forEach((element, index) => {
+              const currentContent = element.innerHTML;
+              if (currentContent !== originalContent[index]) {
+                // Store element information for identification
+                const path = getElementPath(element);
+                updatedContent[path] = {
+                  content: currentContent,
+                  elementType: element.tagName.toLowerCase()
+                };
+                hasChanges = true;
+              }
+              
+              // Remove contenteditable and visual style
+              element.removeAttribute('contenteditable');
+              element.classList.remove('edit-mode');
+            });
+            
+            // If changes were made, save them to Firebase
+            if (hasChanges) {
+              saveContentToFirebase(updatedContent)
+                .then(() => {
+                  showNotification('Changes saved successfully!', 'success');
+                  // Update the original content with new values
+                  editableElements.forEach((element, index) => {
+                    originalContent[index] = element.innerHTML;
+                  });
+                })
+                .catch(error => {
+                  showNotification('Error saving changes: ' + error.message, 'error');
+                  console.error('Error saving changes:', error);
+                });
+            }
+          }
+        });
+      }
+      
+      // Function to get a unique path for an element
+      function getElementPath(element) {
+        const tagName = element.tagName.toLowerCase();
+        
+        // Get a cleaned version of the class list (only keeping 'editable' and a few key classes)
+        const classList = Array.from(element.classList).filter(cls => 
+          cls === 'editable' || 
+          ['header', 'footer', 'about-me', 'social-links', 'about-card'].includes(cls)
+        );
+        const classNames = classList.join('.');
+        
+        // Get parent information
+        const parentElement = element.parentElement;
+        const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
+        const parentClass = parentElement && parentElement.className ? 
+          Array.from(parentElement.classList)[0] : '';
+        
+        // Include some content as a fingerprint (first 10 chars)
+        const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
+        
+        // Create a relatively unique identifier for this element
+        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${contentFingerprint}`;
+      }
+      
+      // Function to save content to Firebase
+      async function saveContentToFirebase(updatedContent) {
+        console.log("Saving content to Firebase:", updatedContent);
+        
+        // Create/update content document in Firestore
+        const contentRef = doc(db, "site_content", "editable_content");
+        
+        try {
+          // Check if document exists
+          const docSnap = await getDoc(contentRef);
+          
+          if (docSnap.exists()) {
+            // Get current content
+            const currentContent = docSnap.data().content || {};
+            
+            // Merge current content with updated content
+            const mergedContent = { ...currentContent, ...updatedContent };
+            console.log("Updating existing document with merged content:", mergedContent);
+            
+            // Update existing document
+            return updateDoc(contentRef, {
+              content: mergedContent,
+              lastUpdated: new Date()
+            });
+          } else {
+            console.log("Creating new document with content:", updatedContent);
+            // Create new document
+            return setDoc(contentRef, {
+              content: updatedContent,
+              lastUpdated: new Date()
+            });
+          }
+        } catch (error) {
+          console.error("Error saving content:", error);
+          throw error;
+        }
+      }
+      
+      // Function to show notification
+      function showNotification(message, type) {
+        // Create notification element if it doesn't exist
+        let notification = document.getElementById('edit-notification');
+        if (!notification) {
+          notification = document.createElement('div');
+          notification.id = 'edit-notification';
+          notification.style.position = 'fixed';
+          notification.style.bottom = '20px';
+          notification.style.right = '20px';
+          notification.style.padding = '10px 20px';
+          notification.style.borderRadius = '4px';
+          notification.style.color = 'white';
+          notification.style.fontWeight = 'bold';
+          notification.style.zIndex = '10000';
+          notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+          document.body.appendChild(notification);
+        }
+        
+        // Set style based on notification type
+        if (type === 'success') {
+          notification.style.backgroundColor = '#4CAF50';
+        } else if (type === 'error') {
+          notification.style.backgroundColor = '#F44336';
+        }
+        
+        // Set message and show notification
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        // Hide notification after 3 seconds
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 3000);
+      }
+    });
+  </script>
+
+  <!-- Load editable content script -->
+  <script type="module">
+    // Import Firebase modules immediately
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { db } from "./firebase-config.js";
+    
+    // Load saved content when the page loads
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        console.log("Loading saved content...");
+        // Get the content document from Firestore
+        const contentRef = doc(db, "site_content", "editable_content");
+        const docSnap = await getDoc(contentRef);
+        
+        if (docSnap.exists() && docSnap.data().content) {
+          console.log("Found saved content:", docSnap.data());
+          const savedContent = docSnap.data().content;
+          
+          // Apply saved content to matching elements
+          Object.keys(savedContent).forEach(path => {
+            try {
+              // Parse the path to find the element
+              // Format: parentTag.parentClass>tag.class1.class2:contentFingerprint
+              
+              // Remove content fingerprint if present
+              const basePath = path.split(':')[0];
+              
+              // Split into parent and element parts
+              const [parentInfo, elementInfo] = basePath.split('>');
+              
+              // Extract parent tag and class
+              let parentTag = '', parentClass = '';
+              if (parentInfo.includes('.')) {
+                [parentTag, parentClass] = parentInfo.split('.');
+              } else {
+                parentTag = parentInfo;
+              }
+              
+              // Extract element tag and classes
+              const [tag, ...classes] = elementInfo.split('.');
+              
+              // Build a selector from the classes
+              const classSelector = classes.length > 0 ? '.' + classes.join('.') : '';
+              const selector = tag + classSelector;
+              
+              console.log(`Looking for elements matching selector: ${selector}`);
+              
+              // Find potential elements that match
+              const elements = document.querySelectorAll(selector);
+              
+              if (elements.length > 0) {
+                console.log(`Found ${elements.length} matching elements`);
+                
+                // Apply to all matching elements (usually should be just one)
+                elements.forEach(element => {
+                  // Only update if parent tag matches or if we can't determine it
+                  const actualParentElement = element.parentElement;
+                  
+                  if (actualParentElement) {
+                    const actualParentTag = actualParentElement.tagName.toLowerCase();
+                    const actualParentHasClass = parentClass ? 
+                      actualParentElement.classList.contains(parentClass) : true;
+                    
+                    if (actualParentTag === parentTag && actualParentHasClass) {
+                      console.log(`Updating element with path ${path}`);
+                      element.innerHTML = savedContent[path].content;
+                    }
+                  } else if (!parentTag) {
+                    // If no parent specified and element has no parent
+                    console.log(`Updating element with path ${path} (no parent check)`);
+                    element.innerHTML = savedContent[path].content;
+                  }
+                });
+              } else {
+                console.log(`No elements found matching selector: ${selector}`);
+              }
+            } catch (error) {
+              console.error(`Error processing path ${path}:`, error);
+            }
+          });
+        } else {
+          console.log("No saved content found");
+        }
+      } catch (error) {
+        console.error("Error loading saved content:", error);
+      }
+    });
   </script>
 </body>
 </html> 
