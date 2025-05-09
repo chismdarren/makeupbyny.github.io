@@ -28,6 +28,44 @@
       max-width: 100%;
     }
 
+    /* Edit mode button styles */
+    #edit-mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 9999;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    #edit-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    #edit-mode-toggle.active {
+      background-color: #ff69b4;
+      color: white;
+    }
+
+    /* Editable content styles */
+    .editable {
+      transition: outline 0.3s ease, background-color 0.3s ease;
+    }
+
+    .editable.edit-mode {
+      outline: 2px solid #ff69b4;
+      outline-offset: 2px;
+      background-color: rgba(255, 105, 180, 0.05);
+    }
+
     /* White box mimicking the dropdown */
     .black-box {
       position: fixed;
@@ -1281,6 +1319,45 @@
           contactBox.style.display = 'none';
           if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
         }
+      });
+    });
+  </script>
+
+  <!-- Edit Mode Button -->
+  <div id="edit-mode-toggle">
+    <i class="fas fa-pencil-alt"></i>
+  </div>
+
+  <!-- Edit Mode Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const editButton = document.getElementById('edit-mode-toggle');
+      const editableElements = document.querySelectorAll('.editable');
+      let editModeActive = false;
+
+      // Toggle edit mode when pencil icon is clicked
+      editButton.addEventListener('click', function() {
+        editModeActive = !editModeActive;
+        
+        // Toggle button appearance
+        if (editModeActive) {
+          editButton.classList.add('active');
+          editButton.innerHTML = '<i class="fas fa-save"></i>';
+        } else {
+          editButton.classList.remove('active');
+          editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        }
+        
+        // Toggle contenteditable and visual style for all editable elements
+        editableElements.forEach(element => {
+          if (editModeActive) {
+            element.setAttribute('contenteditable', 'true');
+            element.classList.add('edit-mode');
+          } else {
+            element.removeAttribute('contenteditable');
+            element.classList.remove('edit-mode');
+          }
+        });
       });
     });
   </script>
