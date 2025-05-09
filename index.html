@@ -1635,7 +1635,7 @@
   <!-- Load editable content script -->
   <script type="module">
     // Import Firebase modules immediately
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { db } from "./firebase-config.js";
     
     // Load saved content when the page loads
@@ -1644,14 +1644,60 @@
         // Use page-specific document ID to prevent cross-page content sharing
         const pageDocId = "index_page_content";
         
+        // Try to load from Firebase first
         console.log("Loading saved content for index page...");
-        // Get the content document from Firestore
-        const contentRef = doc(db, "site_content", pageDocId);
-        const docSnap = await getDoc(contentRef);
+        let savedContent = null;
+        let contentSource = 'firebase';
         
-        if (docSnap.exists() && docSnap.data().content) {
-          console.log("Found saved content:", docSnap.data());
-          const savedContent = docSnap.data().content;
+        try {
+          // Test Firebase connection first
+          console.log("Testing Firebase connection...");
+          // Try to access a collection to verify connection
+          const testCol = collection(db, "site_content");
+          const testSnapshot = await getDocs(testCol);
+          console.log(`✅ Firebase connection successful! Found ${testSnapshot.size} documents in collection.`);
+          
+          // Get the content document from Firestore
+          const contentRef = doc(db, "site_content", pageDocId);
+          const docSnap = await getDoc(contentRef);
+          
+          if (docSnap.exists() && docSnap.data().content) {
+            console.log("✅ Found saved content in Firebase:", docSnap.data());
+            savedContent = docSnap.data().content;
+          } else {
+            console.log("No content found in Firebase, checking localStorage...");
+          }
+        } catch (firebaseError) {
+          console.error("❌ Firebase error:", firebaseError);
+          console.log("Falling back to localStorage...");
+        }
+        
+        // If no content from Firebase, try localStorage
+        if (!savedContent) {
+          try {
+            const localData = localStorage.getItem(pageDocId);
+            if (localData) {
+              const parsedData = JSON.parse(localData);
+              if (parsedData && parsedData.content) {
+                console.log("✅ Found saved content in localStorage:", parsedData);
+                savedContent = parsedData.content;
+                contentSource = 'localStorage';
+              }
+            }
+          } catch (localStorageError) {
+            console.error("❌ Error reading from localStorage:", localStorageError);
+          }
+        }
+        
+        // If we have content from either source, apply it
+        if (savedContent) {
+          console.log(`Applying saved content from ${contentSource}`);
+          
+          // Count how many elements we'll update
+          const elementsToUpdate = Object.keys(savedContent).length;
+          console.log(`Found ${elementsToUpdate} saved elements to restore`);
+          
+          let updateCount = 0;
           
           // Apply saved content to matching elements
           Object.keys(savedContent).forEach(path => {
@@ -1728,12 +1774,14 @@
                       if (parentClassMatch) {
                         console.log(`Updating specific element at position ${positionIndex}`);
                         specificElement.innerHTML = savedContent[path].content;
+                        updateCount++;
                       }
                     }
                   } else {
                     // No parent tag specified or element has no parent
                     console.log(`Updating specific element at position ${positionIndex} (no parent check)`);
                     specificElement.innerHTML = savedContent[path].content;
+                    updateCount++;
                   }
                 } else {
                   // Check if we can find the element using the content fingerprint
@@ -1746,6 +1794,7 @@
                         console.log(`Found matching element with content fingerprint: ${contentFingerprint}`);
                         el.innerHTML = savedContent[path].content;
                         matchFound = true;
+                        updateCount++;
                       }
                     });
                   }
@@ -1754,6 +1803,7 @@
                   if (!matchFound && elements.length === 1) {
                     console.log(`Updating single matching element`);
                     elements[0].innerHTML = savedContent[path].content;
+                    updateCount++;
                   }
                 }
               } else {
@@ -1763,8 +1813,10 @@
               console.error(`Error processing path ${path}:`, error);
             }
           });
+          
+          console.log(`✅ Successfully restored ${updateCount} saved elements`);
         } else {
-          console.log("No saved content found");
+          console.log("No saved content found in Firebase or localStorage");
         }
       } catch (error) {
         console.error("Error loading saved content:", error);
