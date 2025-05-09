@@ -1431,6 +1431,10 @@
             editableElements.forEach((element, index) => {
               const currentContent = element.innerHTML;
               if (currentContent !== originalContent[index]) {
+                // Remove edit-mode class before getting path, to ensure
+                // we can find the element again when page reloads
+                element.classList.remove('edit-mode');
+                
                 // Store element information for identification
                 const path = getElementPath(element);
                 updatedContent[path] = {
@@ -1506,8 +1510,9 @@
       function getElementPath(element) {
         const tagName = element.tagName.toLowerCase();
         
-        // Get a cleaned version of the class list
-        const classList = Array.from(element.classList);
+        // Get a cleaned version of the class list without edit-mode
+        const classList = Array.from(element.classList)
+          .filter(className => className !== 'edit-mode'); // Remove edit-mode class from path
         const classNames = classList.join('.');
         
         // Get parent information with more detail
@@ -1699,9 +1704,15 @@
           
           let updateCount = 0;
           
+          // First, collect all editable elements for easy reference
+          const allEditableElements = document.querySelectorAll('.editable');
+          console.log(`Found ${allEditableElements.length} editable elements on page`);
+          
           // Apply saved content to matching elements
           Object.keys(savedContent).forEach(path => {
             try {
+              console.log(`Processing saved element with path: ${path}`);
+              
               // Format: parentTag.parentClasses>tag[position].classes:contentFingerprint
               
               // Extract the content fingerprint as it might help with identification
@@ -1722,7 +1733,13 @@
               }
               
               // Split into parent and element parts
-              const [parentInfo, elementInfo] = cleanBasePath.split('>');
+              const pathParts = cleanBasePath.split('>');
+              if (pathParts.length < 2) {
+                console.log(`Invalid path format, missing parent or element part: ${cleanBasePath}`);
+                return; // Skip this element
+              }
+              
+              const [parentInfo, elementInfo] = pathParts;
               
               // Extract parent tag and classes
               let parentTag = '', parentClasses = [];
@@ -1739,21 +1756,60 @@
               if (elementInfo.includes('.')) {
                 const elementParts = elementInfo.split('.');
                 tag = elementParts[0];
-                classes = elementParts.slice(1);
+                classes = elementParts.slice(1).filter(c => c !== 'edit-mode'); // Ensure edit-mode is filtered
               } else {
                 tag = elementInfo;
               }
               
-              // Build selectors
+              // Ensure 'editable' is in the classes we're looking for
+              if (!classes.includes('editable')) {
+                classes.push('editable');
+              }
+              
+              // Build selectors - first try specific selector
               const elementSelector = tag + (classes.length > 0 ? '.' + classes.join('.') : '');
               
               console.log(`Looking for elements matching: ${elementSelector} (position: ${positionIndex})`);
               
-              // First find all matching elements
-              const elements = document.querySelectorAll(elementSelector);
+              // First find all matching elements with specific selector
+              let elements = document.querySelectorAll(elementSelector);
+              
+              // If no elements found with specific selector, try a more general approach
+              if (elements.length === 0) {
+                console.log(`No elements found with specific selector, trying more general approach`);
+                
+                // Try just the tag.editable selector
+                const simpleSelector = tag + '.editable';
+                elements = document.querySelectorAll(simpleSelector);
+                console.log(`Found ${elements.length} elements with simple selector ${simpleSelector}`);
+                
+                // Try fingerprint matching if we have elements
+                if (elements.length > 0 && contentFingerprint) {
+                  // Find by content fingerprint first
+                  let matchedElement = null;
+                  
+                  for (const el of elements) {
+                    const elContent = el.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
+                    // Log comparison for debugging
+                    console.log(`Comparing fingerprints: "${elContent}" vs "${contentFingerprint}"`);
+                    
+                    if (elContent === contentFingerprint) {
+                      console.log(`Found element matching fingerprint: ${contentFingerprint}`);
+                      matchedElement = el;
+                      break;
+                    }
+                  }
+                  
+                  if (matchedElement) {
+                    console.log(`Updating element matched by fingerprint`);
+                    matchedElement.innerHTML = savedContent[path].content;
+                    updateCount++;
+                  }
+                }
+              }
               
               if (elements.length > 0) {
-                console.log(`Found ${elements.length} matching elements`);
+                console.log(`Found ${elements.length} matching elements with selector`);
                 
                 // If we have position info, use it
                 if (positionIndex > 0 && positionIndex <= elements.length) {
@@ -1784,7 +1840,7 @@
                     updateCount++;
                   }
                 } else {
-                  // Check if we can find the element using the content fingerprint
+                  // Try to match by content fingerprint if available
                   let matchFound = false;
                   
                   if (contentFingerprint) {
@@ -1807,7 +1863,27 @@
                   }
                 }
               } else {
-                console.log(`No elements found matching: ${elementSelector}`);
+                console.log(`No elements found matching selector, trying fallback approach`);
+                
+                // Fallback: Try matching by tag type and position among editable elements
+                const tagEditables = Array.from(allEditableElements).filter(el => 
+                  el.tagName.toLowerCase() === tag.toLowerCase()
+                );
+                
+                if (tagEditables.length > 0) {
+                  console.log(`Found ${tagEditables.length} ${tag} elements with .editable class`);
+                  
+                  // Use position index if available, otherwise use the first one
+                  const targetIndex = (positionIndex > 0 && positionIndex <= tagEditables.length) 
+                    ? positionIndex - 1 
+                    : 0;
+                  
+                  console.log(`Updating ${tag} editable element at index ${targetIndex} as fallback`);
+                  tagEditables[targetIndex].innerHTML = savedContent[path].content;
+                  updateCount++;
+                } else {
+                  console.log(`No ${tag} elements with .editable class found`);
+                }
               }
             } catch (error) {
               console.error(`Error processing path ${path}:`, error);
