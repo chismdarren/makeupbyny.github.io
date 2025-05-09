@@ -100,18 +100,20 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Toggle dropdown menu on click
-  adminDropdownBtn.addEventListener("click", function(e) {
-    e.preventDefault(); // Prevent default link behavior
-    this.classList.toggle("active");
-    document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
-  });
+  if (adminDropdownBtn) {
+    adminDropdownBtn.addEventListener("click", function(e) {
+      e.preventDefault(); // Prevent default link behavior
+      this.classList.toggle("active");
+      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+    });
+  }
 
   // Close dropdown when clicking outside
   window.addEventListener("click", function(e) {
     if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
       const dropdown = document.getElementById("adminDropdownContent");
       const btn = document.getElementById("adminDropdownBtn");
-      if (dropdown.classList.contains("show-dropdown")) {
+      if (dropdown && btn && dropdown.classList.contains("show-dropdown")) {
         dropdown.classList.remove("show-dropdown");
         btn.classList.remove("active");
       }
