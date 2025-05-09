@@ -1343,6 +1343,12 @@
       const editButton = document.getElementById('edit-mode-toggle');
       const editableElements = document.querySelectorAll('.editable');
       let editModeActive = false;
+      
+      // Store original content for each editable element
+      const originalContent = {};
+      editableElements.forEach((element, index) => {
+        originalContent[index] = element.innerHTML;
+      });
 
       // Toggle edit mode when pencil icon is clicked
       editButton.addEventListener('click', function() {
@@ -1350,24 +1356,183 @@
         
         // Toggle button appearance
         if (editModeActive) {
+          // Enter edit mode
           editButton.classList.add('active');
           editButton.innerHTML = '<i class="fas fa-save"></i>';
-        } else {
-          editButton.classList.remove('active');
-          editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-        }
-        
-        // Toggle contenteditable and visual style for all editable elements
-        editableElements.forEach(element => {
-          if (editModeActive) {
+          
+          // Toggle contenteditable and visual style for all editable elements
+          editableElements.forEach(element => {
             element.setAttribute('contenteditable', 'true');
             element.classList.add('edit-mode');
-          } else {
+          });
+        } else {
+          // Exit edit mode and save changes
+          editButton.classList.remove('active');
+          editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+          
+          // Create an object to store the changes
+          const updatedContent = {};
+          let hasChanges = false;
+          
+          // Check which elements have been changed
+          editableElements.forEach((element, index) => {
+            const currentContent = element.innerHTML;
+            if (currentContent !== originalContent[index]) {
+              // Store element information for identification
+              const path = getElementPath(element);
+              updatedContent[path] = {
+                content: currentContent,
+                elementType: element.tagName.toLowerCase()
+              };
+              hasChanges = true;
+            }
+            
+            // Remove contenteditable and visual style
             element.removeAttribute('contenteditable');
             element.classList.remove('edit-mode');
+          });
+          
+          // If changes were made, save them to Firebase
+          if (hasChanges) {
+            saveContentToFirebase(updatedContent)
+              .then(() => {
+                showNotification('Changes saved successfully!', 'success');
+                // Update the original content with new values
+                editableElements.forEach((element, index) => {
+                  originalContent[index] = element.innerHTML;
+                });
+              })
+              .catch(error => {
+                showNotification('Error saving changes: ' + error.message, 'error');
+                console.error('Error saving changes:', error);
+              });
           }
-        });
+        }
       });
+      
+      // Function to get a unique path for an element
+      function getElementPath(element) {
+        const tagName = element.tagName.toLowerCase();
+        const classNames = Array.from(element.classList).join('.');
+        const parentTagName = element.parentElement ? element.parentElement.tagName.toLowerCase() : '';
+        
+        // Create a relatively unique identifier for this element
+        return `${parentTagName}>${tagName}.${classNames}`;
+      }
+      
+      // Function to save content to Firebase
+      async function saveContentToFirebase(updatedContent) {
+        // Import Firebase modules
+        const { doc, setDoc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+        const { db } = await import("./firebase-config.js");
+        
+        // Create/update content document in Firestore
+        const contentRef = doc(db, "site_content", "editable_content");
+        
+        try {
+          // Check if document exists
+          const docSnap = await getDoc(contentRef);
+          
+          if (docSnap.exists()) {
+            // Update existing document
+            return updateDoc(contentRef, {
+              content: { ...docSnap.data().content, ...updatedContent },
+              lastUpdated: new Date()
+            });
+          } else {
+            // Create new document
+            return setDoc(contentRef, {
+              content: updatedContent,
+              lastUpdated: new Date()
+            });
+          }
+        } catch (error) {
+          console.error("Error saving content:", error);
+          throw error;
+        }
+      }
+      
+      // Function to show notification
+      function showNotification(message, type) {
+        // Create notification element if it doesn't exist
+        let notification = document.getElementById('edit-notification');
+        if (!notification) {
+          notification = document.createElement('div');
+          notification.id = 'edit-notification';
+          notification.style.position = 'fixed';
+          notification.style.bottom = '20px';
+          notification.style.right = '20px';
+          notification.style.padding = '10px 20px';
+          notification.style.borderRadius = '4px';
+          notification.style.color = 'white';
+          notification.style.fontWeight = 'bold';
+          notification.style.zIndex = '10000';
+          notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+          document.body.appendChild(notification);
+        }
+        
+        // Set style based on notification type
+        if (type === 'success') {
+          notification.style.backgroundColor = '#4CAF50';
+        } else if (type === 'error') {
+          notification.style.backgroundColor = '#F44336';
+        }
+        
+        // Set message and show notification
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        // Hide notification after 3 seconds
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 3000);
+      }
+    });
+  </script>
+
+  <!-- Load editable content script -->
+  <script type="module">
+    // Load saved content when the page loads
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        // Import Firebase modules
+        const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+        const { db, auth } = await import("./firebase-config.js");
+        
+        // Only proceed if user is logged in
+        if (!auth.currentUser) return;
+        
+        // Get the content document from Firestore
+        const contentRef = doc(db, "site_content", "editable_content");
+        const docSnap = await getDoc(contentRef);
+        
+        if (docSnap.exists() && docSnap.data().content) {
+          const savedContent = docSnap.data().content;
+          
+          // Apply saved content to matching elements
+          Object.keys(savedContent).forEach(path => {
+            // Parse the path to find the element
+            const [parentTag, elementInfo] = path.split('>');
+            const [tag, ...classes] = elementInfo.split('.');
+            
+            // Find potential elements that match
+            const elements = document.querySelectorAll(tag + '.' + classes.join('.'));
+            
+            if (elements.length > 0) {
+              // Apply to all matching elements (usually should be just one)
+              elements.forEach(element => {
+                // Only update if parent tag matches or if we can't determine it
+                const actualParentTag = element.parentElement ? element.parentElement.tagName.toLowerCase() : '';
+                if (!parentTag || actualParentTag === parentTag) {
+                  element.innerHTML = savedContent[path].content;
+                }
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error loading saved content:", error);
+      }
     });
   </script>
 
