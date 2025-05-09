@@ -621,6 +621,11 @@
   <!-- Admin dropdown control script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      console.log("Disclaimer.html DOM loaded");
+      
+      // Load content from localStorage first
+      loadContentFromLocalStorage();
+      
       const adminDropdownBtn = document.getElementById('adminDropdownBtn');
       const whiteBox = document.querySelector('.black-box');
       const contactDropdownBtn = document.getElementById('contactDropdownBtn');
@@ -656,30 +661,6 @@
         positionContactBox();
       });
       
-      // Toggle dropdown when Admin Dashboard is clicked
-      if (adminDropdownBtn && whiteBox) {
-        adminDropdownBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // Toggle white box display
-          if (whiteBox.style.display === 'block') {
-            whiteBox.style.display = 'none';
-            this.classList.remove('active');
-          } else {
-            positionWhiteBox(); // Position before showing
-            whiteBox.style.display = 'block';
-            this.classList.add('active');
-            
-            // Hide contact dropdown if it's open
-            if (contactBox) {
-              contactBox.style.display = 'none';
-              if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-            }
-          }
-        });
-      }
-      
       // Toggle contact dropdown when Contact is clicked
       if (contactDropdownBtn && contactBox) {
         contactDropdownBtn.addEventListener('click', function(e) {
@@ -706,14 +687,6 @@
       
       // Hide dropdowns when clicking outside
       document.addEventListener('click', function(e) {
-        // Close admin dropdown
-        if (whiteBox && whiteBox.style.display === 'block' && 
-            adminDropdownBtn && !adminDropdownBtn.contains(e.target) && 
-            !whiteBox.contains(e.target)) {
-          whiteBox.style.display = 'none';
-          adminDropdownBtn.classList.remove('active');
-        }
-        
         // Close contact dropdown
         if (contactBox && contactBox.style.display === 'block' && 
             contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
@@ -725,19 +698,176 @@
       
       // Hide dropdowns when scrolling
       window.addEventListener('scroll', function() {
-        // Close admin dropdown
-        if (whiteBox && whiteBox.style.display === 'block') {
-          whiteBox.style.display = 'none';
-          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-        }
-        
         // Close contact dropdown
         if (contactBox && contactBox.style.display === 'block') {
           contactBox.style.display = 'none';
           if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
         }
       });
+
+      // Add direct event handler for edit mode toggle
+      const editModeToggle = document.getElementById('edit-mode-toggle');
+      if (editModeToggle) {
+        console.log("Adding direct click handler to edit mode toggle button");
+        editModeToggle.addEventListener('click', function() {
+          console.log("Edit mode toggle clicked directly");
+          this.classList.toggle('active');
+          
+          // Toggle contenteditable for all editable elements
+          const editableElements = document.querySelectorAll('.editable');
+          const isEditMode = this.classList.contains('active');
+          console.log("Edit mode is now:", isEditMode);
+          
+          editableElements.forEach(el => {
+            el.contentEditable = isEditMode;
+            el.classList.toggle('edit-mode', isEditMode);
+            console.log("Set contenteditable for element:", el.tagName, el.className);
+            
+            // Save content when element loses focus while in edit mode
+            if (isEditMode) {
+              el.addEventListener('blur', function(e) {
+                console.log("Element blurred, saving:", e.target.tagName, e.target.className);
+                const saveStatus = document.getElementById('save-status');
+                if (saveStatus) {
+                  saveStatus.textContent = 'Saving changes...';
+                  saveStatus.className = 'show saving';
+                  
+                  // Direct save to localStorage
+                  try {
+                    const pagePath = window.location.pathname.split('/').pop() || 'disclaimer.html';
+                    const element = e.target;
+                    
+                    // Generate a simple path for the element
+                    let path = element.tagName.toLowerCase();
+                    if (element.id) {
+                      path += '#' + element.id;
+                    } else if (element.className) {
+                      const classes = element.className.trim().split(/\s+/);
+                      if (classes.length > 0 && classes[0] !== '') {
+                        path += '.' + classes.join('.');
+                      }
+                    }
+                    
+                    // Also add index for better identification
+                    const siblings = Array.from(element.parentNode.children);
+                    const sameSiblings = siblings.filter(sibling => sibling.tagName === element.tagName);
+                    if (sameSiblings.length > 1) {
+                      const index = sameSiblings.indexOf(element);
+                      path += `-${index}`;
+                    }
+                    
+                    // Special case for footer
+                    if (element.parentNode && element.parentNode.tagName.toLowerCase() === 'footer') {
+                      path = 'footer-copyright';
+                    }
+                    
+                    // Save to localStorage
+                    const key = `${pagePath}_${path}`;
+                    localStorage.setItem(key, element.innerHTML);
+                    console.log("Saved directly to localStorage:", key, element.innerHTML);
+                    
+                    // Also save under a simpler key as backup
+                    const backupKey = `${pagePath}_${element.tagName.toLowerCase()}_${element.textContent.substring(0, 20)}`;
+                    localStorage.setItem(backupKey, element.innerHTML);
+                    console.log("Saved backup to localStorage:", backupKey);
+                    
+                    // Show success message
+                    setTimeout(() => {
+                      saveStatus.textContent = 'Changes saved locally!';
+                      saveStatus.className = 'show success';
+                      
+                      // Hide the message after 2 seconds
+                      setTimeout(() => {
+                        saveStatus.className = '';
+                      }, 2000);
+                    }, 500);
+                  } catch (error) {
+                    console.error("Error saving to localStorage:", error);
+                    saveStatus.textContent = 'Error saving changes';
+                    saveStatus.className = 'show error';
+                    setTimeout(() => {
+                      saveStatus.className = '';
+                    }, 3000);
+                  }
+                }
+              });
+            }
+          });
+        });
+      }
     });
+
+    // Function to load content from localStorage
+    function loadContentFromLocalStorage() {
+      console.log("Attempting to load content from localStorage");
+      const pagePath = window.location.pathname.split('/').pop() || 'disclaimer.html';
+      const editableElements = document.querySelectorAll('.editable');
+      
+      // Show all editable containers
+      document.querySelectorAll('.editable-container').forEach(container => {
+        container.classList.add('loaded');
+      });
+      
+      // Hide the loader
+      const contentLoader = document.getElementById('contentLoader');
+      if (contentLoader) {
+        setTimeout(() => {
+          contentLoader.classList.add('hidden');
+        }, 300);
+      }
+      
+      // For each editable element, try to find its content in localStorage
+      editableElements.forEach(element => {
+        try {
+          // Generate a simple path for the element
+          let path = element.tagName.toLowerCase();
+          if (element.id) {
+            path += '#' + element.id;
+          } else if (element.className) {
+            const classes = element.className.trim().split(/\s+/);
+            if (classes.length > 0 && classes[0] !== '') {
+              path += '.' + classes.join('.');
+            }
+          }
+          
+          // Also add index for better identification
+          const siblings = Array.from(element.parentNode.children);
+          const sameSiblings = siblings.filter(sibling => sibling.tagName === element.tagName);
+          if (sameSiblings.length > 1) {
+            const index = sameSiblings.indexOf(element);
+            path += `-${index}`;
+          }
+          
+          // Special case for footer
+          if (element.parentNode && element.parentNode.tagName.toLowerCase() === 'footer') {
+            path = 'footer-copyright';
+          }
+          
+          // Try to get content from localStorage
+          const key = `${pagePath}_${path}`;
+          const content = localStorage.getItem(key);
+          
+          if (content) {
+            console.log("Found content in localStorage for:", key);
+            element.innerHTML = content;
+          } else {
+            // Try backup key
+            const textSample = element.textContent.trim().substring(0, 20);
+            const backupKey = `${pagePath}_${element.tagName.toLowerCase()}_${textSample}`;
+            const backupContent = localStorage.getItem(backupKey);
+            
+            if (backupContent) {
+              console.log("Found content in backup localStorage key:", backupKey);
+              element.innerHTML = backupContent;
+            } else {
+              console.log("No content found in localStorage for:", path);
+            }
+          }
+        } catch (error) {
+          console.error("Error loading from localStorage:", error);
+        }
+      });
+    }
   </script>
 </body>
 </html> 

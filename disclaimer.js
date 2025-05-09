@@ -1,21 +1,25 @@
 // Import necessary Firebase modules
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth, isAdminUser, db } from "./firebase-config.js";
 import { collection, doc, getDoc, getDocs, setDoc, query, where, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { auth, isAdminUser, db } from "./firebase-config.js";
 
 // Initialize the page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("Disclaimer.js loaded and running");
   // Show loading spinner at the beginning
   const contentLoader = document.getElementById('contentLoader');
   
   // Initialize edit mode state
   let editMode = false;
   const editableElements = document.querySelectorAll('.editable');
+  console.log("Found editable elements:", editableElements.length);
   const editModeToggle = document.getElementById('edit-mode-toggle');
+  console.log("Edit mode toggle found:", !!editModeToggle);
   const saveStatus = document.getElementById('save-status');
   
   // Monitor user authentication state
   onAuthStateChanged(auth, async (user) => {
+    console.log("Auth state changed, user:", user ? user.email : "not logged in");
     // If user is logged in
     if (user) {
       // Hide login button, show logout button and account link
@@ -29,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Check if user is admin
       const isAdmin = await isAdminUser(user.uid);
+      console.log("Is admin user:", isAdmin);
       if (isAdmin) {
         // Show admin dropdown button
         document.getElementById("adminDropdownBtn").style.display = "inline";
@@ -36,16 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
         // Show edit mode toggle for admins
         if (editModeToggle) {
           editModeToggle.style.display = 'flex';
+          console.log("Edit mode toggle visible for admin");
           
           // Add event listener for edit mode toggle
           editModeToggle.addEventListener('click', () => {
             editMode = !editMode;
+            console.log("Edit mode toggled to:", editMode);
             editModeToggle.classList.toggle('active');
             
             // Toggle contenteditable for all editable elements
             editableElements.forEach(el => {
               el.contentEditable = editMode;
               el.classList.toggle('edit-mode', editMode);
+              console.log("Set contenteditable for element:", el.tagName, el.className);
               
               // Add blur event listener for saving when editing is complete
               if (editMode) {
@@ -82,18 +90,30 @@ document.addEventListener("DOMContentLoaded", () => {
     adminDropdownBtn.addEventListener("click", function(e) {
       e.preventDefault(); // Prevent default link behavior
       this.classList.toggle("active");
-      document.getElementById("adminDropdownContent").classList.toggle("show-dropdown");
+      
+      // Find adminDropdownContent or use the black-box as fallback
+      const dropdown = document.getElementById("adminDropdownContent") || document.querySelector(".black-box");
+      if (dropdown) {
+        dropdown.classList.toggle("show-dropdown");
+        if (!dropdown.classList.contains("show-dropdown")) {
+          // If not showing via class, use direct style
+          dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+      } else {
+        console.error("Admin dropdown content element not found");
+      }
     });
   }
 
   // Close dropdown when clicking outside
   window.addEventListener("click", function(e) {
     if (!e.target.matches('#adminDropdownBtn') && !e.target.matches('.dropdown-icon')) {
-      const dropdown = document.getElementById("adminDropdownContent");
+      const dropdown = document.getElementById("adminDropdownContent") || document.querySelector(".black-box");
       const btn = document.getElementById("adminDropdownBtn");
-      if (dropdown && dropdown.classList.contains("show-dropdown")) {
+      if (dropdown && (dropdown.classList.contains("show-dropdown") || dropdown.style.display === 'block')) {
         dropdown.classList.remove("show-dropdown");
-        btn.classList.remove("active");
+        dropdown.style.display = 'none';
+        if (btn) btn.classList.remove("active");
       }
     }
   });
@@ -101,8 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load stored content from Firebase or localStorage
   loadStoredContent()
     .then(() => {
+      console.log("Content loaded successfully");
       // Show content when loaded
       const editableContainers = document.querySelectorAll('.editable-container');
+      console.log("Found editable containers:", editableContainers.length);
       editableContainers.forEach(container => {
         container.classList.add('loaded');
       });
@@ -139,15 +161,19 @@ function saveContentToFirebase(elements, db) {
     }
     
     try {
+      console.log("Starting save to Firebase");
       const batch = writeBatch(db);
       const pagePath = window.location.pathname.split('/').pop() || 'disclaimer.html';
+      console.log("Current page path:", pagePath);
       
       // Save each element's content
       elements.forEach(element => {
         const path = getElementPath(element);
+        console.log("Saving element with path:", path);
         if (!path) return;
         
         const docId = `${pagePath}_${path}`;
+        console.log("Document ID:", docId);
         const docRef = doc(db, 'siteContent', docId);
         
         batch.set(docRef, {
@@ -159,11 +185,12 @@ function saveContentToFirebase(elements, db) {
         
         // Also save to localStorage as backup
         localStorage.setItem(docId, element.innerHTML);
+        console.log("Saved to localStorage:", docId);
       });
       
       // Commit the batch
       await batch.commit();
-      console.log("Content saved successfully");
+      console.log("Content saved successfully to Firebase");
       resolve();
     } catch (error) {
       console.error("Error in saveContentToFirebase: ", error);
@@ -175,6 +202,7 @@ function saveContentToFirebase(elements, db) {
 // Handle content edits
 function handleContentEdit(event) {
   const element = event.target;
+  console.log("Content edited:", element.tagName, element.className);
   
   // Show saving status
   const saveStatus = document.getElementById('save-status');
