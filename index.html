@@ -1300,21 +1300,13 @@
           
           // Set the width based on the dropdown type
           if (isContactDropdown) {
-            // For contact dropdown, use the width of the button but with a minimum width
-            // to ensure the dropdown content (like "Booking") fits properly
-            const minWidth = 120; // Minimum width to fit "Booking" text
-            const boxWidth = Math.max(minWidth, rect.width);
+            // For contact dropdown, use exactly the width of the button
+            const boxWidth = rect.width;
             
             blackBox.style.width = boxWidth + 'px';
             
-            // If we had to expand the width, center it under the button
-            let leftPosition;
-            if (boxWidth > rect.width) {
-              const extraWidth = boxWidth - rect.width;
-              leftPosition = rect.left - (extraWidth / 2);
-            } else {
-              leftPosition = rect.left;
-            }
+            // Position directly below the button
+            let leftPosition = rect.left;
             
             // Check if dropdown would go off-screen
             const viewportWidth = window.innerWidth;
