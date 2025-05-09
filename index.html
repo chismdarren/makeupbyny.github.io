@@ -1414,24 +1414,35 @@
       function getElementPath(element) {
         const tagName = element.tagName.toLowerCase();
         
-        // Get a cleaned version of the class list (only keeping 'editable' and a few key classes)
-        const classList = Array.from(element.classList).filter(cls => 
-          cls === 'editable' || 
-          ['header', 'footer', 'about-me', 'social-links'].includes(cls)
-        );
+        // Get a cleaned version of the class list
+        const classList = Array.from(element.classList);
         const classNames = classList.join('.');
         
-        // Get parent information
+        // Get parent information with more detail
         const parentElement = element.parentElement;
         const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-        const parentClass = parentElement && parentElement.className ? 
-          Array.from(parentElement.classList)[0] : '';
         
-        // Include some content as a fingerprint (first 10 chars)
-        const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
+        // Get more specific parent class information
+        let parentClassInfo = '';
+        if (parentElement && parentElement.classList.length > 0) {
+          parentClassInfo = '.' + Array.from(parentElement.classList).join('.');
+        }
         
-        // Create a relatively unique identifier for this element
-        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${contentFingerprint}`;
+        // Get position index among siblings of same type
+        let positionIndex = 0;
+        if (parentElement) {
+          const siblings = Array.from(parentElement.children).filter(el => el.tagName === element.tagName);
+          positionIndex = siblings.indexOf(element) + 1;
+        }
+        
+        // Include detailed position info in the path
+        const positionInfo = parentElement ? `[${positionIndex}]` : '';
+        
+        // Include some content as a fingerprint (first 15 chars)
+        const contentFingerprint = element.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
+        
+        // Create a highly specific identifier for this element
+        return `${parentTagName}${parentClassInfo}>${tagName}${positionInfo}.${classNames}:${contentFingerprint}`;
       }
       
       // Function to save content to Firebase
@@ -1541,60 +1552,108 @@
           // Apply saved content to matching elements
           Object.keys(savedContent).forEach(path => {
             try {
-              // Parse the path to find the element
-              // Format: parentTag.parentClass>tag.class1.class2:contentFingerprint
+              // Format: parentTag.parentClasses>tag[position].classes:contentFingerprint
               
-              // Remove content fingerprint if present
-              const basePath = path.split(':')[0];
+              // Extract the content fingerprint as it might help with identification
+              const parts = path.split(':');
+              const basePath = parts[0];
+              const contentFingerprint = parts.length > 1 ? parts[1] : '';
+              
+              // Parse the element position if present
+              let positionIndex = 0;
+              let cleanBasePath = basePath;
+              
+              if (basePath.includes('[') && basePath.includes(']')) {
+                const posMatch = basePath.match(/\[(\d+)\]/);
+                if (posMatch && posMatch[1]) {
+                  positionIndex = parseInt(posMatch[1]);
+                  cleanBasePath = basePath.replace(/\[\d+\]/, '');
+                }
+              }
               
               // Split into parent and element parts
-              const [parentInfo, elementInfo] = basePath.split('>');
+              const [parentInfo, elementInfo] = cleanBasePath.split('>');
               
-              // Extract parent tag and class
-              let parentTag = '', parentClass = '';
+              // Extract parent tag and classes
+              let parentTag = '', parentClasses = [];
               if (parentInfo.includes('.')) {
-                [parentTag, parentClass] = parentInfo.split('.');
+                const parentParts = parentInfo.split('.');
+                parentTag = parentParts[0];
+                parentClasses = parentParts.slice(1);
               } else {
                 parentTag = parentInfo;
               }
               
               // Extract element tag and classes
-              const [tag, ...classes] = elementInfo.split('.');
+              let tag = '', classes = [];
+              if (elementInfo.includes('.')) {
+                const elementParts = elementInfo.split('.');
+                tag = elementParts[0];
+                classes = elementParts.slice(1);
+              } else {
+                tag = elementInfo;
+              }
               
-              // Build a selector from the classes
-              const classSelector = classes.length > 0 ? '.' + classes.join('.') : '';
-              const selector = tag + classSelector;
+              // Build selectors
+              const elementSelector = tag + (classes.length > 0 ? '.' + classes.join('.') : '');
               
-              console.log(`Looking for elements matching selector: ${selector}`);
+              console.log(`Looking for elements matching: ${elementSelector} (position: ${positionIndex})`);
               
-              // Find potential elements that match
-              const elements = document.querySelectorAll(selector);
+              // First find all matching elements
+              const elements = document.querySelectorAll(elementSelector);
               
               if (elements.length > 0) {
                 console.log(`Found ${elements.length} matching elements`);
                 
-                // Apply to all matching elements (usually should be just one)
-                elements.forEach(element => {
-                  // Only update if parent tag matches or if we can't determine it
-                  const actualParentElement = element.parentElement;
+                // If we have position info, use it
+                if (positionIndex > 0 && positionIndex <= elements.length) {
+                  const specificElement = elements[positionIndex - 1];
                   
-                  if (actualParentElement) {
-                    const actualParentTag = actualParentElement.tagName.toLowerCase();
-                    const actualParentHasClass = parentClass ? 
-                      actualParentElement.classList.contains(parentClass) : true;
-                    
-                    if (actualParentTag === parentTag && actualParentHasClass) {
-                      console.log(`Updating element with path ${path}`);
-                      element.innerHTML = savedContent[path].content;
+                  // Verify parent if possible
+                  if (parentTag && specificElement.parentElement) {
+                    const actualParent = specificElement.parentElement;
+                    if (actualParent.tagName.toLowerCase() === parentTag) {
+                      // Check parent classes if needed
+                      let parentClassMatch = true;
+                      if (parentClasses.length > 0) {
+                        parentClassMatch = parentClasses.every(cls => 
+                          actualParent.classList.contains(cls)
+                        );
+                      }
+                      
+                      if (parentClassMatch) {
+                        console.log(`Updating specific element at position ${positionIndex}`);
+                        specificElement.innerHTML = savedContent[path].content;
+                      }
                     }
-                  } else if (!parentTag) {
-                    // If no parent specified and element has no parent
-                    console.log(`Updating element with path ${path} (no parent check)`);
-                    element.innerHTML = savedContent[path].content;
+                  } else {
+                    // No parent tag specified or element has no parent
+                    console.log(`Updating specific element at position ${positionIndex} (no parent check)`);
+                    specificElement.innerHTML = savedContent[path].content;
                   }
-                });
+                } else {
+                  // Check if we can find the element using the content fingerprint
+                  let matchFound = false;
+                  
+                  if (contentFingerprint) {
+                    elements.forEach(el => {
+                      const elContent = el.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
+                      if (elContent === contentFingerprint) {
+                        console.log(`Found matching element with content fingerprint: ${contentFingerprint}`);
+                        el.innerHTML = savedContent[path].content;
+                        matchFound = true;
+                      }
+                    });
+                  }
+                  
+                  // If no match found and only one element exists, update it
+                  if (!matchFound && elements.length === 1) {
+                    console.log(`Updating single matching element`);
+                    elements[0].innerHTML = savedContent[path].content;
+                  }
+                }
               } else {
-                console.log(`No elements found matching selector: ${selector}`);
+                console.log(`No elements found matching: ${elementSelector}`);
               }
             } catch (error) {
               console.error(`Error processing path ${path}:`, error);
