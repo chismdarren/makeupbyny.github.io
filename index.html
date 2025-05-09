@@ -622,7 +622,7 @@
   </div>
 
   <!-- Contact dropdown black box -->
-  <div class="contact-black-box" style="position: fixed; background-color: white; z-index: 999; display: none; width: auto; height: auto; min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; border: 1px solid #eee;">
+  <div class="contact-black-box" style="position: fixed; background-color: white; z-index: 999; display: none; width: auto; height: auto; min-width: 50px !important; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; border: 1px solid #eee;">
     <a href="contact.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Contact</a>
     <a href="https://glammedbyglizz.youcanbook.me/" target="_blank" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">Booking</a>
   </div>
@@ -1187,7 +1187,7 @@
           const rect = contactDropdownBtn.getBoundingClientRect();
           contactBox.style.top = (rect.bottom) + 'px';
           contactBox.style.left = rect.left + 'px';
-          contactBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
+          contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
         }
       }
       
