@@ -52,6 +52,10 @@
       text-align: left;
       transition: background-color 0.2s, color 0.2s;
       border-bottom: 1px solid #f5f5f5;
+      white-space: normal; /* Allow text to wrap */
+      word-wrap: break-word; /* Break long words */
+      word-break: break-word; /* Ensure words break rather than overflow */
+      font-size: 0.9em; /* Slightly smaller font for narrow boxes */
     }
     
     .black-box a:last-child {
@@ -597,6 +601,52 @@
       color: #a07;
     }
 
+    .contact-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      z-index: 1001;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+      border: 1px solid #eee;
+    }
+
+    .contact-dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .contact-dropdown-content a:last-child {
+      border-bottom: none;
+    }
+
+    .contact-dropdown-content a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
+    }
+
+    /* Responsive adjustments for contact dropdown */
+    @media (max-width: 768px) {
+      .contact-dropdown-content {
+        position: absolute;
+        right: 0;
+        left: auto;
+        width: 200px;
+        z-index: 2000;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      }
+    }
+
     /* Black box styles */
     .black-box {
       display: none;
@@ -627,6 +677,10 @@
       text-align: left;
       transition: background-color 0.2s, color 0.2s;
       border-bottom: 1px solid #f5f5f5;
+      white-space: normal; /* Allow text to wrap */
+      word-wrap: break-word; /* Break long words */
+      word-break: break-word; /* Ensure words break rather than overflow */
+      font-size: 0.9em; /* Slightly smaller font for narrow boxes */
     }
     
     .black-box a:last-child {
@@ -636,6 +690,12 @@
     .black-box a:hover {
       background-color: #f9f9f9;
       color: #a07;
+    }
+
+    /* Specific styles for contact dropdown items */
+    #contact-dropdown-items a {
+      padding: 10px 12px; /* Slightly smaller padding for narrow containers */
+      text-align: center; /* Center the text for a better look in a narrow box */
     }
   </style>
 </head>
@@ -1254,11 +1314,28 @@
           
           // Set the width based on the dropdown type
           if (isContactDropdown) {
-            // For contact dropdown, set width to 0
-            blackBox.style.width = '0px';
+            // For contact dropdown, use exactly the width of the button
+            const boxWidth = rect.width;
+            blackBox.style.width = boxWidth + 'px';
             
-            // Keep the left position the same
-            blackBox.style.left = rect.left + 'px';
+            // Set position aligned with the button
+            let leftPosition = rect.left;
+            
+            // Check if dropdown would go off-screen
+            const viewportWidth = window.innerWidth;
+            const rightEdge = leftPosition + boxWidth;
+            
+            // Adjust position if dropdown would go off screen
+            if (rightEdge > viewportWidth - 10) {
+              leftPosition = viewportWidth - boxWidth - 10; // 10px from right edge
+            }
+            
+            // Ensure dropdown doesn't go off-screen on the left
+            if (leftPosition < 10) {
+              leftPosition = 10; // 10px from left edge
+            }
+            
+            blackBox.style.left = leftPosition + 'px';
           } else {
             // For admin dropdown, keep centering approach with min width
             const buttonWidth = rect.width;
