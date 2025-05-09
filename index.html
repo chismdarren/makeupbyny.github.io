@@ -637,6 +637,13 @@
       background-color: #f9f9f9;
       color: #a07;
     }
+
+    /* More compact styling for contact dropdown items */
+    #contact-dropdown-items a {
+      padding: 10px 12px;
+      font-size: 0.95em;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -1254,29 +1261,22 @@
           
           // Set the width based on the dropdown type
           if (isContactDropdown) {
-            // For contact dropdown, use the width of the button but with a minimum width
-            // to ensure the dropdown content (like "Booking") fits properly
-            const minWidth = 120; // Minimum width to fit "Booking" text
-            const boxWidth = Math.max(minWidth, rect.width);
+            // For contact dropdown, use a narrower fixed width that still fits content
+            const fixedWidth = 90; // Even narrower fixed width for contact dropdown
             
-            blackBox.style.width = boxWidth + 'px';
+            blackBox.style.width = fixedWidth + 'px';
             
-            // If we had to expand the width, center it under the button
-            let leftPosition;
-            if (boxWidth > rect.width) {
-              const extraWidth = boxWidth - rect.width;
-              leftPosition = rect.left - (extraWidth / 2);
-            } else {
-              leftPosition = rect.left;
-            }
+            // Center the box under the button
+            const buttonCenter = rect.left + (rect.width / 2);
+            let leftPosition = buttonCenter - (fixedWidth / 2);
             
             // Check if dropdown would go off-screen
             const viewportWidth = window.innerWidth;
-            const rightEdge = leftPosition + boxWidth;
+            const rightEdge = leftPosition + fixedWidth;
             
             // Adjust position if dropdown would go off screen
             if (rightEdge > viewportWidth - 10) {
-              leftPosition = viewportWidth - boxWidth - 10; // 10px from right edge
+              leftPosition = viewportWidth - fixedWidth - 10; // 10px from right edge
             }
             
             // Ensure dropdown doesn't go off-screen on the left
