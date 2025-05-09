@@ -90,12 +90,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const faqQuestions = document.querySelectorAll(".faq-question");
   faqQuestions.forEach((question) => {
     question.addEventListener("click", () => {
-      const answer = question.nextElementSibling;
+      const faqItem = question.parentElement;
       const toggle = question.querySelector(".faq-toggle");
       
-      // Toggle answer visibility
-      answer.classList.toggle("show");
-      toggle.textContent = answer.classList.contains("show") ? "▲" : "▼";
+      // Toggle faq-item active state
+      faqItem.classList.toggle("active");
+      
+      // Update the toggle icon based on active state
+      toggle.textContent = faqItem.classList.contains("active") ? "▲" : "▼";
     });
   });
 
