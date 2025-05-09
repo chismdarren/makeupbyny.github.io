@@ -651,6 +651,11 @@
     </svg>
   </a>
 
+  <!-- Edit Mode Button (Admin only) -->
+  <div id="edit-mode-toggle" style="display:none; top: 70px;">
+    <i class="fas fa-pencil-alt"></i>
+  </div>
+
   <!-- Black box in the middle of the page (admin dropdown content) -->
   <div class="black-box">
     <a href="admin-dashboard.html">Messages</a>
@@ -677,16 +682,16 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <p>
+      <p class="editable">
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-      <p>
+      <p class="editable">
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
       <!-- Social Media Links -->
       <div class="social-links">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Follow Me</h3>
         <div class="social-icons">
           <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>
           <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr" class="social-icon facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
@@ -719,7 +724,7 @@
 
   <!-- Footer Section -->
   <footer>
-    <p>&copy; 2025 Makeup by NY</p>
+    <p class="editable">&copy; 2025 Makeup by NY</p>
   </footer>
 
   <!-- Avatar selection popup (hidden by default) -->
@@ -901,14 +906,20 @@
             if (isAdmin) {
               // Show admin dropdown button
               document.getElementById("adminDropdownBtn").style.display = "flex";
+              // Show edit mode button for admin users only
+              document.getElementById("edit-mode-toggle").style.display = "flex";
             } else {
               // Hide admin dropdown button for regular users
               document.getElementById("adminDropdownBtn").style.display = "none";
+              // Hide edit mode button for regular users
+              document.getElementById("edit-mode-toggle").style.display = "none";
             }
           } catch (error) {
             console.error("Error checking admin status:", error);
             // Hide admin dropdown button in case of error
             document.getElementById("adminDropdownBtn").style.display = "none";
+            // Hide edit mode button in case of error
+            document.getElementById("edit-mode-toggle").style.display = "none";
           }
         } else {
           // If user is not logged in, show login button and hide user features
@@ -919,6 +930,9 @@
           
           // Hide settings icon for anonymous users
           document.getElementById("settingsIcon").style.display = "none";
+          
+          // Hide edit mode button for non-logged in users
+          document.getElementById("edit-mode-toggle").style.display = "none";
         }
       });
 
@@ -1322,11 +1336,6 @@
       });
     });
   </script>
-
-  <!-- Edit Mode Button -->
-  <div id="edit-mode-toggle">
-    <i class="fas fa-pencil-alt"></i>
-  </div>
 
   <!-- Edit Mode Script -->
   <script>
