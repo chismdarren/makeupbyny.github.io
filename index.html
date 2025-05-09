@@ -648,7 +648,6 @@
       display: none;
       position: absolute;
       background-color: white;
-      min-width: 180px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       z-index: 2000;
       border-radius: 4px;
@@ -660,6 +659,12 @@
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
     
+    /* Style specifically for contact dropdown items */
+    #contact-dropdown-items a {
+      padding: 6px 8px; /* Very compact padding */
+      width: 100%; /* Ensure the items fill the container width */
+    }
+    
     .black-box.visible {
       opacity: 1;
       transform: translateY(0);
@@ -667,12 +672,15 @@
     
     .black-box a {
       color: #333;
-      padding: 12px 16px;
+      padding: 8px 12px; /* Reduce padding to make items take less space */
       text-decoration: none;
       display: block;
       text-align: left;
       transition: background-color 0.2s, color 0.2s;
       border-bottom: 1px solid #f5f5f5;
+      white-space: nowrap; /* Prevent text from wrapping */
+      overflow: hidden;
+      text-overflow: ellipsis; /* Add ellipsis for text that might overflow */
     }
     
     .black-box a:last-child {
@@ -1300,13 +1308,14 @@
           
           // Set the width based on the dropdown type
           if (isContactDropdown) {
-            // For contact dropdown, use exactly the width of the button
-            const boxWidth = rect.width;
+            // For contact dropdown, use a fixed narrow width
+            const boxWidth = 90; // Fixed width in pixels - very narrow
             
             blackBox.style.width = boxWidth + 'px';
             
-            // Position directly below the button
-            let leftPosition = rect.left;
+            // Center the narrow dropdown under the button
+            const buttonCenter = rect.left + (rect.width / 2);
+            let leftPosition = buttonCenter - (boxWidth / 2);
             
             // Check if dropdown would go off-screen
             const viewportWidth = window.innerWidth;
