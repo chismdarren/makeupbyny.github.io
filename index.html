@@ -637,13 +637,6 @@
       background-color: #f9f9f9;
       color: #a07;
     }
-
-    /* More compact styling for contact dropdown items */
-    #contact-dropdown-items a {
-      padding: 10px 12px;
-      font-size: 0.95em;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -1261,30 +1254,11 @@
           
           // Set the width based on the dropdown type
           if (isContactDropdown) {
-            // For contact dropdown, use a narrower fixed width that still fits content
-            const fixedWidth = 90; // Even narrower fixed width for contact dropdown
+            // For contact dropdown, set width to 0
+            blackBox.style.width = '0px';
             
-            blackBox.style.width = fixedWidth + 'px';
-            
-            // Center the box under the button
-            const buttonCenter = rect.left + (rect.width / 2);
-            let leftPosition = buttonCenter - (fixedWidth / 2);
-            
-            // Check if dropdown would go off-screen
-            const viewportWidth = window.innerWidth;
-            const rightEdge = leftPosition + fixedWidth;
-            
-            // Adjust position if dropdown would go off screen
-            if (rightEdge > viewportWidth - 10) {
-              leftPosition = viewportWidth - fixedWidth - 10; // 10px from right edge
-            }
-            
-            // Ensure dropdown doesn't go off-screen on the left
-            if (leftPosition < 10) {
-              leftPosition = 10; // 10px from left edge
-            }
-            
-            blackBox.style.left = leftPosition + 'px';
+            // Keep the left position the same
+            blackBox.style.left = rect.left + 'px';
           } else {
             // For admin dropdown, keep centering approach with min width
             const buttonWidth = rect.width;
