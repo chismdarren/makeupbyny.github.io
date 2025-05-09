@@ -559,137 +559,18 @@
       fill: #333;
     }
 
-    /* Contact Dropdown Menu Styles */
-    .contact-dropdown {
-      position: relative;
-      display: inline-block;
-      z-index: 1000; /* Ensure dropdown appears in front of other elements */
-    }
-
-    .contact-dropdown-btn {
-      background: none;
-      border: none;
-      color: #333;
-      font-size: 1em;
-      padding: 10px;
-      cursor: pointer;
-      font-family: inherit;
-      text-decoration: none;
-      transition: color 0.2s;
-      display: flex;
-      align-items: center;
-      position: relative;
-      z-index: 1000; /* Ensure button appears in front */
+    /* Contact dropdown styles */
+    .contact-dropdown-btn:hover, 
+    .contact-dropdown-btn.active {
+      color: #a07 !important;
     }
 
     .contact-dropdown-btn .dropdown-icon {
-      display: inline-block;
-      margin-left: 5px;
       transition: transform 0.3s ease;
     }
 
     .contact-dropdown-btn.active .dropdown-icon {
       transform: rotate(180deg);
-    }
-
-    .contact-dropdown-btn:hover, 
-    .contact-dropdown-btn.active {
-      color: #a07;
-    }
-
-    .contact-dropdown-content {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 100%;
-      background-color: white;
-      min-width: 180px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 1001;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 5px;
-      border: 1px solid #eee;
-    }
-
-    .contact-dropdown-content a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      text-align: left;
-      transition: background-color 0.2s, color 0.2s;
-      border-bottom: 1px solid #f5f5f5;
-    }
-
-    .contact-dropdown-content a:last-child {
-      border-bottom: none;
-    }
-
-    .contact-dropdown-content a:hover {
-      background-color: #f9f9f9;
-      color: #a07;
-    }
-
-    /* Responsive adjustments for contact dropdown */
-    @media (max-width: 768px) {
-      .contact-dropdown-content {
-        position: absolute;
-        right: 0;
-        left: auto;
-        width: 200px;
-        z-index: 2000;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      }
-    }
-
-    /* Black box styles */
-    .black-box {
-      display: none;
-      position: absolute;
-      background-color: white;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      z-index: 2000;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 5px;
-      border: 1px solid #eee;
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-    
-    /* Style specifically for contact dropdown items */
-    #contact-dropdown-items a {
-      padding: 6px 8px; /* Very compact padding */
-      width: 100%; /* Ensure the items fill the container width */
-    }
-    
-    .black-box.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    .black-box a {
-      color: #333;
-      padding: 8px 12px; /* Reduce padding to make items take less space */
-      text-decoration: none;
-      display: block;
-      text-align: left;
-      transition: background-color 0.2s, color 0.2s;
-      border-bottom: 1px solid #f5f5f5;
-      white-space: nowrap; /* Prevent text from wrapping */
-      overflow: hidden;
-      text-overflow: ellipsis; /* Add ellipsis for text that might overflow */
-    }
-    
-    .black-box a:last-child {
-      border-bottom: none;
-    }
-    
-    .black-box a:hover {
-      background-color: #f9f9f9;
-      color: #a07;
     }
   </style>
 </head>
@@ -703,15 +584,13 @@
     <nav id="mainNav">
       <a href="index.html" class="active">Home</a>
       <a href="about.html">About</a>
-      
-      <!-- Contact dropdown menu -->
-      <div class="contact-dropdown">
-        <a class="contact-dropdown-btn" href="#">
+      <!-- Convert Contact to a dropdown -->
+      <div class="contact-dropdown" style="display: inline-block; position: relative;">
+        <a id="contactDropdownBtn" class="contact-dropdown-btn" href="#" style="color: #333; text-decoration: none; display: flex; align-items: center;">
           Contact 
-          <span class="dropdown-icon">▼</span>
+          <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
         </a>
       </div>
-      
       <!-- Admin dropdown menu (initially hidden) -->
       <div class="admin-dropdown">
         <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
@@ -736,19 +615,16 @@
 
   <!-- Black box in the middle of the page (admin dropdown content) -->
   <div class="black-box">
-    <!-- Admin dropdown items -->
-    <div id="admin-dropdown-items" style="display: none;">
-      <a href="admin-dashboard.html">Messages</a>
-      <a href="editor.html">Create Post</a>
-      <a href="edit-post.html">Edit Posts</a>
-      <a href="manage-users.html">User Management</a>
-    </div>
-    
-    <!-- Contact dropdown items -->
-    <div id="contact-dropdown-items" style="display: none;">
-      <a href="contact.html">Contact</a>
-      <a href="https://glammedbyglizz.youcanbook.me/" target="_blank">Booking</a>
-    </div>
+    <a href="admin-dashboard.html">Messages</a>
+    <a href="editor.html">Create Post</a>
+    <a href="edit-post.html">Edit Posts</a>
+    <a href="manage-users.html">User Management</a>
+  </div>
+
+  <!-- Contact dropdown black box -->
+  <div class="contact-black-box" style="position: fixed; background-color: white; z-index: 999; display: none; width: auto; height: auto; min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; border: 1px solid #eee;">
+    <a href="contact.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Contact</a>
+    <a href="https://glammedbyglizz.youcanbook.me/" target="_blank" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">Booking</a>
   </div>
 
   <!-- Main Content Area -->
@@ -1291,180 +1167,104 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-      const contactDropdownBtn = document.querySelector('.contact-dropdown-btn');
-      const blackBox = document.querySelector('.black-box');
-      const adminDropdownItems = document.getElementById('admin-dropdown-items');
-      const contactDropdownItems = document.getElementById('contact-dropdown-items');
+      const whiteBox = document.querySelector('.black-box');
+      const contactDropdownBtn = document.getElementById('contactDropdownBtn');
+      const contactBox = document.querySelector('.contact-black-box');
       
-      // Function to position black box under the triggering button
-      function positionBlackBox(button, items) {
-        if (button) {
-          const rect = button.getBoundingClientRect();
-          // Position directly below the text with a small margin
-          blackBox.style.top = (rect.bottom + 5) + 'px';
-          
-          // Get which dropdown is being used
-          const isContactDropdown = button === contactDropdownBtn;
-          
-          // Set the width based on the dropdown type
-          if (isContactDropdown) {
-            // For contact dropdown, use a fixed narrow width
-            const boxWidth = 90; // Fixed width in pixels - very narrow
-            
-            blackBox.style.width = boxWidth + 'px';
-            
-            // Center the narrow dropdown under the button
-            const buttonCenter = rect.left + (rect.width / 2);
-            let leftPosition = buttonCenter - (boxWidth / 2);
-            
-            // Check if dropdown would go off-screen
-            const viewportWidth = window.innerWidth;
-            const rightEdge = leftPosition + boxWidth;
-            
-            // Adjust position if dropdown would go off screen
-            if (rightEdge > viewportWidth - 10) {
-              leftPosition = viewportWidth - boxWidth - 10; // 10px from right edge
-            }
-            
-            // Ensure dropdown doesn't go off-screen on the left
-            if (leftPosition < 10) {
-              leftPosition = 10; // 10px from left edge
-            }
-            
-            blackBox.style.left = leftPosition + 'px';
-          } else {
-            // For admin dropdown, keep centering approach with min width
-            const buttonWidth = rect.width;
-            const boxWidth = Math.max(180, buttonWidth); // Minimum width of 180px
-            
-            // Calculate the centered position
-            const buttonCenter = rect.left + (buttonWidth / 2);
-            let leftPosition = buttonCenter - (boxWidth / 2);
-            
-            // Check if dropdown would go off-screen on the right
-            const viewportWidth = window.innerWidth;
-            const rightEdge = leftPosition + boxWidth;
-            
-            // Adjust position if dropdown would go off screen
-            if (rightEdge > viewportWidth - 10) {
-              leftPosition = viewportWidth - boxWidth - 10; // 10px from right edge
-            }
-            
-            // Ensure dropdown doesn't go off-screen on the left
-            if (leftPosition < 10) {
-              leftPosition = 10; // 10px from left edge
-            }
-            
-            // Apply the position
-            blackBox.style.left = leftPosition + 'px';
-            blackBox.style.width = boxWidth + 'px';
-          }
-          
-          // Hide all dropdown item containers
-          adminDropdownItems.style.display = 'none';
-          contactDropdownItems.style.display = 'none';
-          
-          // Show only the items for the clicked dropdown
-          items.style.display = 'block';
+      // Function to position white box under Admin Dashboard
+      function positionWhiteBox() {
+        if (adminDropdownBtn && whiteBox) {
+          const rect = adminDropdownBtn.getBoundingClientRect();
+          whiteBox.style.top = (rect.bottom) + 'px';
+          whiteBox.style.left = rect.left + 'px';
+          whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
         }
       }
       
-      // Track which dropdown is currently active
-      let activeDropdown = null;
-      
-      // Reposition black box on window resize
-      window.addEventListener('resize', function() {
-        if (blackBox.style.display === 'block' && activeDropdown) {
-          positionBlackBox(activeDropdown, 
-            activeDropdown === adminDropdownBtn ? adminDropdownItems : contactDropdownItems);
+      // Function to position contact box under Contact button
+      function positionContactBox() {
+        if (contactDropdownBtn && contactBox) {
+          const rect = contactDropdownBtn.getBoundingClientRect();
+          contactBox.style.top = (rect.bottom) + 'px';
+          contactBox.style.left = rect.left + 'px';
+          contactBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
         }
+      }
+      
+      // Position boxes initially
+      positionWhiteBox();
+      positionContactBox();
+      
+      // Reposition on window resize
+      window.addEventListener('resize', function() {
+        positionWhiteBox();
+        positionContactBox();
       });
       
       // Toggle admin dropdown when Admin Dashboard is clicked
-      if (adminDropdownBtn) {
+      if (adminDropdownBtn && whiteBox) {
         adminDropdownBtn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
           
-          // Toggle black box display
-          if (blackBox.style.display === 'block' && adminDropdownItems.style.display === 'block') {
-            // Hide with animation
-            blackBox.classList.remove('visible');
-            setTimeout(() => {
-              blackBox.style.display = 'none';
-            }, 200); // Match transition duration
-            
+          // Toggle white box display
+          if (whiteBox.style.display === 'block') {
+            whiteBox.style.display = 'none';
             this.classList.remove('active');
-            contactDropdownBtn.classList.remove('active');
-            activeDropdown = null; // Reset active dropdown
           } else {
-            positionBlackBox(this, adminDropdownItems); // Position before showing
-            blackBox.style.display = 'block';
-            
-            // Trigger animation after a tiny delay to ensure display block has taken effect
-            setTimeout(() => {
-              blackBox.classList.add('visible');
-            }, 10);
-            
+            positionWhiteBox(); // Position before showing
+            whiteBox.style.display = 'block';
             this.classList.add('active');
-            contactDropdownBtn.classList.remove('active');
             
-            // Track active dropdown
-            activeDropdown = this;
+            // Hide contact dropdown if it's open
+            if (contactBox) {
+              contactBox.style.display = 'none';
+              if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
+            }
           }
         });
       }
       
-      // Toggle contact dropdown when Contact button is clicked
-      if (contactDropdownBtn) {
+      // Toggle contact dropdown when Contact is clicked
+      if (contactDropdownBtn && contactBox) {
         contactDropdownBtn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
           
-          // Toggle black box display
-          if (blackBox.style.display === 'block' && contactDropdownItems.style.display === 'block') {
-            // Hide with animation
-            blackBox.classList.remove('visible');
-            setTimeout(() => {
-              blackBox.style.display = 'none';
-            }, 200); // Match transition duration
-            
+          // Toggle contact box display
+          if (contactBox.style.display === 'block') {
+            contactBox.style.display = 'none';
             this.classList.remove('active');
-            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-            activeDropdown = null; // Reset active dropdown
           } else {
-            positionBlackBox(this, contactDropdownItems); // Position before showing
-            blackBox.style.display = 'block';
-            
-            // Trigger animation after a tiny delay to ensure display block has taken effect
-            setTimeout(() => {
-              blackBox.classList.add('visible');
-            }, 10);
-            
+            positionContactBox(); // Position before showing
+            contactBox.style.display = 'block';
             this.classList.add('active');
-            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
             
-            // Track active dropdown
-            activeDropdown = this;
+            // Hide admin dropdown if it's open
+            if (whiteBox) {
+              whiteBox.style.display = 'none';
+              if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+            }
           }
         });
       }
       
-      // Hide dropdown when clicking outside
+      // Hide dropdowns when clicking outside
       document.addEventListener('click', function(e) {
-        if (blackBox && blackBox.style.display === 'block' && 
-            !adminDropdownBtn.contains(e.target) && 
-            !contactDropdownBtn.contains(e.target) && 
-            !blackBox.contains(e.target)) {
-          // Hide with animation
-          blackBox.classList.remove('visible');
-          setTimeout(() => {
-            blackBox.style.display = 'none';
-          }, 200); // Match transition duration
-          
-          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+        // Close admin dropdown
+        if (whiteBox && whiteBox.style.display === 'block' && 
+            adminDropdownBtn && !adminDropdownBtn.contains(e.target) && 
+            !whiteBox.contains(e.target)) {
+          whiteBox.style.display = 'none';
+          adminDropdownBtn.classList.remove('active');
+        }
+        
+        // Close contact dropdown
+        if (contactBox && contactBox.style.display === 'block' && 
+            contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
+            !contactBox.contains(e.target)) {
+          contactBox.style.display = 'none';
           contactDropdownBtn.classList.remove('active');
-          activeDropdown = null; // Reset active dropdown tracking
         }
       });
     });
