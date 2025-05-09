@@ -1,6 +1,7 @@
 // Import necessary Firebase modules
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { auth, isAdminUser, db } from "./firebase-config.js";
+import { collection, doc, getDoc, getDocs, setDoc, query, where, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Initialize the page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -128,6 +129,49 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// Save content to Firebase
+function saveContentToFirebase(elements, db) {
+  return new Promise(async (resolve, reject) => {
+    if (!db) {
+      console.error("Firebase is not initialized");
+      reject("Firebase is not initialized");
+      return;
+    }
+    
+    try {
+      const batch = writeBatch(db);
+      const pagePath = window.location.pathname.split('/').pop() || 'disclaimer.html';
+      
+      // Save each element's content
+      elements.forEach(element => {
+        const path = getElementPath(element);
+        if (!path) return;
+        
+        const docId = `${pagePath}_${path}`;
+        const docRef = doc(db, 'siteContent', docId);
+        
+        batch.set(docRef, {
+          content: element.innerHTML,
+          path: path,
+          page: pagePath,
+          lastUpdated: serverTimestamp()
+        });
+        
+        // Also save to localStorage as backup
+        localStorage.setItem(docId, element.innerHTML);
+      });
+      
+      // Commit the batch
+      await batch.commit();
+      console.log("Content saved successfully");
+      resolve();
+    } catch (error) {
+      console.error("Error in saveContentToFirebase: ", error);
+      reject(error);
+    }
+  });
+}
+
 // Handle content edits
 function handleContentEdit(event) {
   const element = event.target;
@@ -172,7 +216,7 @@ function handleContentEdit(event) {
 async function loadStoredContent() {
   try {
     const pagePath = window.location.pathname.split('/').pop() || 'disclaimer.html';
-    const contentRef = db.collection('siteContent');
+    const contentRef = collection(db, 'siteContent');
     const editableElements = document.querySelectorAll('.editable');
     
     // For each editable element
@@ -182,10 +226,10 @@ async function loadStoredContent() {
       
       // Try to find document in Firebase
       let docId = `${pagePath}_${path}`;
-      let docSnap = await contentRef.doc(docId).get();
+      let docSnap = await getDoc(doc(db, 'siteContent', docId));
       
       // If not found in Firebase, try localStorage
-      if (!docSnap.exists) {
+      if (!docSnap.exists()) {
         const localContent = localStorage.getItem(docId);
         if (localContent) {
           element.innerHTML = localContent;
@@ -197,8 +241,8 @@ async function loadStoredContent() {
             element.textContent && element.textContent.includes('©')) {
           // Try with special footer path
           docId = `${pagePath}_footer-copyright`;
-          docSnap = await contentRef.doc(docId).get();
-          if (docSnap.exists) {
+          docSnap = await getDoc(doc(db, 'siteContent', docId));
+          if (docSnap.exists()) {
             element.innerHTML = docSnap.data().content;
             continue;
           }
@@ -207,7 +251,8 @@ async function loadStoredContent() {
         // Last resort: try to match by text content hash
         if (element.textContent) {
           // Get all documents for this page as fallback
-          const querySnap = await contentRef.where('page', '==', pagePath).get();
+          const q = query(contentRef, where('page', '==', pagePath));
+          const querySnap = await getDocs(q);
           let found = false;
           
           querySnap.forEach(doc => {
@@ -245,4 +290,59 @@ function handleLogout() {
   }).catch(error => {
     console.error('Error signing out:', error);
   });
+}
+
+// Function to generate a unique path for each element based on its position in the DOM
+function getElementPath(element) {
+  if (!element) return '';
+  
+  // Start with the tag name
+  let path = element.tagName.toLowerCase();
+  
+  // Add id if it exists
+  if (element.id) {
+    path += '#' + element.id;
+    return path; // ID should be unique, so we can stop here
+  }
+  
+  // Add classes
+  if (element.className && typeof element.className === 'string') {
+    const classes = element.className.trim().split(/\s+/);
+    if (classes.length > 0 && classes[0] !== '') {
+      path += '.' + classes.join('.');
+    }
+  }
+  
+  // Get the index of the element among its siblings of the same type
+  if (element.parentNode) {
+    const siblings = Array.from(element.parentNode.children);
+    const sameSiblings = siblings.filter(sibling => sibling.tagName === element.tagName);
+    if (sameSiblings.length > 1) {
+      const index = sameSiblings.indexOf(element);
+      path += `:nth-of-type(${index + 1})`;
+    }
+  }
+  
+  // Add text content hash for better identification
+  if (element.textContent) {
+    // Create a simple hash of the first 30 chars of text content
+    const textSample = element.textContent.trim().substring(0, 30).replace(/\s+/g, ' ');
+    if (textSample) {
+      // Using simple hash for brevity
+      let hash = 0;
+      for (let i = 0; i < textSample.length; i++) {
+        hash = ((hash << 5) - hash) + textSample.charCodeAt(i);
+        hash |= 0; // Convert to 32bit integer
+      }
+      path += `[text="${hash}"]`;
+    }
+  }
+  
+  // Handle special case for footer copyright
+  if (element.parentNode && element.parentNode.tagName.toLowerCase() === 'footer' && 
+      element.textContent && element.textContent.includes('©')) {
+    return 'footer-copyright';
+  }
+  
+  return path;
 } 
