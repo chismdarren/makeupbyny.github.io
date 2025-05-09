@@ -1645,6 +1645,45 @@
     
     // Load saved content when the page loads
     document.addEventListener('DOMContentLoaded', async function() {
+      // Function to specifically handle footer copyright content
+      function handleFooterCopyright(savedContent) {
+        let count = 0;
+        
+        // Check for footer copyright elements in the saved content
+        for (const path in savedContent) {
+          if (path.includes('footer>p') && path.includes('©')) {
+            console.log('Found footer copyright element path, using direct approach');
+            const footerParagraphs = document.querySelectorAll('footer p');
+            
+            if (footerParagraphs.length > 0) {
+              // First try to find a paragraph with the copyright symbol
+              let copyrightP = null;
+              
+              for (let i = 0; i < footerParagraphs.length; i++) {
+                if (footerParagraphs[i].textContent.includes('©')) {
+                  copyrightP = footerParagraphs[i];
+                  break;
+                }
+              }
+              
+              // If found, update it
+              if (copyrightP) {
+                console.log('Found footer copyright element, updating');
+                copyrightP.innerHTML = savedContent[path].content;
+                count++;
+              } else {
+                // Otherwise update the first paragraph in the footer
+                console.log('No copyright found in footer, updating first paragraph');
+                footerParagraphs[0].innerHTML = savedContent[path].content;
+                count++;
+              }
+            }
+          }
+        }
+        
+        return count;
+      }
+      
       try {
         // Use page-specific document ID to prevent cross-page content sharing
         const pageDocId = "index_page_content";
@@ -1708,8 +1747,18 @@
           const allEditableElements = document.querySelectorAll('.editable');
           console.log(`Found ${allEditableElements.length} editable elements on page`);
           
+          // A special function to handle footer copyright - one of the most common elements
+          // This runs before the regular element processing
+          updateCount += handleFooterCopyright(savedContent);
+          
           // Apply saved content to matching elements
           Object.keys(savedContent).forEach(path => {
+            // Skip footer copyright elements as they were handled specially
+            if (path.includes('footer>p') && path.includes('©')) {
+              console.log('Skipping footer copyright element - already handled');
+              return;
+            }
+            
             try {
               console.log(`Processing saved element with path: ${path}`);
               
@@ -1783,28 +1832,38 @@
                 elements = document.querySelectorAll(simpleSelector);
                 console.log(`Found ${elements.length} elements with simple selector ${simpleSelector}`);
                 
-                // Try fingerprint matching if we have elements
-                if (elements.length > 0 && contentFingerprint) {
-                  // Find by content fingerprint first
-                  let matchedElement = null;
-                  
-                  for (const el of elements) {
+                // Try to match by content fingerprint if available
+                let matchFound = false;
+                
+                if (contentFingerprint) {
+                  console.log(`Trying to match by fingerprint: "${contentFingerprint}"`);
+                  elements.forEach(el => {
                     const elContent = el.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
-                    // Log comparison for debugging
                     console.log(`Comparing fingerprints: "${elContent}" vs "${contentFingerprint}"`);
                     
+                    // Try exact match first
                     if (elContent === contentFingerprint) {
-                      console.log(`Found element matching fingerprint: ${contentFingerprint}`);
-                      matchedElement = el;
-                      break;
+                      console.log(`Found exact matching element with content fingerprint: ${contentFingerprint}`);
+                      el.innerHTML = savedContent[path].content;
+                      matchFound = true;
+                      updateCount++;
+                      return; // exit the forEach loop early
                     }
-                  }
-                  
-                  if (matchedElement) {
-                    console.log(`Updating element matched by fingerprint`);
-                    matchedElement.innerHTML = savedContent[path].content;
-                    updateCount++;
-                  }
+                    
+                    // If no exact match, try partial match (element text contains fingerprint or fingerprint contains element text)
+                    // This is especially useful for the copyright statement in the footer
+                    if (!matchFound) {
+                      const rawContent = el.textContent.trim();
+                      const rawFingerprint = contentFingerprint.replace(/-/g, ' ');
+                      if (rawContent.includes(rawFingerprint) || rawFingerprint.includes(rawContent)) {
+                        console.log(`Found partial match with content fingerprint: "${contentFingerprint}" in "${rawContent.substring(0, 30)}..."`);
+                        el.innerHTML = savedContent[path].content;
+                        matchFound = true;
+                        updateCount++;
+                        return; // exit the forEach loop early
+                      }
+                    }
+                  });
                 }
               }
               
@@ -1818,7 +1877,7 @@
                   // Verify parent if possible
                   if (parentTag && specificElement.parentElement) {
                     const actualParent = specificElement.parentElement;
-                    if (actualParent.tagName.toLowerCase() === parentTag) {
+                    if (actualParent.tagName.toLowerCase() === parentTag.toLowerCase()) {
                       // Check parent classes if needed
                       let parentClassMatch = true;
                       if (parentClasses.length > 0) {
@@ -1827,39 +1886,63 @@
                         );
                       }
                       
+                      console.log(`Parent tag match: ${actualParent.tagName.toLowerCase()} === ${parentTag.toLowerCase()}`);
+                      console.log(`Parent class match: ${parentClassMatch}`);
+                      
                       if (parentClassMatch) {
                         console.log(`Updating specific element at position ${positionIndex}`);
                         specificElement.innerHTML = savedContent[path].content;
                         updateCount++;
                       }
+                    } else {
+                      console.log(`Parent tag mismatch: ${actualParent.tagName.toLowerCase()} !== ${parentTag.toLowerCase()}`);
                     }
                   } else {
-                    // No parent tag specified or element has no parent
-                    console.log(`Updating specific element at position ${positionIndex} (no parent check)`);
-                    specificElement.innerHTML = savedContent[path].content;
-                    updateCount++;
+                    // Specific handling for footer elements
+                    if (parentTag === 'footer' && specificElement.closest('footer')) {
+                      console.log(`Found element within footer, updating`);
+                      specificElement.innerHTML = savedContent[path].content;
+                      updateCount++;
+                    } else {
+                      // No parent tag specified or element has no parent
+                      console.log(`Updating specific element at position ${positionIndex} (no parent check)`);
+                      specificElement.innerHTML = savedContent[path].content;
+                      updateCount++;
+                    }
                   }
                 } else {
                   // Try to match by content fingerprint if available
                   let matchFound = false;
                   
                   if (contentFingerprint) {
+                    console.log(`Trying to match by fingerprint: "${contentFingerprint}"`);
                     elements.forEach(el => {
                       const elContent = el.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
+                      console.log(`Comparing fingerprints: "${elContent}" vs "${contentFingerprint}"`);
+                      
+                      // Try exact match first
                       if (elContent === contentFingerprint) {
-                        console.log(`Found matching element with content fingerprint: ${contentFingerprint}`);
+                        console.log(`Found exact matching element with content fingerprint: ${contentFingerprint}`);
                         el.innerHTML = savedContent[path].content;
                         matchFound = true;
                         updateCount++;
+                        return; // exit the forEach loop early
+                      }
+                      
+                      // If no exact match, try partial match (element text contains fingerprint or fingerprint contains element text)
+                      // This is especially useful for the copyright statement in the footer
+                      if (!matchFound) {
+                        const rawContent = el.textContent.trim();
+                        const rawFingerprint = contentFingerprint.replace(/-/g, ' ');
+                        if (rawContent.includes(rawFingerprint) || rawFingerprint.includes(rawContent)) {
+                          console.log(`Found partial match with content fingerprint: "${contentFingerprint}" in "${rawContent.substring(0, 30)}..."`);
+                          el.innerHTML = savedContent[path].content;
+                          matchFound = true;
+                          updateCount++;
+                          return; // exit the forEach loop early
+                        }
                       }
                     });
-                  }
-                  
-                  // If no match found and only one element exists, update it
-                  if (!matchFound && elements.length === 1) {
-                    console.log(`Updating single matching element`);
-                    elements[0].innerHTML = savedContent[path].content;
-                    updateCount++;
                   }
                 }
               } else {
@@ -1891,6 +1974,43 @@
           });
           
           console.log(`✅ Successfully restored ${updateCount} saved elements`);
+          
+          // Last resort fallback if no elements were updated
+          if (updateCount === 0 && Object.keys(savedContent).length > 0) {
+            console.log("⚠️ No elements updated through normal methods, trying last resort fallback");
+            
+            // Get all editable elements and footer paragraphs
+            const editables = document.querySelectorAll('.editable');
+            const footerP = document.querySelector('footer p');
+            
+            // Try to update elements based on saved content
+            Object.values(savedContent).forEach(item => {
+              const content = item.content;
+              
+              // Try to identify if this is footer content
+              if (content.includes('©') && footerP) {
+                console.log("Updating footer paragraph with copyright as fallback");
+                footerP.innerHTML = content;
+                updateCount++;
+              } else if (editables.length > 0) {
+                // For other content, try to match by element type and content similarity
+                for (const el of editables) {
+                  // Skip if we already updated footer content
+                  if (el.closest('footer') && updateCount > 0) continue;
+                  
+                  // Check if element type matches
+                  if (el.tagName.toLowerCase() === (item.elementType || 'p').toLowerCase()) {
+                    console.log(`Updating ${el.tagName.toLowerCase()} element as last resort fallback`);
+                    el.innerHTML = content;
+                    updateCount++;
+                    break;
+                  }
+                }
+              }
+            });
+            
+            console.log(`After fallback, restored ${updateCount} elements`);
+          }
         } else {
           console.log("No saved content found in Firebase or localStorage");
         }
