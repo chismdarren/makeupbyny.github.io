@@ -425,6 +425,40 @@
       color: white;
     }
 
+    /* Save Status Indicator */
+    #save-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #save-status.show {
+      opacity: 1;
+    }
+
+    #save-status.success {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    #save-status.error {
+      background-color: #F44336;
+      color: white;
+    }
+
+    #save-status.saving {
+      background-color: #FFC107;
+      color: black;
+    }
+
     /* Editable content styles */
     .editable {
       transition: outline 0.3s ease, background-color 0.3s ease;
@@ -479,6 +513,9 @@
   <div id="edit-mode-toggle" style="display:none;">
     <i class="fas fa-pencil-alt"></i>
   </div>
+
+  <!-- Save Status Indicator -->
+  <div id="save-status">Saving changes...</div>
 
   <!-- Main Content Area -->
   <div class="content">
@@ -873,17 +910,55 @@
             
             // If changes were made, save them to Firebase
             if (hasChanges) {
+              // Show saving indicator
+              showSaveStatus('saving', 'Saving changes...');
+              
+              // Save to both Firebase and localStorage for redundancy
               saveContentToFirebase(updatedContent)
                 .then(() => {
-                  showNotification('Changes saved successfully!', 'success');
+                  // Also save to localStorage as backup
+                  try {
+                    // Save to localStorage with timestamp
+                    const localStorageData = {
+                      content: updatedContent,
+                      timestamp: new Date().toISOString(),
+                      pageId: 'about_page_content'
+                    };
+                    localStorage.setItem('about_page_content', JSON.stringify(localStorageData));
+                    console.log("✅ Also saved content to localStorage as backup");
+                  } catch (localStorageError) {
+                    console.warn("Could not save to localStorage:", localStorageError);
+                  }
+                  
+                  showSaveStatus('success', 'Changes saved successfully!');
+                  
                   // Update the original content with new values
                   editableElements.forEach((element, index) => {
                     originalContent[index] = element.innerHTML;
                   });
                 })
                 .catch(error => {
-                  showNotification('Error saving changes: ' + error.message, 'error');
-                  console.error('Error saving changes:', error);
+                  console.error('Error saving to Firebase:', error);
+                  
+                  // Try saving to localStorage as fallback
+                  try {
+                    const localStorageData = {
+                      content: updatedContent,
+                      timestamp: new Date().toISOString(),
+                      pageId: 'about_page_content'
+                    };
+                    localStorage.setItem('about_page_content', JSON.stringify(localStorageData));
+                    
+                    showSaveStatus('success', 'Changes saved locally (offline mode)');
+                    
+                    // Update the original content with new values
+                    editableElements.forEach((element, index) => {
+                      originalContent[index] = element.innerHTML;
+                    });
+                  } catch (localStorageError) {
+                    showSaveStatus('error', 'Failed to save changes');
+                    console.error('Error saving to localStorage:', localStorageError);
+                  }
                 });
             }
           }
@@ -927,15 +1002,15 @@
       
       // Function to save content to Firebase
       async function saveContentToFirebase(updatedContent) {
-        console.log("Saving content to Firebase:", updatedContent);
-        
-        // Use page-specific document ID to prevent cross-page content sharing
-        const pageDocId = "about_page_content";
-        
-        // Create/update content document in Firestore
-        const contentRef = doc(db, "site_content", pageDocId);
+        console.log("Attempting to save content to Firebase:", updatedContent);
         
         try {
+          // Use page-specific document ID to prevent cross-page content sharing
+          const pageDocId = "about_page_content";
+          
+          // Create/update content document in Firestore
+          const contentRef = doc(db, "site_content", pageDocId);
+          
           // Check if document exists
           const docSnap = await getDoc(contentRef);
           
@@ -948,58 +1023,74 @@
             console.log("Updating existing document with merged content:", mergedContent);
             
             // Update existing document
-            return updateDoc(contentRef, {
+            await updateDoc(contentRef, {
               content: mergedContent,
               lastUpdated: new Date()
             });
+            
+            console.log("✅ Successfully updated document in Firebase");
+            
+            // Verify the update was successful by reading it back
+            const verifySnap = await getDoc(contentRef);
+            if (verifySnap.exists()) {
+              console.log("✅ Verification successful - document contains:", verifySnap.data());
+              return true;
+            } else {
+              console.error("❌ Verification failed - document not found after update");
+              throw new Error("Document verification failed after update");
+            }
           } else {
             console.log("Creating new document with content:", updatedContent);
             // Create new document
-            return setDoc(contentRef, {
+            await setDoc(contentRef, {
               content: updatedContent,
               lastUpdated: new Date()
             });
+            
+            console.log("✅ Successfully created new document in Firebase");
+            
+            // Verify the creation was successful
+            const verifySnap = await getDoc(contentRef);
+            if (verifySnap.exists()) {
+              console.log("✅ Verification successful - new document contains:", verifySnap.data());
+              return true;
+            } else {
+              console.error("❌ Verification failed - new document not found after creation");
+              throw new Error("Document verification failed after creation");
+            }
           }
         } catch (error) {
-          console.error("Error saving content:", error);
+          console.error("❌ Error saving content to Firebase:", error);
+          // Check for specific Firebase errors
+          if (error.code) {
+            console.error(`Firebase error code: ${error.code}`);
+            console.error(`Firebase error message: ${error.message}`);
+          }
           throw error;
         }
       }
       
-      // Function to show notification
-      function showNotification(message, type) {
-        // Create notification element if it doesn't exist
-        let notification = document.getElementById('edit-notification');
-        if (!notification) {
-          notification = document.createElement('div');
-          notification.id = 'edit-notification';
-          notification.style.position = 'fixed';
-          notification.style.bottom = '20px';
-          notification.style.right = '20px';
-          notification.style.padding = '10px 20px';
-          notification.style.borderRadius = '4px';
-          notification.style.color = 'white';
-          notification.style.fontWeight = 'bold';
-          notification.style.zIndex = '10000';
-          notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-          document.body.appendChild(notification);
+      // Function to show save status
+      function showSaveStatus(type, message) {
+        const statusElement = document.getElementById('save-status');
+        if (!statusElement) return;
+        
+        // Clear existing classes
+        statusElement.className = '';
+        
+        // Add new classes
+        statusElement.classList.add('show');
+        statusElement.classList.add(type);
+        
+        // Set message
+        statusElement.textContent = message;
+        
+        // Hide after a delay (except if it's "saving")
+        if (type !== 'saving') {
+          setTimeout(() => {
+            statusElement.classList.remove('show');
+          }, 3000);
         }
-        
-        // Set style based on notification type
-        if (type === 'success') {
-          notification.style.backgroundColor = '#4CAF50';
-        } else if (type === 'error') {
-          notification.style.backgroundColor = '#F44336';
-        }
-        
-        // Set message and show notification
-        notification.textContent = message;
-        notification.style.display = 'block';
-        
-        // Hide notification after 3 seconds
-        setTimeout(() => {
-          notification.style.display = 'none';
-        }, 3000);
       }
     });
   </script>
@@ -1007,7 +1098,7 @@
   <!-- Load editable content script -->
   <script type="module">
     // Import Firebase modules immediately
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { db } from "./firebase-config.js";
     
     // Load saved content when the page loads
@@ -1016,14 +1107,60 @@
         // Use page-specific document ID to prevent cross-page content sharing
         const pageDocId = "about_page_content";
         
+        // Try to load from Firebase first
         console.log("Loading saved content for about page...");
-        // Get the content document from Firestore
-        const contentRef = doc(db, "site_content", pageDocId);
-        const docSnap = await getDoc(contentRef);
+        let savedContent = null;
+        let contentSource = 'firebase';
         
-        if (docSnap.exists() && docSnap.data().content) {
-          console.log("Found saved content:", docSnap.data());
-          const savedContent = docSnap.data().content;
+        try {
+          // Test Firebase connection first
+          console.log("Testing Firebase connection...");
+          // Try to access a collection to verify connection
+          const testCol = collection(db, "site_content");
+          const testSnapshot = await getDocs(testCol);
+          console.log(`✅ Firebase connection successful! Found ${testSnapshot.size} documents in collection.`);
+          
+          // Get the content document from Firestore
+          const contentRef = doc(db, "site_content", pageDocId);
+          const docSnap = await getDoc(contentRef);
+          
+          if (docSnap.exists() && docSnap.data().content) {
+            console.log("✅ Found saved content in Firebase:", docSnap.data());
+            savedContent = docSnap.data().content;
+          } else {
+            console.log("No content found in Firebase, checking localStorage...");
+          }
+        } catch (firebaseError) {
+          console.error("❌ Firebase error:", firebaseError);
+          console.log("Falling back to localStorage...");
+        }
+        
+        // If no content from Firebase, try localStorage
+        if (!savedContent) {
+          try {
+            const localData = localStorage.getItem(pageDocId);
+            if (localData) {
+              const parsedData = JSON.parse(localData);
+              if (parsedData && parsedData.content) {
+                console.log("✅ Found saved content in localStorage:", parsedData);
+                savedContent = parsedData.content;
+                contentSource = 'localStorage';
+              }
+            }
+          } catch (localStorageError) {
+            console.error("❌ Error reading from localStorage:", localStorageError);
+          }
+        }
+        
+        // If we have content from either source, apply it
+        if (savedContent) {
+          console.log(`Applying saved content from ${contentSource}`);
+          
+          // Count how many elements we'll update
+          const elementsToUpdate = Object.keys(savedContent).length;
+          console.log(`Found ${elementsToUpdate} saved elements to restore`);
+          
+          let updateCount = 0;
           
           // Apply saved content to matching elements
           Object.keys(savedContent).forEach(path => {
@@ -1100,12 +1237,14 @@
                       if (parentClassMatch) {
                         console.log(`Updating specific element at position ${positionIndex}`);
                         specificElement.innerHTML = savedContent[path].content;
+                        updateCount++;
                       }
                     }
                   } else {
                     // No parent tag specified or element has no parent
                     console.log(`Updating specific element at position ${positionIndex} (no parent check)`);
                     specificElement.innerHTML = savedContent[path].content;
+                    updateCount++;
                   }
                 } else {
                   // Check if we can find the element using the content fingerprint
@@ -1117,7 +1256,7 @@
                       if (elContent === contentFingerprint) {
                         console.log(`Found matching element with content fingerprint: ${contentFingerprint}`);
                         el.innerHTML = savedContent[path].content;
-                        matchFound = true;
+                        updateCount++;
                       }
                     });
                   }
@@ -1126,6 +1265,7 @@
                   if (!matchFound && elements.length === 1) {
                     console.log(`Updating single matching element`);
                     elements[0].innerHTML = savedContent[path].content;
+                    updateCount++;
                   }
                 }
               } else {
@@ -1135,8 +1275,10 @@
               console.error(`Error processing path ${path}:`, error);
             }
           });
+          
+          console.log(`✅ Successfully restored ${updateCount} saved elements`);
         } else {
-          console.log("No saved content found");
+          console.log("No saved content found in Firebase or localStorage");
         }
       } catch (error) {
         console.error("Error loading saved content:", error);

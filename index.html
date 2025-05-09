@@ -66,6 +66,40 @@
       background-color: rgba(255, 105, 180, 0.05);
     }
 
+    /* Save Status Indicator */
+    #save-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #save-status.show {
+      opacity: 1;
+    }
+
+    #save-status.success {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    #save-status.error {
+      background-color: #F44336;
+      color: white;
+    }
+
+    #save-status.saving {
+      background-color: #FFC107;
+      color: black;
+    }
+
     /* White box mimicking the dropdown */
     .black-box {
       position: fixed;
@@ -655,6 +689,9 @@
   <div id="edit-mode-toggle" style="display:none; top: 70px;">
     <i class="fas fa-pencil-alt"></i>
   </div>
+
+  <!-- Save Status Indicator -->
+  <div id="save-status">Saving changes...</div>
 
   <!-- Black box in the middle of the page (admin dropdown content) -->
   <div class="black-box">
@@ -1394,136 +1431,81 @@
           
           // If changes were made, save them to Firebase
           if (hasChanges) {
+            // Show saving indicator
+            showSaveStatus('saving', 'Saving changes...');
+            
+            // Save to both Firebase and localStorage for redundancy
             saveContentToFirebase(updatedContent)
               .then(() => {
-                showNotification('Changes saved successfully!', 'success');
+                // Also save to localStorage as backup
+                try {
+                  // Save to localStorage with timestamp
+                  const localStorageData = {
+                    content: updatedContent,
+                    timestamp: new Date().toISOString(),
+                    pageId: 'index_page_content'
+                  };
+                  localStorage.setItem('index_page_content', JSON.stringify(localStorageData));
+                  console.log("✅ Also saved content to localStorage as backup");
+                } catch (localStorageError) {
+                  console.warn("Could not save to localStorage:", localStorageError);
+                }
+                
+                showSaveStatus('success', 'Changes saved successfully!');
+                
                 // Update the original content with new values
                 editableElements.forEach((element, index) => {
                   originalContent[index] = element.innerHTML;
                 });
               })
               .catch(error => {
-                showNotification('Error saving changes: ' + error.message, 'error');
-                console.error('Error saving changes:', error);
+                console.error('Error saving to Firebase:', error);
+                
+                // Try saving to localStorage as fallback
+                try {
+                  const localStorageData = {
+                    content: updatedContent,
+                    timestamp: new Date().toISOString(),
+                    pageId: 'index_page_content'
+                  };
+                  localStorage.setItem('index_page_content', JSON.stringify(localStorageData));
+                  
+                  showSaveStatus('success', 'Changes saved locally (offline mode)');
+                  
+                  // Update the original content with new values
+                  editableElements.forEach((element, index) => {
+                    originalContent[index] = element.innerHTML;
+                  });
+                } catch (localStorageError) {
+                  showSaveStatus('error', 'Failed to save changes');
+                  console.error('Error saving to localStorage:', localStorageError);
+                }
               });
           }
         }
       });
       
-      // Function to get a unique path for an element
-      function getElementPath(element) {
-        const tagName = element.tagName.toLowerCase();
+      // Function to show save status
+      function showSaveStatus(type, message) {
+        const statusElement = document.getElementById('save-status');
+        if (!statusElement) return;
         
-        // Get a cleaned version of the class list
-        const classList = Array.from(element.classList);
-        const classNames = classList.join('.');
+        // Clear existing classes
+        statusElement.className = '';
         
-        // Get parent information with more detail
-        const parentElement = element.parentElement;
-        const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
+        // Add new classes
+        statusElement.classList.add('show');
+        statusElement.classList.add(type);
         
-        // Get more specific parent class information
-        let parentClassInfo = '';
-        if (parentElement && parentElement.classList.length > 0) {
-          parentClassInfo = '.' + Array.from(parentElement.classList).join('.');
+        // Set message
+        statusElement.textContent = message;
+        
+        // Hide after a delay (except if it's "saving")
+        if (type !== 'saving') {
+          setTimeout(() => {
+            statusElement.classList.remove('show');
+          }, 3000);
         }
-        
-        // Get position index among siblings of same type
-        let positionIndex = 0;
-        if (parentElement) {
-          const siblings = Array.from(parentElement.children).filter(el => el.tagName === element.tagName);
-          positionIndex = siblings.indexOf(element) + 1;
-        }
-        
-        // Include detailed position info in the path
-        const positionInfo = parentElement ? `[${positionIndex}]` : '';
-        
-        // Include some content as a fingerprint (first 15 chars)
-        const contentFingerprint = element.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
-        
-        // Create a highly specific identifier for this element
-        return `${parentTagName}${parentClassInfo}>${tagName}${positionInfo}.${classNames}:${contentFingerprint}`;
-      }
-      
-      // Function to save content to Firebase
-      async function saveContentToFirebase(updatedContent) {
-        // Import Firebase modules
-        const { doc, setDoc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
-        const { db } = await import("./firebase-config.js");
-        
-        console.log("Saving content to Firebase:", updatedContent);
-        
-        // Use page-specific document ID to prevent cross-page content sharing
-        const pageDocId = "index_page_content";
-        
-        // Create/update content document in Firestore
-        const contentRef = doc(db, "site_content", pageDocId);
-        
-        try {
-          // Check if document exists
-          const docSnap = await getDoc(contentRef);
-          
-          if (docSnap.exists()) {
-            // Get current content
-            const currentContent = docSnap.data().content || {};
-            
-            // Merge current content with updated content
-            const mergedContent = { ...currentContent, ...updatedContent };
-            console.log("Updating existing document with merged content:", mergedContent);
-            
-            // Update existing document
-            return updateDoc(contentRef, {
-              content: mergedContent,
-              lastUpdated: new Date()
-            });
-          } else {
-            console.log("Creating new document with content:", updatedContent);
-            // Create new document
-            return setDoc(contentRef, {
-              content: updatedContent,
-              lastUpdated: new Date()
-            });
-          }
-        } catch (error) {
-          console.error("Error saving content:", error);
-          throw error;
-        }
-      }
-      
-      // Function to show notification
-      function showNotification(message, type) {
-        // Create notification element if it doesn't exist
-        let notification = document.getElementById('edit-notification');
-        if (!notification) {
-          notification = document.createElement('div');
-          notification.id = 'edit-notification';
-          notification.style.position = 'fixed';
-          notification.style.bottom = '20px';
-          notification.style.right = '20px';
-          notification.style.padding = '10px 20px';
-          notification.style.borderRadius = '4px';
-          notification.style.color = 'white';
-          notification.style.fontWeight = 'bold';
-          notification.style.zIndex = '10000';
-          notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-          document.body.appendChild(notification);
-        }
-        
-        // Set style based on notification type
-        if (type === 'success') {
-          notification.style.backgroundColor = '#4CAF50';
-        } else if (type === 'error') {
-          notification.style.backgroundColor = '#F44336';
-        }
-        
-        // Set message and show notification
-        notification.textContent = message;
-        notification.style.display = 'block';
-        
-        // Hide notification after 3 seconds
-        setTimeout(() => {
-          notification.style.display = 'none';
-        }, 3000);
       }
     });
   </script>
