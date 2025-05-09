@@ -1413,11 +1413,25 @@
       // Function to get a unique path for an element
       function getElementPath(element) {
         const tagName = element.tagName.toLowerCase();
-        const classNames = Array.from(element.classList).join('.');
-        const parentTagName = element.parentElement ? element.parentElement.tagName.toLowerCase() : '';
+        
+        // Get a cleaned version of the class list (only keeping 'editable' and a few key classes)
+        const classList = Array.from(element.classList).filter(cls => 
+          cls === 'editable' || 
+          ['header', 'footer', 'about-me', 'social-links'].includes(cls)
+        );
+        const classNames = classList.join('.');
+        
+        // Get parent information
+        const parentElement = element.parentElement;
+        const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
+        const parentClass = parentElement && parentElement.className ? 
+          Array.from(parentElement.classList)[0] : '';
+        
+        // Include some content as a fingerprint (first 10 chars)
+        const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
         
         // Create a relatively unique identifier for this element
-        return `${parentTagName}>${tagName}.${classNames}`;
+        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${contentFingerprint}`;
       }
       
       // Function to save content to Firebase
@@ -1425,6 +1439,8 @@
         // Import Firebase modules
         const { doc, setDoc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
         const { db } = await import("./firebase-config.js");
+        
+        console.log("Saving content to Firebase:", updatedContent);
         
         // Create/update content document in Firestore
         const contentRef = doc(db, "site_content", "editable_content");
@@ -1434,12 +1450,20 @@
           const docSnap = await getDoc(contentRef);
           
           if (docSnap.exists()) {
+            // Get current content
+            const currentContent = docSnap.data().content || {};
+            
+            // Merge current content with updated content
+            const mergedContent = { ...currentContent, ...updatedContent };
+            console.log("Updating existing document with merged content:", mergedContent);
+            
             // Update existing document
             return updateDoc(contentRef, {
-              content: { ...docSnap.data().content, ...updatedContent },
+              content: mergedContent,
               lastUpdated: new Date()
             });
           } else {
+            console.log("Creating new document with content:", updatedContent);
             // Create new document
             return setDoc(contentRef, {
               content: updatedContent,
@@ -1492,43 +1516,86 @@
 
   <!-- Load editable content script -->
   <script type="module">
+    // Import Firebase modules immediately
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { db } from "./firebase-config.js";
+    
     // Load saved content when the page loads
     document.addEventListener('DOMContentLoaded', async function() {
       try {
-        // Import Firebase modules
-        const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
-        const { db, auth } = await import("./firebase-config.js");
-        
-        // Only proceed if user is logged in
-        if (!auth.currentUser) return;
-        
+        console.log("Loading saved content...");
         // Get the content document from Firestore
         const contentRef = doc(db, "site_content", "editable_content");
         const docSnap = await getDoc(contentRef);
         
         if (docSnap.exists() && docSnap.data().content) {
+          console.log("Found saved content:", docSnap.data());
           const savedContent = docSnap.data().content;
           
           // Apply saved content to matching elements
           Object.keys(savedContent).forEach(path => {
-            // Parse the path to find the element
-            const [parentTag, elementInfo] = path.split('>');
-            const [tag, ...classes] = elementInfo.split('.');
-            
-            // Find potential elements that match
-            const elements = document.querySelectorAll(tag + '.' + classes.join('.'));
-            
-            if (elements.length > 0) {
-              // Apply to all matching elements (usually should be just one)
-              elements.forEach(element => {
-                // Only update if parent tag matches or if we can't determine it
-                const actualParentTag = element.parentElement ? element.parentElement.tagName.toLowerCase() : '';
-                if (!parentTag || actualParentTag === parentTag) {
-                  element.innerHTML = savedContent[path].content;
-                }
-              });
+            try {
+              // Parse the path to find the element
+              // Format: parentTag.parentClass>tag.class1.class2:contentFingerprint
+              
+              // Remove content fingerprint if present
+              const basePath = path.split(':')[0];
+              
+              // Split into parent and element parts
+              const [parentInfo, elementInfo] = basePath.split('>');
+              
+              // Extract parent tag and class
+              let parentTag = '', parentClass = '';
+              if (parentInfo.includes('.')) {
+                [parentTag, parentClass] = parentInfo.split('.');
+              } else {
+                parentTag = parentInfo;
+              }
+              
+              // Extract element tag and classes
+              const [tag, ...classes] = elementInfo.split('.');
+              
+              // Build a selector from the classes
+              const classSelector = classes.length > 0 ? '.' + classes.join('.') : '';
+              const selector = tag + classSelector;
+              
+              console.log(`Looking for elements matching selector: ${selector}`);
+              
+              // Find potential elements that match
+              const elements = document.querySelectorAll(selector);
+              
+              if (elements.length > 0) {
+                console.log(`Found ${elements.length} matching elements`);
+                
+                // Apply to all matching elements (usually should be just one)
+                elements.forEach(element => {
+                  // Only update if parent tag matches or if we can't determine it
+                  const actualParentElement = element.parentElement;
+                  
+                  if (actualParentElement) {
+                    const actualParentTag = actualParentElement.tagName.toLowerCase();
+                    const actualParentHasClass = parentClass ? 
+                      actualParentElement.classList.contains(parentClass) : true;
+                    
+                    if (actualParentTag === parentTag && actualParentHasClass) {
+                      console.log(`Updating element with path ${path}`);
+                      element.innerHTML = savedContent[path].content;
+                    }
+                  } else if (!parentTag) {
+                    // If no parent specified and element has no parent
+                    console.log(`Updating element with path ${path} (no parent check)`);
+                    element.innerHTML = savedContent[path].content;
+                  }
+                });
+              } else {
+                console.log(`No elements found matching selector: ${selector}`);
+              }
+            } catch (error) {
+              console.error(`Error processing path ${path}:`, error);
             }
           });
+        } else {
+          console.log("No saved content found");
         }
       } catch (error) {
         console.error("Error loading saved content:", error);
