@@ -244,124 +244,6 @@
       }
     }
     
-    /* Content visibility control */
-    .content-loader {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #f9f9f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    .content-loader.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .loader-spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #a07;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Hide editable content until loaded */
-    .editable-container {
-      visibility: hidden;
-      opacity: 0;
-      transition: visibility 0.3s ease, opacity 0.3s ease;
-    }
-
-    .editable-container.loaded {
-      visibility: visible;
-      opacity: 1;
-    }
-    
-    /* Edit mode button styles */
-    #edit-mode-toggle {
-      position: fixed;
-      top: 70px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      background-color: #fff;
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      display: none; /* Hidden by default, shown only for admins */
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      z-index: 9999;
-      transition: transform 0.3s ease, background-color 0.3s ease;
-    }
-
-    #edit-mode-toggle:hover {
-      transform: scale(1.1);
-    }
-
-    #edit-mode-toggle.active {
-      background-color: #ff69b4;
-      color: white;
-    }
-
-    /* Save Status Indicator */
-    #save-status {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: bold;
-      z-index: 9999;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    #save-status.show {
-      opacity: 1;
-    }
-
-    #save-status.success {
-      background-color: #4CAF50;
-      color: white;
-    }
-
-    #save-status.error {
-      background-color: #F44336;
-      color: white;
-    }
-
-    #save-status.saving {
-      background-color: #FFC107;
-      color: black;
-    }
-
-    /* Editable content styles */
-    .editable {
-      transition: outline 0.3s ease, background-color 0.3s ease;
-    }
-
-    .editable.edit-mode {
-      outline: 2px solid #ff69b4;
-      outline-offset: 2px;
-      background-color: rgba(255, 105, 180, 0.05);
-    }
-    
     /* Settings gear icon styles */
     .settings-icon {
       position: fixed;
@@ -441,11 +323,6 @@
   </style>
 </head>
 <body>
-  <!-- Loading spinner overlay -->
-  <div id="contentLoader" class="content-loader">
-    <div class="loader-spinner"></div>
-  </div>
-  
   <!-- Header Section -->
   <header>
     <a href="index.html">
@@ -483,14 +360,6 @@
     </svg>
   </a>
 
-  <!-- Edit Mode Button (Admin only) -->
-  <div id="edit-mode-toggle" style="display:none;">
-    <i class="fas fa-pencil-alt"></i>
-  </div>
-
-  <!-- Save Status Indicator -->
-  <div id="save-status">Saving changes...</div>
-
   <!-- Main Content Area -->
   <div class="content">
     <!-- White box dropdown replacement -->
@@ -523,45 +392,33 @@
       <div class="about-content">
         <section class="about-section">
           <h2>Disclaimer</h2>
-          <div class="editable-container">
-            <p class="editable">
-              The information provided on Makeup by NY is for general informational purposes only. While we strive to keep the information up to date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the website or the information, products, services, or related graphics contained on the website for any purpose.
-            </p>
-          </div>
+          <p>
+            The information provided on Makeup by NY is for general informational purposes only. While we strive to keep the information up to date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the website or the information, products, services, or related graphics contained on the website for any purpose.
+          </p>
 
           <h3>Product Reviews and Recommendations</h3>
-          <div class="editable-container">
-            <p class="editable">
-              Any product reviews, recommendations, or opinions expressed on this blog are based on personal experience and research. We are not affiliated with any of the brands or companies mentioned unless explicitly stated. Some posts may contain affiliate links, which means we may receive a small commission if you make a purchase through these links.
-            </p>
-          </div>
+          <p>
+            Any product reviews, recommendations, or opinions expressed on this blog are based on personal experience and research. We are not affiliated with any of the brands or companies mentioned unless explicitly stated. Some posts may contain affiliate links, which means we may receive a small commission if you make a purchase through these links.
+          </p>
 
           <h3>Medical and Health Information</h3>
-          <div class="editable-container">
-            <p class="editable">
-              The beauty and skincare advice provided on this blog is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
-            </p>
-          </div>
+          <p>
+            The beauty and skincare advice provided on this blog is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
+          </p>
 
           <h3>External Links</h3>
-          <div class="editable-container">
-            <p class="editable">
-              Our website may contain links to external websites that are not provided or maintained by or in any way affiliated with Makeup by NY. Please note that we do not guarantee the accuracy, relevance, timeliness, or completeness of any information on these external websites.
-            </p>
-          </div>
+          <p>
+            Our website may contain links to external websites that are not provided or maintained by or in any way affiliated with Makeup by NY. Please note that we do not guarantee the accuracy, relevance, timeliness, or completeness of any information on these external websites.
+          </p>
 
           <h3>Changes to This Disclaimer</h3>
-          <div class="editable-container">
-            <p class="editable">
-              We reserve the right to update or change our disclaimer at any time. Any changes will be posted on this page with an updated revision date.
-            </p>
-          </div>
+          <p>
+            We reserve the right to update or change our disclaimer at any time. Any changes will be posted on this page with an updated revision date.
+          </p>
 
-          <div class="editable-container">
-            <p class="editable">
-              Last updated: March 2024
-            </p>
-          </div>
+          <p>
+            Last updated: March 2024
+          </p>
         </section>
       </div>
     </main>
@@ -570,20 +427,16 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <div class="editable-container">
-        <p class="editable">
-          Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
-        </p>
-        <p class="editable">
-          Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
-        </p>
-      </div>
+      <p>
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+      </p>
+      <p>
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+      </p>
 
       <!-- Social Media Links -->
       <div class="social-links">
-        <div class="editable-container">
-          <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Follow Me</h3>
-        </div>
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
         <div class="social-icons">
           <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>
           <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr" class="social-icon facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
@@ -597,9 +450,7 @@
 
       <!-- Recent Posts -->
       <div class="recent-posts">
-        <div class="editable-container">
-          <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Recent Posts</h3>
-        </div>
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
         <div id="recentPostsList"></div>
       </div>
     </aside>
@@ -607,9 +458,7 @@
 
   <!-- Footer Section -->
   <footer>
-    <div class="editable-container">
-      <p class="editable">&copy; 2025 Makeup by NY</p>
-    </div>
+    <p>&copy; 2025 Makeup by NY</p>
   </footer>
 
   <!-- Load firebase.js first to initialize Firebase -->
@@ -621,11 +470,6 @@
   <!-- Admin dropdown control script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log("Disclaimer.html DOM loaded");
-      
-      // Load content from localStorage first
-      loadContentFromLocalStorage();
-      
       const adminDropdownBtn = document.getElementById('adminDropdownBtn');
       const whiteBox = document.querySelector('.black-box');
       const contactDropdownBtn = document.getElementById('contactDropdownBtn');
@@ -661,6 +505,30 @@
         positionContactBox();
       });
       
+      // Toggle dropdown when Admin Dashboard is clicked
+      if (adminDropdownBtn && whiteBox) {
+        adminDropdownBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Toggle white box display
+          if (whiteBox.style.display === 'block') {
+            whiteBox.style.display = 'none';
+            this.classList.remove('active');
+          } else {
+            positionWhiteBox(); // Position before showing
+            whiteBox.style.display = 'block';
+            this.classList.add('active');
+            
+            // Hide contact dropdown if it's open
+            if (contactBox) {
+              contactBox.style.display = 'none';
+              if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
+            }
+          }
+        });
+      }
+      
       // Toggle contact dropdown when Contact is clicked
       if (contactDropdownBtn && contactBox) {
         contactDropdownBtn.addEventListener('click', function(e) {
@@ -687,6 +555,14 @@
       
       // Hide dropdowns when clicking outside
       document.addEventListener('click', function(e) {
+        // Close admin dropdown
+        if (whiteBox && whiteBox.style.display === 'block' && 
+            adminDropdownBtn && !adminDropdownBtn.contains(e.target) && 
+            !whiteBox.contains(e.target)) {
+          whiteBox.style.display = 'none';
+          adminDropdownBtn.classList.remove('active');
+        }
+        
         // Close contact dropdown
         if (contactBox && contactBox.style.display === 'block' && 
             contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
@@ -698,176 +574,19 @@
       
       // Hide dropdowns when scrolling
       window.addEventListener('scroll', function() {
+        // Close admin dropdown
+        if (whiteBox && whiteBox.style.display === 'block') {
+          whiteBox.style.display = 'none';
+          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+        }
+        
         // Close contact dropdown
         if (contactBox && contactBox.style.display === 'block') {
           contactBox.style.display = 'none';
           if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
         }
       });
-
-      // Add direct event handler for edit mode toggle
-      const editModeToggle = document.getElementById('edit-mode-toggle');
-      if (editModeToggle) {
-        console.log("Adding direct click handler to edit mode toggle button");
-        editModeToggle.addEventListener('click', function() {
-          console.log("Edit mode toggle clicked directly");
-          this.classList.toggle('active');
-          
-          // Toggle contenteditable for all editable elements
-          const editableElements = document.querySelectorAll('.editable');
-          const isEditMode = this.classList.contains('active');
-          console.log("Edit mode is now:", isEditMode);
-          
-          editableElements.forEach(el => {
-            el.contentEditable = isEditMode;
-            el.classList.toggle('edit-mode', isEditMode);
-            console.log("Set contenteditable for element:", el.tagName, el.className);
-            
-            // Save content when element loses focus while in edit mode
-            if (isEditMode) {
-              el.addEventListener('blur', function(e) {
-                console.log("Element blurred, saving:", e.target.tagName, e.target.className);
-                const saveStatus = document.getElementById('save-status');
-                if (saveStatus) {
-                  saveStatus.textContent = 'Saving changes...';
-                  saveStatus.className = 'show saving';
-                  
-                  // Direct save to localStorage
-                  try {
-                    const pagePath = window.location.pathname.split('/').pop() || 'disclaimer.html';
-                    const element = e.target;
-                    
-                    // Generate a simple path for the element
-                    let path = element.tagName.toLowerCase();
-                    if (element.id) {
-                      path += '#' + element.id;
-                    } else if (element.className) {
-                      const classes = element.className.trim().split(/\s+/);
-                      if (classes.length > 0 && classes[0] !== '') {
-                        path += '.' + classes.join('.');
-                      }
-                    }
-                    
-                    // Also add index for better identification
-                    const siblings = Array.from(element.parentNode.children);
-                    const sameSiblings = siblings.filter(sibling => sibling.tagName === element.tagName);
-                    if (sameSiblings.length > 1) {
-                      const index = sameSiblings.indexOf(element);
-                      path += `-${index}`;
-                    }
-                    
-                    // Special case for footer
-                    if (element.parentNode && element.parentNode.tagName.toLowerCase() === 'footer') {
-                      path = 'footer-copyright';
-                    }
-                    
-                    // Save to localStorage
-                    const key = `${pagePath}_${path}`;
-                    localStorage.setItem(key, element.innerHTML);
-                    console.log("Saved directly to localStorage:", key, element.innerHTML);
-                    
-                    // Also save under a simpler key as backup
-                    const backupKey = `${pagePath}_${element.tagName.toLowerCase()}_${element.textContent.substring(0, 20)}`;
-                    localStorage.setItem(backupKey, element.innerHTML);
-                    console.log("Saved backup to localStorage:", backupKey);
-                    
-                    // Show success message
-                    setTimeout(() => {
-                      saveStatus.textContent = 'Changes saved locally!';
-                      saveStatus.className = 'show success';
-                      
-                      // Hide the message after 2 seconds
-                      setTimeout(() => {
-                        saveStatus.className = '';
-                      }, 2000);
-                    }, 500);
-                  } catch (error) {
-                    console.error("Error saving to localStorage:", error);
-                    saveStatus.textContent = 'Error saving changes';
-                    saveStatus.className = 'show error';
-                    setTimeout(() => {
-                      saveStatus.className = '';
-                    }, 3000);
-                  }
-                }
-              });
-            }
-          });
-        });
-      }
     });
-
-    // Function to load content from localStorage
-    function loadContentFromLocalStorage() {
-      console.log("Attempting to load content from localStorage");
-      const pagePath = window.location.pathname.split('/').pop() || 'disclaimer.html';
-      const editableElements = document.querySelectorAll('.editable');
-      
-      // Show all editable containers
-      document.querySelectorAll('.editable-container').forEach(container => {
-        container.classList.add('loaded');
-      });
-      
-      // Hide the loader
-      const contentLoader = document.getElementById('contentLoader');
-      if (contentLoader) {
-        setTimeout(() => {
-          contentLoader.classList.add('hidden');
-        }, 300);
-      }
-      
-      // For each editable element, try to find its content in localStorage
-      editableElements.forEach(element => {
-        try {
-          // Generate a simple path for the element
-          let path = element.tagName.toLowerCase();
-          if (element.id) {
-            path += '#' + element.id;
-          } else if (element.className) {
-            const classes = element.className.trim().split(/\s+/);
-            if (classes.length > 0 && classes[0] !== '') {
-              path += '.' + classes.join('.');
-            }
-          }
-          
-          // Also add index for better identification
-          const siblings = Array.from(element.parentNode.children);
-          const sameSiblings = siblings.filter(sibling => sibling.tagName === element.tagName);
-          if (sameSiblings.length > 1) {
-            const index = sameSiblings.indexOf(element);
-            path += `-${index}`;
-          }
-          
-          // Special case for footer
-          if (element.parentNode && element.parentNode.tagName.toLowerCase() === 'footer') {
-            path = 'footer-copyright';
-          }
-          
-          // Try to get content from localStorage
-          const key = `${pagePath}_${path}`;
-          const content = localStorage.getItem(key);
-          
-          if (content) {
-            console.log("Found content in localStorage for:", key);
-            element.innerHTML = content;
-          } else {
-            // Try backup key
-            const textSample = element.textContent.trim().substring(0, 20);
-            const backupKey = `${pagePath}_${element.tagName.toLowerCase()}_${textSample}`;
-            const backupContent = localStorage.getItem(backupKey);
-            
-            if (backupContent) {
-              console.log("Found content in backup localStorage key:", backupKey);
-              element.innerHTML = backupContent;
-            } else {
-              console.log("No content found in localStorage for:", path);
-            }
-          }
-        } catch (error) {
-          console.error("Error loading from localStorage:", error);
-        }
-      });
-    }
   </script>
 </body>
 </html> 
