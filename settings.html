@@ -180,6 +180,7 @@
         .admin-dropdown {
             position: relative;
             display: inline-block;
+            z-index: 1000; /* Ensure dropdown appears in front of other elements */
         }
 
         .admin-dropdown-btn {
@@ -194,8 +195,8 @@
             display: flex;
             align-items: center;
             position: relative;
-            bottom: -8px; /* Default for mobile */
-            z-index: 1000;
+            bottom: -8px; /* Lower the Admin Dashboard text to match other items */
+            z-index: 1000; /* Ensure button appears in front */
             transition: color 0.2s;
         }
 
@@ -221,82 +222,11 @@
             }
         }
 
-        .admin-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background-color: white;
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            z-index: 999;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 5px;
-            border: 1px solid #eee;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: opacity 0.3s, transform 0.3s;
-        }
-
-        .admin-dropdown-content a {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            text-align: left;
-            transition: background-color 0.2s, color 0.2s;
-            border-bottom: 1px solid #f5f5f5;
-        }
-
-        .admin-dropdown-content a:last-child {
-            border-bottom: none;
-        }
-
-        .admin-dropdown-content a:hover {
-            background-color: #f9f9f9;
-            color: #a07;
-        }
-
-        /* This class is toggled via JavaScript */
-        .show-dropdown {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Responsive adjustments for admin dropdown */
-        @media (max-width: 768px) {
-            .admin-dropdown-content {
-                position: absolute;
-                right: 0;
-                left: auto;
-                width: 200px;
-            }
-
-            header nav {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .admin-dropdown {
-                position: relative;
-            }
-        }
-
         /* For very small screens */
         @media (max-width: 480px) {
             .admin-dropdown-btn {
                 padding: 10px 5px;
                 bottom: 2px; /* Raise the Admin Dashboard text on mobile */
-            }
-            
-            /* Style for white box dropdown on very small screens */
-            #adminWhiteBoxDropdown {
-                min-width: 200px !important; /* Override the inline style */
-                max-width: calc(100vw - 40px) !important; /* Prevent overflow */
-                margin: 0 auto;
             }
         }
 

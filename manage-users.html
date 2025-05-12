@@ -200,9 +200,10 @@
     
     /* Admin Dropdown Menu Styles */
     .admin-dropdown {
-      position: relative;
-      display: inline-block;
-      z-index: 1000; /* Ensure dropdown appears in front of other elements */
+      position: static; /* Change to static so the dropdown positions relative to the nav bar */
+      vertical-align: middle !important;
+      margin-top: 5px !important;
+      display: inline-block !important;
     }
 
     .admin-dropdown-btn {
@@ -212,14 +213,15 @@
       font-size: 1em;
       padding: 10px;
       cursor: pointer;
-      font-family: inherit;
+      font-family: inherit !important;
       text-decoration: none;
       display: flex;
       align-items: center;
-      position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-      z-index: 1000; /* Ensure button appears in front */
       transition: color 0.2s;
+      position: relative !important;
+      top: -2px !important;
+      margin-top: 0 !important;
+      font-weight: normal !important;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -237,19 +239,52 @@
       color: #a07;
     }
 
-    /* Desktop position for admin dashboard text */
-    @media (min-width: 768px) {
-      .admin-dropdown-btn {
-        bottom: 0px; /* Move text higher up for desktop view */
-      }
+    .admin-dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background-color: white;
+      min-width: 180px; /* Fixed width to ensure content fits */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Stronger shadow for better visibility */
+      z-index: 1001; /* Ensure it appears above other elements */
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+      border: 1px solid #ddd; /* More visible border */
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s, transform 0.3s;
     }
 
-    /* For very small screens */
-    @media (max-width: 480px) {
-      .admin-dropdown-btn {
-        padding: 10px 5px;
-        bottom: 2px; /* Raise the Admin Dashboard text on mobile */
-      }
+    .admin-dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .admin-dropdown-content a:last-child {
+      border-bottom: none;
+    }
+
+    .admin-dropdown-content a:hover {
+      background-color: #f9f9f9;
+      color: #a07;
+    }
+
+    /* This class is toggled via JavaScript */
+    .show-dropdown {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: translateY(0);
+      z-index: 9999;
+      -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight color */
+      touch-action: manipulation; /* Optimize touch actions */
     }
 
     /* Responsive adjustments for admin dropdown */
@@ -850,7 +885,7 @@
       </div>
       <!-- Admin dropdown menu -->
       <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none; position: relative !important; top: -2px !important; margin-top: 0 !important; font-family: inherit !important; font-weight: normal !important;">
           Admin Dashboard 
           <span class="dropdown-icon">▼</span>
         </a>
