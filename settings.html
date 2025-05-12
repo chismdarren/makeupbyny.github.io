@@ -194,7 +194,7 @@
             display: flex;
             align-items: center;
             position: relative;
-            bottom: -8px;
+            bottom: -8px; /* Default for mobile */
             z-index: 1000;
             transition: color 0.2s;
         }
@@ -217,7 +217,7 @@
         /* Desktop position for admin dashboard text */
         @media (min-width: 768px) {
             .admin-dropdown-btn {
-                bottom: 0px;
+                bottom: 0px; /* Move text higher up for desktop view */
             }
         }
 
@@ -289,7 +289,7 @@
         @media (max-width: 480px) {
             .admin-dropdown-btn {
                 padding: 10px 5px;
-                bottom: 2px;
+                bottom: 2px; /* Raise the Admin Dashboard text on mobile */
             }
             
             /* Style for white box dropdown on very small screens */
