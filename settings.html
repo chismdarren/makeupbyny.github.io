@@ -482,11 +482,18 @@
             overflow: hidden;
             border: 1px solid #eee;
             pointer-events: auto;
-            transform: translateX(-50%); /* Center horizontally */
-            left: 50%; /* Center relative to the button */
-            margin-top: 5px; /* Add some space below the text */
+            transform: translateX(-50%);
+            left: 50%;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        
+
+        .black-box.show-dropdown {
+            opacity: 1;
+            display: block;
+        }
+
         .black-box a {
             color: #333;
             padding: 12px 16px;
@@ -511,10 +518,25 @@
         /* Ensure proper positioning on mobile */
         @media (max-width: 768px) {
             .black-box {
-                left: auto; /* Reset the left positioning */
-                transform: none; /* Reset the transform */
-                right: 20px; /* Align to the right on mobile */
+                left: auto;
+                transform: none;
+                right: 20px;
+                max-width: calc(100vw - 40px);
             }
+        }
+
+        /* Ensure dropdowns are above other elements */
+        .admin-dropdown,
+        .contact-dropdown,
+        .user-dropdown {
+            position: relative;
+            z-index: 9998;
+        }
+
+        /* Prevent any interference from other elements */
+        main, header, footer {
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>

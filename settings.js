@@ -538,75 +538,71 @@ function showNotification(message, type) {
 
 // Set up dropdowns
 function setupDropdowns() {
-    let activeDropdown = false;
-    
-    // Admin dropdown 
+    const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+    const adminDropdownContent = document.getElementById('adminDropdownContent');
+    const adminWhiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
+
     if (adminDropdownBtn) {
         adminDropdownBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
-            // Toggle active class for button styling
+
+            // Toggle active class on button
             this.classList.toggle('active');
-            
-            // Toggle white box dropdown
-            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
-            
-            if (whiteBoxDropdown.style.display === 'none' || !whiteBoxDropdown.style.display) {
-                // Position the dropdown
-                positionDropdown(whiteBoxDropdown, this);
-                whiteBoxDropdown.style.display = 'block';
-                activeDropdown = true;
-            } else {
-                whiteBoxDropdown.style.display = 'none';
-                activeDropdown = false;
+
+            // Toggle black box display
+            if (adminWhiteBoxDropdown) {
+                const isVisible = adminWhiteBoxDropdown.style.display === 'block';
+                
+                // Hide all dropdowns first
+                document.querySelectorAll('.black-box, .admin-dropdown-content').forEach(dropdown => {
+                    dropdown.style.display = 'none';
+                    dropdown.classList.remove('show-dropdown');
+                });
+
+                if (!isVisible) {
+                    // Position and show the dropdown
+                    const rect = this.getBoundingClientRect();
+                    adminWhiteBoxDropdown.style.position = 'fixed';
+                    adminWhiteBoxDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+                    adminWhiteBoxDropdown.style.left = rect.left + 'px';
+                    adminWhiteBoxDropdown.style.display = 'block';
+                    
+                    // Add show class for animation
+                    setTimeout(() => {
+                        adminWhiteBoxDropdown.classList.add('show-dropdown');
+                    }, 0);
+                }
             }
         });
     }
-    
-    // Function to position the dropdown
-    function positionDropdown(dropdown, button) {
-        const btnRect = button.getBoundingClientRect();
-        
-        // Check if mobile view (using width as indicator)
-        if (window.innerWidth <= 768) {
-            // Center the dropdown under the button for mobile
-            const dropdownWidth = 200; // Width from CSS (min-width value)
-            const leftPosition = btnRect.left + (btnRect.width / 2) - (dropdownWidth / 2);
-            dropdown.style.left = Math.max(10, leftPosition) + 'px'; // Ensure it's not too far left
-        } else {
-            // Desktop positioning
-            dropdown.style.left = (btnRect.left - 130) + 'px';
-        }
-        
-        dropdown.style.top = (btnRect.bottom + 2) + 'px';
-    }
-    
-    // Handle window resize to reposition dropdown if it's open
-    window.addEventListener('resize', function() {
-        // Check if dropdown is active
-        if (activeDropdown) {
-            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
-            const button = adminDropdownBtn;
-            if (whiteBoxDropdown && whiteBoxDropdown.style.display === 'block' && button) {
-                positionDropdown(whiteBoxDropdown, button);
-            }
-        }
-    });
-    
+
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-        if (!e.target.matches('.admin-dropdown-btn')) {
-            // Hide white box dropdown
-            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
-            if (whiteBoxDropdown) {
-                whiteBoxDropdown.style.display = 'none';
-                activeDropdown = false;
-            }
+        if (!e.target.closest('.admin-dropdown, .black-box')) {
+            document.querySelectorAll('.black-box, .admin-dropdown-content').forEach(dropdown => {
+                dropdown.style.display = 'none';
+                dropdown.classList.remove('show-dropdown');
+            });
             
-            // Remove active class from button
-            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+            // Remove active class from buttons
+            document.querySelectorAll('.admin-dropdown-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
         }
+    });
+
+    // Close dropdowns on scroll
+    window.addEventListener('scroll', function() {
+        document.querySelectorAll('.black-box, .admin-dropdown-content').forEach(dropdown => {
+            dropdown.style.display = 'none';
+            dropdown.classList.remove('show-dropdown');
+        });
+        
+        // Remove active class from buttons
+        document.querySelectorAll('.admin-dropdown-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
     });
 }
 
