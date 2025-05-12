@@ -750,6 +750,15 @@
                 blackBox.style.left = (rect.left + (rect.width / 2)) + 'px';
             }
         }
+
+        function hideBlackBox() {
+            if (blackBox && blackBox.style.display === 'block') {
+                blackBox.style.display = 'none';
+                if (adminDropdownBtn) {
+                    adminDropdownBtn.classList.remove('active');
+                }
+            }
+        }
         
         // Position black box when admin button is clicked
         if (adminDropdownBtn) {
@@ -761,8 +770,7 @@
                 this.classList.toggle('active');
                 
                 if (blackBox.style.display === 'block') {
-                    blackBox.style.display = 'none';
-                    this.classList.remove('active');
+                    hideBlackBox();
                 } else {
                     positionBlackBox();
                     blackBox.style.display = 'block';
@@ -783,16 +791,13 @@
             if (blackBox && blackBox.style.display === 'block' && 
                 !blackBox.contains(e.target) && 
                 !adminDropdownBtn.contains(e.target)) {
-                blackBox.style.display = 'none';
-                adminDropdownBtn.classList.remove('active');
+                hideBlackBox();
             }
         });
         
-        // Hide and reposition black box when scrolling
+        // Hide black box when scrolling
         window.addEventListener('scroll', function() {
-            if (blackBox && blackBox.style.display === 'block') {
-                positionBlackBox();
-            }
+            hideBlackBox();
         });
     });
     </script>
