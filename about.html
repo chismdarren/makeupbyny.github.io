@@ -397,78 +397,6 @@
       background-color: #f9f9f9;
       color: #a07;
     }
-
-    /* Edit mode button styles */
-    #edit-mode-toggle {
-      position: fixed;
-      top: 70px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      background-color: #fff;
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      display: none; /* Hidden by default, shown only for admins */
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      z-index: 9999;
-      transition: transform 0.3s ease, background-color 0.3s ease;
-    }
-
-    #edit-mode-toggle:hover {
-      transform: scale(1.1);
-    }
-
-    #edit-mode-toggle.active {
-      background-color: #ff69b4;
-      color: white;
-    }
-
-    /* Save Status Indicator */
-    #save-status {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: bold;
-      z-index: 9999;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    #save-status.show {
-      opacity: 1;
-    }
-
-    #save-status.success {
-      background-color: #4CAF50;
-      color: white;
-    }
-
-    #save-status.error {
-      background-color: #F44336;
-      color: white;
-    }
-
-    #save-status.saving {
-      background-color: #FFC107;
-      color: black;
-    }
-
-    /* Editable content styles */
-    .editable {
-      transition: outline 0.3s ease, background-color 0.3s ease;
-    }
-
-    .editable.edit-mode {
-      outline: 2px solid #ff69b4;
-      outline-offset: 2px;
-      background-color: rgba(255, 105, 180, 0.05);
-    }
   </style>
 </head>
 <body>
@@ -509,14 +437,6 @@
     </svg>
   </a>
 
-  <!-- Edit Mode Button (Admin only) -->
-  <div id="edit-mode-toggle" style="display:none;">
-    <i class="fas fa-pencil-alt"></i>
-  </div>
-
-  <!-- Save Status Indicator -->
-  <div id="save-status">Saving changes...</div>
-
   <!-- Main Content Area -->
   <div class="content">
     <!-- White box dropdown replacement -->
@@ -551,13 +471,13 @@
         <section class="about-section" id="welcome">
           <h2>About Me</h2>
           <img src="nyredhair.jpg" alt="Ny Red Hair" class="about-image">
-          <p class="editable">
+          <p>
             Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty. My journey in the world of makeup began with a simple curiosity and has evolved into a passionate pursuit of helping others discover their natural beauty.
           </p>
-          <p class="editable">
+          <p>
             Through this blog, I share my experiences, tips, and tricks that I've learned along the way. Whether you're a makeup novice or a seasoned pro, there's something here for everyone. I believe that makeup should be fun, accessible, and most importantly, a way to express yourself.
           </p>
-          <p class="editable">
+          <p>
             When I'm not experimenting with new products or creating tutorials, you can find me exploring the latest beauty trends, attending makeup workshops, or sharing my favorite finds with my growing community of beauty enthusiasts.
           </p>
         </section>
@@ -565,21 +485,21 @@
         <!-- My Mission Section -->
         <section class="about-section">
           <h2>My Mission</h2>
-          <p class="editable">
+          <p>
             My mission is to empower everyone to feel confident and beautiful in their own skin. I believe that makeup is not about hiding who you are, but rather enhancing your natural beauty and expressing your unique style.
           </p>
           <div class="about-grid">
             <div class="about-card">
               <h3>Education</h3>
-              <p class="editable">I'm constantly learning and staying up-to-date with the latest beauty trends and techniques through professional courses and workshops. From basic application to advanced techniques, I'm always expanding my knowledge to share with you.</p>
+              <p>I'm constantly learning and staying up-to-date with the latest beauty trends and techniques through professional courses and workshops. From basic application to advanced techniques, I'm always expanding my knowledge to share with you.</p>
             </div>
             <div class="about-card">
               <h3>Experience</h3>
-              <p class="editable">With years of personal experience and countless hours of practice, I've developed a deep understanding of makeup application and product selection. I've worked with various skin types and tones, helping people achieve their desired looks.</p>
+              <p>With years of personal experience and countless hours of practice, I've developed a deep understanding of makeup application and product selection. I've worked with various skin types and tones, helping people achieve their desired looks.</p>
             </div>
             <div class="about-card">
               <h3>Community</h3>
-              <p class="editable">I'm passionate about building a supportive community where everyone can share their beauty journey and learn from each other. Join our growing community of beauty enthusiasts and share your own tips and experiences!</p>
+              <p>I'm passionate about building a supportive community where everyone can share their beauty journey and learn from each other. Join our growing community of beauty enthusiasts and share your own tips and experiences!</p>
             </div>
           </div>
         </section>
@@ -590,15 +510,15 @@
           <div class="about-grid">
             <div class="about-card">
               <h3>Skincare First</h3>
-              <p class="editable">Always start with a clean, well-moisturized face. Good makeup starts with good skincare!</p>
+              <p>Always start with a clean, well-moisturized face. Good makeup starts with good skincare!</p>
             </div>
             <div class="about-card">
               <h3>Tools Matter</h3>
-              <p class="editable">Invest in quality brushes and sponges. They make a world of difference in application.</p>
+              <p>Invest in quality brushes and sponges. They make a world of difference in application.</p>
             </div>
             <div class="about-card">
               <h3>Less is More</h3>
-              <p class="editable">Start with a light hand and build up gradually. It's easier to add than to remove!</p>
+              <p>Start with a light hand and build up gradually. It's easier to add than to remove!</p>
             </div>
           </div>
         </section>
@@ -606,7 +526,7 @@
         <!-- Contact Section -->
         <section class="about-section">
           <h2>Get in Touch</h2>
-          <p class="editable">
+          <p>
             I love connecting with my readers! Whether you have questions about specific products, want to share your own beauty tips, or just want to say hello, feel free to reach out.
           </p>
           <div class="social-links">
@@ -623,16 +543,16 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <p class="editable">
+      <p>
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-      <p class="editable">
+      <p>
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
       <!-- Social Media Links -->
       <div class="social-links">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Follow Me</h3>
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Follow Me</h3>
         <div class="social-icons">
           <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>
           <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr" class="social-icon facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
@@ -646,7 +566,7 @@
 
       <!-- Recent Posts -->
       <div class="recent-posts">
-        <h3 style="font-size: 1.1em; margin: 20px 0 10px;" class="editable">Recent Posts</h3>
+        <h3 style="font-size: 1.1em; margin: 20px 0 10px;">Recent Posts</h3>
         <div id="recentPostsList"></div>
       </div>
     </aside>
@@ -654,7 +574,7 @@
 
   <!-- Footer Section -->
   <footer>
-    <p class="editable">&copy; 2025 Makeup by NY</p>
+    <p>&copy; 2025 Makeup by NY</p>
   </footer>
 
   <!-- Load firebase.js first to initialize Firebase -->
@@ -835,455 +755,6 @@
         console.error('Error signing out:', error);
       });
     }
-  </script>
-
-  <!-- Edit Mode Script -->
-  <script type="module">
-    // Import Firebase modules
-    import { auth, isAdminUser, db } from './firebase-config.js';
-    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-    import { doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const editButton = document.getElementById('edit-mode-toggle');
-      const editableElements = document.querySelectorAll('.editable');
-      let editModeActive = false;
-      
-      // Store original content for each editable element
-      const originalContent = {};
-      editableElements.forEach((element, index) => {
-        originalContent[index] = element.innerHTML;
-      });
-
-      // Show edit button for admin users only
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          const isAdmin = await isAdminUser(user.uid);
-          if (isAdmin && editButton) {
-            editButton.style.display = 'flex';
-          }
-        }
-      });
-
-      // Toggle edit mode when pencil icon is clicked
-      if (editButton) {
-        editButton.addEventListener('click', function() {
-          editModeActive = !editModeActive;
-          
-          // Toggle button appearance
-          if (editModeActive) {
-            // Enter edit mode
-            editButton.classList.add('active');
-            editButton.innerHTML = '<i class="fas fa-save"></i>';
-            
-            // Toggle contenteditable and visual style for all editable elements
-            editableElements.forEach(element => {
-              element.setAttribute('contenteditable', 'true');
-              element.classList.add('edit-mode');
-            });
-          } else {
-            // Exit edit mode and save changes
-            editButton.classList.remove('active');
-            editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-            
-            // Create an object to store the changes
-            const updatedContent = {};
-            let hasChanges = false;
-            
-            // Check which elements have been changed
-            editableElements.forEach((element, index) => {
-              const currentContent = element.innerHTML;
-              if (currentContent !== originalContent[index]) {
-                // Store element information for identification
-                const path = getElementPath(element);
-                updatedContent[path] = {
-                  content: currentContent,
-                  elementType: element.tagName.toLowerCase()
-                };
-                hasChanges = true;
-              }
-              
-              // Remove contenteditable and visual style
-              element.removeAttribute('contenteditable');
-              element.classList.remove('edit-mode');
-            });
-            
-            // If changes were made, save them to Firebase
-            if (hasChanges) {
-              // Show saving indicator
-              showSaveStatus('saving', 'Saving changes...');
-              
-              // Save to both Firebase and localStorage for redundancy
-              saveContentToFirebase(updatedContent)
-                .then(() => {
-                  // Also save to localStorage as backup
-                  try {
-                    // Save to localStorage with timestamp
-                    const localStorageData = {
-                      content: updatedContent,
-                      timestamp: new Date().toISOString(),
-                      pageId: 'about_page_content'
-                    };
-                    localStorage.setItem('about_page_content', JSON.stringify(localStorageData));
-                    console.log("✅ Also saved content to localStorage as backup");
-                  } catch (localStorageError) {
-                    console.warn("Could not save to localStorage:", localStorageError);
-                  }
-                  
-                  showSaveStatus('success', 'Changes saved successfully!');
-                  
-                  // Update the original content with new values
-                  editableElements.forEach((element, index) => {
-                    originalContent[index] = element.innerHTML;
-                  });
-                })
-                .catch(error => {
-                  console.error('Error saving to Firebase:', error);
-                  
-                  // Try saving to localStorage as fallback
-                  try {
-                    const localStorageData = {
-                      content: updatedContent,
-                      timestamp: new Date().toISOString(),
-                      pageId: 'about_page_content'
-                    };
-                    localStorage.setItem('about_page_content', JSON.stringify(localStorageData));
-                    
-                    showSaveStatus('success', 'Changes saved locally (offline mode)');
-                    
-                    // Update the original content with new values
-                    editableElements.forEach((element, index) => {
-                      originalContent[index] = element.innerHTML;
-                    });
-                  } catch (localStorageError) {
-                    showSaveStatus('error', 'Failed to save changes');
-                    console.error('Error saving to localStorage:', localStorageError);
-                  }
-                });
-            }
-          }
-        });
-      }
-      
-      // Function to get a unique path for an element
-      function getElementPath(element) {
-        const tagName = element.tagName.toLowerCase();
-        
-        // Get a cleaned version of the class list
-        const classList = Array.from(element.classList);
-        const classNames = classList.join('.');
-        
-        // Get parent information with more detail
-        const parentElement = element.parentElement;
-        const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-        
-        // Get more specific parent class information
-        let parentClassInfo = '';
-        if (parentElement && parentElement.classList.length > 0) {
-          parentClassInfo = '.' + Array.from(parentElement.classList).join('.');
-        }
-        
-        // Get position index among siblings of same type
-        let positionIndex = 0;
-        if (parentElement) {
-          const siblings = Array.from(parentElement.children).filter(el => el.tagName === element.tagName);
-          positionIndex = siblings.indexOf(element) + 1;
-        }
-        
-        // Include detailed position info in the path
-        const positionInfo = parentElement ? `[${positionIndex}]` : '';
-        
-        // Include some content as a fingerprint (first 15 chars)
-        const contentFingerprint = element.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
-        
-        // Create a highly specific identifier for this element
-        return `${parentTagName}${parentClassInfo}>${tagName}${positionInfo}.${classNames}:${contentFingerprint}`;
-      }
-      
-      // Function to save content to Firebase
-      async function saveContentToFirebase(updatedContent) {
-        console.log("Attempting to save content to Firebase:", updatedContent);
-        
-        try {
-          // Use page-specific document ID to prevent cross-page content sharing
-          const pageDocId = "about_page_content";
-          
-          // Create/update content document in Firestore
-          const contentRef = doc(db, "site_content", pageDocId);
-          
-          // Check if document exists
-          const docSnap = await getDoc(contentRef);
-          
-          if (docSnap.exists()) {
-            // Get current content
-            const currentContent = docSnap.data().content || {};
-            
-            // Merge current content with updated content
-            const mergedContent = { ...currentContent, ...updatedContent };
-            console.log("Updating existing document with merged content:", mergedContent);
-            
-            // Update existing document
-            await updateDoc(contentRef, {
-              content: mergedContent,
-              lastUpdated: new Date()
-            });
-            
-            console.log("✅ Successfully updated document in Firebase");
-            
-            // Verify the update was successful by reading it back
-            const verifySnap = await getDoc(contentRef);
-            if (verifySnap.exists()) {
-              console.log("✅ Verification successful - document contains:", verifySnap.data());
-              return true;
-            } else {
-              console.error("❌ Verification failed - document not found after update");
-              throw new Error("Document verification failed after update");
-            }
-          } else {
-            console.log("Creating new document with content:", updatedContent);
-            // Create new document
-            await setDoc(contentRef, {
-              content: updatedContent,
-              lastUpdated: new Date()
-            });
-            
-            console.log("✅ Successfully created new document in Firebase");
-            
-            // Verify the creation was successful
-            const verifySnap = await getDoc(contentRef);
-            if (verifySnap.exists()) {
-              console.log("✅ Verification successful - new document contains:", verifySnap.data());
-              return true;
-            } else {
-              console.error("❌ Verification failed - new document not found after creation");
-              throw new Error("Document verification failed after creation");
-            }
-          }
-        } catch (error) {
-          console.error("❌ Error saving content to Firebase:", error);
-          // Check for specific Firebase errors
-          if (error.code) {
-            console.error(`Firebase error code: ${error.code}`);
-            console.error(`Firebase error message: ${error.message}`);
-          }
-          throw error;
-        }
-      }
-      
-      // Function to show save status
-      function showSaveStatus(type, message) {
-        const statusElement = document.getElementById('save-status');
-        if (!statusElement) return;
-        
-        // Clear existing classes
-        statusElement.className = '';
-        
-        // Add new classes
-        statusElement.classList.add('show');
-        statusElement.classList.add(type);
-        
-        // Set message
-        statusElement.textContent = message;
-        
-        // Hide after a delay (except if it's "saving")
-        if (type !== 'saving') {
-          setTimeout(() => {
-            statusElement.classList.remove('show');
-          }, 3000);
-        }
-      }
-    });
-  </script>
-
-  <!-- Load editable content script -->
-  <script type="module">
-    // Import Firebase modules immediately
-    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { db } from "./firebase-config.js";
-    
-    // Load saved content when the page loads
-    document.addEventListener('DOMContentLoaded', async function() {
-      try {
-        // Use page-specific document ID to prevent cross-page content sharing
-        const pageDocId = "about_page_content";
-        
-        // Try to load from Firebase first
-        console.log("Loading saved content for about page...");
-        let savedContent = null;
-        let contentSource = 'firebase';
-        
-        try {
-          // Test Firebase connection first
-          console.log("Testing Firebase connection...");
-          // Try to access a collection to verify connection
-          const testCol = collection(db, "site_content");
-          const testSnapshot = await getDocs(testCol);
-          console.log(`✅ Firebase connection successful! Found ${testSnapshot.size} documents in collection.`);
-          
-          // Get the content document from Firestore
-          const contentRef = doc(db, "site_content", pageDocId);
-          const docSnap = await getDoc(contentRef);
-          
-          if (docSnap.exists() && docSnap.data().content) {
-            console.log("✅ Found saved content in Firebase:", docSnap.data());
-            savedContent = docSnap.data().content;
-          } else {
-            console.log("No content found in Firebase, checking localStorage...");
-          }
-        } catch (firebaseError) {
-          console.error("❌ Firebase error:", firebaseError);
-          console.log("Falling back to localStorage...");
-        }
-        
-        // If no content from Firebase, try localStorage
-        if (!savedContent) {
-          try {
-            const localData = localStorage.getItem(pageDocId);
-            if (localData) {
-              const parsedData = JSON.parse(localData);
-              if (parsedData && parsedData.content) {
-                console.log("✅ Found saved content in localStorage:", parsedData);
-                savedContent = parsedData.content;
-                contentSource = 'localStorage';
-              }
-            }
-          } catch (localStorageError) {
-            console.error("❌ Error reading from localStorage:", localStorageError);
-          }
-        }
-        
-        // If we have content from either source, apply it
-        if (savedContent) {
-          console.log(`Applying saved content from ${contentSource}`);
-          
-          // Count how many elements we'll update
-          const elementsToUpdate = Object.keys(savedContent).length;
-          console.log(`Found ${elementsToUpdate} saved elements to restore`);
-          
-          let updateCount = 0;
-          
-          // Apply saved content to matching elements
-          Object.keys(savedContent).forEach(path => {
-            try {
-              // Format: parentTag.parentClasses>tag[position].classes:contentFingerprint
-              
-              // Extract the content fingerprint as it might help with identification
-              const parts = path.split(':');
-              const basePath = parts[0];
-              const contentFingerprint = parts.length > 1 ? parts[1] : '';
-              
-              // Parse the element position if present
-              let positionIndex = 0;
-              let cleanBasePath = basePath;
-              
-              if (basePath.includes('[') && basePath.includes(']')) {
-                const posMatch = basePath.match(/\[(\d+)\]/);
-                if (posMatch && posMatch[1]) {
-                  positionIndex = parseInt(posMatch[1]);
-                  cleanBasePath = basePath.replace(/\[\d+\]/, '');
-                }
-              }
-              
-              // Split into parent and element parts
-              const [parentInfo, elementInfo] = cleanBasePath.split('>');
-              
-              // Extract parent tag and classes
-              let parentTag = '', parentClasses = [];
-              if (parentInfo.includes('.')) {
-                const parentParts = parentInfo.split('.');
-                parentTag = parentParts[0];
-                parentClasses = parentParts.slice(1);
-              } else {
-                parentTag = parentInfo;
-              }
-              
-              // Extract element tag and classes
-              let tag = '', classes = [];
-              if (elementInfo.includes('.')) {
-                const elementParts = elementInfo.split('.');
-                tag = elementParts[0];
-                classes = elementParts.slice(1);
-              } else {
-                tag = elementInfo;
-              }
-              
-              // Build selectors
-              const elementSelector = tag + (classes.length > 0 ? '.' + classes.join('.') : '');
-              
-              console.log(`Looking for elements matching: ${elementSelector} (position: ${positionIndex})`);
-              
-              // First find all matching elements
-              const elements = document.querySelectorAll(elementSelector);
-              
-              if (elements.length > 0) {
-                console.log(`Found ${elements.length} matching elements`);
-                
-                // If we have position info, use it
-                if (positionIndex > 0 && positionIndex <= elements.length) {
-                  const specificElement = elements[positionIndex - 1];
-                  
-                  // Verify parent if possible
-                  if (parentTag && specificElement.parentElement) {
-                    const actualParent = specificElement.parentElement;
-                    if (actualParent.tagName.toLowerCase() === parentTag) {
-                      // Check parent classes if needed
-                      let parentClassMatch = true;
-                      if (parentClasses.length > 0) {
-                        parentClassMatch = parentClasses.every(cls => 
-                          actualParent.classList.contains(cls)
-                        );
-                      }
-                      
-                      if (parentClassMatch) {
-                        console.log(`Updating specific element at position ${positionIndex}`);
-                        specificElement.innerHTML = savedContent[path].content;
-                        updateCount++;
-                      }
-                    }
-                  } else {
-                    // No parent tag specified or element has no parent
-                    console.log(`Updating specific element at position ${positionIndex} (no parent check)`);
-                    specificElement.innerHTML = savedContent[path].content;
-                    updateCount++;
-                  }
-                } else {
-                  // Check if we can find the element using the content fingerprint
-                  let matchFound = false;
-                  
-                  if (contentFingerprint) {
-                    elements.forEach(el => {
-                      const elContent = el.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
-                      if (elContent === contentFingerprint) {
-                        console.log(`Found matching element with content fingerprint: ${contentFingerprint}`);
-                        el.innerHTML = savedContent[path].content;
-                        updateCount++;
-                      }
-                    });
-                  }
-                  
-                  // If no match found and only one element exists, update it
-                  if (!matchFound && elements.length === 1) {
-                    console.log(`Updating single matching element`);
-                    elements[0].innerHTML = savedContent[path].content;
-                    updateCount++;
-                  }
-                }
-              } else {
-                console.log(`No elements found matching: ${elementSelector}`);
-              }
-            } catch (error) {
-              console.error(`Error processing path ${path}:`, error);
-            }
-          });
-          
-          console.log(`✅ Successfully restored ${updateCount} saved elements`);
-        } else {
-          console.log("No saved content found in Firebase or localStorage");
-        }
-      } catch (error) {
-        console.error("Error loading saved content:", error);
-      }
-    });
   </script>
 </body>
 </html> 

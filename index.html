@@ -28,52 +28,6 @@
       max-width: 100%;
     }
 
-    /* Content visibility control */
-    .content-loader {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #f9f9f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    .content-loader.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .loader-spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #a07;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Hide editable content until loaded */
-    .editable-container {
-      visibility: hidden;
-      opacity: 0;
-      transition: visibility 0.3s ease, opacity 0.3s ease;
-    }
-
-    .editable-container.loaded {
-      visibility: visible;
-      opacity: 1;
-    }
-
     /* Edit mode button styles */
     #edit-mode-toggle {
       position: fixed;
@@ -110,40 +64,6 @@
       outline: 2px solid #ff69b4;
       outline-offset: 2px;
       background-color: rgba(255, 105, 180, 0.05);
-    }
-
-    /* Save Status Indicator */
-    #save-status {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: bold;
-      z-index: 9999;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    #save-status.show {
-      opacity: 1;
-    }
-
-    #save-status.success {
-      background-color: #4CAF50;
-      color: white;
-    }
-
-    #save-status.error {
-      background-color: #F44336;
-      color: white;
-    }
-
-    #save-status.saving {
-      background-color: #FFC107;
-      color: black;
     }
 
     /* White box mimicking the dropdown */
@@ -694,11 +614,6 @@
 </head>
 <body>
 
-  <!-- Loading spinner overlay -->
-  <div id="contentLoader" class="content-loader">
-    <div class="loader-spinner"></div>
-  </div>
-
   <!-- Header Section -->
   <header>
     <a href="index.html">
@@ -741,9 +656,6 @@
     <i class="fas fa-pencil-alt"></i>
   </div>
 
-  <!-- Save Status Indicator -->
-  <div id="save-status">Saving changes...</div>
-
   <!-- Black box in the middle of the page (admin dropdown content) -->
   <div class="black-box">
     <a href="admin-dashboard.html">Messages</a>
@@ -770,14 +682,12 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <div class="editable-container">
-        <p class="editable">
+      <p class="editable">
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-        <p class="editable">
+      <p class="editable">
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
-      </div>
 
       <!-- Social Media Links -->
       <div class="social-links">
@@ -814,9 +724,7 @@
 
   <!-- Footer Section -->
   <footer>
-    <div class="editable-container">
-      <p class="editable">&copy; 2025 Makeup by NY</p>
-    </div>
+    <p class="editable">&copy; 2025 Makeup by NY</p>
   </footer>
 
   <!-- Avatar selection popup (hidden by default) -->
@@ -1430,12 +1338,7 @@
   </script>
 
   <!-- Edit Mode Script -->
-  <script type="module">
-    // Import Firebase modules
-    import { auth, isAdminUser, db } from './firebase-config.js';
-    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-    import { doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
-
+  <script>
     document.addEventListener('DOMContentLoaded', function() {
       const editButton = document.getElementById('edit-mode-toggle');
       const editableElements = document.querySelectorAll('.editable');
@@ -1447,167 +1350,102 @@
         originalContent[index] = element.innerHTML;
       });
 
-      // Show edit button for admin users only
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          const isAdmin = await isAdminUser(user.uid);
-          if (isAdmin && editButton) {
-            editButton.style.display = 'flex';
+      // Toggle edit mode when pencil icon is clicked
+      editButton.addEventListener('click', function() {
+        editModeActive = !editModeActive;
+        
+        // Toggle button appearance
+        if (editModeActive) {
+          // Enter edit mode
+          editButton.classList.add('active');
+          editButton.innerHTML = '<i class="fas fa-save"></i>';
+          
+          // Toggle contenteditable and visual style for all editable elements
+          editableElements.forEach(element => {
+            element.setAttribute('contenteditable', 'true');
+            element.classList.add('edit-mode');
+          });
+        } else {
+          // Exit edit mode and save changes
+          editButton.classList.remove('active');
+          editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+          
+          // Create an object to store the changes
+          const updatedContent = {};
+          let hasChanges = false;
+          
+          // Check which elements have been changed
+          editableElements.forEach((element, index) => {
+            const currentContent = element.innerHTML;
+            if (currentContent !== originalContent[index]) {
+              // Store element information for identification
+              const path = getElementPath(element);
+              updatedContent[path] = {
+                content: currentContent,
+                elementType: element.tagName.toLowerCase()
+              };
+              hasChanges = true;
+            }
+            
+            // Remove contenteditable and visual style
+            element.removeAttribute('contenteditable');
+            element.classList.remove('edit-mode');
+          });
+          
+          // If changes were made, save them to Firebase
+          if (hasChanges) {
+            saveContentToFirebase(updatedContent)
+              .then(() => {
+                showNotification('Changes saved successfully!', 'success');
+                // Update the original content with new values
+                editableElements.forEach((element, index) => {
+                  originalContent[index] = element.innerHTML;
+                });
+              })
+              .catch(error => {
+                showNotification('Error saving changes: ' + error.message, 'error');
+                console.error('Error saving changes:', error);
+              });
           }
         }
       });
-
-      // Toggle edit mode when pencil icon is clicked
-      if (editButton) {
-        editButton.addEventListener('click', function() {
-          editModeActive = !editModeActive;
-          
-          // Toggle button appearance
-          if (editModeActive) {
-            // Enter edit mode
-            editButton.classList.add('active');
-            editButton.innerHTML = '<i class="fas fa-save"></i>';
-            
-            // Toggle contenteditable and visual style for all editable elements
-            editableElements.forEach(element => {
-              element.setAttribute('contenteditable', 'true');
-              element.classList.add('edit-mode');
-            });
-          } else {
-            // Exit edit mode and save changes
-            editButton.classList.remove('active');
-            editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-            
-            // Create an object to store the changes
-            const updatedContent = {};
-            let hasChanges = false;
-            
-            // Check which elements have been changed
-            editableElements.forEach((element, index) => {
-              const currentContent = element.innerHTML;
-              if (currentContent !== originalContent[index]) {
-                // Remove edit-mode class before getting path, to ensure
-                // we can find the element again when page reloads
-                element.classList.remove('edit-mode');
-                
-                // Store element information for identification
-                const path = getElementPath(element);
-                updatedContent[path] = {
-                  content: currentContent,
-                  elementType: element.tagName.toLowerCase()
-                };
-                hasChanges = true;
-              }
-              
-              // Remove contenteditable and visual style
-              element.removeAttribute('contenteditable');
-              element.classList.remove('edit-mode');
-            });
-            
-            // If changes were made, save them to Firebase
-            if (hasChanges) {
-              // Show saving indicator
-              showSaveStatus('saving', 'Saving changes...');
-              
-              // Save to both Firebase and localStorage for redundancy
-              saveContentToFirebase(updatedContent)
-                .then(() => {
-                  // Also save to localStorage as backup
-                  try {
-                    // Save to localStorage with timestamp
-                    const localStorageData = {
-                      content: updatedContent,
-                      timestamp: new Date().toISOString(),
-                      pageId: 'index_page_content'
-                    };
-                    localStorage.setItem('index_page_content', JSON.stringify(localStorageData));
-                    console.log("✅ Also saved content to localStorage as backup");
-                  } catch (localStorageError) {
-                    console.warn("Could not save to localStorage:", localStorageError);
-                  }
-                  
-                  showSaveStatus('success', 'Changes saved successfully!');
-                  
-                  // Update the original content with new values
-                  editableElements.forEach((element, index) => {
-                    originalContent[index] = element.innerHTML;
-                  });
-                })
-                .catch(error => {
-                  console.error('Error saving to Firebase:', error);
-                  
-                  // Try saving to localStorage as fallback
-                  try {
-                    const localStorageData = {
-                      content: updatedContent,
-                      timestamp: new Date().toISOString(),
-                      pageId: 'index_page_content'
-                    };
-                    localStorage.setItem('index_page_content', JSON.stringify(localStorageData));
-                    
-                    showSaveStatus('success', 'Changes saved locally (offline mode)');
-                    
-                    // Update the original content with new values
-                    editableElements.forEach((element, index) => {
-                      originalContent[index] = element.innerHTML;
-                    });
-                  } catch (localStorageError) {
-                    showSaveStatus('error', 'Failed to save changes');
-                    console.error('Error saving to localStorage:', localStorageError);
-                  }
-                });
-            }
-          }
-        });
-      }
       
       // Function to get a unique path for an element
       function getElementPath(element) {
         const tagName = element.tagName.toLowerCase();
         
-        // Get a cleaned version of the class list without edit-mode
-        const classList = Array.from(element.classList)
-          .filter(className => className !== 'edit-mode'); // Remove edit-mode class from path
+        // Get a cleaned version of the class list (only keeping 'editable' and a few key classes)
+        const classList = Array.from(element.classList).filter(cls => 
+          cls === 'editable' || 
+          ['header', 'footer', 'about-me', 'social-links'].includes(cls)
+        );
         const classNames = classList.join('.');
         
-        // Get parent information with more detail
+        // Get parent information
         const parentElement = element.parentElement;
         const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
+        const parentClass = parentElement && parentElement.className ? 
+          Array.from(parentElement.classList)[0] : '';
         
-        // Get more specific parent class information
-        let parentClassInfo = '';
-        if (parentElement && parentElement.classList.length > 0) {
-          parentClassInfo = '.' + Array.from(parentElement.classList).join('.');
-        }
+        // Include some content as a fingerprint (first 10 chars)
+        const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
         
-        // Get position index among siblings of same type
-        let positionIndex = 0;
-        if (parentElement) {
-          const siblings = Array.from(parentElement.children).filter(el => el.tagName === element.tagName);
-          positionIndex = siblings.indexOf(element) + 1;
-        }
-        
-        // Include detailed position info in the path
-        const positionInfo = parentElement ? `[${positionIndex}]` : '';
-        
-        // Include some content as a fingerprint (first 15 chars)
-        const contentFingerprint = element.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
-        
-        // Create a highly specific identifier for this element
-        return `${parentTagName}${parentClassInfo}>${tagName}${positionInfo}.${classNames}:${contentFingerprint}`;
+        // Create a relatively unique identifier for this element
+        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${contentFingerprint}`;
       }
       
       // Function to save content to Firebase
       async function saveContentToFirebase(updatedContent) {
-        console.log("Attempting to save content to Firebase:", updatedContent);
+        // Import Firebase modules
+        const { doc, setDoc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+        const { db } = await import("./firebase-config.js");
+        
+        console.log("Saving content to Firebase:", updatedContent);
+        
+        // Create/update content document in Firestore
+        const contentRef = doc(db, "site_content", "editable_content");
         
         try {
-          // Use page-specific document ID to prevent cross-page content sharing
-          const pageDocId = "index_page_content";
-          
-          // Create/update content document in Firestore
-          const contentRef = doc(db, "site_content", pageDocId);
-          
           // Check if document exists
           const docSnap = await getDoc(contentRef);
           
@@ -1620,74 +1458,58 @@
             console.log("Updating existing document with merged content:", mergedContent);
             
             // Update existing document
-            await updateDoc(contentRef, {
+            return updateDoc(contentRef, {
               content: mergedContent,
               lastUpdated: new Date()
             });
-            
-            console.log("✅ Successfully updated document in Firebase");
-            
-            // Verify the update was successful by reading it back
-            const verifySnap = await getDoc(contentRef);
-            if (verifySnap.exists()) {
-              console.log("✅ Verification successful - document contains:", verifySnap.data());
-              return true;
-            } else {
-              console.error("❌ Verification failed - document not found after update");
-              throw new Error("Document verification failed after update");
-            }
           } else {
             console.log("Creating new document with content:", updatedContent);
             // Create new document
-            await setDoc(contentRef, {
+            return setDoc(contentRef, {
               content: updatedContent,
               lastUpdated: new Date()
             });
-            
-            console.log("✅ Successfully created new document in Firebase");
-            
-            // Verify the creation was successful
-            const verifySnap = await getDoc(contentRef);
-            if (verifySnap.exists()) {
-              console.log("✅ Verification successful - new document contains:", verifySnap.data());
-              return true;
-            } else {
-              console.error("❌ Verification failed - new document not found after creation");
-              throw new Error("Document verification failed after creation");
-            }
           }
         } catch (error) {
-          console.error("❌ Error saving content to Firebase:", error);
-          // Check for specific Firebase errors
-          if (error.code) {
-            console.error(`Firebase error code: ${error.code}`);
-            console.error(`Firebase error message: ${error.message}`);
-          }
+          console.error("Error saving content:", error);
           throw error;
         }
       }
       
-      // Function to show save status
-      function showSaveStatus(type, message) {
-        const statusElement = document.getElementById('save-status');
-        if (!statusElement) return;
-        
-        // Clear existing classes
-        statusElement.className = '';
-        
-        // Add new classes
-        statusElement.classList.add('show');
-        statusElement.classList.add(type);
-        
-        // Set message
-        statusElement.textContent = message;
-        
-        // Hide after a delay (except if it's "saving")
-        if (type !== 'saving') {
-          setTimeout(() => {
-            statusElement.classList.remove('show');
-          }, 3000);
+      // Function to show notification
+      function showNotification(message, type) {
+        // Create notification element if it doesn't exist
+        let notification = document.getElementById('edit-notification');
+        if (!notification) {
+          notification = document.createElement('div');
+          notification.id = 'edit-notification';
+          notification.style.position = 'fixed';
+          notification.style.bottom = '20px';
+          notification.style.right = '20px';
+          notification.style.padding = '10px 20px';
+          notification.style.borderRadius = '4px';
+          notification.style.color = 'white';
+          notification.style.fontWeight = 'bold';
+          notification.style.zIndex = '10000';
+          notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+          document.body.appendChild(notification);
         }
+        
+        // Set style based on notification type
+        if (type === 'success') {
+          notification.style.backgroundColor = '#4CAF50';
+        } else if (type === 'error') {
+          notification.style.backgroundColor = '#F44336';
+        }
+        
+        // Set message and show notification
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        // Hide notification after 3 seconds
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 3000);
       }
     });
   </script>
@@ -1695,408 +1517,88 @@
   <!-- Load editable content script -->
   <script type="module">
     // Import Firebase modules immediately
-    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { db } from "./firebase-config.js";
     
     // Load saved content when the page loads
     document.addEventListener('DOMContentLoaded', async function() {
-      // Function to specifically handle footer copyright content
-      function handleFooterCopyright(savedContent) {
-        let count = 0;
-        
-        // Check for footer copyright elements in the saved content
-        for (const path in savedContent) {
-          if (path.includes('footer>p') && path.includes('©')) {
-            console.log('Found footer copyright element path, using direct approach');
-            const footerParagraphs = document.querySelectorAll('footer p');
-            
-            if (footerParagraphs.length > 0) {
-              // First try to find a paragraph with the copyright symbol
-              let copyrightP = null;
-              
-              for (let i = 0; i < footerParagraphs.length; i++) {
-                if (footerParagraphs[i].textContent.includes('©')) {
-                  copyrightP = footerParagraphs[i];
-                  break;
-                }
-              }
-              
-              // If found, update it
-              if (copyrightP) {
-                console.log('Found footer copyright element, updating');
-                copyrightP.innerHTML = savedContent[path].content;
-                count++;
-              } else {
-                // Otherwise update the first paragraph in the footer
-                console.log('No copyright found in footer, updating first paragraph');
-                footerParagraphs[0].innerHTML = savedContent[path].content;
-                count++;
-              }
-            }
-          }
-        }
-        
-        return count;
-      }
-      
       try {
-        // Use page-specific document ID to prevent cross-page content sharing
-        const pageDocId = "index_page_content";
+        console.log("Loading saved content...");
+        // Get the content document from Firestore
+        const contentRef = doc(db, "site_content", "editable_content");
+        const docSnap = await getDoc(contentRef);
         
-        // Try to load from Firebase first
-        console.log("Loading saved content for index page...");
-        let savedContent = null;
-        let contentSource = 'firebase';
-        
-        try {
-          // Test Firebase connection first
-          console.log("Testing Firebase connection...");
-          // Try to access a collection to verify connection
-          const testCol = collection(db, "site_content");
-          const testSnapshot = await getDocs(testCol);
-          console.log(`✅ Firebase connection successful! Found ${testSnapshot.size} documents in collection.`);
-          
-          // Get the content document from Firestore
-          const contentRef = doc(db, "site_content", pageDocId);
-          const docSnap = await getDoc(contentRef);
-          
-          if (docSnap.exists() && docSnap.data().content) {
-            console.log("✅ Found saved content in Firebase:", docSnap.data());
-            savedContent = docSnap.data().content;
-          } else {
-            console.log("No content found in Firebase, checking localStorage...");
-          }
-        } catch (firebaseError) {
-          console.error("❌ Firebase error:", firebaseError);
-          console.log("Falling back to localStorage...");
-        }
-        
-        // If no content from Firebase, try localStorage
-        if (!savedContent) {
-          try {
-            const localData = localStorage.getItem(pageDocId);
-            if (localData) {
-              const parsedData = JSON.parse(localData);
-              if (parsedData && parsedData.content) {
-                console.log("✅ Found saved content in localStorage:", parsedData);
-                savedContent = parsedData.content;
-                contentSource = 'localStorage';
-              }
-            }
-          } catch (localStorageError) {
-            console.error("❌ Error reading from localStorage:", localStorageError);
-          }
-        }
-        
-        // If we have content from either source, apply it
-        if (savedContent) {
-          console.log(`Applying saved content from ${contentSource}`);
-          
-          // Count how many elements we'll update
-          const elementsToUpdate = Object.keys(savedContent).length;
-          console.log(`Found ${elementsToUpdate} saved elements to restore`);
-          
-          let updateCount = 0;
-          
-          // First, collect all editable elements for easy reference
-          const allEditableElements = document.querySelectorAll('.editable');
-          console.log(`Found ${allEditableElements.length} editable elements on page`);
-          
-          // A special function to handle footer copyright - one of the most common elements
-          // This runs before the regular element processing
-          updateCount += handleFooterCopyright(savedContent);
+        if (docSnap.exists() && docSnap.data().content) {
+          console.log("Found saved content:", docSnap.data());
+          const savedContent = docSnap.data().content;
           
           // Apply saved content to matching elements
           Object.keys(savedContent).forEach(path => {
-            // Skip footer copyright elements as they were handled specially
-            if (path.includes('footer>p') && path.includes('©')) {
-              console.log('Skipping footer copyright element - already handled');
-              return;
-            }
-            
             try {
-              console.log(`Processing saved element with path: ${path}`);
+              // Parse the path to find the element
+              // Format: parentTag.parentClass>tag.class1.class2:contentFingerprint
               
-              // Format: parentTag.parentClasses>tag[position].classes:contentFingerprint
-              
-              // Extract the content fingerprint as it might help with identification
-              const parts = path.split(':');
-              const basePath = parts[0];
-              const contentFingerprint = parts.length > 1 ? parts[1] : '';
-              
-              // Parse the element position if present
-              let positionIndex = 0;
-              let cleanBasePath = basePath;
-              
-              if (basePath.includes('[') && basePath.includes(']')) {
-                const posMatch = basePath.match(/\[(\d+)\]/);
-                if (posMatch && posMatch[1]) {
-                  positionIndex = parseInt(posMatch[1]);
-                  cleanBasePath = basePath.replace(/\[\d+\]/, '');
-                }
-              }
+              // Remove content fingerprint if present
+              const basePath = path.split(':')[0];
               
               // Split into parent and element parts
-              const pathParts = cleanBasePath.split('>');
-              if (pathParts.length < 2) {
-                console.log(`Invalid path format, missing parent or element part: ${cleanBasePath}`);
-                return; // Skip this element
-              }
+              const [parentInfo, elementInfo] = basePath.split('>');
               
-              const [parentInfo, elementInfo] = pathParts;
-              
-              // Extract parent tag and classes
-              let parentTag = '', parentClasses = [];
+              // Extract parent tag and class
+              let parentTag = '', parentClass = '';
               if (parentInfo.includes('.')) {
-                const parentParts = parentInfo.split('.');
-                parentTag = parentParts[0];
-                parentClasses = parentParts.slice(1);
+                [parentTag, parentClass] = parentInfo.split('.');
               } else {
                 parentTag = parentInfo;
               }
               
               // Extract element tag and classes
-              let tag = '', classes = [];
-              if (elementInfo.includes('.')) {
-                const elementParts = elementInfo.split('.');
-                tag = elementParts[0];
-                classes = elementParts.slice(1).filter(c => c !== 'edit-mode'); // Ensure edit-mode is filtered
-              } else {
-                tag = elementInfo;
-              }
+              const [tag, ...classes] = elementInfo.split('.');
               
-              // Ensure 'editable' is in the classes we're looking for
-              if (!classes.includes('editable')) {
-                classes.push('editable');
-              }
+              // Build a selector from the classes
+              const classSelector = classes.length > 0 ? '.' + classes.join('.') : '';
+              const selector = tag + classSelector;
               
-              // Build selectors - first try specific selector
-              const elementSelector = tag + (classes.length > 0 ? '.' + classes.join('.') : '');
+              console.log(`Looking for elements matching selector: ${selector}`);
               
-              console.log(`Looking for elements matching: ${elementSelector} (position: ${positionIndex})`);
-              
-              // First find all matching elements with specific selector
-              let elements = document.querySelectorAll(elementSelector);
-              
-              // If no elements found with specific selector, try a more general approach
-              if (elements.length === 0) {
-                console.log(`No elements found with specific selector, trying more general approach`);
-                
-                // Try just the tag.editable selector
-                const simpleSelector = tag + '.editable';
-                elements = document.querySelectorAll(simpleSelector);
-                console.log(`Found ${elements.length} elements with simple selector ${simpleSelector}`);
-                
-                // Try to match by content fingerprint if available
-                let matchFound = false;
-                
-                if (contentFingerprint) {
-                  console.log(`Trying to match by fingerprint: "${contentFingerprint}"`);
-                  elements.forEach(el => {
-                    const elContent = el.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
-                    console.log(`Comparing fingerprints: "${elContent}" vs "${contentFingerprint}"`);
-                    
-                    // Try exact match first
-                    if (elContent === contentFingerprint) {
-                      console.log(`Found exact matching element with content fingerprint: ${contentFingerprint}`);
-                      el.innerHTML = savedContent[path].content;
-                      matchFound = true;
-                      updateCount++;
-                      return; // exit the forEach loop early
-                    }
-                    
-                    // If no exact match, try partial match (element text contains fingerprint or fingerprint contains element text)
-                    // This is especially useful for the copyright statement in the footer
-                    if (!matchFound) {
-                      const rawContent = el.textContent.trim();
-                      const rawFingerprint = contentFingerprint.replace(/-/g, ' ');
-                      if (rawContent.includes(rawFingerprint) || rawFingerprint.includes(rawContent)) {
-                        console.log(`Found partial match with content fingerprint: "${contentFingerprint}" in "${rawContent.substring(0, 30)}..."`);
-                        el.innerHTML = savedContent[path].content;
-                        matchFound = true;
-                        updateCount++;
-                        return; // exit the forEach loop early
-                      }
-                    }
-                  });
-                }
-              }
+              // Find potential elements that match
+              const elements = document.querySelectorAll(selector);
               
               if (elements.length > 0) {
-                console.log(`Found ${elements.length} matching elements with selector`);
+                console.log(`Found ${elements.length} matching elements`);
                 
-                // If we have position info, use it
-                if (positionIndex > 0 && positionIndex <= elements.length) {
-                  const specificElement = elements[positionIndex - 1];
+                // Apply to all matching elements (usually should be just one)
+                elements.forEach(element => {
+                  // Only update if parent tag matches or if we can't determine it
+                  const actualParentElement = element.parentElement;
                   
-                  // Verify parent if possible
-                  if (parentTag && specificElement.parentElement) {
-                    const actualParent = specificElement.parentElement;
-                    if (actualParent.tagName.toLowerCase() === parentTag.toLowerCase()) {
-                      // Check parent classes if needed
-                      let parentClassMatch = true;
-                      if (parentClasses.length > 0) {
-                        parentClassMatch = parentClasses.every(cls => 
-                          actualParent.classList.contains(cls)
-                        );
-                      }
-                      
-                      console.log(`Parent tag match: ${actualParent.tagName.toLowerCase()} === ${parentTag.toLowerCase()}`);
-                      console.log(`Parent class match: ${parentClassMatch}`);
-                      
-                      if (parentClassMatch) {
-                        console.log(`Updating specific element at position ${positionIndex}`);
-                        specificElement.innerHTML = savedContent[path].content;
-                        updateCount++;
-                      }
-                    } else {
-                      console.log(`Parent tag mismatch: ${actualParent.tagName.toLowerCase()} !== ${parentTag.toLowerCase()}`);
+                  if (actualParentElement) {
+                    const actualParentTag = actualParentElement.tagName.toLowerCase();
+                    const actualParentHasClass = parentClass ? 
+                      actualParentElement.classList.contains(parentClass) : true;
+                    
+                    if (actualParentTag === parentTag && actualParentHasClass) {
+                      console.log(`Updating element with path ${path}`);
+                      element.innerHTML = savedContent[path].content;
                     }
-                  } else {
-                    // Specific handling for footer elements
-                    if (parentTag === 'footer' && specificElement.closest('footer')) {
-                      console.log(`Found element within footer, updating`);
-                      specificElement.innerHTML = savedContent[path].content;
-                      updateCount++;
-                    } else {
-                      // No parent tag specified or element has no parent
-                      console.log(`Updating specific element at position ${positionIndex} (no parent check)`);
-                      specificElement.innerHTML = savedContent[path].content;
-                      updateCount++;
-                    }
+                  } else if (!parentTag) {
+                    // If no parent specified and element has no parent
+                    console.log(`Updating element with path ${path} (no parent check)`);
+                    element.innerHTML = savedContent[path].content;
                   }
-                } else {
-                  // Try to match by content fingerprint if available
-                  let matchFound = false;
-                  
-                  if (contentFingerprint) {
-                    console.log(`Trying to match by fingerprint: "${contentFingerprint}"`);
-                    elements.forEach(el => {
-                      const elContent = el.textContent.trim().substring(0, 15).replace(/\s+/g, '-');
-                      console.log(`Comparing fingerprints: "${elContent}" vs "${contentFingerprint}"`);
-                      
-                      // Try exact match first
-                      if (elContent === contentFingerprint) {
-                        console.log(`Found exact matching element with content fingerprint: ${contentFingerprint}`);
-                        el.innerHTML = savedContent[path].content;
-                        matchFound = true;
-                        updateCount++;
-                        return; // exit the forEach loop early
-                      }
-                      
-                      // If no exact match, try partial match (element text contains fingerprint or fingerprint contains element text)
-                      // This is especially useful for the copyright statement in the footer
-                      if (!matchFound) {
-                        const rawContent = el.textContent.trim();
-                        const rawFingerprint = contentFingerprint.replace(/-/g, ' ');
-                        if (rawContent.includes(rawFingerprint) || rawFingerprint.includes(rawContent)) {
-                          console.log(`Found partial match with content fingerprint: "${contentFingerprint}" in "${rawContent.substring(0, 30)}..."`);
-                          el.innerHTML = savedContent[path].content;
-                          matchFound = true;
-                          updateCount++;
-                          return; // exit the forEach loop early
-                        }
-                      }
-                    });
-                  }
-                }
+                });
               } else {
-                console.log(`No elements found matching selector, trying fallback approach`);
-                
-                // Fallback: Try matching by tag type and position among editable elements
-                const tagEditables = Array.from(allEditableElements).filter(el => 
-                  el.tagName.toLowerCase() === tag.toLowerCase()
-                );
-                
-                if (tagEditables.length > 0) {
-                  console.log(`Found ${tagEditables.length} ${tag} elements with .editable class`);
-                  
-                  // Use position index if available, otherwise use the first one
-                  const targetIndex = (positionIndex > 0 && positionIndex <= tagEditables.length) 
-                    ? positionIndex - 1 
-                    : 0;
-                  
-                  console.log(`Updating ${tag} editable element at index ${targetIndex} as fallback`);
-                  tagEditables[targetIndex].innerHTML = savedContent[path].content;
-                  updateCount++;
-                } else {
-                  console.log(`No ${tag} elements with .editable class found`);
-                }
+                console.log(`No elements found matching selector: ${selector}`);
               }
             } catch (error) {
               console.error(`Error processing path ${path}:`, error);
             }
           });
-          
-          console.log(`✅ Successfully restored ${updateCount} saved elements`);
-          
-          // Last resort fallback if no elements were updated
-          if (updateCount === 0 && Object.keys(savedContent).length > 0) {
-            console.log("⚠️ No elements updated through normal methods, trying last resort fallback");
-            
-            // Get all editable elements and footer paragraphs
-            const editables = document.querySelectorAll('.editable');
-            const footerP = document.querySelector('footer p');
-            
-            // Try to update elements based on saved content
-            Object.values(savedContent).forEach(item => {
-              const content = item.content;
-              
-              // Try to identify if this is footer content
-              if (content.includes('©') && footerP) {
-                console.log("Updating footer paragraph with copyright as fallback");
-                footerP.innerHTML = content;
-                updateCount++;
-              } else if (editables.length > 0) {
-                // For other content, try to match by element type and content similarity
-                for (const el of editables) {
-                  // Skip if we already updated footer content
-                  if (el.closest('footer') && updateCount > 0) continue;
-                  
-                  // Check if element type matches
-                  if (el.tagName.toLowerCase() === (item.elementType || 'p').toLowerCase()) {
-                    console.log(`Updating ${el.tagName.toLowerCase()} element as last resort fallback`);
-                    el.innerHTML = content;
-                    updateCount++;
-                    break;
-                  }
-                }
-              }
-            });
-            
-            console.log(`After fallback, restored ${updateCount} elements`);
-          }
         } else {
-          console.log("No saved content found in Firebase or localStorage");
+          console.log("No saved content found");
         }
-        
-        // Show editable content regardless of whether updates happened
-        // This ensures content is visible even if no saved version exists
-        showContent();
       } catch (error) {
         console.error("Error loading saved content:", error);
-        // Show content even if there was an error
-        showContent();
-      }
-      
-      // Helper function to show content and hide loader
-      function showContent() {
-        // Show all editable containers
-        document.querySelectorAll('.editable-container').forEach(container => {
-          container.classList.add('loaded');
-        });
-        
-        // Hide the loading spinner
-        const loader = document.getElementById('contentLoader');
-        if (loader) {
-          setTimeout(() => {
-            loader.classList.add('hidden');
-            // Remove from DOM after animation completes
-            setTimeout(() => {
-              loader.style.display = 'none';
-            }, 500);
-          }, 300);
-        }
       }
     });
   </script>
