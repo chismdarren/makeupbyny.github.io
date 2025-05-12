@@ -538,6 +538,7 @@ function showNotification(message, type) {
 
 // Set up dropdowns
 function setupDropdowns() {
+    // Admin dropdown
     const adminDropdownBtn = document.getElementById('adminDropdownBtn');
     const adminDropdownContent = document.getElementById('adminDropdownContent');
     const adminWhiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
@@ -547,62 +548,41 @@ function setupDropdowns() {
             e.preventDefault();
             e.stopPropagation();
 
-            // Toggle active class on button
+            // Toggle active class
             this.classList.toggle('active');
 
-            // Toggle black box display
-            if (adminWhiteBoxDropdown) {
-                const isVisible = adminWhiteBoxDropdown.style.display === 'block';
+            // Position and show the black box
+            const rect = this.getBoundingClientRect();
+            const blackBox = document.querySelector('.black-box');
+            
+            if (blackBox) {
+                blackBox.style.top = (rect.bottom) + 'px';
+                blackBox.style.left = rect.left + 'px';
+                blackBox.style.display = blackBox.style.display === 'block' ? 'none' : 'block';
                 
-                // Hide all dropdowns first
-                document.querySelectorAll('.black-box, .admin-dropdown-content').forEach(dropdown => {
-                    dropdown.style.display = 'none';
-                    dropdown.classList.remove('show-dropdown');
-                });
-
-                if (!isVisible) {
-                    // Position and show the dropdown
-                    const rect = this.getBoundingClientRect();
-                    adminWhiteBoxDropdown.style.position = 'fixed';
-                    adminWhiteBoxDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
-                    adminWhiteBoxDropdown.style.left = rect.left + 'px';
-                    adminWhiteBoxDropdown.style.display = 'block';
-                    
-                    // Add show class for animation
-                    setTimeout(() => {
-                        adminWhiteBoxDropdown.classList.add('show-dropdown');
-                    }, 0);
-                }
+                // Ensure proper z-index
+                blackBox.style.zIndex = '9999';
             }
         });
     }
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-        if (!e.target.closest('.admin-dropdown, .black-box')) {
-            document.querySelectorAll('.black-box, .admin-dropdown-content').forEach(dropdown => {
-                dropdown.style.display = 'none';
-                dropdown.classList.remove('show-dropdown');
-            });
-            
-            // Remove active class from buttons
-            document.querySelectorAll('.admin-dropdown-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        const blackBox = document.querySelector('.black-box');
+        if (blackBox && !blackBox.contains(e.target) && 
+            !e.target.matches('.admin-dropdown-btn, .admin-dropdown-btn *')) {
+            blackBox.style.display = 'none';
+            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
         }
     });
 
     // Close dropdowns on scroll
     window.addEventListener('scroll', function() {
-        document.querySelectorAll('.black-box, .admin-dropdown-content').forEach(dropdown => {
-            dropdown.style.display = 'none';
-            dropdown.classList.remove('show-dropdown');
-        });
-        
-        // Remove active class from buttons
-        document.querySelectorAll('.admin-dropdown-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
+        const blackBox = document.querySelector('.black-box');
+        if (blackBox) {
+            blackBox.style.display = 'none';
+            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+        }
     });
 }
 
