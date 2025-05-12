@@ -237,6 +237,7 @@
             border: 1px solid #eee;
             transform: translateX(-50%);
             margin-top: 5px;
+            left: 50%;
         }
         
         .black-box a {
@@ -457,21 +458,18 @@
                     <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
                 </a>
             </div>
-            <!-- Admin dropdown menu (initially hidden) -->
-            <div class="admin-dropdown">
-                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
-                    Admin Dashboard 
-                    <span class="dropdown-icon">▼</span>
-                </a>
-            </div>
-            <!-- Black box for admin links -->
+            <!-- Admin Dashboard button and black box -->
+            <a id="adminDropdownBtn" href="#" style="display:none;">
+                Admin Dashboard 
+                <span class="dropdown-icon">▼</span>
+            </a>
             <div class="black-box">
                 <a href="admin-dashboard.html">Messages</a>
                 <a href="editor.html">Create Post</a>
                 <a href="edit-post.html">Edit Posts</a>
                 <a href="manage-users.html">User Management</a>
             </div>
-            <!-- User account link (replaces dropdown) -->
+            <!-- User account link -->
             <a id="userAccountLink" href="settings.html">My Account</a>
             <!-- Public links -->
             <a id="login-link" href="login.html">Login</a>
