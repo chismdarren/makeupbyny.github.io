@@ -224,7 +224,7 @@
 
         /* Black box method implementation */
         .black-box {
-            position: fixed;
+            position: absolute;
             background-color: white;
             z-index: 9999;
             display: none;
@@ -235,8 +235,8 @@
             border-radius: 4px;
             overflow: hidden;
             border: 1px solid #eee;
-            transform: translateX(-50%); /* Center horizontally */
-            left: 50%; /* Used with transform for perfect centering */
+            transform: translateX(-50%);
+            margin-top: 5px;
         }
         
         .black-box a {
@@ -745,9 +745,8 @@
         function positionBlackBox() {
             if (adminDropdownBtn && blackBox) {
                 const rect = adminDropdownBtn.getBoundingClientRect();
-                blackBox.style.top = (rect.bottom + window.scrollY) + 'px';
-                // Center align with the button
-                blackBox.style.left = (rect.left + (rect.width / 2)) + 'px';
+                blackBox.style.top = '100%';
+                blackBox.style.left = '50%';
             }
         }
 
@@ -764,9 +763,8 @@
         if (adminDropdownBtn) {
             adminDropdownBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation(); // Prevent event bubbling
+                e.stopPropagation();
                 
-                // Toggle active class for styling
                 this.classList.toggle('active');
                 
                 if (blackBox.style.display === 'block') {
@@ -778,13 +776,6 @@
                 }
             });
         }
-        
-        // Reposition on window resize
-        window.addEventListener('resize', function() {
-            if (blackBox.style.display === 'block') {
-                positionBlackBox();
-            }
-        });
         
         // Hide black box when clicking outside
         document.addEventListener('click', function(e) {
