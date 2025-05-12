@@ -554,8 +554,22 @@ function setupDropdowns() {
             } else {
                 // Position black box under the button
                 const rect = this.getBoundingClientRect();
+                const navRect = this.closest('nav').getBoundingClientRect();
+                
+                // Position directly under the text
                 blackBox.style.top = (rect.bottom + window.scrollY) + 'px';
-                blackBox.style.left = rect.left + 'px';
+                
+                // For mobile view (width <= 768px)
+                if (window.innerWidth <= 768) {
+                    // Center the dropdown under the text
+                    const dropdownWidth = 200; // Width from CSS
+                    const leftPosition = rect.left + (rect.width / 2) - (dropdownWidth / 2);
+                    blackBox.style.left = Math.max(10, leftPosition) + 'px';
+                } else {
+                    // For desktop view, align with the text
+                    blackBox.style.left = rect.left + 'px';
+                }
+                
                 blackBox.style.display = 'block';
                 this.classList.add('active');
             }
@@ -566,6 +580,24 @@ function setupDropdowns() {
             if (!adminDropdownBtn.contains(e.target) && !blackBox.contains(e.target)) {
                 blackBox.style.display = 'none';
                 adminDropdownBtn.classList.remove('active');
+            }
+        });
+
+        // Reposition on window resize
+        window.addEventListener('resize', function() {
+            if (blackBox.style.display === 'block') {
+                const rect = adminDropdownBtn.getBoundingClientRect();
+                const navRect = adminDropdownBtn.closest('nav').getBoundingClientRect();
+                
+                blackBox.style.top = (rect.bottom + window.scrollY) + 'px';
+                
+                if (window.innerWidth <= 768) {
+                    const dropdownWidth = 200;
+                    const leftPosition = rect.left + (rect.width / 2) - (dropdownWidth / 2);
+                    blackBox.style.left = Math.max(10, leftPosition) + 'px';
+                } else {
+                    blackBox.style.left = rect.left + 'px';
+                }
             }
         });
     }
