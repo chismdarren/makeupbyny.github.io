@@ -467,6 +467,40 @@
         .contact-dropdown-btn.active .dropdown-icon {
             transform: rotate(180deg);
         }
+
+        /* Black box method implementation */
+        .black-box {
+            position: fixed;
+            background-color: white;
+            z-index: 999;
+            display: none;
+            width: auto;
+            height: auto;
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+        
+        .black-box a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            transition: background-color 0.2s, color 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .black-box a:last-child {
+            border-bottom: none;
+        }
+        
+        .black-box a:hover {
+            background-color: #f9f9f9;
+            color: #a07;
+        }
     </style>
 </head>
 <body>
