@@ -472,7 +472,7 @@
         .black-box {
             position: fixed;
             background-color: white;
-            z-index: 9999; /* Increased z-index to ensure it's always on top */
+            z-index: 9999;
             display: none;
             width: auto;
             height: auto;
@@ -481,6 +481,8 @@
             border-radius: 4px;
             overflow: hidden;
             border: 1px solid #eee;
+            transform: translateX(-50%); /* Center horizontally */
+            left: 50%; /* Used with transform for perfect centering */
         }
         
         .black-box a {
@@ -802,6 +804,55 @@
                 }
             });
         });
+    </script>
+
+    <!-- Admin dropdown control script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+        const blackBox = document.querySelector('.black-box');
+        
+        function positionBlackBox() {
+            if (adminDropdownBtn && blackBox) {
+                const rect = adminDropdownBtn.getBoundingClientRect();
+                blackBox.style.top = (rect.bottom + window.scrollY) + 'px';
+                // Center align with the button
+                blackBox.style.left = (rect.left + (rect.width / 2)) + 'px';
+            }
+        }
+        
+        // Position black box when admin button is clicked
+        if (adminDropdownBtn) {
+            adminDropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                positionBlackBox();
+                blackBox.style.display = blackBox.style.display === 'block' ? 'none' : 'block';
+            });
+        }
+        
+        // Reposition on window resize
+        window.addEventListener('resize', function() {
+            if (blackBox.style.display === 'block') {
+                positionBlackBox();
+            }
+        });
+        
+        // Hide black box when clicking outside
+        document.addEventListener('click', function(e) {
+            if (blackBox && blackBox.style.display === 'block' && 
+                !blackBox.contains(e.target) && 
+                !adminDropdownBtn.contains(e.target)) {
+                blackBox.style.display = 'none';
+            }
+        });
+        
+        // Hide black box when scrolling
+        window.addEventListener('scroll', function() {
+            if (blackBox && blackBox.style.display === 'block') {
+                positionBlackBox();
+            }
+        });
+    });
     </script>
 </body>
 </html>
