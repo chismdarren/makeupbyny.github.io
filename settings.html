@@ -180,6 +180,7 @@
         .admin-dropdown {
             position: relative;
             display: inline-block;
+            z-index: 1000; /* Ensure dropdown appears in front of other elements */
         }
 
         .admin-dropdown-btn {
@@ -215,44 +216,96 @@
 
         /* Desktop position for admin dashboard text */
         @media (min-width: 768px) {
-          .admin-dropdown-btn {
-            bottom: 0px; /* Move text higher up for desktop view */
-          }
+            .admin-dropdown-btn {
+                bottom: 0px; /* Move text higher up for desktop view */
+            }
+        }
+
+        /* Responsive adjustments for admin dropdown */
+        @media (max-width: 768px) {
+            .admin-dropdown-content {
+                position: absolute;
+                right: 0;
+                left: auto;
+                width: 200px;
+                z-index: 2000; /* Much higher z-index for mobile */
+                box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            }
+
+            .admin-dropdown {
+                position: relative;
+                z-index: 1500;
+            }
+
+            header nav {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                position: relative;
+                z-index: auto; /* Reset any z-index that might be interfering */
+            }
+            
+            /* Ensure the dropdown shows on top of everything when active */
+            .show-dropdown {
+                display: block !important;
+                opacity: 1 !important;
+                transform: translateY(0) !important;
+                z-index: 9999 !important; /* Extremely high z-index */
+            }
+        }
+
+        /* For very small screens */
+        @media (max-width: 480px) {
+            .admin-dropdown-content {
+                right: -50px; /* Adjust position to be more centered on small screens */
+            }
+
+            .admin-dropdown-btn {
+                padding: 10px 5px;
+                bottom: 2px; /* Raise the Admin Dashboard text on mobile */
+            }
+            
+            /* Style for black box dropdown on very small screens */
+            .black-box {
+                min-width: 200px !important; /* Override the inline style */
+                max-width: calc(100vw - 40px) !important; /* Prevent overflow */
+                margin: 0 auto;
+            }
         }
 
         /* Black box mimicking the dropdown */
         .black-box {
-          position: fixed;
-          background-color: white;
-          z-index: 999;
-          display: none; /* Hidden by default */
-          width: auto;
-          height: auto;
-          min-width: 180px; /* Match dropdown width */
-          box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-          border-radius: 4px;
-          overflow: hidden;
-          border: 1px solid #eee;
+            position: fixed;
+            background-color: white;
+            z-index: 999;
+            display: none; /* Hidden by default */
+            width: auto;
+            height: auto;
+            min-width: 180px; /* Match dropdown width */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #eee;
         }
         
         /* Menu items in the black box */
         .black-box a {
-          color: #333;
-          padding: 12px 16px;
-          text-decoration: none;
-          display: block;
-          text-align: left;
-          transition: background-color 0.2s, color 0.2s;
-          border-bottom: 1px solid #f5f5f5;
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            transition: background-color 0.2s, color 0.2s;
+            border-bottom: 1px solid #f5f5f5;
         }
         
         .black-box a:last-child {
-          border-bottom: none;
+            border-bottom: none;
         }
         
         .black-box a:hover {
-          background-color: #f9f9f9;
-          color: #a07;
+            background-color: #f9f9f9;
+            color: #a07;
         }
 
         /* Avatar Settings Styles */
@@ -417,24 +470,6 @@
             width: 22px;
             height: 22px;
             fill: #333;
-        }
-
-        /* For very small screens */
-        @media (max-width: 480px) {
-            .admin-dropdown-content {
-                right: -50px; /* Adjust position to be more centered on small screens */
-            }
-
-            .admin-dropdown-btn {
-                padding: 10px 5px;
-            }
-            
-            /* Style for white box dropdown on very small screens */
-            #adminWhiteBoxDropdown {
-                min-width: 200px !important; /* Override the inline style */
-                max-width: calc(100vw - 40px) !important; /* Prevent overflow */
-                margin: 0 auto;
-            }
         }
     </style>
 </head>
