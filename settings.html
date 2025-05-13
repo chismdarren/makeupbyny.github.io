@@ -176,137 +176,29 @@
             }
         }
 
-        /* Admin Dropdown Menu Styles */
-        .admin-dropdown {
-            position: relative;
-            display: inline-block;
-            z-index: 1000; /* Ensure dropdown appears in front of other elements */
-        }
+            /* Admin text styles */
+    .admin-dropdown-btn {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 1em;
+      padding: 10px;
+      font-family: inherit;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
 
-        .admin-dropdown-btn {
-            background: none;
-            border: none;
-            color: #333;
-            font-size: 1em;
-            padding: 10px;
-            cursor: pointer;
-            font-family: inherit;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            position: relative;
-            bottom: -8px;
-            z-index: 1000;
-        }
+    .admin-dropdown-btn .dropdown-icon {
+      display: inline-block;
+      margin-left: 5px;
+    }
 
-        .admin-dropdown-btn .dropdown-icon {
-            display: inline-block;
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
+    .admin-dropdown-btn:hover {
+      color: #a07;
+    }
 
-        .admin-dropdown-btn.active .dropdown-icon {
-            transform: rotate(180deg);
-        }
-
-        .admin-dropdown-btn:hover, 
-        .admin-dropdown-btn.active {
-            color: #a07;
-        }
-
-        /* Desktop position for admin dashboard text */
-        @media (min-width: 768px) {
-            .admin-dropdown-btn {
-                bottom: 0px; /* Move text higher up for desktop view */
-            }
-        }
-
-        /* Responsive adjustments for admin dropdown */
-        @media (max-width: 768px) {
-            .admin-dropdown-content {
-                position: absolute;
-                right: 0;
-                left: auto;
-                width: 200px;
-                z-index: 2000; /* Much higher z-index for mobile */
-                box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-            }
-
-            .admin-dropdown {
-                position: relative;
-                z-index: 1500;
-            }
-
-            header nav {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                position: relative;
-                z-index: auto; /* Reset any z-index that might be interfering */
-            }
-            
-            /* Ensure the dropdown shows on top of everything when active */
-            .show-dropdown {
-                display: block !important;
-                opacity: 1 !important;
-                transform: translateY(0) !important;
-                z-index: 9999 !important; /* Extremely high z-index */
-            }
-        }
-
-        /* For very small screens */
-        @media (max-width: 480px) {
-            .admin-dropdown-content {
-                right: -50px; /* Adjust position to be more centered on small screens */
-            }
-
-            .admin-dropdown-btn {
-                padding: 10px 5px;
-                bottom: 2px; /* Raise the Admin Dashboard text on mobile */
-            }
-            
-            /* Style for black box dropdown on very small screens */
-            .black-box {
-                min-width: 200px !important; /* Override the inline style */
-                max-width: calc(100vw - 40px) !important; /* Prevent overflow */
-                margin: 0 auto;
-            }
-        }
-
-        /* Black box mimicking the dropdown */
-        .black-box {
-            position: fixed;
-            background-color: white;
-            z-index: 999;
-            display: none; /* Hidden by default */
-            width: auto;
-            height: auto;
-            min-width: 180px; /* Match dropdown width */
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #eee;
-        }
-        
-        /* Menu items in the black box */
-        .black-box a {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            text-align: left;
-            transition: background-color 0.2s, color 0.2s;
-            border-bottom: 1px solid #f5f5f5;
-        }
-        
-        .black-box a:last-child {
-            border-bottom: none;
-        }
-        
-        .black-box a:hover {
-            background-color: #f9f9f9;
-            color: #a07;
-        }
+                /* Avatar Settings Styles */
 
         /* Avatar Settings Styles */
         .avatar-settings {
@@ -394,55 +286,7 @@
             }
         }
 
-        /* User dropdown styles (same as admin dropdown) */
-        .user-dropdown {
-            position: relative;
-            display: inline-block;
-        }
 
-        .user-dropdown-btn {
-            background: none;
-            border: none;
-            color: #333;
-            font-size: 1em;
-            padding: 10px;
-            cursor: pointer;
-            font-family: inherit;
-            text-decoration: none;
-            display: none;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-        }
-
-        .user-dropdown-btn .dropdown-icon {
-            display: inline-block;
-            margin-left: 5px;
-            transition: transform 0.3s ease;
-        }
-
-        .user-dropdown-btn.active .dropdown-icon {
-            transform: rotate(180deg);
-        }
-
-        .user-dropdown-btn:hover, 
-        .user-dropdown-btn.active {
-            color: #a07;
-        }
-
-        /* Contact dropdown styles */
-        .contact-dropdown-btn:hover, 
-        .contact-dropdown-btn.active {
-            color: #a07 !important;
-        }
-
-        .contact-dropdown-btn .dropdown-icon {
-            transition: transform 0.3s ease;
-        }
-
-        .contact-dropdown-btn.active .dropdown-icon {
-            transform: rotate(180deg);
-        }
 
         /* Settings gear icon styles */
         .settings-icon {
@@ -482,26 +326,13 @@
         <nav id="mainNav">
             <a href="index.html">Home</a>
             <a href="about.html">About</a>
-            <!-- Convert Contact to a dropdown -->
-            <div class="contact-dropdown" style="display: inline-block; position: relative;">
-                <a id="contactDropdownBtn" class="contact-dropdown-btn" href="#" style="color: #333; text-decoration: none; display: flex; align-items: center;">
-                    Contact 
-                    <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
-                </a>
-            </div>
-            <!-- Admin dropdown menu (initially hidden) -->
+            <a href="contact.html">Contact</a>
+            <!-- Admin dashboard text -->
             <div class="admin-dropdown">
                 <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
                     Admin Dashboard 
                     <span class="dropdown-icon">▼</span>
                 </a>
-            </div>
-            <!-- Black box for admin links -->
-            <div class="black-box">
-                <a href="admin-dashboard.html">Messages</a>
-                <a href="editor.html">Create Post</a>
-                <a href="edit-post.html">Edit Posts</a>
-                <a href="manage-users.html">User Management</a>
             </div>
             <!-- User account link (replaces dropdown) -->
             <a id="userAccountLink" href="settings.html">My Account</a>
@@ -511,8 +342,7 @@
         </nav>
     </header>
 
-    <!-- Contact dropdown black box -->
-    <div class="contact-black-box" style="position: fixed; background-color: white; z-index: 999; display: none; width: auto; height: auto; min-width: 50px !important; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; border: 1px solid #eee;">
+
         <a href="contact.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Contact</a>
         <a href="https://glammedbyglizz.youcanbook.me/" target="_blank" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">Booking</a>
     </div>
