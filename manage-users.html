@@ -866,6 +866,13 @@
     .modal-close-bottom:hover {
       background-color: #d32f2f;
     }
+
+    /* Desktop position for admin dashboard text */
+    @media (min-width: 768px) {
+      .admin-dropdown-btn {
+        bottom: 0px; /* Move text higher up for desktop view */
+      }
+    }
   </style>
 </head>
 <body class="admin-page">
@@ -981,8 +988,22 @@
       
       // Reposition on window resize
       window.addEventListener('resize', function() {
+        positionWhiteBox();
         positionContactBox();
+        
+        // Update admin text position on resize
+        const adminBtn = document.getElementById('adminDropdownBtn');
+        if (adminBtn) {
+          if (window.innerWidth >= 768) {
+            adminBtn.style.bottom = '0px';
+          } else {
+            adminBtn.style.bottom = '-8px';
+          }
+        }
       });
+      
+      // Position boxes initially
+      positionWhiteBox();
       
       // Toggle contact dropdown when Contact is clicked
       if (contactDropdownBtn && contactBox) {
