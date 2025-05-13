@@ -759,9 +759,12 @@
             positionBlackBox();
         });
         
-        // Reposition on scroll
+        // Hide on scroll instead of repositioning
         window.addEventListener('scroll', function() {
-            positionBlackBox();
+            if (blackBox && blackBox.style.display === 'block') {
+                blackBox.style.display = 'none';
+                adminDropdownBtn.classList.remove('active');
+            }
         });
         
         // Toggle black box when Admin Dashboard is clicked
