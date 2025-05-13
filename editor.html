@@ -908,6 +908,13 @@
       color: #a07;
     }
 
+    /* Desktop position for admin dashboard text */
+    @media (min-width: 768px) {
+      .admin-dropdown-btn {
+        bottom: 0px; /* Move text higher up for desktop view */
+      }
+    }
+
     .admin-dropdown-content {
       display: none;
       position: absolute;
@@ -1351,15 +1358,25 @@
         }
       }
       
-      // Position boxes initially
-      positionWhiteBox();
-      positionContactBox();
-      
       // Reposition on window resize
       window.addEventListener('resize', function() {
         positionWhiteBox();
         positionContactBox();
+        
+        // Update admin text position on resize
+        const adminBtn = document.getElementById('adminDropdownBtn');
+        if (adminBtn) {
+            if (window.innerWidth >= 768) {
+                adminBtn.style.bottom = '0px';
+            } else {
+                adminBtn.style.bottom = '-8px';
+            }
+        }
       });
+      
+      // Position boxes initially
+      positionWhiteBox();
+      positionContactBox();
       
       // Toggle admin dropdown when Admin Dashboard is clicked
       if (adminDropdownBtn && whiteBox) {
