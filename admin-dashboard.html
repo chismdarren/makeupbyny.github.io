@@ -286,19 +286,18 @@
         .black-box {
           position: fixed;
           background-color: white;
-          z-index: 9999;
-          display: none;
+          z-index: 999;
+          display: none; /* Hidden by default */
           width: auto;
           height: auto;
-          min-width: 180px;
+          min-width: 180px; /* Match dropdown width */
           box-shadow: 0 8px 16px rgba(0,0,0,0.1);
           border-radius: 4px;
           overflow: hidden;
           border: 1px solid #eee;
-          transform: translateX(-50%); /* Center horizontally */
-          left: 50%; /* Used with transform for perfect centering */
         }
         
+        /* Menu items in the white box */
         .black-box a {
           color: #333;
           padding: 12px 16px;
