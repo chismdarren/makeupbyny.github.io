@@ -141,6 +141,13 @@
           z-index: 1000; /* Ensure button appears in front */
         }
 
+        /* Desktop position for admin dashboard text */
+        @media (min-width: 768px) {
+          .admin-dropdown-btn {
+            bottom: 0px; /* Move text higher up for desktop view */
+          }
+        }
+
         .admin-dropdown-btn .dropdown-icon {
           display: inline-block;
           margin-left: 5px;
