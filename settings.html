@@ -746,7 +746,8 @@
             if (adminDropdownBtn && blackBox) {
                 const rect = adminDropdownBtn.getBoundingClientRect();
                 blackBox.style.top = (rect.bottom) + 'px';
-                blackBox.style.left = rect.left + 'px';
+                // Center align with the button
+                blackBox.style.left = (rect.left + (rect.width / 2) - (blackBox.offsetWidth / 2)) + 'px';
             }
         }
         
