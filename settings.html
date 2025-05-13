@@ -672,6 +672,126 @@
     <!-- Include the JavaScript file -->
     <script type="module" src="settings.js"></script>
 
-    <!-- Dropdown functionality is handled in settings.js -->
+    <!-- Contact dropdown control script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactDropdownBtn = document.getElementById('contactDropdownBtn');
+            const contactBox = document.querySelector('.contact-black-box');
+            
+            // Function to position contact box under Contact button
+            function positionContactBox() {
+                if (contactDropdownBtn && contactBox) {
+                    const rect = contactDropdownBtn.getBoundingClientRect();
+                    contactBox.style.top = (rect.bottom) + 'px';
+                    contactBox.style.left = rect.left + 'px';
+                    contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
+                }
+            }
+            
+            // Position contact box initially
+            positionContactBox();
+            
+            // Reposition on window resize
+            window.addEventListener('resize', function() {
+                positionContactBox();
+            });
+            
+            // Toggle contact dropdown when Contact is clicked
+            if (contactDropdownBtn && contactBox) {
+                contactDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Toggle contact box display
+                    if (contactBox.style.display === 'block') {
+                        contactBox.style.display = 'none';
+                        this.classList.remove('active');
+                    } else {
+                        positionContactBox(); // Position before showing
+                        contactBox.style.display = 'block';
+                        this.classList.add('active');
+                    }
+                });
+            }
+            
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                // Close contact dropdown
+                if (contactBox && contactBox.style.display === 'block' && 
+                    contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
+                    !contactBox.contains(e.target)) {
+                    contactBox.style.display = 'none';
+                    contactDropdownBtn.classList.remove('active');
+                }
+            });
+            
+            // Hide dropdown when scrolling
+            window.addEventListener('scroll', function() {
+                // Close contact dropdown
+                if (contactBox && contactBox.style.display === 'block') {
+                    contactBox.style.display = 'none';
+                    if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
+                }
+            });
+        });
+    </script>
+
+    <!-- Admin dropdown control script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+        const blackBox = document.querySelector('.black-box');
+        
+        function positionBlackBox() {
+            if (adminDropdownBtn && blackBox) {
+                const rect = adminDropdownBtn.getBoundingClientRect();
+                blackBox.style.top = (rect.bottom) + 'px';
+                // Center align with the button
+                blackBox.style.left = (rect.left + (rect.width / 2) - (blackBox.offsetWidth / 2)) + 'px';
+            }
+        }
+        
+        // Position black box initially
+        positionBlackBox();
+        
+        // Reposition on window resize
+        window.addEventListener('resize', function() {
+            positionBlackBox();
+        });
+        
+        // Hide on scroll instead of repositioning
+        window.addEventListener('scroll', function() {
+            if (blackBox && blackBox.style.display === 'block') {
+                blackBox.style.display = 'none';
+                adminDropdownBtn.classList.remove('active');
+            }
+        });
+        
+        // Toggle black box when Admin Dashboard is clicked
+        if (adminDropdownBtn) {
+            adminDropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle active class for styling
+                this.classList.toggle('active');
+                
+                // Position before showing
+                positionBlackBox();
+                blackBox.style.display = blackBox.style.display === 'block' ? 'none' : 'block';
+            });
+        }
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (blackBox && blackBox.style.display === 'block' && 
+                !blackBox.contains(e.target) && 
+                !adminDropdownBtn.contains(e.target)) {
+                blackBox.style.display = 'none';
+                adminDropdownBtn.classList.remove('active');
+            }
+        });
+    });
+    </script>
 </body>
 </html>

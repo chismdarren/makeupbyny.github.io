@@ -141,13 +141,6 @@
           z-index: 1000; /* Ensure button appears in front */
         }
 
-        /* Desktop position for admin dashboard text */
-        @media (min-width: 768px) {
-          .admin-dropdown-btn {
-            bottom: 0px; /* Move text higher up for desktop view */
-          }
-        }
-
         .admin-dropdown-btn .dropdown-icon {
           display: inline-block;
           margin-left: 5px;
@@ -502,17 +495,6 @@
             const contactDropdownBtn = document.getElementById('contactDropdownBtn');
             const contactBox = document.querySelector('.contact-black-box');
             
-            // Function to update admin button position based on screen size
-            function updateAdminButtonPosition() {
-                if (adminDropdownBtn) {
-                    if (window.innerWidth >= 768) {
-                        adminDropdownBtn.style.bottom = '0px';
-                    } else {
-                        adminDropdownBtn.style.bottom = '-8px';
-                    }
-                }
-            }
-
             // Function to position white box under Admin Dashboard
             function positionWhiteBox() {
                 if (adminDropdownBtn && whiteBox) {
@@ -533,16 +515,14 @@
                 }
             }
             
-            // Position boxes and update admin button position initially
+            // Position boxes initially
             positionWhiteBox();
             positionContactBox();
-            updateAdminButtonPosition();
             
-            // Reposition and update on window resize
+            // Reposition on window resize
             window.addEventListener('resize', function() {
                 positionWhiteBox();
                 positionContactBox();
-                updateAdminButtonPosition();
             });
             
             // Toggle admin dropdown when Admin Dashboard is clicked
