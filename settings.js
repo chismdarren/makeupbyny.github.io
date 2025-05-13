@@ -549,16 +549,21 @@ function setupDropdowns() {
             // Toggle active class for button styling
             this.classList.toggle('active');
             
-            // Toggle white box dropdown
-            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
+            // Toggle black box dropdown
+            const blackBox = document.querySelector('.black-box');
             
-            if (whiteBoxDropdown.style.display === 'none' || !whiteBoxDropdown.style.display) {
+            if (!blackBox) {
+                console.error('Black box element not found');
+                return;
+            }
+            
+            if (blackBox.style.display === 'none' || !blackBox.style.display) {
                 // Position the dropdown
-                positionDropdown(whiteBoxDropdown, this);
-                whiteBoxDropdown.style.display = 'block';
+                positionDropdown(blackBox, this);
+                blackBox.style.display = 'block';
                 activeDropdown = true;
             } else {
-                whiteBoxDropdown.style.display = 'none';
+                blackBox.style.display = 'none';
                 activeDropdown = false;
             }
         });
@@ -586,10 +591,10 @@ function setupDropdowns() {
     window.addEventListener('resize', function() {
         // Check if dropdown is active
         if (activeDropdown) {
-            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
+            const blackBox = document.querySelector('.black-box');
             const button = adminDropdownBtn;
-            if (whiteBoxDropdown && whiteBoxDropdown.style.display === 'block' && button) {
-                positionDropdown(whiteBoxDropdown, button);
+            if (blackBox && blackBox.style.display === 'block' && button) {
+                positionDropdown(blackBox, button);
             }
         }
     });
@@ -597,10 +602,10 @@ function setupDropdowns() {
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.matches('.admin-dropdown-btn')) {
-            // Hide white box dropdown
-            const whiteBoxDropdown = document.getElementById('adminWhiteBoxDropdown');
-            if (whiteBoxDropdown) {
-                whiteBoxDropdown.style.display = 'none';
+            // Hide black box dropdown
+            const blackBox = document.querySelector('.black-box');
+            if (blackBox) {
+                blackBox.style.display = 'none';
                 activeDropdown = false;
             }
             
