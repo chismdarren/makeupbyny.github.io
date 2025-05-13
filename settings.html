@@ -224,7 +224,7 @@
 
         /* Black box method implementation */
         .black-box {
-            position: absolute;
+            position: fixed;
             background-color: white;
             z-index: 9999;
             display: none;
@@ -235,9 +235,8 @@
             border-radius: 4px;
             overflow: hidden;
             border: 1px solid #eee;
-            transform: translateX(-50%);
-            margin-top: 5px;
-            left: 50%;
+            transform: translateX(-50%); /* Center horizontally */
+            left: 50%; /* Used with transform for perfect centering */
         }
         
         .black-box a {
@@ -458,18 +457,21 @@
                     <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
                 </a>
             </div>
-            <!-- Admin Dashboard button and black box -->
-            <a id="adminDropdownBtn" href="#" style="display:none;">
-                Admin Dashboard 
-                <span class="dropdown-icon">▼</span>
-            </a>
+            <!-- Admin dropdown menu (initially hidden) -->
+            <div class="admin-dropdown">
+                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+                    Admin Dashboard 
+                    <span class="dropdown-icon">▼</span>
+                </a>
+            </div>
+            <!-- Black box for admin links -->
             <div class="black-box">
                 <a href="admin-dashboard.html">Messages</a>
                 <a href="editor.html">Create Post</a>
                 <a href="edit-post.html">Edit Posts</a>
                 <a href="manage-users.html">User Management</a>
             </div>
-            <!-- User account link -->
+            <!-- User account link (replaces dropdown) -->
             <a id="userAccountLink" href="settings.html">My Account</a>
             <!-- Public links -->
             <a id="login-link" href="login.html">Login</a>
@@ -743,50 +745,47 @@
         function positionBlackBox() {
             if (adminDropdownBtn && blackBox) {
                 const rect = adminDropdownBtn.getBoundingClientRect();
-                blackBox.style.top = '100%';
-                blackBox.style.left = '50%';
-            }
-        }
-
-        function hideBlackBox() {
-            if (blackBox && blackBox.style.display === 'block') {
-                blackBox.style.display = 'none';
-                if (adminDropdownBtn) {
-                    adminDropdownBtn.classList.remove('active');
-                }
+                blackBox.style.top = (rect.bottom) + 'px';
+                blackBox.style.left = rect.left + 'px';
             }
         }
         
-        // Position black box when admin button is clicked
+        // Position black box initially
+        positionBlackBox();
+        
+        // Reposition on window resize
+        window.addEventListener('resize', function() {
+            positionBlackBox();
+        });
+        
+        // Reposition on scroll
+        window.addEventListener('scroll', function() {
+            positionBlackBox();
+        });
+        
+        // Toggle black box when Admin Dashboard is clicked
         if (adminDropdownBtn) {
             adminDropdownBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
+                // Toggle active class for styling
                 this.classList.toggle('active');
                 
-                if (blackBox.style.display === 'block') {
-                    hideBlackBox();
-                } else {
-                    positionBlackBox();
-                    blackBox.style.display = 'block';
-                    this.classList.add('active');
-                }
+                // Position before showing
+                positionBlackBox();
+                blackBox.style.display = blackBox.style.display === 'block' ? 'none' : 'block';
             });
         }
         
-        // Hide black box when clicking outside
+        // Hide dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (blackBox && blackBox.style.display === 'block' && 
                 !blackBox.contains(e.target) && 
                 !adminDropdownBtn.contains(e.target)) {
-                hideBlackBox();
+                blackBox.style.display = 'none';
+                adminDropdownBtn.classList.remove('active');
             }
-        });
-        
-        // Hide black box when scrolling
-        window.addEventListener('scroll', function() {
-            hideBlackBox();
         });
     });
     </script>
