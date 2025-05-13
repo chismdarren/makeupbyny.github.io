@@ -502,6 +502,17 @@
             const contactDropdownBtn = document.getElementById('contactDropdownBtn');
             const contactBox = document.querySelector('.contact-black-box');
             
+            // Function to update admin button position based on screen size
+            function updateAdminButtonPosition() {
+                if (adminDropdownBtn) {
+                    if (window.innerWidth >= 768) {
+                        adminDropdownBtn.style.bottom = '0px';
+                    } else {
+                        adminDropdownBtn.style.bottom = '-8px';
+                    }
+                }
+            }
+
             // Function to position white box under Admin Dashboard
             function positionWhiteBox() {
                 if (adminDropdownBtn && whiteBox) {
@@ -522,14 +533,16 @@
                 }
             }
             
-            // Position boxes initially
+            // Position boxes and update admin button position initially
             positionWhiteBox();
             positionContactBox();
+            updateAdminButtonPosition();
             
-            // Reposition on window resize
+            // Reposition and update on window resize
             window.addEventListener('resize', function() {
                 positionWhiteBox();
                 positionContactBox();
+                updateAdminButtonPosition();
             });
             
             // Toggle admin dropdown when Admin Dashboard is clicked

@@ -680,6 +680,17 @@
             const contactDropdownBtn = document.getElementById('contactDropdownBtn');
             const contactBox = document.querySelector('.contact-black-box');
             
+            // Function to update admin button position based on screen size
+            function updateAdminButtonPosition() {
+                if (adminDropdownBtn) {
+                    if (window.innerWidth >= 768) {
+                        adminDropdownBtn.style.bottom = '0px';
+                    } else {
+                        adminDropdownBtn.style.bottom = '-8px';
+                    }
+                }
+            }
+
             // Function to position boxes
             function positionBoxes() {
                 if (adminDropdownBtn && whiteBox) {
@@ -694,11 +705,15 @@
                 }
             }
             
-            // Position boxes initially
+            // Position boxes and update admin button position initially
             positionBoxes();
+            updateAdminButtonPosition();
             
-            // Reposition on window resize
-            window.addEventListener('resize', positionBoxes);
+            // Reposition and update on window resize
+            window.addEventListener('resize', () => {
+                positionBoxes();
+                updateAdminButtonPosition();
+            });
             
             // Hide on scroll
             window.addEventListener('scroll', function() {
