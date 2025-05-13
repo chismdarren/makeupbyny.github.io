@@ -57,15 +57,17 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();
       
       // Toggle dropdown visibility
-      const dropdown = document.getElementById('adminDropdownContent');
-      dropdown.classList.toggle('show-dropdown');
-      this.classList.toggle('active');
+      const dropdown = document.querySelector('.black-box');
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        this.classList.toggle('active');
+      }
       
       // For mobile: ensure the dropdown is positioned correctly
-      if (window.innerWidth <= 480) {
+      if (window.innerWidth <= 480 && dropdown) {
         // Function to position dropdown below button
         const positionDropdown = () => {
-          if (dropdown.classList.contains('show-dropdown')) {
+          if (dropdown.style.display === 'block') {
             const buttonRect = this.getBoundingClientRect();
             
             dropdown.style.position = 'fixed';
@@ -87,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Track scroll to reposition dropdown if needed
         const scrollHandler = () => {
-          if (dropdown.classList.contains('show-dropdown')) {
+          if (dropdown.style.display === 'block') {
             positionDropdown();
           } else {
             // Remove handler if dropdown is closed
@@ -107,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
       // Don't close if clicking on the dropdown itself
-      if (e.target.closest('.admin-dropdown-content')) {
+      if (e.target.closest('.black-box')) {
         return;
       }
       
@@ -115,11 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!e.target.matches('#adminDropdownBtn') && 
           !e.target.matches('.dropdown-icon') && 
           !e.target.closest('#adminDropdownBtn')) {
-        const dropdown = document.getElementById('adminDropdownContent');
+        const dropdown = document.querySelector('.black-box');
         const btn = document.getElementById('adminDropdownBtn');
-        if (dropdown && dropdown.classList.contains('show-dropdown')) {
-          dropdown.classList.remove('show-dropdown');
-          btn.classList.remove('active');
+        if (dropdown && dropdown.style.display === 'block') {
+          dropdown.style.display = 'none';
+          if (btn) btn.classList.remove('active');
           
           // Reset inline styles when closing dropdown
           if (window.innerWidth <= 480) {
