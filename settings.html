@@ -672,70 +672,6 @@
     <!-- Include the JavaScript file -->
     <script type="module" src="settings.js"></script>
 
-    <!-- Contact dropdown control script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const contactDropdownBtn = document.getElementById('contactDropdownBtn');
-            const contactBox = document.querySelector('.contact-black-box');
-            
-            // Function to position contact box under Contact button
-            function positionContactBox() {
-                if (contactDropdownBtn && contactBox) {
-                    const rect = contactDropdownBtn.getBoundingClientRect();
-                    contactBox.style.top = (rect.bottom) + 'px';
-                    contactBox.style.left = rect.left + 'px';
-                    contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
-                }
-            }
-            
-            // Position contact box initially
-            positionContactBox();
-            
-            // Reposition on window resize
-            window.addEventListener('resize', function() {
-                positionContactBox();
-            });
-            
-            // Toggle contact dropdown when Contact is clicked
-            if (contactDropdownBtn && contactBox) {
-                contactDropdownBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Toggle contact box display
-                    if (contactBox.style.display === 'block') {
-                        contactBox.style.display = 'none';
-                        this.classList.remove('active');
-                    } else {
-                        positionContactBox(); // Position before showing
-                        contactBox.style.display = 'block';
-                        this.classList.add('active');
-                    }
-                });
-            }
-            
-            // Hide dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                // Close contact dropdown
-                if (contactBox && contactBox.style.display === 'block' && 
-                    contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
-                    !contactBox.contains(e.target)) {
-                    contactBox.style.display = 'none';
-                    contactDropdownBtn.classList.remove('active');
-                }
-            });
-            
-            // Hide dropdown when scrolling
-            window.addEventListener('scroll', function() {
-                // Close contact dropdown
-                if (contactBox && contactBox.style.display === 'block') {
-                    contactBox.style.display = 'none';
-                    if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-                }
-            });
-        });
-    </script>
-
     <!-- Admin dropdown control script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -744,115 +680,92 @@
             const contactDropdownBtn = document.getElementById('contactDropdownBtn');
             const contactBox = document.querySelector('.contact-black-box');
             
-            // Function to position white box under Admin Dashboard
-            function positionWhiteBox() {
+            // Function to position boxes
+            function positionBoxes() {
                 if (adminDropdownBtn && whiteBox) {
                     const rect = adminDropdownBtn.getBoundingClientRect();
                     whiteBox.style.top = (rect.bottom) + 'px';
-                    whiteBox.style.left = rect.left + 'px';
-                    whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
+                    whiteBox.style.left = (rect.left + (rect.width / 2)) + 'px';
                 }
-            }
-            
-            // Function to position contact box under Contact button
-            function positionContactBox() {
                 if (contactDropdownBtn && contactBox) {
                     const rect = contactDropdownBtn.getBoundingClientRect();
                     contactBox.style.top = (rect.bottom) + 'px';
-                    contactBox.style.left = rect.left + 'px';
-                    contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
+                    contactBox.style.left = (rect.left + (rect.width / 2)) + 'px';
                 }
             }
             
             // Position boxes initially
-            positionWhiteBox();
-            positionContactBox();
+            positionBoxes();
             
             // Reposition on window resize
-            window.addEventListener('resize', function() {
-                positionWhiteBox();
-                positionContactBox();
-            });
+            window.addEventListener('resize', positionBoxes);
             
-            // Toggle admin dropdown when Admin Dashboard is clicked
-            if (adminDropdownBtn && whiteBox) {
-                adminDropdownBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Toggle white box display
-                    if (whiteBox.style.display === 'block') {
-                        whiteBox.style.display = 'none';
-                        this.classList.remove('active');
-                    } else {
-                        positionWhiteBox(); // Position before showing
-                        whiteBox.style.display = 'block';
-                        this.classList.add('active');
-                        
-                        // Hide contact dropdown if it's open
-                        if (contactBox) {
-                            contactBox.style.display = 'none';
-                            if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-                        }
-                    }
-                });
-            }
-            
-            // Toggle contact dropdown when Contact is clicked
-            if (contactDropdownBtn && contactBox) {
-                contactDropdownBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Toggle contact box display
-                    if (contactBox.style.display === 'block') {
-                        contactBox.style.display = 'none';
-                        this.classList.remove('active');
-                    } else {
-                        positionContactBox(); // Position before showing
-                        contactBox.style.display = 'block';
-                        this.classList.add('active');
-                        
-                        // Hide admin dropdown if it's open
-                        if (whiteBox) {
-                            whiteBox.style.display = 'none';
-                            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-                        }
-                    }
-                });
-            }
-            
-            // Hide dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                // Close admin dropdown
-                if (whiteBox && whiteBox.style.display === 'block' && 
-                    adminDropdownBtn && !adminDropdownBtn.contains(e.target) && 
-                    !whiteBox.contains(e.target)) {
+            // Hide on scroll
+            window.addEventListener('scroll', function() {
+                if (whiteBox && whiteBox.style.display === 'block') {
                     whiteBox.style.display = 'none';
                     adminDropdownBtn.classList.remove('active');
                 }
-                
-                // Close contact dropdown
-                if (contactBox && contactBox.style.display === 'block' && 
-                    contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
-                    !contactBox.contains(e.target)) {
+                if (contactBox && contactBox.style.display === 'block') {
                     contactBox.style.display = 'none';
                     contactDropdownBtn.classList.remove('active');
                 }
             });
             
-            // Hide dropdowns when scrolling
-            window.addEventListener('scroll', function() {
-                // Close admin dropdown
-                if (whiteBox && whiteBox.style.display === 'block') {
+            // Toggle boxes when buttons are clicked
+            if (adminDropdownBtn) {
+                adminDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Toggle active class for styling
+                    this.classList.toggle('active');
+                    
+                    // Position before showing
+                    positionBoxes();
+                    whiteBox.style.display = whiteBox.style.display === 'block' ? 'none' : 'block';
+                    
+                    // Hide contact box if open
+                    if (contactBox && contactBox.style.display === 'block') {
+                        contactBox.style.display = 'none';
+                        contactDropdownBtn.classList.remove('active');
+                    }
+                });
+            }
+            
+            if (contactDropdownBtn) {
+                contactDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Toggle active class for styling
+                    this.classList.toggle('active');
+                    
+                    // Position before showing
+                    positionBoxes();
+                    contactBox.style.display = contactBox.style.display === 'block' ? 'none' : 'block';
+                    
+                    // Hide white box if open
+                    if (whiteBox && whiteBox.style.display === 'block') {
+                        whiteBox.style.display = 'none';
+                        adminDropdownBtn.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Hide boxes when clicking outside
+            document.addEventListener('click', function(e) {
+                if (whiteBox && whiteBox.style.display === 'block' && 
+                    !whiteBox.contains(e.target) && 
+                    !adminDropdownBtn.contains(e.target)) {
                     whiteBox.style.display = 'none';
-                    if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+                    adminDropdownBtn.classList.remove('active');
                 }
-                
-                // Close contact dropdown
-                if (contactBox && contactBox.style.display === 'block') {
+                if (contactBox && contactBox.style.display === 'block' && 
+                    !contactBox.contains(e.target) && 
+                    !contactDropdownBtn.contains(e.target)) {
                     contactBox.style.display = 'none';
-                    if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
+                    contactDropdownBtn.classList.remove('active');
                 }
             });
         });
