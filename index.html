@@ -105,7 +105,22 @@
     .admin-dropdown {
       position: relative;
       display: inline-block;
-      z-index: 1000; /* Ensure dropdown appears in front of other elements */
+      z-index: 1000;
+      vertical-align: middle;
+    }
+
+    .admin-dropdown-content {
+      position: absolute;
+      top: 100%;  /* Position right below the button */
+      right: 0;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      z-index: 2000;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #eee;
+      margin-top: 5px;
     }
 
     .admin-dropdown-btn {
@@ -117,13 +132,10 @@
       cursor: pointer;
       font-family: inherit;
       text-decoration: none;
-      display: none;
-      transition: color 0.2s;
       display: flex;
       align-items: center;
       position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-      z-index: 1000; /* Ensure button appears in front */
+      z-index: 1000;
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -152,44 +164,38 @@
     @media (max-width: 768px) {
       .admin-dropdown-content {
         position: absolute;
+        top: 100%;
         right: 0;
-        left: auto;
         width: 200px;
-        z-index: 2000; /* Much higher z-index for mobile */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        z-index: 2000;
       }
 
       .admin-dropdown {
         position: relative;
         z-index: 1500;
+        display: inline-block;
       }
 
       header nav {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
+        align-items: center;
         position: relative;
-        z-index: auto; /* Reset any z-index that might be interfering */
-      }
-      
-      /* Ensure the dropdown shows on top of everything when active */
-      .show-dropdown {
-        display: block !important;
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-        z-index: 9999 !important; /* Extremely high z-index */
       }
     }
 
     /* For very small screens */
     @media (max-width: 480px) {
       .admin-dropdown-content {
-        right: -50px; /* Adjust position to be more centered on small screens */
+        position: absolute;
+        top: 100%;
+        right: -50px;
+        width: 180px;
       }
 
       .admin-dropdown-btn {
         padding: 10px 5px;
-        bottom: 2px; /* Raise the Admin Dashboard text on mobile */
       }
     }
 
