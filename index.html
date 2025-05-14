@@ -71,10 +71,10 @@
       position: fixed;
       background-color: white;
       z-index: 999;
-      display: none;
+      display: none; /* Hidden by default */
       width: auto;
       height: auto;
-      min-width: 180px;
+      min-width: 180px; /* Match dropdown width */
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       border-radius: 4px;
       overflow: hidden;
@@ -610,32 +610,6 @@
     .contact-dropdown-btn.active .dropdown-icon {
       transform: rotate(180deg);
     }
-
-    /* Admin Dashboard Button Styles */
-    #adminDashboardBtn {
-      color: #333;
-      text-decoration: none;
-      padding: 10px;
-      transition: color 0.2s;
-      display: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-    }
-
-    #adminDashboardBtn:hover {
-      color: #a07;
-    }
-
-    #adminDashboardBtn .dropdown-icon {
-      display: inline-block;
-      margin-left: 5px;
-      transition: transform 0.3s ease;
-    }
-
-    #adminDashboardBtn.active .dropdown-icon {
-      transform: rotate(180deg);
-    }
   </style>
 </head>
 <body>
@@ -655,11 +629,13 @@
           <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
         </a>
       </div>
-      <!-- Admin Dashboard link -->
-      <a href="#" id="adminDashboardBtn" style="display:none; align-items: center;">
-        Admin Dashboard
-        <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
-      </a>
+      <!-- Admin dropdown menu (initially hidden) -->
+      <div class="admin-dropdown">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+          Admin Dashboard 
+          <span class="dropdown-icon">▼</span>
+        </a>
+      </div>
       <!-- User account link -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
@@ -690,7 +666,7 @@
 
   <!-- Contact dropdown black box -->
   <div class="contact-black-box" style="position: fixed; background-color: white; z-index: 999; display: none; width: auto; height: auto; min-width: 50px !important; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; border: 1px solid #eee;">
-    <a href="contact.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">Contact</a>
+    <a href="contact.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Contact</a>
     <a href="https://glammedbyglizz.youcanbook.me/" target="_blank" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">Booking</a>
   </div>
 
@@ -824,39 +800,6 @@
           
           // Show settings icon for logged in users
           document.getElementById("settingsIcon").style.display = "flex";
-
-          // Check if user is admin and show admin dashboard button
-          const isAdmin = await isAdminUser(user.uid);
-          if (isAdmin) {
-            const adminBtn = document.getElementById("adminDashboardBtn");
-            adminBtn.style.display = "inline";
-            
-            // Handle black box display
-            const blackBox = document.querySelector(".black-box");
-            
-            adminBtn.addEventListener("click", (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              
-              // Toggle black box display
-              if (blackBox.style.display === "block") {
-                blackBox.style.display = "none";
-              } else {
-                // Position black box below admin button
-                const btnRect = adminBtn.getBoundingClientRect();
-                blackBox.style.top = (btnRect.bottom + window.scrollY) + "px";
-                blackBox.style.left = (btnRect.left + window.scrollX) + "px";
-                blackBox.style.display = "block";
-              }
-            });
-            
-            // Close black box when clicking outside
-            document.addEventListener("click", (e) => {
-              if (!blackBox.contains(e.target) && e.target !== adminBtn) {
-                blackBox.style.display = "none";
-              }
-            });
-          }
 
           // Only show avatar popup for new users - check in Firestore
           try {
