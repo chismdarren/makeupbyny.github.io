@@ -211,7 +211,7 @@
       background: none;
       border: none;
       color: #333;
-      font-size: 1.1em; /* Match nav font size from style.css */
+      font-size: 1.1em;
       padding: 10px;
       cursor: pointer;
       font-family: inherit;
@@ -239,24 +239,24 @@
       color: #a07;
     }
 
+    /* Black box styling for both dropdowns */
+    .black-box,
     .admin-dropdown-content {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 100%;
+      position: fixed;
       background-color: white;
+      z-index: 999;
+      display: none;
+      width: auto;
+      height: auto;
       min-width: 180px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      z-index: 1001;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       border-radius: 4px;
       overflow: hidden;
-      margin-top: 5px;
-      border: 1px solid #ddd;
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: opacity 0.3s, transform 0.3s;
+      border: 1px solid #eee;
     }
-
+    
+    /* Menu items in the black box */
+    .black-box a,
     .admin-dropdown-content a {
       color: #333;
       padding: 12px 16px;
@@ -265,19 +265,21 @@
       text-align: left;
       transition: background-color 0.2s, color 0.2s;
       border-bottom: 1px solid #f5f5f5;
-      font-size: 1.1em; /* Match nav font size from style.css */
+      font-size: 1.1em;
     }
-
+    
+    .black-box a:last-child,
     .admin-dropdown-content a:last-child {
       border-bottom: none;
     }
-
+    
+    .black-box a:hover,
     .admin-dropdown-content a:hover {
       background-color: #f9f9f9;
       color: #a07;
     }
 
-    /* This class is toggled via JavaScript */
+    /* Show dropdown class */
     .show-dropdown {
       display: block !important;
       opacity: 1 !important;
