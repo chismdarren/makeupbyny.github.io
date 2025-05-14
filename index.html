@@ -66,40 +66,6 @@
       background-color: rgba(255, 105, 180, 0.05);
     }
 
-    /* Black box styles */
-    .black-box {
-      position: fixed;
-      background-color: white;
-      z-index: 999;
-      display: none;
-      width: auto;
-      height: auto;
-      min-width: 180px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      border-radius: 4px;
-      overflow: hidden;
-      border: 1px solid #eee;
-    }
-    
-    .black-box a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      text-align: left;
-      transition: background-color 0.2s, color 0.2s;
-      border-bottom: 1px solid #f5f5f5;
-    }
-    
-    .black-box a:last-child {
-      border-bottom: none;
-    }
-    
-    .black-box a:hover {
-      background-color: #f9f9f9;
-      color: #a07;
-    }
-
     /* Admin Dropdown Menu Styles */
     .admin-dropdown {
       position: relative;
@@ -182,11 +148,6 @@
 
     /* For very small screens */
     @media (max-width: 480px) {
-      .black-box {
-        right: 10px;
-        top: 60px;
-      }
-
       .admin-dropdown-content {
         right: -50px; /* Adjust position to be more centered on small screens */
       }
@@ -633,10 +594,11 @@
           <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
         </a>
       </div>
-      <!-- Admin dashboard link -->
-      <div class="admin-link">
-        <a id="adminDashboardLink" href="#" style="display:none;">
-          Admin Dashboard
+      <!-- Admin dropdown menu (initially hidden) -->
+      <div class="admin-dropdown">
+        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
+          Admin Dashboard 
+          <span class="dropdown-icon">▼</span>
         </a>
       </div>
       <!-- User account link -->
@@ -657,14 +619,6 @@
   <!-- Edit Mode Button (Admin only) -->
   <div id="edit-mode-toggle" style="display:none; top: 70px;">
     <i class="fas fa-pencil-alt"></i>
-  </div>
-
-  <!-- Black box in the middle of the page (admin dropdown content) -->
-  <div class="black-box">
-    <a href="admin-dashboard.html">Messages</a>
-    <a href="editor.html">Create Post</a>
-    <a href="edit-post.html">Edit Posts</a>
-    <a href="manage-users.html">User Management</a>
   </div>
 
   <!-- Contact dropdown black box -->
@@ -803,30 +757,6 @@
           
           // Show settings icon for logged in users
           document.getElementById("settingsIcon").style.display = "flex";
-
-          // Check if user is admin and show admin dashboard link
-          const adminLink = document.getElementById("adminDashboardLink");
-          const blackBox = document.querySelector(".black-box");
-          
-          if (await isAdminUser(user.uid)) {
-            adminLink.style.display = "inline";
-            
-            // Add click event for admin dashboard link
-            adminLink.addEventListener("click", (e) => {
-              e.preventDefault();
-              const rect = adminLink.getBoundingClientRect();
-              blackBox.style.display = blackBox.style.display === "none" || blackBox.style.display === "" ? "block" : "none";
-              blackBox.style.top = `${rect.bottom + window.scrollY}px`;
-              blackBox.style.left = `${rect.left}px`;
-            });
-
-            // Close black box when clicking outside
-            document.addEventListener("click", (e) => {
-              if (!adminLink.contains(e.target) && !blackBox.contains(e.target)) {
-                blackBox.style.display = "none";
-              }
-            });
-          }
 
           // Only show avatar popup for new users - check in Firestore
           try {
