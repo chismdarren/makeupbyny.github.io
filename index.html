@@ -66,85 +66,42 @@
       background-color: rgba(255, 105, 180, 0.05);
     }
 
-    /* Admin Dropdown Menu Styles */
-    .admin-dropdown {
-      position: relative;
-      display: inline-block;
-      z-index: 1000; /* Ensure dropdown appears in front of other elements */
+    /* White box mimicking the dropdown */
+    .black-box {
+      position: fixed;
+      background-color: white;
+      z-index: 999;
+      display: none; /* Hidden by default */
+      width: auto;
+      height: auto;
+      min-width: 180px; /* Match dropdown width */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #eee;
     }
-
-    .admin-dropdown-btn {
-      background: none;
-      border: none;
+    
+    /* Menu items in the white box */
+    .black-box a {
       color: #333;
-      font-size: 1em;
-      padding: 10px;
-      cursor: pointer;
-      font-family: inherit;
+      padding: 12px 16px;
       text-decoration: none;
-      display: none;
-      transition: color 0.2s;
-      display: flex;
-      align-items: center;
-      position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-      z-index: 1000; /* Ensure button appears in front */
+      display: block;
+      text-align: left;
+      transition: background-color 0.2s, color 0.2s;
+      border-bottom: 1px solid #f5f5f5;
     }
-
-    .admin-dropdown-btn .dropdown-icon {
-      display: inline-block;
-      margin-left: 5px;
-      transition: transform 0.3s ease;
+    
+    .black-box a:last-child {
+      border-bottom: none;
     }
-
-    .admin-dropdown-btn.active .dropdown-icon {
-      transform: rotate(180deg);
-    }
-
-    .admin-dropdown-btn:hover, 
-    .admin-dropdown-btn.active {
+    
+    .black-box a:hover {
+      background-color: #f9f9f9;
       color: #a07;
     }
 
-    /* Desktop position for admin dashboard text */
-    @media (min-width: 768px) {
-      .admin-dropdown-btn {
-        bottom: 0px; /* Move text higher up for desktop view */
-      }
-    }
-
-    /* Responsive adjustments for admin dropdown */
-    @media (max-width: 768px) {
-      .admin-dropdown-content {
-        position: absolute;
-        right: 0;
-        left: auto;
-        width: 200px;
-        z-index: 2000; /* Much higher z-index for mobile */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      }
-
-      .admin-dropdown {
-        position: relative;
-        z-index: 1500;
-      }
-
-      header nav {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        position: relative;
-        z-index: auto; /* Reset any z-index that might be interfering */
-      }
-      
-      /* Ensure the dropdown shows on top of everything when active */
-      .show-dropdown {
-        display: block !important;
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-        z-index: 9999 !important; /* Extremely high z-index */
-      }
-    }
+    /* For very small screens */
 
     /* For very small screens */
     @media (max-width: 480px) {
@@ -594,13 +551,7 @@
           <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
         </a>
       </div>
-      <!-- Admin dropdown menu (initially hidden) -->
-      <div class="admin-dropdown">
-        <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
-          Admin Dashboard 
-          <span class="dropdown-icon">▼</span>
-        </a>
-      </div>
+      <!-- Admin functionality handled by black box -->
       <!-- User account link -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
@@ -619,6 +570,14 @@
   <!-- Edit Mode Button (Admin only) -->
   <div id="edit-mode-toggle" style="display:none; top: 70px;">
     <i class="fas fa-pencil-alt"></i>
+  </div>
+
+  <!-- Black box in the middle of the page (admin dropdown content) -->
+  <div class="black-box">
+    <a href="admin-dashboard.html">Messages</a>
+    <a href="editor.html">Create Post</a>
+    <a href="edit-post.html">Edit Posts</a>
+    <a href="manage-users.html">User Management</a>
   </div>
 
   <!-- Contact dropdown black box -->
