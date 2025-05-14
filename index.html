@@ -619,10 +619,22 @@
       transition: color 0.2s;
       display: none;
       cursor: pointer;
+      display: flex;
+      align-items: center;
     }
 
     #adminDashboardBtn:hover {
       color: #a07;
+    }
+
+    #adminDashboardBtn .dropdown-icon {
+      display: inline-block;
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    #adminDashboardBtn.active .dropdown-icon {
+      transform: rotate(180deg);
     }
   </style>
 </head>
@@ -643,6 +655,11 @@
           <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
         </a>
       </div>
+      <!-- Admin Dashboard link -->
+      <a href="#" id="adminDashboardBtn" style="display:none; align-items: center;">
+        Admin Dashboard
+        <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
+      </a>
       <!-- User account link -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
