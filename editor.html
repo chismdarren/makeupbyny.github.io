@@ -879,7 +879,7 @@
       background: none;
       border: none;
       color: #333;
-      font-size: 1em;
+      font-size: 1.1em;
       padding: 10px;
       cursor: pointer;
       font-family: inherit;
@@ -961,13 +961,15 @@
 
     /* Responsive adjustments for admin dropdown */
     @media (max-width: 768px) {
+      .admin-dropdown-btn {
+        font-size: 1em;
+      }
+
       .admin-dropdown-content {
         position: absolute;
         right: 0;
         left: auto;
         width: 200px;
-        z-index: 2000; /* Much higher z-index for mobile */
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
       }
 
       .admin-dropdown {
