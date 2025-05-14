@@ -120,6 +120,16 @@
       z-index: 1000; /* Ensure link appears in front */
     }
 
+    #adminDashboardLink .dropdown-icon {
+      display: inline-block;
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    #adminDashboardLink.active .dropdown-icon {
+      transform: rotate(180deg);
+    }
+
     #adminDashboardLink:hover {
       color: #a07;
     }
@@ -576,7 +586,7 @@
         </a>
       </div>
       <!-- Replace admin dropdown with new link -->
-      <a id="adminDashboardLink" href="#" style="display:none;">Admin Dashboard</a>
+      <a id="adminDashboardLink" href="#" style="display:none;">Admin Dashboard <span class="dropdown-icon">▼</span></a>
       <!-- User account link -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
