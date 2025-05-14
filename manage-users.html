@@ -1038,6 +1038,43 @@
   <!-- Include the external JavaScript file -->
   <script type="module" src="manage-users.js"></script>
   
+  <!-- Add Firebase auth code -->
+  <script type="module">
+    // Import necessary Firebase modules
+    import { auth } from "./firebase-config.js";  // Auth instance
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  // Auth state observer
+    import { isAdminUser } from "./firebase-config.js";  // Admin check function
+
+    // Monitor user authentication state
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is signed in
+        document.getElementById("login-link").style.display = "none";
+        document.getElementById("logout-btn").style.display = "inline";
+        document.getElementById("userAccountLink").style.display = "inline";
+        document.getElementById("settingsIcon").style.display = "flex";
+
+        // Check if user is admin
+        try {
+          const isAdmin = await isAdminUser(user.uid);
+          if (isAdmin) {
+            // Show admin dashboard link
+            document.getElementById("adminDashboardLink").style.display = "inline-block";
+          }
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+        }
+      } else {
+        // User is signed out
+        document.getElementById("login-link").style.display = "inline";
+        document.getElementById("logout-btn").style.display = "none";
+        document.getElementById("userAccountLink").style.display = "none";
+        document.getElementById("adminDashboardLink").style.display = "none";
+        document.getElementById("settingsIcon").style.display = "none";
+      }
+    });
+  </script>
+
   <script>
     // Fix for mobile menu tap delays
     document.addEventListener('DOMContentLoaded', function() {
