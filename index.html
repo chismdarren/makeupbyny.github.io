@@ -71,14 +71,16 @@
       position: fixed;
       background-color: white;
       z-index: 999;
-      display: none; /* Hidden by default */
+      display: none;
       width: auto;
       height: auto;
-      min-width: 180px; /* Match dropdown width */
+      min-width: 180px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
       border-radius: 4px;
       overflow: hidden;
       border: 1px solid #eee;
+      top: 60px; /* Position below the header */
+      right: 20px; /* Position from the right */
     }
     
     /* Menu items in the white box */
@@ -101,18 +103,11 @@
       color: #a07;
     }
 
-    /* For very small screens */
-
-    /* For very small screens */
-    @media (max-width: 480px) {
-      .admin-dropdown-content {
-        right: -50px; /* Adjust position to be more centered on small screens */
-      }
-
-      .admin-dropdown-btn {
-        padding: 10px 5px;
-        bottom: 2px; /* Raise the Admin Dashboard text on mobile */
-      }
+    /* Admin Dropdown Menu Styles */
+    .admin-dropdown,
+    .admin-dropdown-btn,
+    .admin-dropdown-content {
+      display: none !important;
     }
 
     /* Avatar Popup Styles */
@@ -551,7 +546,6 @@
           <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
         </a>
       </div>
-      <!-- Admin functionality handled by black box -->
       <!-- User account link -->
       <a id="userAccountLink" href="settings.html" style="display:none;">My Account</a>
       <!-- Public links -->
@@ -716,6 +710,29 @@
           
           // Show settings icon for logged in users
           document.getElementById("settingsIcon").style.display = "flex";
+
+          // Check if user is admin and show admin dashboard link
+          const isAdmin = await isAdminUser(user.uid);
+          if (isAdmin) {
+            const adminLink = document.getElementById("adminDashboardLink");
+            adminLink.style.display = "inline";
+            
+            // Add click event listener for admin dashboard link
+            adminLink.addEventListener("click", (e) => {
+              e.preventDefault();
+              const blackBox = document.querySelector(".black-box");
+              blackBox.style.display = blackBox.style.display === "none" || blackBox.style.display === "" ? "block" : "none";
+            });
+
+            // Close black box when clicking outside
+            document.addEventListener("click", (e) => {
+              const blackBox = document.querySelector(".black-box");
+              const adminLink = document.getElementById("adminDashboardLink");
+              if (!blackBox.contains(e.target) && e.target !== adminLink) {
+                blackBox.style.display = "none";
+              }
+            });
+          }
 
           // Only show avatar popup for new users - check in Firestore
           try {
