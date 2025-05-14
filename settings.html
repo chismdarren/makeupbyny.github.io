@@ -176,29 +176,87 @@
             }
         }
 
-            /* Admin text styles */
-    .admin-dropdown-btn {
-      background: none;
-      border: none;
-      color: #333;
-      font-size: 1em;
-      padding: 10px;
-      font-family: inherit;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-    }
+        /* Admin Dropdown Menu Styles */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
 
-    .admin-dropdown-btn .dropdown-icon {
-      display: inline-block;
-      margin-left: 5px;
-    }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1em;
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            display: none;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+            bottom: -8px;
+            z-index: 1000;
+        }
 
-    .admin-dropdown-btn:hover {
-      color: #a07;
-    }
+        .admin-dropdown-btn .dropdown-icon {
+            display: inline-block;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
 
-                /* Avatar Settings Styles */
+        .admin-dropdown-btn.active .dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        .admin-dropdown-btn:hover, 
+        .admin-dropdown-btn.active {
+            color: #a07;
+        }
+
+        /* Desktop position for admin dashboard text */
+        @media (min-width: 768px) {
+          .admin-dropdown-btn {
+            bottom: 0px; /* Move text higher up for desktop view */
+          }
+        }
+
+        /* Black box method implementation */
+        .black-box {
+            position: fixed;
+            background-color: white;
+            z-index: 9999;
+            display: none;
+            width: auto;
+            height: auto;
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            transform: translateX(-50%); /* Center horizontally */
+            left: 50%; /* Used with transform for perfect centering */
+        }
+        
+        .black-box a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            transition: background-color 0.2s, color 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .black-box a:last-child {
+            border-bottom: none;
+        }
+        
+        .black-box a:hover {
+            background-color: #f9f9f9;
+            color: #a07;
+        }
 
         /* Avatar Settings Styles */
         .avatar-settings {
@@ -286,7 +344,55 @@
             }
         }
 
+        /* User dropdown styles (same as admin dropdown) */
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+        }
 
+        .user-dropdown-btn {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1em;
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            display: none;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-dropdown-btn .dropdown-icon {
+            display: inline-block;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .user-dropdown-btn.active .dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        .user-dropdown-btn:hover, 
+        .user-dropdown-btn.active {
+            color: #a07;
+        }
+
+        /* Contact dropdown styles */
+        .contact-dropdown-btn:hover, 
+        .contact-dropdown-btn.active {
+            color: #a07 !important;
+        }
+
+        .contact-dropdown-btn .dropdown-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .contact-dropdown-btn.active .dropdown-icon {
+            transform: rotate(180deg);
+        }
 
         /* Settings gear icon styles */
         .settings-icon {
@@ -315,6 +421,24 @@
             height: 22px;
             fill: #333;
         }
+
+        /* For very small screens */
+        @media (max-width: 480px) {
+            .admin-dropdown-content {
+                right: -50px; /* Adjust position to be more centered on small screens */
+            }
+
+            .admin-dropdown-btn {
+                padding: 10px 5px;
+            }
+            
+            /* Style for white box dropdown on very small screens */
+            #adminWhiteBoxDropdown {
+                min-width: 200px !important; /* Override the inline style */
+                max-width: calc(100vw - 40px) !important; /* Prevent overflow */
+                margin: 0 auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -326,13 +450,26 @@
         <nav id="mainNav">
             <a href="index.html">Home</a>
             <a href="about.html">About</a>
-            <a href="contact.html">Contact</a>
-            <!-- Admin dashboard text -->
+            <!-- Convert Contact to a dropdown -->
+            <div class="contact-dropdown" style="display: inline-block; position: relative;">
+                <a id="contactDropdownBtn" class="contact-dropdown-btn" href="#" style="color: #333; text-decoration: none; display: flex; align-items: center;">
+                    Contact 
+                    <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
+                </a>
+            </div>
+            <!-- Admin dropdown menu (initially hidden) -->
             <div class="admin-dropdown">
                 <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
                     Admin Dashboard 
                     <span class="dropdown-icon">▼</span>
                 </a>
+            </div>
+            <!-- Black box for admin links -->
+            <div class="black-box">
+                <a href="admin-dashboard.html">Messages</a>
+                <a href="editor.html">Create Post</a>
+                <a href="edit-post.html">Edit Posts</a>
+                <a href="manage-users.html">User Management</a>
             </div>
             <!-- User account link (replaces dropdown) -->
             <a id="userAccountLink" href="settings.html">My Account</a>
@@ -342,7 +479,8 @@
         </nav>
     </header>
 
-
+    <!-- Contact dropdown black box -->
+    <div class="contact-black-box" style="position: fixed; background-color: white; z-index: 999; display: none; width: auto; height: auto; min-width: 50px !important; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; border: 1px solid #eee;">
         <a href="contact.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Contact</a>
         <a href="https://glammedbyglizz.youcanbook.me/" target="_blank" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">Booking</a>
     </div>
@@ -600,135 +738,60 @@
 
     <!-- Admin dropdown control script -->
     <script>
-        // Fix for mobile menu tap delays
-        document.addEventListener('DOMContentLoaded', function() {
-            const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-            const whiteBox = document.querySelector('.black-box');
-            const contactDropdownBtn = document.getElementById('contactDropdownBtn');
-            const contactBox = document.querySelector('.contact-black-box');
-            
-            // Function to position white box under Admin Dashboard
-            function positionWhiteBox() {
-                if (adminDropdownBtn && whiteBox) {
-                    const rect = adminDropdownBtn.getBoundingClientRect();
-                    whiteBox.style.top = (rect.bottom) + 'px';
-                    whiteBox.style.left = rect.left + 'px';
-                    whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
-                }
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+        const blackBox = document.querySelector('.black-box');
+        
+        function positionBlackBox() {
+            if (adminDropdownBtn && blackBox) {
+                const rect = adminDropdownBtn.getBoundingClientRect();
+                blackBox.style.top = (rect.bottom) + 'px';
+                // Center align with the button
+                blackBox.style.left = (rect.left + (rect.width / 2) - (blackBox.offsetWidth / 2)) + 'px';
             }
-            
-            // Function to position contact box under Contact button
-            function positionContactBox() {
-                if (contactDropdownBtn && contactBox) {
-                    const rect = contactDropdownBtn.getBoundingClientRect();
-                    contactBox.style.top = (rect.bottom) + 'px';
-                    contactBox.style.left = rect.left + 'px';
-                    contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
-                }
-            }
-            
-            // Reposition on window resize
-            window.addEventListener('resize', function() {
-                positionWhiteBox();
-                positionContactBox();
-                
-                // Update admin text position on resize
-                const adminBtn = document.getElementById('adminDropdownBtn');
-                if (adminBtn) {
-                    if (window.innerWidth >= 768) {
-                        adminBtn.style.bottom = '0px';
-                    } else {
-                        adminBtn.style.bottom = '-8px';
-                    }
-                }
-            });
-            
-            // Position boxes initially
-            positionWhiteBox();
-            positionContactBox();
-            
-            // Toggle admin dropdown when Admin Dashboard is clicked
-            if (adminDropdownBtn && whiteBox) {
-                adminDropdownBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Toggle white box display
-                    if (whiteBox.style.display === 'block') {
-                        whiteBox.style.display = 'none';
-                        this.classList.remove('active');
-                    } else {
-                        positionWhiteBox(); // Position before showing
-                        whiteBox.style.display = 'block';
-                        this.classList.add('active');
-                        
-                        // Hide contact dropdown if it's open
-                        if (contactBox) {
-                            contactBox.style.display = 'none';
-                            if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-                        }
-                    }
-                });
-            }
-            
-            // Toggle contact dropdown when Contact is clicked
-            if (contactDropdownBtn && contactBox) {
-                contactDropdownBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Toggle contact box display
-                    if (contactBox.style.display === 'block') {
-                        contactBox.style.display = 'none';
-                        this.classList.remove('active');
-                    } else {
-                        positionContactBox(); // Position before showing
-                        contactBox.style.display = 'block';
-                        this.classList.add('active');
-                        
-                        // Hide admin dropdown if it's open
-                        if (whiteBox) {
-                            whiteBox.style.display = 'none';
-                            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-                        }
-                    }
-                });
-            }
-            
-            // Hide dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                // Close admin dropdown
-                if (whiteBox && whiteBox.style.display === 'block' && 
-                    adminDropdownBtn && !adminDropdownBtn.contains(e.target) && 
-                    !whiteBox.contains(e.target)) {
-                    whiteBox.style.display = 'none';
-                    adminDropdownBtn.classList.remove('active');
-                }
-                
-                // Close contact dropdown
-                if (contactBox && contactBox.style.display === 'block' && 
-                    contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
-                    !contactBox.contains(e.target)) {
-                    contactBox.style.display = 'none';
-                    contactDropdownBtn.classList.remove('active');
-                }
-            });
-            
-            // Hide dropdowns when scrolling
-            window.addEventListener('scroll', function() {
-                // Close admin dropdown
-                if (whiteBox && whiteBox.style.display === 'block') {
-                    whiteBox.style.display = 'none';
-                    if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-                }
-                
-                // Close contact dropdown
-                if (contactBox && contactBox.style.display === 'block') {
-                    contactBox.style.display = 'none';
-                    if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-                }
-            });
+        }
+        
+        // Position black box initially
+        positionBlackBox();
+        
+        // Reposition on window resize
+        window.addEventListener('resize', function() {
+            positionBlackBox();
         });
+        
+        // Hide on scroll instead of repositioning
+        window.addEventListener('scroll', function() {
+            if (blackBox && blackBox.style.display === 'block') {
+                blackBox.style.display = 'none';
+                adminDropdownBtn.classList.remove('active');
+            }
+        });
+        
+        // Toggle black box when Admin Dashboard is clicked
+        if (adminDropdownBtn) {
+            adminDropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle active class for styling
+                this.classList.toggle('active');
+                
+                // Position before showing
+                positionBlackBox();
+                blackBox.style.display = blackBox.style.display === 'block' ? 'none' : 'block';
+            });
+        }
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (blackBox && blackBox.style.display === 'block' && 
+                !blackBox.contains(e.target) && 
+                !adminDropdownBtn.contains(e.target)) {
+                blackBox.style.display = 'none';
+                adminDropdownBtn.classList.remove('active');
+            }
+        });
+    });
     </script>
 </body>
 </html>
