@@ -177,12 +177,7 @@
         }
 
         /* Admin Dropdown Menu Styles */
-        .admin-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .admin-dropdown-btn {
+        #adminDashboardLink {
             background: none;
             border: none;
             color: #333;
@@ -200,31 +195,31 @@
             z-index: 1000;
         }
 
-        .admin-dropdown-btn .dropdown-icon {
+        #adminDashboardLink .dropdown-icon {
             display: inline-block;
             margin-left: 5px;
             transition: transform 0.3s ease;
         }
 
-        .admin-dropdown-btn.active .dropdown-icon {
+        #adminDashboardLink.active .dropdown-icon {
             transform: rotate(180deg);
         }
 
-        .admin-dropdown-btn:hover, 
-        .admin-dropdown-btn.active {
+        #adminDashboardLink:hover, 
+        #adminDashboardLink.active {
             color: #a07;
         }
 
         /* Desktop position for admin dashboard text */
         @media (min-width: 768px) {
-          .admin-dropdown-btn {
+          #adminDashboardLink {
             bottom: 0px; /* Web version */
           }
         }
 
         /* Responsive adjustments for admin dropdown */
         @media (max-width: 768px) {
-          .admin-dropdown-btn {
+          #adminDashboardLink {
             font-size: 1em; /* Mobile version */
             bottom: -2px; /* Mobile version */
           }
@@ -465,13 +460,11 @@
                     <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
                 </a>
             </div>
-            <!-- Admin dropdown menu (initially hidden) -->
-            <div class="admin-dropdown">
-                <a id="adminDropdownBtn" class="admin-dropdown-btn" href="#" style="display:none;">
-                    Admin Dashboard 
-                    <span class="dropdown-icon">▼</span>
-                </a>
-            </div>
+            <!-- Replace admin dropdown with black box method -->
+            <a id="adminDashboardLink" href="#" style="display:none;">
+                Admin Dashboard 
+                <span class="dropdown-icon">▼</span>
+            </a>
             <!-- Black box for admin links -->
             <div class="black-box">
                 <a href="admin-dashboard.html">Messages</a>
@@ -479,7 +472,7 @@
                 <a href="edit-post.html">Edit Posts</a>
                 <a href="manage-users.html">User Management</a>
             </div>
-            <!-- User account link (replaces dropdown) -->
+            <!-- User account link -->
             <a id="userAccountLink" href="settings.html">My Account</a>
             <!-- Public links -->
             <a id="login-link" href="login.html">Login</a>
@@ -747,12 +740,12 @@
     <!-- Admin dropdown control script -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+        const adminDashboardLink = document.getElementById('adminDashboardLink');
         const blackBox = document.querySelector('.black-box');
         
         function positionBlackBox() {
-            if (adminDropdownBtn && blackBox) {
-                const rect = adminDropdownBtn.getBoundingClientRect();
+            if (adminDashboardLink && blackBox) {
+                const rect = adminDashboardLink.getBoundingClientRect();
                 blackBox.style.top = (rect.bottom) + 'px';
                 // Center align with the button
                 blackBox.style.left = (rect.left + (rect.width / 2) - (blackBox.offsetWidth / 2)) + 'px';
@@ -771,13 +764,13 @@
         window.addEventListener('scroll', function() {
             if (blackBox && blackBox.style.display === 'block') {
                 blackBox.style.display = 'none';
-                adminDropdownBtn.classList.remove('active');
+                adminDashboardLink.classList.remove('active');
             }
         });
         
         // Toggle black box when Admin Dashboard is clicked
-        if (adminDropdownBtn) {
-            adminDropdownBtn.addEventListener('click', function(e) {
+        if (adminDashboardLink) {
+            adminDashboardLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -794,9 +787,9 @@
         document.addEventListener('click', function(e) {
             if (blackBox && blackBox.style.display === 'block' && 
                 !blackBox.contains(e.target) && 
-                !adminDropdownBtn.contains(e.target)) {
+                !adminDashboardLink.contains(e.target)) {
                 blackBox.style.display = 'none';
-                adminDropdownBtn.classList.remove('active');
+                adminDashboardLink.classList.remove('active');
             }
         });
     });
