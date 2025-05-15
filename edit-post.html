@@ -706,8 +706,15 @@
       display: flex;
       align-items: center;
       position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
-      z-index: 1000; /* Ensure button appears in front */
+      bottom: 0px; /* Default for web version */
+      z-index: 1000;
+    }
+
+    /* Desktop position for admin dashboard text */
+    @media (min-width: 768px) {
+      .admin-dropdown-btn {
+        bottom: 0px; /* Web version */
+      }
     }
 
     .admin-dropdown-btn .dropdown-icon {
@@ -763,6 +770,7 @@
     @media (max-width: 768px) {
       .admin-dropdown-btn {
         font-size: 1em;
+        bottom: -8px; /* Mobile version */
       }
 
       .admin-dropdown-content {
@@ -1007,6 +1015,23 @@
           contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
         }
       }
+
+      // Create a mutation observer to watch for DOM changes
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' || mutation.type === 'childList') {
+            positionWhiteBox();
+            positionContactBox();
+          }
+        });
+      });
+
+      // Start observing the document with the configured parameters
+      observer.observe(document.body, {
+        attributes: true,
+        childList: true,
+        subtree: true
+      });
       
       // Position boxes initially
       positionWhiteBox();
@@ -1017,6 +1042,20 @@
         positionWhiteBox();
         positionContactBox();
       });
+
+      // Update positions when the page loads and after any dynamic content changes
+      window.addEventListener('load', function() {
+        positionWhiteBox();
+        positionContactBox();
+      });
+
+      // Update positions when any images load
+      document.addEventListener('load', function(e) {
+        if (e.target.tagName === 'IMG') {
+          positionWhiteBox();
+          positionContactBox();
+        }
+      }, true);
       
       // Toggle admin dropdown when Admin Dashboard is clicked
       if (adminDropdownBtn && whiteBox) {
