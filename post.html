@@ -877,7 +877,7 @@
       display: flex;
       align-items: center;
       position: relative;
-      bottom: -8px; /* Lower the Admin Dashboard text to match other items */
+      bottom: -8px; /* Default position for mobile */
       z-index: 1000; /* Ensure button appears in front */
     }
 
@@ -899,14 +899,15 @@
     /* Desktop position for admin dashboard text */
     @media (min-width: 768px) {
       .admin-dropdown-btn {
-        bottom: 0px; /* Move text higher up for desktop view */
+        bottom: 0px; /* Desktop position */
       }
     }
 
-    /* Responsive adjustments for admin dropdown */
-    @media (max-width: 768px) {
+    /* For very small screens */
+    @media (max-width: 480px) {
       .admin-dropdown-btn {
-        font-size: 1em;
+        padding: 10px 5px;
+        bottom: -8px; /* Mobile position */
       }
 
       .admin-dropdown-content {
@@ -933,18 +934,6 @@
       }
     }
 
-    /* For very small screens */
-    @media (max-width: 480px) {
-      .admin-dropdown-content {
-        right: -50px; /* Adjust position to be more centered on small screens */
-      }
-
-      .admin-dropdown-btn {
-        padding: 10px 5px;
-        bottom: 2px; /* Raise the Admin Dashboard text on mobile */
-      }
-    }
-    
     /* Contact dropdown styles */
     .contact-dropdown-btn:hover, 
     .contact-dropdown-btn.active {
@@ -1765,10 +1754,26 @@
       positionWhiteBox();
       positionContactBox();
       
+      // Update admin text position based on screen width
+      function updateAdminTextPosition() {
+        const adminBtn = document.getElementById('adminDropdownBtn');
+        if (adminBtn) {
+          if (window.innerWidth >= 768) {
+            adminBtn.style.bottom = '0px';
+          } else {
+            adminBtn.style.bottom = '-8px';
+          }
+        }
+      }
+
+      // Call initially
+      updateAdminTextPosition();
+      
       // Reposition on window resize
       window.addEventListener('resize', function() {
         positionWhiteBox();
         positionContactBox();
+        updateAdminTextPosition();
       });
       
       // Toggle admin dropdown when Admin Dashboard is clicked
