@@ -29,7 +29,7 @@ const passwordForm = document.getElementById('password-form');
 const deleteAccountForm = document.getElementById('delete-account-form');
 
 // Navigation elements
-const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+const adminDashboardLink = document.getElementById('adminDashboardLink');
 const userAccountLink = document.getElementById('userAccountLink');
 const loginLink = document.getElementById('login-link');
 const logoutBtn = document.getElementById('logout-btn');
@@ -162,13 +162,13 @@ async function handleAuthStateChange(user) {
         console.log('User admin status:', userIsAdmin);
         
         // Only show admin dropdown for admins
-        if (adminDropdownBtn) {
-            adminDropdownBtn.style.display = userIsAdmin ? 'inline' : 'none';
+        if (adminDashboardLink) {
+            adminDashboardLink.style.display = userIsAdmin ? 'inline-block' : 'none';
         }
     } catch (error) {
         console.error('Error checking admin status:', error);
         // Default to not showing admin dropdown if there's an error
-        if (adminDropdownBtn) adminDropdownBtn.style.display = 'none';
+        if (adminDashboardLink) adminDashboardLink.style.display = 'none';
     }
     
     // Show settings icon when user is logged in
@@ -541,8 +541,8 @@ function setupDropdowns() {
     let activeDropdown = false;
     
     // Admin dropdown 
-    if (adminDropdownBtn) {
-        adminDropdownBtn.addEventListener('click', function(e) {
+    if (adminDashboardLink) {
+        adminDashboardLink.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
@@ -592,7 +592,7 @@ function setupDropdowns() {
         // Check if dropdown is active
         if (activeDropdown) {
             const blackBox = document.querySelector('.black-box');
-            const button = adminDropdownBtn;
+            const button = adminDashboardLink;
             if (blackBox && blackBox.style.display === 'block' && button) {
                 positionDropdown(blackBox, button);
             }
@@ -610,7 +610,7 @@ function setupDropdowns() {
             }
             
             // Remove active class from button
-            if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
+            if (adminDashboardLink) adminDashboardLink.classList.remove('active');
         }
     });
 }
