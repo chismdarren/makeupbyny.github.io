@@ -538,10 +538,10 @@ function showNotification(message, type) {
 
 // Set up dropdowns
 function setupDropdowns() {
-    let activeDropdown = false;
+    let activeMenu = false;
     const blackBox = document.querySelector('.black-box');
     
-    // Admin dropdown 
+    // Admin menu
     if (adminDashboardLink && blackBox) {
         adminDashboardLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -551,49 +551,49 @@ function setupDropdowns() {
             this.classList.toggle('active');
             
             if (blackBox.style.display === 'none' || !blackBox.style.display) {
-                // Position the dropdown
-                positionDropdown(blackBox, this);
+                // Position the menu
+                positionMenu(blackBox, this);
                 blackBox.style.display = 'block';
-                activeDropdown = true;
+                activeMenu = true;
             } else {
                 blackBox.style.display = 'none';
-                activeDropdown = false;
+                activeMenu = false;
             }
         });
     }
     
-    // Function to position the dropdown
-    function positionDropdown(dropdown, button) {
+    // Function to position the menu
+    function positionMenu(menu, button) {
         const btnRect = button.getBoundingClientRect();
         
         // Check if mobile view (using width as indicator)
         if (window.innerWidth <= 768) {
-            // Center the dropdown under the button for mobile
-            const dropdownWidth = dropdown.offsetWidth;
-            const leftPosition = btnRect.left + (btnRect.width / 2) - (dropdownWidth / 2);
-            dropdown.style.left = Math.max(10, Math.min(leftPosition, window.innerWidth - dropdownWidth - 10)) + 'px';
+            // Center the menu under the button for mobile
+            const menuWidth = menu.offsetWidth;
+            const leftPosition = btnRect.left + (btnRect.width / 2) - (menuWidth / 2);
+            menu.style.left = Math.max(10, Math.min(leftPosition, window.innerWidth - menuWidth - 10)) + 'px';
         } else {
             // Desktop positioning - align with button
-            dropdown.style.left = btnRect.left + 'px';
+            menu.style.left = btnRect.left + 'px';
         }
         
-        dropdown.style.top = (btnRect.bottom + 2) + 'px';
+        menu.style.top = (btnRect.bottom + 2) + 'px';
     }
     
-    // Handle window resize to reposition dropdown if it's open
+    // Handle window resize to reposition menu if it's open
     window.addEventListener('resize', function() {
-        // Check if dropdown is active
-        if (activeDropdown && blackBox && blackBox.style.display === 'block' && adminDashboardLink) {
-            positionDropdown(blackBox, adminDashboardLink);
+        // Check if menu is active
+        if (activeMenu && blackBox && blackBox.style.display === 'block' && adminDashboardLink) {
+            positionMenu(blackBox, adminDashboardLink);
         }
     });
     
-    // Close dropdowns when clicking outside
+    // Close menu when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.matches('#adminDashboardLink') && !e.target.closest('#adminDashboardLink')) {
             if (blackBox) {
                 blackBox.style.display = 'none';
-                activeDropdown = false;
+                activeMenu = false;
             }
             
             // Remove active class from button

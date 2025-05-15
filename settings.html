@@ -176,7 +176,7 @@
             }
         }
 
-        /* Admin Dropdown Menu Styles */
+        /* Admin Dashboard Link Styles */
         #adminDashboardLink {
             position: relative;
             display: inline-block;
@@ -195,13 +195,13 @@
             z-index: 1000; /* Ensure link appears in front */
         }
 
-        #adminDashboardLink .dropdown-icon {
+        #adminDashboardLink .menu-icon {
             display: inline-block;
             margin-left: 5px;
             transition: transform 0.3s ease;
         }
 
-        #adminDashboardLink.active .dropdown-icon {
+        #adminDashboardLink.active .menu-icon {
             transform: rotate(180deg);
         }
 
@@ -459,7 +459,7 @@
                 </a>
             </div>
             <!-- Admin Dashboard Link -->
-            <a id="adminDashboardLink" href="#" style="display:none;">Admin Dashboard <span class="dropdown-icon">▼</span></a>
+            <a id="adminDashboardLink" href="#" style="display:none;">Admin Dashboard <span class="menu-icon">▼</span></a>
             <!-- Black box for admin links -->
             <div class="black-box">
                 <a href="admin-dashboard.html">Messages</a>
