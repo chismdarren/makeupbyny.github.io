@@ -186,7 +186,7 @@
             background: none;
             border: none;
             color: #333;
-            font-size: 1.1em;
+            font-size: 1.1em; /* Web version */
             padding: 10px;
             cursor: pointer;
             font-family: inherit;
@@ -196,7 +196,7 @@
             display: flex;
             align-items: center;
             position: relative;
-            bottom: -8px;
+            bottom: 0px;
             z-index: 1000;
         }
 
@@ -438,6 +438,13 @@
                 max-width: calc(100vw - 40px) !important; /* Prevent overflow */
                 margin: 0 auto;
             }
+        }
+
+        /* Responsive adjustments for admin dropdown */
+        @media (max-width: 768px) {
+          .admin-dropdown-btn {
+            font-size: 1em; /* Mobile version */
+          }
         }
     </style>
 </head>
