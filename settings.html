@@ -247,6 +247,11 @@
             display: block;
             text-align: left;
             transition: background-color 0.2s, color 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .black-box a:last-child {
+            border-bottom: none;
         }
         
         .black-box a:hover {
@@ -454,13 +459,13 @@
                 </a>
             </div>
             <!-- Admin Dashboard Link -->
-            <a id="adminDashboardLink" href="#" style="display:none;">Admin Dashboard <span class="dropdown-icon">▼</span></a>
+            <a id="adminDashboardLink" href="#" style="display:none; color: #333; text-decoration: none; display: flex; align-items: center;">Admin Dashboard <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span></a>
             <!-- Black box for admin links -->
-            <div class="black-box">
-                <a href="admin-dashboard.html">Messages</a>
-                <a href="editor.html">Create Post</a>
-                <a href="edit-post.html">Edit Posts</a>
-                <a href="manage-users.html">User Management</a>
+            <div class="black-box" style="position: fixed; background-color: white; z-index: 999; display: none; width: auto; height: auto; min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; border: 1px solid #eee;">
+                <a href="admin-dashboard.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Messages</a>
+                <a href="editor.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Create Post</a>
+                <a href="edit-post.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s; border-bottom: 1px solid #f5f5f5;">Edit Posts</a>
+                <a href="manage-users.html" style="color: #333; padding: 12px 16px; text-decoration: none; display: block; text-align: left; transition: background-color 0.2s, color 0.2s;">User Management</a>
             </div>
             <!-- User account link -->
             <a id="userAccountLink" href="settings.html">My Account</a>
