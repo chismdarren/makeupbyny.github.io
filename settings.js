@@ -537,70 +537,124 @@ function showNotification(message, type) {
 }
 
 // Set up dropdowns
-function setupDropdowns() {
-    let activeMenu = false;
-    const blackBox = document.querySelector('.black-box');
+document.addEventListener('DOMContentLoaded', function() {
+    const adminDashboardLink = document.getElementById('adminDashboardLink');
+    const whiteBox = document.querySelector('.black-box');
+    const contactDropdownBtn = document.getElementById('contactDropdownBtn');
+    const contactBox = document.querySelector('.contact-black-box');
     
-    // Admin menu
-    if (adminDashboardLink && blackBox) {
+    // Function to position white box under Admin Dashboard
+    function positionWhiteBox() {
+        if (adminDashboardLink && whiteBox) {
+            const rect = adminDashboardLink.getBoundingClientRect();
+            whiteBox.style.top = (rect.bottom) + 'px';
+            whiteBox.style.left = rect.left + 'px';
+            whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
+        }
+    }
+    
+    // Function to position contact box under Contact button
+    function positionContactBox() {
+        if (contactDropdownBtn && contactBox) {
+            const rect = contactDropdownBtn.getBoundingClientRect();
+            contactBox.style.top = (rect.bottom) + 'px';
+            contactBox.style.left = rect.left + 'px';
+            contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
+        }
+    }
+    
+    // Position boxes initially
+    positionWhiteBox();
+    positionContactBox();
+    
+    // Reposition on window resize
+    window.addEventListener('resize', function() {
+        positionWhiteBox();
+        positionContactBox();
+    });
+    
+    // Toggle admin dropdown when Admin Dashboard is clicked
+    if (adminDashboardLink && whiteBox) {
         adminDashboardLink.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
-            // Toggle active class for button styling
-            this.classList.toggle('active');
-            
-            if (blackBox.style.display === 'none' || !blackBox.style.display) {
-                // Position the menu
-                positionMenu(blackBox, this);
-                blackBox.style.display = 'block';
-                activeMenu = true;
+            // Toggle white box display
+            if (whiteBox.style.display === 'block') {
+                whiteBox.style.display = 'none';
+                this.classList.remove('active');
             } else {
-                blackBox.style.display = 'none';
-                activeMenu = false;
+                positionWhiteBox(); // Position before showing
+                whiteBox.style.display = 'block';
+                this.classList.add('active');
+                
+                // Hide contact dropdown if it's open
+                if (contactBox) {
+                    contactBox.style.display = 'none';
+                    if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
+                }
             }
         });
     }
     
-    // Function to position the menu
-    function positionMenu(menu, button) {
-        const btnRect = button.getBoundingClientRect();
-        
-        // Check if mobile view (using width as indicator)
-        if (window.innerWidth <= 768) {
-            // Center the menu under the button for mobile
-            const menuWidth = menu.offsetWidth;
-            const leftPosition = btnRect.left + (btnRect.width / 2) - (menuWidth / 2);
-            menu.style.left = Math.max(10, Math.min(leftPosition, window.innerWidth - menuWidth - 10)) + 'px';
-        } else {
-            // Desktop positioning - align with button
-            menu.style.left = btnRect.left + 'px';
-        }
-        
-        menu.style.top = (btnRect.bottom + 2) + 'px';
+    // Toggle contact dropdown when Contact is clicked
+    if (contactDropdownBtn && contactBox) {
+        contactDropdownBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Toggle contact box display
+            if (contactBox.style.display === 'block') {
+                contactBox.style.display = 'none';
+                this.classList.remove('active');
+            } else {
+                positionContactBox(); // Position before showing
+                contactBox.style.display = 'block';
+                this.classList.add('active');
+                
+                // Hide admin dropdown if it's open
+                if (whiteBox) {
+                    whiteBox.style.display = 'none';
+                    if (adminDashboardLink) adminDashboardLink.classList.remove('active');
+                }
+            }
+        });
     }
     
-    // Handle window resize to reposition menu if it's open
-    window.addEventListener('resize', function() {
-        // Check if menu is active
-        if (activeMenu && blackBox && blackBox.style.display === 'block' && adminDashboardLink) {
-            positionMenu(blackBox, adminDashboardLink);
+    // Hide dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        // Close admin dropdown
+        if (whiteBox && whiteBox.style.display === 'block' && 
+            adminDashboardLink && !adminDashboardLink.contains(e.target) && 
+            !whiteBox.contains(e.target)) {
+            whiteBox.style.display = 'none';
+            adminDashboardLink.classList.remove('active');
+        }
+        
+        // Close contact dropdown
+        if (contactBox && contactBox.style.display === 'block' && 
+            contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
+            !contactBox.contains(e.target)) {
+            contactBox.style.display = 'none';
+            contactDropdownBtn.classList.remove('active');
         }
     });
     
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.matches('#adminDashboardLink') && !e.target.closest('#adminDashboardLink')) {
-            if (blackBox) {
-                blackBox.style.display = 'none';
-                activeMenu = false;
-            }
-            
-            // Remove active class from button
+    // Hide dropdowns when scrolling
+    window.addEventListener('scroll', function() {
+        // Close admin dropdown
+        if (whiteBox && whiteBox.style.display === 'block') {
+            whiteBox.style.display = 'none';
             if (adminDashboardLink) adminDashboardLink.classList.remove('active');
         }
+        
+        // Close contact dropdown
+        if (contactBox && contactBox.style.display === 'block') {
+            contactBox.style.display = 'none';
+            if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
+        }
     });
-}
+});
 
 // Set up logout
 function setupLogout() {
