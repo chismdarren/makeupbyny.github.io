@@ -569,6 +569,21 @@ function setupDropdowns() {
         });
     }
     
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('#adminDashboardLink') && !e.target.closest('#adminDashboardLink')) {
+            // Hide black box dropdown
+            const blackBox = document.querySelector('.black-box');
+            if (blackBox) {
+                blackBox.style.display = 'none';
+                activeDropdown = false;
+            }
+            
+            // Remove active class from button
+            if (adminDashboardLink) adminDashboardLink.classList.remove('active');
+        }
+    });
+
     // Function to position the dropdown
     function positionDropdown(dropdown, button) {
         const btnRect = button.getBoundingClientRect();
@@ -576,12 +591,12 @@ function setupDropdowns() {
         // Check if mobile view (using width as indicator)
         if (window.innerWidth <= 768) {
             // Center the dropdown under the button for mobile
-            const dropdownWidth = 200; // Width from CSS (min-width value)
+            const dropdownWidth = dropdown.offsetWidth;
             const leftPosition = btnRect.left + (btnRect.width / 2) - (dropdownWidth / 2);
-            dropdown.style.left = Math.max(10, leftPosition) + 'px'; // Ensure it's not too far left
+            dropdown.style.left = Math.max(10, Math.min(leftPosition, window.innerWidth - dropdownWidth - 10)) + 'px';
         } else {
-            // Desktop positioning
-            dropdown.style.left = (btnRect.left - 130) + 'px';
+            // Desktop positioning - align with button
+            dropdown.style.left = btnRect.left + 'px';
         }
         
         dropdown.style.top = (btnRect.bottom + 2) + 'px';
@@ -596,21 +611,6 @@ function setupDropdowns() {
             if (blackBox && blackBox.style.display === 'block' && button) {
                 positionDropdown(blackBox, button);
             }
-        }
-    });
-    
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.matches('.admin-dropdown-btn')) {
-            // Hide black box dropdown
-            const blackBox = document.querySelector('.black-box');
-            if (blackBox) {
-                blackBox.style.display = 'none';
-                activeDropdown = false;
-            }
-            
-            // Remove active class from button
-            if (adminDashboardLink) adminDashboardLink.classList.remove('active');
         }
     });
 }
