@@ -178,10 +178,12 @@
 
         /* Admin Dropdown Menu Styles */
         #adminDashboardLink {
+            position: relative;
+            display: inline-block;
             background: none;
             border: none;
             color: #333;
-            font-size: 1.1em; /* Web version */
+            font-size: 1.1em;
             padding: 10px;
             cursor: pointer;
             font-family: inherit;
@@ -189,9 +191,8 @@
             transition: color 0.2s;
             display: flex;
             align-items: center;
-            position: relative;
-            bottom: 0px; /* Web version */
-            z-index: 1000;
+            bottom: -8px; /* Lower the Admin Dashboard text to match other items */
+            z-index: 1000; /* Ensure link appears in front */
         }
 
         #adminDashboardLink .dropdown-icon {
@@ -204,23 +205,23 @@
             transform: rotate(180deg);
         }
 
-        #adminDashboardLink:hover, 
-        #adminDashboardLink.active {
+        #adminDashboardLink:hover {
             color: #a07;
         }
 
         /* Desktop position for admin dashboard text */
         @media (min-width: 768px) {
           #adminDashboardLink {
-            bottom: 0px; /* Web version */
+            bottom: 0px; /* Move text higher up for desktop view */
           }
         }
 
-        /* Responsive adjustments for admin dropdown */
-        @media (max-width: 768px) {
+        /* For very small screens */
+        @media (max-width: 480px) {
           #adminDashboardLink {
-            font-size: 1em; /* Mobile version */
-            bottom: -2px; /* Mobile version */
+            padding: 10px 5px;
+            bottom: 2px; /* Raise the Admin Dashboard text on mobile */
+            font-size: 1em;
           }
         }
 
@@ -459,11 +460,8 @@
                     <span class="dropdown-icon" style="display: inline-block; margin-left: 5px;">▼</span>
                 </a>
             </div>
-            <!-- Replace admin dropdown with black box method -->
-            <a id="adminDashboardLink" href="#" style="display: flex;">
-                Admin Dashboard 
-                <span class="dropdown-icon">▼</span>
-            </a>
+            <!-- Admin Dashboard Link -->
+            <a id="adminDashboardLink" href="#" style="display:none;">Admin Dashboard <span class="dropdown-icon">▼</span></a>
             <!-- Black box for admin links -->
             <div class="black-box">
                 <a href="admin-dashboard.html">Messages</a>
