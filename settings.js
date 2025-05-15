@@ -539,23 +539,16 @@ function showNotification(message, type) {
 // Set up dropdowns
 function setupDropdowns() {
     let activeDropdown = false;
+    const blackBox = document.querySelector('.black-box');
     
     // Admin dropdown 
-    if (adminDashboardLink) {
+    if (adminDashboardLink && blackBox) {
         adminDashboardLink.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
             // Toggle active class for button styling
             this.classList.toggle('active');
-            
-            // Toggle black box dropdown
-            const blackBox = document.querySelector('.black-box');
-            
-            if (!blackBox) {
-                console.error('Black box element not found');
-                return;
-            }
             
             if (blackBox.style.display === 'none' || !blackBox.style.display) {
                 // Position the dropdown
@@ -569,21 +562,6 @@ function setupDropdowns() {
         });
     }
     
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.matches('#adminDashboardLink') && !e.target.closest('#adminDashboardLink')) {
-            // Hide black box dropdown
-            const blackBox = document.querySelector('.black-box');
-            if (blackBox) {
-                blackBox.style.display = 'none';
-                activeDropdown = false;
-            }
-            
-            // Remove active class from button
-            if (adminDashboardLink) adminDashboardLink.classList.remove('active');
-        }
-    });
-
     // Function to position the dropdown
     function positionDropdown(dropdown, button) {
         const btnRect = button.getBoundingClientRect();
@@ -605,12 +583,21 @@ function setupDropdowns() {
     // Handle window resize to reposition dropdown if it's open
     window.addEventListener('resize', function() {
         // Check if dropdown is active
-        if (activeDropdown) {
-            const blackBox = document.querySelector('.black-box');
-            const button = adminDashboardLink;
-            if (blackBox && blackBox.style.display === 'block' && button) {
-                positionDropdown(blackBox, button);
+        if (activeDropdown && blackBox && blackBox.style.display === 'block' && adminDashboardLink) {
+            positionDropdown(blackBox, adminDashboardLink);
+        }
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('#adminDashboardLink') && !e.target.closest('#adminDashboardLink')) {
+            if (blackBox) {
+                blackBox.style.display = 'none';
+                activeDropdown = false;
             }
+            
+            // Remove active class from button
+            if (adminDashboardLink) adminDashboardLink.classList.remove('active');
         }
     });
 }
