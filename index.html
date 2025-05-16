@@ -1306,7 +1306,6 @@
       editButton.addEventListener('click', function() {
         editModeActive = !editModeActive;
         
-        // Toggle button appearance
         if (editModeActive) {
           // Enter edit mode
           editButton.classList.add('active');
@@ -1364,26 +1363,13 @@
       
       // Function to get a unique path for an element
       function getElementPath(element) {
-        const tagName = element.tagName.toLowerCase();
-        
-        // Get a cleaned version of the class list (only keeping 'editable' and a few key classes)
-        const classList = Array.from(element.classList).filter(cls => 
-          cls === 'editable' || 
-          ['header', 'footer', 'about-me', 'social-links'].includes(cls)
-        );
-        const classNames = classList.join('.');
-        
-        // Get parent information
-        const parentElement = element.parentElement;
-        const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-        const parentClass = parentElement && parentElement.className ? 
-          Array.from(parentElement.classList)[0] : '';
-        
-        // Include some content as a fingerprint (first 10 chars)
-        const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
-        
-        // Create a relatively unique identifier for this element
-        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${contentFingerprint}`;
+        let path = element.tagName.toLowerCase();
+        if (element.id) {
+          path += '#' + element.id;
+        } else if (element.className) {
+          path += '.' + Array.from(element.classList).join('.');
+        }
+        return path;
       }
       
       // Function to save content to Firebase
