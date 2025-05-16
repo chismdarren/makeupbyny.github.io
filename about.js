@@ -174,6 +174,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to make content editable
 function makeEditable(element, onSave) {
+    // Safety check for null element
+    if (!element) {
+        console.warn('Cannot make null element editable');
+        return;
+    }
+
+    // Safety check for parent element
+    const parentElement = element.parentElement;
+    if (!parentElement) {
+        console.warn('Cannot make element editable: no parent element found');
+        return;
+    }
+
     let isEditing = false;
     const editButton = document.createElement('button');
     editButton.className = 'edit-button';
@@ -187,8 +200,9 @@ function makeEditable(element, onSave) {
         }
     });
 
-    element.parentElement.style.position = 'relative';
-    element.parentElement.appendChild(editButton);
+    // Set parent element styles
+    parentElement.style.position = 'relative';
+    parentElement.appendChild(editButton);
 
     editButton.addEventListener('click', () => {
         if (!isEditing) {
