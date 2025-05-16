@@ -639,21 +639,6 @@ document.addEventListener('DOMContentLoaded', function() {
             contactDropdownBtn.classList.remove('active');
         }
     });
-    
-    // Hide dropdowns when scrolling
-    window.addEventListener('scroll', function() {
-        // Close admin dropdown
-        if (whiteBox && whiteBox.style.display === 'block') {
-            whiteBox.style.display = 'none';
-            if (adminDashboardLink) adminDashboardLink.classList.remove('active');
-        }
-        
-        // Close contact dropdown
-        if (contactBox && contactBox.style.display === 'block') {
-            contactBox.style.display = 'none';
-            if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-        }
-    });
 });
 
 // Set up logout
