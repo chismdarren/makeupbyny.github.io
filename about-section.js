@@ -16,9 +16,19 @@ export function insertAboutSection(containerId, sections = ['bio']) {
             return;
         }
 
+        // Check if container already has an about section
+        const existingSection = container.querySelector('.about-section');
+        if (existingSection) {
+            console.warn('About section already exists in container');
+            return;
+        }
+
         // Create the about section
         const aboutSection = document.createElement('div');
         aboutSection.className = 'about-section';
+
+        // Create a map to store section elements
+        const sectionElements = new Map();
 
         // Add content placeholders for requested sections
         sections.forEach(section => {
@@ -27,22 +37,28 @@ export function insertAboutSection(containerId, sections = ['bio']) {
             sectionDiv.className = 'about-text';
             sectionDiv.innerHTML = 'Loading...';
             aboutSection.appendChild(sectionDiv);
+            sectionElements.set(section, sectionDiv);
         });
 
         // Insert the section into the container
         container.appendChild(aboutSection);
 
-        // Subscribe to content updates
-        aboutManager.addObserver((content) => {
+        // Create a single observer that updates all sections
+        const contentObserver = (content) => {
             if (!content) return;
             
-            sections.forEach(section => {
-                const element = document.getElementById(`about${section.charAt(0).toUpperCase() + section.slice(1)}`);
-                if (element && content[section]) {
+            sectionElements.forEach((element, section) => {
+                if (content[section]) {
                     element.innerHTML = content[section];
                 }
             });
-        });
+        };
+
+        // Add the observer and store it on the container
+        aboutManager.addObserver(contentObserver);
+        
+        // Store the observer reference on the container for cleanup
+        container.dataset.aboutObserver = true;
     }
 }
 
@@ -74,7 +90,11 @@ if (document.readyState === 'loading') {
 }
 
 function addStyles() {
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = styles;
-    document.head.appendChild(styleSheet);
+    // Check if styles are already added
+    if (!document.querySelector('style[data-about-styles]')) {
+        const styleSheet = document.createElement('style');
+        styleSheet.dataset.aboutStyles = true;
+        styleSheet.textContent = styles;
+        document.head.appendChild(styleSheet);
+    }
 } 

@@ -106,20 +106,40 @@ class AboutManager {
     async init() {
         if (this.initialized) return;
         
-        // Set up real-time listener for about content
-        const aboutRef = doc(db, "content", "about");
-        onSnapshot(aboutRef, (doc) => {
-            if (doc.exists()) {
-                this.aboutContent = doc.data();
+        try {
+            // First, try to get existing content
+            const aboutRef = doc(db, "content", "about");
+            const docSnap = await getDoc(aboutRef);
+            if (docSnap.exists()) {
+                this.aboutContent = docSnap.data();
                 this.notifyObservers();
             }
-        });
+            
+            // Set up real-time listener for about content
+            onSnapshot(aboutRef, (doc) => {
+                if (doc.exists()) {
+                    const newContent = doc.data();
+                    // Only update if content has actually changed
+                    if (JSON.stringify(this.aboutContent) !== JSON.stringify(newContent)) {
+                        this.aboutContent = newContent;
+                        this.notifyObservers();
+                    }
+                }
+            });
 
-        this.initialized = true;
+            this.initialized = true;
+        } catch (error) {
+            console.error("Error initializing AboutManager:", error);
+        }
     }
 
     // Add observer to be notified of content changes
     addObserver(callback) {
+        if (this.observers.has(callback)) {
+            console.warn('Observer already exists');
+            return;
+        }
+        
         this.observers.add(callback);
         // If we already have content, notify immediately
         if (this.aboutContent) {
@@ -134,18 +154,34 @@ class AboutManager {
 
     // Notify all observers of content changes
     notifyObservers() {
-        this.observers.forEach(callback => callback(this.aboutContent));
+        this.observers.forEach(callback => {
+            try {
+                callback(this.aboutContent);
+            } catch (error) {
+                console.error('Error in observer callback:', error);
+            }
+        });
     }
 
     // Update about content
     async updateContent(newContent) {
         try {
             const aboutRef = doc(db, "content", "about");
-            await updateDoc(aboutRef, {
+            const currentContent = this.aboutContent || {};
+            
+            // Merge the new content with existing content
+            const mergedContent = {
+                ...currentContent,
                 ...newContent,
                 lastUpdated: new Date()
-            });
-            return true;
+            };
+
+            // Only update if content has changed
+            if (JSON.stringify(currentContent) !== JSON.stringify(mergedContent)) {
+                await updateDoc(aboutRef, mergedContent);
+                return true;
+            }
+            return false;
         } catch (error) {
             console.error("Error updating about content:", error);
             return false;
