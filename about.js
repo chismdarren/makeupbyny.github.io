@@ -7,47 +7,54 @@ const db = getFirestore();
 
 // Initialize the page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
+  // Get all the DOM elements once
+  const loginLink = document.getElementById("login-link");
+  const logoutBtn = document.getElementById("logout-btn");
+  const userAccountLink = document.getElementById("userAccountLink");
+  const settingsIcon = document.getElementById('settingsIcon');
+  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
+
   // Monitor user authentication state
   onAuthStateChanged(auth, async (user) => {
     // If user is logged in
     if (user) {
       // Hide login button, show logout button and account link
-      document.getElementById("login-link").style.display = "none";
-      document.getElementById("logout-btn").style.display = "inline";
-      document.getElementById("userAccountLink").style.display = "inline";
+      if (loginLink) loginLink.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "inline";
+      if (userAccountLink) userAccountLink.style.display = "inline";
       
       // Show settings icon
-      const settingsIcon = document.getElementById('settingsIcon');
       if (settingsIcon) settingsIcon.style.display = 'flex';
 
       // Check if user is admin
       const isAdmin = await isAdminUser(user.uid);
       if (isAdmin) {
         // Show admin dropdown button
-        document.getElementById("adminDropdownBtn").style.display = "inline";
+        if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
       } else {
         // Hide admin dropdown button for regular users
-        document.getElementById("adminDropdownBtn").style.display = "none";
+        if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
       }
     } else {
       // If user is not logged in, show login button and hide user features
-      document.getElementById("login-link").style.display = "inline";
-      document.getElementById("logout-btn").style.display = "none";
-      document.getElementById("userAccountLink").style.display = "none";
-      document.getElementById("adminDropdownBtn").style.display = "none";
+      if (loginLink) loginLink.style.display = "inline";
+      if (logoutBtn) logoutBtn.style.display = "none";
+      if (userAccountLink) userAccountLink.style.display = "none";
+      if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
       
       // Hide settings icon
-      const settingsIcon = document.getElementById('settingsIcon');
       if (settingsIcon) settingsIcon.style.display = 'none';
     }
   });
 
   // Handle logout button click
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    auth.signOut().then(() => {
-      window.location.href = "index.html";
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      auth.signOut().then(() => {
+        window.location.href = "index.html";
+      });
     });
-  });
+  }
 
   // Add smooth scrolling for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
