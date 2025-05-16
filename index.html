@@ -634,10 +634,10 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <p class="editable">
+      <p class="editable about-intro">
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-      <p class="editable">
+      <p class="editable about-description">
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
@@ -1387,10 +1387,9 @@
       // Function to get a unique path for an element
       function getElementPath(element) {
         const tagName = element.tagName.toLowerCase();
-        const classList = Array.from(element.classList).filter(cls => 
-          cls === 'editable' || 
-          ['header', 'footer', 'about-me', 'social-links'].includes(cls)
-        );
+        
+        // Get ALL classes for the element to ensure uniqueness
+        const classList = Array.from(element.classList);
         const classNames = classList.join('.');
         
         const parentElement = element.parentElement;
@@ -1398,10 +1397,11 @@
         const parentClass = parentElement && parentElement.className ? 
           Array.from(parentElement.classList)[0] : '';
         
-        const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
+        // Include position in parent for extra uniqueness
         const position = Array.from(parentElement.children).indexOf(element);
         
-        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}:${contentFingerprint}`;
+        // Create a unique identifier that includes all classes
+        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
       }
       
       // Function to save content to Firebase
