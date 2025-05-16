@@ -193,35 +193,37 @@ function makeEditable(element, onSave) {
     editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
     editButton.style.display = 'none'; // Hidden by default
 
-    // Show edit button for admin users
-    isAdminUser().then(isAdmin => {
-        if (isAdmin) {
-            editButton.style.display = 'block';
-        }
-    });
+    // Set parent element styles and append button only if parent exists
+    if (parentElement) {
+        parentElement.style.position = 'relative';
+        parentElement.appendChild(editButton);
 
-    // Set parent element styles
-    parentElement.style.position = 'relative';
-    parentElement.appendChild(editButton);
-
-    editButton.addEventListener('click', () => {
-        if (!isEditing) {
-            // Enter edit mode
-            element.contentEditable = true;
-            element.focus();
-            editButton.innerHTML = '<i class="fas fa-save"></i>';
-            element.classList.add('editing');
-        } else {
-            // Save changes
-            element.contentEditable = false;
-            editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-            element.classList.remove('editing');
-            if (onSave) {
-                onSave(element.innerHTML);
+        // Show edit button for admin users
+        isAdminUser().then(isAdmin => {
+            if (isAdmin) {
+                editButton.style.display = 'block';
             }
-        }
-        isEditing = !isEditing;
-    });
+        });
+
+        editButton.addEventListener('click', () => {
+            if (!isEditing) {
+                // Enter edit mode
+                element.contentEditable = true;
+                element.focus();
+                editButton.innerHTML = '<i class="fas fa-save"></i>';
+                element.classList.add('editing');
+            } else {
+                // Save changes
+                element.contentEditable = false;
+                editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+                element.classList.remove('editing');
+                if (onSave) {
+                    onSave(element.innerHTML);
+                }
+            }
+            isEditing = !isEditing;
+        });
+    }
 }
 
 export { aboutManager, makeEditable }; 

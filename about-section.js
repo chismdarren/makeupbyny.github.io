@@ -2,36 +2,48 @@ import { aboutManager } from './about.js';
 
 // Function to create and insert an about section
 export function insertAboutSection(containerId, sections = ['bio']) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+    // Wait for DOM content to be loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => initializeAboutSection());
+    } else {
+        initializeAboutSection();
+    }
 
-    // Create the about section
-    const aboutSection = document.createElement('div');
-    aboutSection.className = 'about-section';
+    function initializeAboutSection() {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.warn(`Container with ID '${containerId}' not found`);
+            return;
+        }
 
-    // Add content placeholders for requested sections
-    sections.forEach(section => {
-        const sectionDiv = document.createElement('div');
-        sectionDiv.id = `about${section.charAt(0).toUpperCase() + section.slice(1)}`;
-        sectionDiv.className = 'about-text';
-        sectionDiv.innerHTML = 'Loading...';
-        aboutSection.appendChild(sectionDiv);
-    });
+        // Create the about section
+        const aboutSection = document.createElement('div');
+        aboutSection.className = 'about-section';
 
-    // Insert the section into the container
-    container.appendChild(aboutSection);
-
-    // Subscribe to content updates
-    aboutManager.addObserver((content) => {
-        if (!content) return;
-        
+        // Add content placeholders for requested sections
         sections.forEach(section => {
-            const element = document.getElementById(`about${section.charAt(0).toUpperCase() + section.slice(1)}`);
-            if (element && content[section]) {
-                element.innerHTML = content[section];
-            }
+            const sectionDiv = document.createElement('div');
+            sectionDiv.id = `about${section.charAt(0).toUpperCase() + section.slice(1)}`;
+            sectionDiv.className = 'about-text';
+            sectionDiv.innerHTML = 'Loading...';
+            aboutSection.appendChild(sectionDiv);
         });
-    });
+
+        // Insert the section into the container
+        container.appendChild(aboutSection);
+
+        // Subscribe to content updates
+        aboutManager.addObserver((content) => {
+            if (!content) return;
+            
+            sections.forEach(section => {
+                const element = document.getElementById(`about${section.charAt(0).toUpperCase() + section.slice(1)}`);
+                if (element && content[section]) {
+                    element.innerHTML = content[section];
+                }
+            });
+        });
+    }
 }
 
 // Add necessary styles
@@ -54,7 +66,15 @@ const styles = `
 }
 `;
 
-// Add styles to document
-const styleSheet = document.createElement('style');
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet); 
+// Add styles to document only when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addStyles);
+} else {
+    addStyles();
+}
+
+function addStyles() {
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+} 
