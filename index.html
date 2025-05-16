@@ -1296,25 +1296,26 @@
       const editableElements = document.querySelectorAll('.editable');
       let editModeActive = false;
       
-      // Store original content for each editable element with a unique identifier
+      // Store original content and metadata for each editable element
       const originalContent = new Map();
       editableElements.forEach((element, index) => {
-        // Create a unique identifier based on the element's path and content
         const elementId = getElementPath(element);
-        originalContent.set(elementId, element.innerHTML);
+        originalContent.set(elementId, {
+          content: element.innerHTML,
+          lastModified: new Date().toISOString(),
+          version: 1
+        });
       });
 
       // Toggle edit mode when pencil icon is clicked
       editButton.addEventListener('click', function() {
         editModeActive = !editModeActive;
         
-        // Toggle button appearance
         if (editModeActive) {
           // Enter edit mode
           editButton.classList.add('active');
           editButton.innerHTML = '<i class="fas fa-save"></i>';
           
-          // Toggle contenteditable and visual style for all editable elements
           editableElements.forEach(element => {
             element.setAttribute('contenteditable', 'true');
             element.classList.add('edit-mode');
@@ -1324,7 +1325,6 @@
           editButton.classList.remove('active');
           editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
           
-          // Create an object to store the changes
           const updatedContent = {};
           let hasChanges = false;
           
@@ -1332,20 +1332,26 @@
           editableElements.forEach(element => {
             const elementId = getElementPath(element);
             const currentContent = element.innerHTML;
-            const originalValue = originalContent.get(elementId);
+            const originalData = originalContent.get(elementId);
             
-            if (currentContent !== originalValue) {
-              // Store element information for identification
+            if (currentContent !== originalData.content) {
+              // Store element information with versioning and timestamp
               updatedContent[elementId] = {
                 content: currentContent,
-                elementType: element.tagName.toLowerCase()
+                elementType: element.tagName.toLowerCase(),
+                lastModified: new Date().toISOString(),
+                version: originalData.version + 1
               };
               hasChanges = true;
-              // Update the original content with new value
-              originalContent.set(elementId, currentContent);
+              
+              // Update the original content with new values
+              originalContent.set(elementId, {
+                content: currentContent,
+                lastModified: new Date().toISOString(),
+                version: originalData.version + 1
+              });
             }
             
-            // Remove contenteditable and visual style
             element.removeAttribute('contenteditable');
             element.classList.remove('edit-mode');
           });
@@ -1359,6 +1365,20 @@
               .catch(error => {
                 showNotification('Error saving changes: ' + error.message, 'error');
                 console.error('Error saving changes:', error);
+                
+                // Revert changes on error
+                editableElements.forEach(element => {
+                  const elementId = getElementPath(element);
+                  const originalData = originalContent.get(elementId);
+                  if (updatedContent[elementId]) {
+                    element.innerHTML = originalData.content;
+                    originalContent.set(elementId, {
+                      content: originalData.content,
+                      lastModified: originalData.lastModified,
+                      version: originalData.version
+                    });
+                  }
+                });
               });
           }
         }
@@ -1367,67 +1387,56 @@
       // Function to get a unique path for an element
       function getElementPath(element) {
         const tagName = element.tagName.toLowerCase();
-        
-        // Get all classes that help identify this element
         const classList = Array.from(element.classList).filter(cls => 
           cls === 'editable' || 
           ['header', 'footer', 'about-me', 'social-links'].includes(cls)
         );
         const classNames = classList.join('.');
         
-        // Get parent information for better context
         const parentElement = element.parentElement;
         const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
         const parentClass = parentElement && parentElement.className ? 
           Array.from(parentElement.classList)[0] : '';
         
-        // Include content fingerprint and position in parent
         const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
         const position = Array.from(parentElement.children).indexOf(element);
         
-        // Create a unique identifier that includes structural information
         return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}:${contentFingerprint}`;
       }
       
       // Function to save content to Firebase
       async function saveContentToFirebase(updatedContent) {
-        // Import Firebase modules
         const { doc, setDoc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
         const { db } = await import("./firebase-config.js");
         
         console.log("Saving content to Firebase:", updatedContent);
         
-        // Create/update content document in Firestore
         const contentRef = doc(db, "site_content", "editable_content");
         
         try {
-          // Check if document exists
           const docSnap = await getDoc(contentRef);
           
           if (docSnap.exists()) {
-            // Get current content
             const currentContent = docSnap.data().content || {};
             
-            // Merge current content with updated content
+            // Merge content with version checking
             const mergedContent = { ...currentContent };
-            // Only update changed sections
             Object.entries(updatedContent).forEach(([key, value]) => {
-              mergedContent[key] = value;
+              // Only update if new version is higher than existing
+              if (!mergedContent[key] || !mergedContent[key].version || 
+                  value.version > mergedContent[key].version) {
+                mergedContent[key] = value;
+              }
             });
             
-            console.log("Updating existing document with merged content:", mergedContent);
-            
-            // Update existing document
             return updateDoc(contentRef, {
               content: mergedContent,
-              lastUpdated: new Date()
+              lastUpdated: new Date().toISOString()
             });
           } else {
-            console.log("Creating new document with content:", updatedContent);
-            // Create new document
             return setDoc(contentRef, {
               content: updatedContent,
-              lastUpdated: new Date()
+              lastUpdated: new Date().toISOString()
             });
           }
         } catch (error) {
@@ -1438,7 +1447,6 @@
       
       // Function to show notification
       function showNotification(message, type) {
-        // Create notification element if it doesn't exist
         let notification = document.getElementById('edit-notification');
         if (!notification) {
           notification = document.createElement('div');
@@ -1455,18 +1463,15 @@
           document.body.appendChild(notification);
         }
         
-        // Set style based on notification type
         if (type === 'success') {
           notification.style.backgroundColor = '#4CAF50';
         } else if (type === 'error') {
           notification.style.backgroundColor = '#F44336';
         }
         
-        // Set message and show notification
         notification.textContent = message;
         notification.style.display = 'block';
         
-        // Hide notification after 3 seconds
         setTimeout(() => {
           notification.style.display = 'none';
         }, 3000);
