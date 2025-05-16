@@ -241,10 +241,13 @@ function makeEditable(element, onSave, sectionId) {
         parentElement.style.position = 'relative';
         parentElement.appendChild(editButton);
 
-        // Show edit button for admin users
-        isAdminUser().then(isAdmin => {
-            if (isAdmin) {
-                editButton.style.display = 'block';
+        // Show edit button only for authenticated admin users
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const isAdmin = await isAdminUser(user.uid);
+                editButton.style.display = isAdmin ? 'block' : 'none';
+            } else {
+                editButton.style.display = 'none';
             }
         });
 

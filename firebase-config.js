@@ -44,38 +44,48 @@ console.log("✅ Firebase Initialized Successfully!");
 
 // Check if user is a super admin
 export async function isSuperAdmin(uid) {
-  // First check the hardcoded list (for backward compatibility)
-  if (superAdminUIDs.includes(uid)) {
-    return true;
-  }
-  
-  // Then check if they have the isSuperAdmin flag in Firestore
-  try {
-    const userRef = doc(db, "users", uid);
-    const userDoc = await getDoc(userRef);
-    return userDoc.exists() && userDoc.data().isSuperAdmin === true;
-  } catch (error) {
-    console.error("Error checking super admin status:", error);
-    return false;
-  }
+    if (!uid) {
+        console.log("No UID provided for super admin check");
+        return false;
+    }
+
+    // First check the hardcoded list (for backward compatibility)
+    if (superAdminUIDs.includes(uid)) {
+        return true;
+    }
+    
+    // Then check if they have the isSuperAdmin flag in Firestore
+    try {
+        const userRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userRef);
+        return userDoc.exists() && userDoc.data().isSuperAdmin === true;
+    } catch (error) {
+        console.error("Error checking super admin status:", error);
+        return false;
+    }
 }
 
 // Check if user has admin privileges (either super admin or regular admin)
-export async function isAdminUser(uid) {
-  // First check if user is a super admin
-  if (await isSuperAdmin(uid)) {
-    return true;
-  }
-  
-  // If not a super admin, check if they're a regular admin in Firestore
-  try {
-    const userRef = doc(db, "users", uid);
-    const userDoc = await getDoc(userRef);
-    return userDoc.exists() && userDoc.data().isAdmin === true;
-  } catch (error) {
-    console.error("Error checking admin status:", error);
-    return false;
-  }
+export async function isAdminUser(uid = null) {
+    if (!uid) {
+        console.log("No UID provided for admin check");
+        return false;
+    }
+
+    try {
+        // First check if user is a super admin
+        if (await isSuperAdmin(uid)) {
+            return true;
+        }
+        
+        // If not a super admin, check if they're a regular admin in Firestore
+        const userRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userRef);
+        return userDoc.exists() && userDoc.data().isAdmin === true;
+    } catch (error) {
+        console.error("Error checking admin status:", error);
+        return false;
+    }
 }
 
 // Function to create user document in Firestore
