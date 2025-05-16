@@ -728,6 +728,9 @@
     </div>
   </div>
 
+  <!-- Add this where you want the about section to appear -->
+  <div id="homeAboutSection"></div>
+
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
 
@@ -1553,6 +1556,14 @@
         console.error("Error loading saved content:", error);
       }
     });
+  </script>
+
+  <!-- Add this script import before your closing body tag -->
+  <script type="module">
+    import { insertAboutSection } from './about-section.js';
+    
+    // Insert the about section with just the bio
+    insertAboutSection('homeAboutSection', ['bio']);
   </script>
 
 </body>

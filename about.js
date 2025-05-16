@@ -1,6 +1,9 @@
 // Import necessary Firebase modules
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { auth, isAdminUser } from "./firebase-config.js";
+import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const db = getFirestore();
 
 // Initialize the page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -82,4 +85,129 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('.about-card').forEach(card => {
     observer.observe(card);
   });
-}); 
+});
+
+// Class to manage about content
+class AboutManager {
+    constructor() {
+        this.aboutContent = null;
+        this.observers = new Set();
+        this.initialized = false;
+    }
+
+    // Initialize the about content listener
+    async init() {
+        if (this.initialized) return;
+        
+        // Set up real-time listener for about content
+        const aboutRef = doc(db, "content", "about");
+        onSnapshot(aboutRef, (doc) => {
+            if (doc.exists()) {
+                this.aboutContent = doc.data();
+                this.notifyObservers();
+            }
+        });
+
+        this.initialized = true;
+    }
+
+    // Add observer to be notified of content changes
+    addObserver(callback) {
+        this.observers.add(callback);
+        // If we already have content, notify immediately
+        if (this.aboutContent) {
+            callback(this.aboutContent);
+        }
+    }
+
+    // Remove observer
+    removeObserver(callback) {
+        this.observers.delete(callback);
+    }
+
+    // Notify all observers of content changes
+    notifyObservers() {
+        this.observers.forEach(callback => callback(this.aboutContent));
+    }
+
+    // Update about content
+    async updateContent(newContent) {
+        try {
+            const aboutRef = doc(db, "content", "about");
+            await updateDoc(aboutRef, {
+                ...newContent,
+                lastUpdated: new Date()
+            });
+            return true;
+        } catch (error) {
+            console.error("Error updating about content:", error);
+            return false;
+        }
+    }
+
+    // Get current about content
+    async getContent() {
+        if (this.aboutContent) return this.aboutContent;
+
+        try {
+            const aboutRef = doc(db, "content", "about");
+            const docSnap = await getDoc(aboutRef);
+            if (docSnap.exists()) {
+                this.aboutContent = docSnap.data();
+                return this.aboutContent;
+            }
+            return null;
+        } catch (error) {
+            console.error("Error getting about content:", error);
+            return null;
+        }
+    }
+}
+
+// Create singleton instance
+const aboutManager = new AboutManager();
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    aboutManager.init();
+});
+
+// Function to make content editable
+function makeEditable(element, onSave) {
+    let isEditing = false;
+    const editButton = document.createElement('button');
+    editButton.className = 'edit-button';
+    editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+    editButton.style.display = 'none'; // Hidden by default
+
+    // Show edit button for admin users
+    isAdminUser().then(isAdmin => {
+        if (isAdmin) {
+            editButton.style.display = 'block';
+        }
+    });
+
+    element.parentElement.style.position = 'relative';
+    element.parentElement.appendChild(editButton);
+
+    editButton.addEventListener('click', () => {
+        if (!isEditing) {
+            // Enter edit mode
+            element.contentEditable = true;
+            element.focus();
+            editButton.innerHTML = '<i class="fas fa-save"></i>';
+            element.classList.add('editing');
+        } else {
+            // Save changes
+            element.contentEditable = false;
+            editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+            element.classList.remove('editing');
+            if (onSave) {
+                onSave(element.innerHTML);
+            }
+        }
+        isEditing = !isEditing;
+    });
+}
+
+export { aboutManager, makeEditable }; 
