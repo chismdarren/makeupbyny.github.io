@@ -1498,74 +1498,42 @@
           const savedContent = docSnap.data().content;
           
           // Apply saved content to matching elements
-          Object.keys(savedContent).forEach(path => {
-            try {
-              // Parse the path to find the element
-              // Format: parentTag.parentClass>tag.class1.class2:contentFingerprint
-              
-              // Remove content fingerprint if present
-              const basePath = path.split(':')[0];
-              
-              // Split into parent and element parts
-              const [parentInfo, elementInfo] = basePath.split('>');
-              
-              // Extract parent tag and class
-              let parentTag = '', parentClass = '';
-              if (parentInfo.includes('.')) {
-                [parentTag, parentClass] = parentInfo.split('.');
-              } else {
-                parentTag = parentInfo;
-              }
-              
-              // Extract element tag and classes
-              const [tag, ...classes] = elementInfo.split('.');
-              
-              // Build a selector from the classes
-              const classSelector = classes.length > 0 ? '.' + classes.join('.') : '';
-              const selector = tag + classSelector;
-              
-              console.log(`Looking for elements matching selector: ${selector}`);
-              
-              // Find potential elements that match
-              const elements = document.querySelectorAll(selector);
-              
-              if (elements.length > 0) {
-                console.log(`Found ${elements.length} matching elements`);
-                
-                // Apply to all matching elements (usually should be just one)
-                elements.forEach(element => {
-                  // Only update if parent tag matches or if we can't determine it
-                  const actualParentElement = element.parentElement;
-                  
-                  if (actualParentElement) {
-                    const actualParentTag = actualParentElement.tagName.toLowerCase();
-                    const actualParentHasClass = parentClass ? 
-                      actualParentElement.classList.contains(parentClass) : true;
-                    
-                    if (actualParentTag === parentTag && actualParentHasClass) {
-                      console.log(`Updating element with path ${path}`);
-                      element.innerHTML = savedContent[path].content;
-                    }
-                  } else if (!parentTag) {
-                    // If no parent specified and element has no parent
-                    console.log(`Updating element with path ${path} (no parent check)`);
-                    element.innerHTML = savedContent[path].content;
-                  }
-                });
-              } else {
-                console.log(`No elements found matching selector: ${selector}`);
-              }
-            } catch (error) {
-              console.error(`Error processing path ${path}:`, error);
+          const editableElements = document.querySelectorAll('.editable');
+          editableElements.forEach(element => {
+            const elementId = getElementPath(element);
+            
+            // Check if we have saved content for this element
+            if (savedContent[elementId] && savedContent[elementId].content) {
+              console.log(`Updating element with path ${elementId}`);
+              element.innerHTML = savedContent[elementId].content;
+            } else {
+              // If no saved content exists, keep the original HTML
+              console.log(`No saved content found for ${elementId}, keeping original content`);
             }
           });
         } else {
-          console.log("No saved content found");
+          console.log("No saved content found, keeping original content");
         }
       } catch (error) {
         console.error("Error loading saved content:", error);
       }
     });
+
+    // Helper function to get element path (must match the one in edit mode script)
+    function getElementPath(element) {
+      const tagName = element.tagName.toLowerCase();
+      const classList = Array.from(element.classList);
+      const classNames = classList.join('.');
+      
+      const parentElement = element.parentElement;
+      const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
+      const parentClass = parentElement && parentElement.className ? 
+        Array.from(parentElement.classList)[0] : '';
+      
+      const position = Array.from(parentElement.children).indexOf(element);
+      
+      return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
+    }
   </script>
 
 </body>
