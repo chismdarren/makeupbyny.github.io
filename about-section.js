@@ -1,4 +1,4 @@
-import { aboutManager } from './about.js';
+import { aboutManager, makeEditable } from './about.js';
 
 // Function to create and insert an about section
 export function insertAboutSection(containerId, sections = ['bio']) {
@@ -38,6 +38,12 @@ export function insertAboutSection(containerId, sections = ['bio']) {
             sectionDiv.innerHTML = 'Loading...';
             aboutSection.appendChild(sectionDiv);
             sectionElements.set(section, sectionDiv);
+
+            // Make the section editable with the correct section ID
+            makeEditable(sectionDiv, 
+                (newContent) => aboutManager.updateContent(newContent),
+                section
+            );
         });
 
         // Insert the section into the container
@@ -48,7 +54,7 @@ export function insertAboutSection(containerId, sections = ['bio']) {
             if (!content) return;
             
             sectionElements.forEach((element, section) => {
-                if (content[section]) {
+                if (content[section] !== undefined) {
                     element.innerHTML = content[section];
                 }
             });
@@ -79,6 +85,28 @@ const styles = `
     color: #444;
     line-height: 1.6;
     margin-bottom: 15px;
+}
+
+.edit-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.edit-button:hover {
+    color: #333;
+}
+
+.editing {
+    outline: 2px solid #ff69b4;
+    padding: 5px;
+    border-radius: 4px;
 }
 `;
 

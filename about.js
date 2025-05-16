@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Function to make content editable
-function makeEditable(element, onSave) {
+function makeEditable(element, onSave, sectionId) {
     // Safety check for null element
     if (!element) {
         console.warn('Cannot make null element editable');
@@ -260,8 +260,12 @@ function makeEditable(element, onSave) {
                 element.contentEditable = false;
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 element.classList.remove('editing');
-                if (onSave) {
-                    onSave(element.innerHTML);
+                if (onSave && sectionId) {
+                    // Create an object with the specific section being updated
+                    const updateData = {
+                        [sectionId]: element.innerHTML
+                    };
+                    onSave(updateData);
                 }
             }
             isEditing = !isEditing;
