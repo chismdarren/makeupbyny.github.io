@@ -1296,16 +1296,19 @@
       const editableElements = document.querySelectorAll('.editable');
       let editModeActive = false;
       
-      // Store original content for each editable element
-      const originalContent = {};
+      // Store original content for each editable element with a unique identifier
+      const originalContent = new Map();
       editableElements.forEach((element, index) => {
-        originalContent[index] = element.innerHTML;
+        // Create a unique identifier based on the element's path and content
+        const elementId = getElementPath(element);
+        originalContent.set(elementId, element.innerHTML);
       });
 
       // Toggle edit mode when pencil icon is clicked
       editButton.addEventListener('click', function() {
         editModeActive = !editModeActive;
         
+        // Toggle button appearance
         if (editModeActive) {
           // Enter edit mode
           editButton.classList.add('active');
@@ -1326,16 +1329,20 @@
           let hasChanges = false;
           
           // Check which elements have been changed
-          editableElements.forEach((element, index) => {
+          editableElements.forEach(element => {
+            const elementId = getElementPath(element);
             const currentContent = element.innerHTML;
-            if (currentContent !== originalContent[index]) {
+            const originalValue = originalContent.get(elementId);
+            
+            if (currentContent !== originalValue) {
               // Store element information for identification
-              const path = getElementPath(element);
-              updatedContent[path] = {
+              updatedContent[elementId] = {
                 content: currentContent,
                 elementType: element.tagName.toLowerCase()
               };
               hasChanges = true;
+              // Update the original content with new value
+              originalContent.set(elementId, currentContent);
             }
             
             // Remove contenteditable and visual style
@@ -1348,10 +1355,6 @@
             saveContentToFirebase(updatedContent)
               .then(() => {
                 showNotification('Changes saved successfully!', 'success');
-                // Update the original content with new values
-                editableElements.forEach((element, index) => {
-                  originalContent[index] = element.innerHTML;
-                });
               })
               .catch(error => {
                 showNotification('Error saving changes: ' + error.message, 'error');
@@ -1363,13 +1366,27 @@
       
       // Function to get a unique path for an element
       function getElementPath(element) {
-        let path = element.tagName.toLowerCase();
-        if (element.id) {
-          path += '#' + element.id;
-        } else if (element.className) {
-          path += '.' + Array.from(element.classList).join('.');
-        }
-        return path;
+        const tagName = element.tagName.toLowerCase();
+        
+        // Get all classes that help identify this element
+        const classList = Array.from(element.classList).filter(cls => 
+          cls === 'editable' || 
+          ['header', 'footer', 'about-me', 'social-links'].includes(cls)
+        );
+        const classNames = classList.join('.');
+        
+        // Get parent information for better context
+        const parentElement = element.parentElement;
+        const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
+        const parentClass = parentElement && parentElement.className ? 
+          Array.from(parentElement.classList)[0] : '';
+        
+        // Include content fingerprint and position in parent
+        const contentFingerprint = element.textContent.trim().substring(0, 10).replace(/\s+/g, '-');
+        const position = Array.from(parentElement.children).indexOf(element);
+        
+        // Create a unique identifier that includes structural information
+        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}:${contentFingerprint}`;
       }
       
       // Function to save content to Firebase
@@ -1392,7 +1409,12 @@
             const currentContent = docSnap.data().content || {};
             
             // Merge current content with updated content
-            const mergedContent = { ...currentContent, ...updatedContent };
+            const mergedContent = { ...currentContent };
+            // Only update changed sections
+            Object.entries(updatedContent).forEach(([key, value]) => {
+              mergedContent[key] = value;
+            });
+            
             console.log("Updating existing document with merged content:", mergedContent);
             
             // Update existing document
