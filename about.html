@@ -22,7 +22,6 @@
       margin-bottom: 30px;
       opacity: 1;
       transform: translateY(0);
-      position: relative;
     }
 
     .about-section h2 {
@@ -37,46 +36,6 @@
       color: #444;
       line-height: 1.6;
       margin-bottom: 15px;
-    }
-
-    /* Edit button styles */
-    .edit-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .edit-button:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-
-    .edit-button i {
-      color: #333;
-      font-size: 16px;
-    }
-
-    /* Editing state styles */
-    [contenteditable="true"] {
-      outline: 2px solid #4dabf7;
-      padding: 8px;
-      border-radius: 4px;
-      min-height: 100px;
-    }
-
-    .editing {
-      background-color: rgba(77, 171, 247, 0.05);
     }
 
     .about-grid {
@@ -516,19 +475,23 @@
         <section class="about-section" id="welcome">
           <h2>About Me</h2>
           <img src="nyredhair.jpg" alt="Ny Red Hair" class="about-image">
-          <div id="aboutBio" class="about-text">
-            <!-- Content will be loaded dynamically -->
-            Loading...
-          </div>
+          <p>
+            Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty. My journey in the world of makeup began with a simple curiosity and has evolved into a passionate pursuit of helping others discover their natural beauty.
+          </p>
+          <p>
+            Through this blog, I share my experiences, tips, and tricks that I've learned along the way. Whether you're a makeup novice or a seasoned pro, there's something here for everyone. I believe that makeup should be fun, accessible, and most importantly, a way to express yourself.
+          </p>
+          <p>
+            When I'm not experimenting with new products or creating tutorials, you can find me exploring the latest beauty trends, attending makeup workshops, or sharing my favorite finds with my growing community of beauty enthusiasts.
+          </p>
         </section>
 
         <!-- My Mission Section -->
         <section class="about-section">
           <h2>My Mission</h2>
-          <div id="aboutJourney" class="about-text">
-            <!-- Content will be loaded dynamically -->
-            Loading...
-          </div>
+          <p>
+            My mission is to empower everyone to feel confident and beautiful in their own skin. I believe that makeup is not about hiding who you are, but rather enhancing your natural beauty and expressing your unique style.
+          </p>
           <div class="about-grid">
             <div class="about-card">
               <h3>Education</h3>
@@ -548,10 +511,6 @@
         <!-- Beauty Tips Section -->
         <section class="about-section">
           <h2>Quick Beauty Tips</h2>
-          <div id="aboutApproach" class="about-text">
-            <!-- Content will be loaded dynamically -->
-            Loading...
-          </div>
           <div class="about-grid">
             <div class="about-card">
               <h3>Skincare First</h3>
@@ -571,6 +530,9 @@
         <!-- Contact Section -->
         <section class="about-section">
           <h2>Get in Touch</h2>
+          <p>
+            I love connecting with my readers! Whether you have questions about specific products, want to share your own beauty tips, or just want to say hello, feel free to reach out.
+          </p>
           <div class="social-links">
             <div class="social-icons">
               <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl" class="social-icon instagram"><i class="fab fa-instagram"></i> Instagram</a>

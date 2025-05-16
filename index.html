@@ -633,9 +633,13 @@
     <!-- About Me Sidebar -->
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
-      
-      <!-- About section will be inserted here -->
-      <div id="homeAboutSection"></div>
+
+      <p class="editable">
+        Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
+      </p>
+      <p class="editable">
+        Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
+      </p>
 
       <!-- Social Media Links -->
       <div class="social-links">
@@ -646,7 +650,7 @@
         </div>
       </div>
 
-      <!-- Sorting Options -->
+      <!-- Sorting Options (moved below Follow Me) -->
       <div class="sorting-options" style="border-bottom: none; justify-content: flex-start; margin: 15px 0 5px; padding: 0;">
         <span style="font-size: 0.9em; color: #555;">Sort posts by:</span>
         <select id="sortPosts" style="font-size: 0.8em; padding: 4px 8px;">
@@ -663,7 +667,7 @@
         <div id="recentPostsList"></div>
       </div>
 
-      <!-- Search Bar -->
+      <!-- Search Bar (moved to bottom) -->
       <div class="search-container">
         <input type="text" placeholder="Search posts..." id="searchInput">
       </div>
@@ -1549,14 +1553,6 @@
         console.error("Error loading saved content:", error);
       }
     });
-  </script>
-
-  <!-- Add this script import before your closing body tag -->
-  <script type="module">
-    import { insertAboutSection } from './about-section.js';
-    
-    // Insert the about section with just the bio
-    insertAboutSection('homeAboutSection', ['bio']);
   </script>
 
 </body>

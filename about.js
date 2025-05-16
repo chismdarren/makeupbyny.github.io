@@ -1,60 +1,50 @@
 // Import necessary Firebase modules
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { auth, isAdminUser } from "./firebase-config.js";
-import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-const db = getFirestore();
 
 // Initialize the page when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
-  // Get all the DOM elements once
-  const loginLink = document.getElementById("login-link");
-  const logoutBtn = document.getElementById("logout-btn");
-  const userAccountLink = document.getElementById("userAccountLink");
-  const settingsIcon = document.getElementById('settingsIcon');
-  const adminDropdownBtn = document.getElementById("adminDropdownBtn");
-
   // Monitor user authentication state
   onAuthStateChanged(auth, async (user) => {
     // If user is logged in
     if (user) {
       // Hide login button, show logout button and account link
-      if (loginLink) loginLink.style.display = "none";
-      if (logoutBtn) logoutBtn.style.display = "inline";
-      if (userAccountLink) userAccountLink.style.display = "inline";
+      document.getElementById("login-link").style.display = "none";
+      document.getElementById("logout-btn").style.display = "inline";
+      document.getElementById("userAccountLink").style.display = "inline";
       
       // Show settings icon
+      const settingsIcon = document.getElementById('settingsIcon');
       if (settingsIcon) settingsIcon.style.display = 'flex';
 
       // Check if user is admin
       const isAdmin = await isAdminUser(user.uid);
       if (isAdmin) {
         // Show admin dropdown button
-        if (adminDropdownBtn) adminDropdownBtn.style.display = "inline";
+        document.getElementById("adminDropdownBtn").style.display = "inline";
       } else {
         // Hide admin dropdown button for regular users
-        if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+        document.getElementById("adminDropdownBtn").style.display = "none";
       }
     } else {
       // If user is not logged in, show login button and hide user features
-      if (loginLink) loginLink.style.display = "inline";
-      if (logoutBtn) logoutBtn.style.display = "none";
-      if (userAccountLink) userAccountLink.style.display = "none";
-      if (adminDropdownBtn) adminDropdownBtn.style.display = "none";
+      document.getElementById("login-link").style.display = "inline";
+      document.getElementById("logout-btn").style.display = "none";
+      document.getElementById("userAccountLink").style.display = "none";
+      document.getElementById("adminDropdownBtn").style.display = "none";
       
       // Hide settings icon
+      const settingsIcon = document.getElementById('settingsIcon');
       if (settingsIcon) settingsIcon.style.display = 'none';
     }
   });
 
   // Handle logout button click
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      auth.signOut().then(() => {
-        window.location.href = "index.html";
-      });
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    auth.signOut().then(() => {
+      window.location.href = "index.html";
     });
-  }
+  });
 
   // Add smooth scrolling for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -92,194 +82,4 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('.about-card').forEach(card => {
     observer.observe(card);
   });
-});
-
-// Class to manage about content
-class AboutManager {
-    constructor() {
-        this.aboutContent = null;
-        this.observers = new Set();
-        this.initialized = false;
-    }
-
-    // Initialize the about content listener
-    async init() {
-        if (this.initialized) return;
-        
-        try {
-            // First, try to get existing content
-            const contentRef = doc(db, "site_content", "editable_content");
-            const docSnap = await getDoc(contentRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                this.aboutContent = data.content || {};
-                this.notifyObservers();
-            }
-            
-            // Set up real-time listener for content
-            onSnapshot(contentRef, (doc) => {
-                if (doc.exists()) {
-                    const data = doc.data();
-                    const newContent = data.content || {};
-                    // Only update if content has actually changed
-                    if (JSON.stringify(this.aboutContent) !== JSON.stringify(newContent)) {
-                        this.aboutContent = newContent;
-                        this.notifyObservers();
-                    }
-                }
-            });
-
-            this.initialized = true;
-        } catch (error) {
-            console.error("Error initializing AboutManager:", error);
-        }
-    }
-
-    // Add observer to be notified of content changes
-    addObserver(callback) {
-        if (this.observers.has(callback)) {
-            console.warn('Observer already exists');
-            return;
-        }
-        
-        this.observers.add(callback);
-        // If we already have content, notify immediately
-        if (this.aboutContent) {
-            callback(this.aboutContent);
-        }
-    }
-
-    // Remove observer
-    removeObserver(callback) {
-        this.observers.delete(callback);
-    }
-
-    // Notify all observers of content changes
-    notifyObservers() {
-        this.observers.forEach(callback => {
-            try {
-                callback(this.aboutContent);
-            } catch (error) {
-                console.error('Error in observer callback:', error);
-            }
-        });
-    }
-
-    // Update about content
-    async updateContent(newContent) {
-        try {
-            const contentRef = doc(db, "site_content", "editable_content");
-            const docSnap = await getDoc(contentRef);
-            const currentContent = docSnap.exists() ? (docSnap.data().content || {}) : {};
-            
-            // Merge the new content with existing content
-            const mergedContent = {
-                ...currentContent,
-                ...newContent
-            };
-
-            // Only update if content has changed
-            if (JSON.stringify(currentContent) !== JSON.stringify(mergedContent)) {
-                await updateDoc(contentRef, {
-                    content: mergedContent,
-                    lastUpdated: new Date()
-                });
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error("Error updating content:", error);
-            return false;
-        }
-    }
-
-    // Get current about content
-    async getContent() {
-        if (this.aboutContent) return this.aboutContent;
-
-        try {
-            const contentRef = doc(db, "site_content", "editable_content");
-            const docSnap = await getDoc(contentRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                this.aboutContent = data.content || {};
-                return this.aboutContent;
-            }
-            return null;
-        } catch (error) {
-            console.error("Error getting content:", error);
-            return null;
-        }
-    }
-}
-
-// Create singleton instance
-const aboutManager = new AboutManager();
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    aboutManager.init();
-});
-
-// Function to make content editable
-function makeEditable(element, onSave, sectionId) {
-    // Safety check for null element
-    if (!element) {
-        console.warn('Cannot make null element editable');
-        return;
-    }
-
-    // Safety check for parent element
-    const parentElement = element.parentElement;
-    if (!parentElement) {
-        console.warn('Cannot make element editable: no parent element found');
-        return;
-    }
-
-    let isEditing = false;
-    const editButton = document.createElement('button');
-    editButton.className = 'edit-button';
-    editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-    editButton.style.display = 'none'; // Hidden by default
-
-    // Set parent element styles and append button only if parent exists
-    if (parentElement) {
-        parentElement.style.position = 'relative';
-        parentElement.appendChild(editButton);
-
-        // Show edit button only for authenticated admin users
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const isAdmin = await isAdminUser(user.uid);
-                editButton.style.display = isAdmin ? 'block' : 'none';
-            } else {
-                editButton.style.display = 'none';
-            }
-        });
-
-        editButton.addEventListener('click', () => {
-            if (!isEditing) {
-                // Enter edit mode
-                element.contentEditable = true;
-                element.focus();
-                editButton.innerHTML = '<i class="fas fa-save"></i>';
-                element.classList.add('editing');
-            } else {
-                // Save changes
-                element.contentEditable = false;
-                editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-                element.classList.remove('editing');
-                if (onSave && sectionId) {
-                    // Create an object with the specific section being updated
-                    const updateData = {
-                        [sectionId]: element.innerHTML
-                    };
-                    onSave(updateData);
-                }
-            }
-            isEditing = !isEditing;
-        });
-    }
-}
-
-export { aboutManager, makeEditable }; 
+}); 
