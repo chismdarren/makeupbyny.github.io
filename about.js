@@ -108,17 +108,19 @@ class AboutManager {
         
         try {
             // First, try to get existing content
-            const aboutRef = doc(db, "content", "about");
-            const docSnap = await getDoc(aboutRef);
+            const contentRef = doc(db, "site_content", "editable_content");
+            const docSnap = await getDoc(contentRef);
             if (docSnap.exists()) {
-                this.aboutContent = docSnap.data();
+                const data = docSnap.data();
+                this.aboutContent = data.content || {};
                 this.notifyObservers();
             }
             
-            // Set up real-time listener for about content
-            onSnapshot(aboutRef, (doc) => {
+            // Set up real-time listener for content
+            onSnapshot(contentRef, (doc) => {
                 if (doc.exists()) {
-                    const newContent = doc.data();
+                    const data = doc.data();
+                    const newContent = data.content || {};
                     // Only update if content has actually changed
                     if (JSON.stringify(this.aboutContent) !== JSON.stringify(newContent)) {
                         this.aboutContent = newContent;
@@ -166,24 +168,27 @@ class AboutManager {
     // Update about content
     async updateContent(newContent) {
         try {
-            const aboutRef = doc(db, "content", "about");
-            const currentContent = this.aboutContent || {};
+            const contentRef = doc(db, "site_content", "editable_content");
+            const docSnap = await getDoc(contentRef);
+            const currentContent = docSnap.exists() ? (docSnap.data().content || {}) : {};
             
             // Merge the new content with existing content
             const mergedContent = {
                 ...currentContent,
-                ...newContent,
-                lastUpdated: new Date()
+                ...newContent
             };
 
             // Only update if content has changed
             if (JSON.stringify(currentContent) !== JSON.stringify(mergedContent)) {
-                await updateDoc(aboutRef, mergedContent);
+                await updateDoc(contentRef, {
+                    content: mergedContent,
+                    lastUpdated: new Date()
+                });
                 return true;
             }
             return false;
         } catch (error) {
-            console.error("Error updating about content:", error);
+            console.error("Error updating content:", error);
             return false;
         }
     }
@@ -193,15 +198,16 @@ class AboutManager {
         if (this.aboutContent) return this.aboutContent;
 
         try {
-            const aboutRef = doc(db, "content", "about");
-            const docSnap = await getDoc(aboutRef);
+            const contentRef = doc(db, "site_content", "editable_content");
+            const docSnap = await getDoc(contentRef);
             if (docSnap.exists()) {
-                this.aboutContent = docSnap.data();
+                const data = docSnap.data();
+                this.aboutContent = data.content || {};
                 return this.aboutContent;
             }
             return null;
         } catch (error) {
-            console.error("Error getting about content:", error);
+            console.error("Error getting content:", error);
             return null;
         }
     }

@@ -33,16 +33,17 @@ export function insertAboutSection(containerId, sections = ['bio']) {
         // Add content placeholders for requested sections
         sections.forEach(section => {
             const sectionDiv = document.createElement('div');
-            sectionDiv.id = `about${section.charAt(0).toUpperCase() + section.slice(1)}`;
+            const sectionId = `about${section.charAt(0).toUpperCase() + section.slice(1)}`;
+            sectionDiv.id = sectionId;
             sectionDiv.className = 'about-text';
             sectionDiv.innerHTML = 'Loading...';
             aboutSection.appendChild(sectionDiv);
-            sectionElements.set(section, sectionDiv);
+            sectionElements.set(sectionId, sectionDiv);
 
             // Make the section editable with the correct section ID
             makeEditable(sectionDiv, 
                 (newContent) => aboutManager.updateContent(newContent),
-                section
+                sectionId
             );
         });
 
@@ -53,9 +54,9 @@ export function insertAboutSection(containerId, sections = ['bio']) {
         const contentObserver = (content) => {
             if (!content) return;
             
-            sectionElements.forEach((element, section) => {
-                if (content[section] !== undefined) {
-                    element.innerHTML = content[section];
+            sectionElements.forEach((element, sectionId) => {
+                if (content[sectionId] && content[sectionId].content) {
+                    element.innerHTML = content[sectionId].content;
                 }
             });
         };
