@@ -101,21 +101,43 @@ export class ContentEditor {
       // Revert the content
       this.editableElements.forEach(element => {
         const elementId = this.getElementPath(element);
-        if (lastChange[elementId]) {
-          element.innerHTML = lastChange[elementId].content;
+        const previousState = lastChange.get(elementId);
+        
+        if (previousState) {
+          console.log(`Reverting ${elementId} to:`, previousState.content);
+          element.innerHTML = previousState.content;
           
           // Update original content map
           this.originalContent.set(elementId, {
-            content: lastChange[elementId].content,
+            content: previousState.content,
             lastModified: new Date().toISOString(),
-            version: lastChange[elementId].version
+            version: previousState.version
           });
         }
       });
 
       // Save to Firebase
-      await this.saveContentToFirebase(lastChange);
+      const revertedContent = {};
+      this.editableElements.forEach(element => {
+        const elementId = this.getElementPath(element);
+        const currentData = this.originalContent.get(elementId);
+        if (currentData) {
+          revertedContent[elementId] = {
+            content: currentData.content,
+            elementType: element.tagName.toLowerCase(),
+            lastModified: currentData.lastModified,
+            version: currentData.version
+          };
+        }
+      });
+
+      await this.saveContentToFirebase(revertedContent);
       this.showNotification('Changes undone successfully!', 'success');
+      
+      // Hide undo button if no more changes to undo
+      if (this.changeHistory.length === 0 && this.undoButton) {
+        this.undoButton.style.display = 'none';
+      }
     } catch (error) {
       console.error('Error undoing changes:', error);
       this.showNotification('Error undoing changes: ' + error.message, 'error');
