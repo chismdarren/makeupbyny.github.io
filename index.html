@@ -31,7 +31,7 @@
     /* Edit mode button styles */
     #edit-mode-toggle {
       position: fixed;
-      top: 20px;
+      top: 70px;
       right: 20px;
       width: 40px;
       height: 40px;
@@ -58,6 +58,7 @@
     /* Editable content styles */
     .editable {
       transition: outline 0.3s ease, background-color 0.3s ease;
+      cursor: text;
     }
 
     .editable.edit-mode {
@@ -604,7 +605,7 @@
   </a>
 
   <!-- Edit Mode Button (Admin only) -->
-  <div id="edit-mode-toggle" style="display:none; top: 70px;">
+  <div id="edit-mode-toggle" style="display:none;">
     <i class="fas fa-pencil-alt"></i>
   </div>
 

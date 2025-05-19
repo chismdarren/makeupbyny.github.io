@@ -25,13 +25,20 @@ export class ContentEditor {
   }
 
   initializeEventListeners() {
-    // Only set up edit button if it exists and is visible
-    if (this.editButton && this.editButton.style.display !== 'none') {
-      this.editButton.addEventListener('click', () => this.toggleEditMode());
+    // Only set up edit button if it exists
+    if (this.editButton) {
+      console.log('Edit button found, setting up click handler');
+      this.editButton.addEventListener('click', () => {
+        console.log('Edit button clicked');
+        this.toggleEditMode();
+      });
+    } else {
+      console.warn('Edit button not found');
     }
   }
 
   toggleEditMode() {
+    console.log('Toggling edit mode');
     this.editModeActive = !this.editModeActive;
     
     if (this.editModeActive) {
@@ -42,6 +49,7 @@ export class ContentEditor {
   }
 
   enterEditMode() {
+    console.log('Entering edit mode');
     this.editButton.classList.add('active');
     this.editButton.innerHTML = '<i class="fas fa-save"></i>';
     
