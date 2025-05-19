@@ -9,7 +9,12 @@ export class ContentEditor {
     this.editModeActive = false;
     this.originalContent = new Map();
     this.changeHistory = [];
-    this.unsavedChanges = new Map(); // Track changes before saving
+    this.unsavedChanges = new Map();
+    
+    // Track when loading screen was shown
+    this.loadingStartTime = Date.now();
+    // Minimum time to show loading screen (2.5 seconds)
+    this.minLoadingTime = 2500;
     
     // Create loading screen
     this.createLoadingScreen();
@@ -18,6 +23,9 @@ export class ContentEditor {
     
     // Initialize original content
     this.editableElements.forEach(element => {
+      // Hide all editable elements initially
+      element.style.opacity = '0';
+      
       const elementId = this.getElementPath(element);
       console.log('Initializing element:', elementId, 'with content:', element.innerHTML);
       
@@ -102,10 +110,25 @@ export class ContentEditor {
 
   hideLoadingScreen() {
     if (this.loadingScreen) {
-      this.loadingScreen.style.opacity = '0';
+      const currentTime = Date.now();
+      const elapsedTime = currentTime - this.loadingStartTime;
+      const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+
+      // Wait for minimum time to pass before hiding
       setTimeout(() => {
-        this.loadingScreen.style.display = 'none';
-      }, 500);
+        this.loadingScreen.style.opacity = '0';
+        
+        // After fade out, show content and remove loading screen
+        setTimeout(() => {
+          this.loadingScreen.style.display = 'none';
+          
+          // Fade in all editable elements
+          this.editableElements.forEach(element => {
+            element.style.transition = 'opacity 0.5s ease-in';
+            element.style.opacity = '1';
+          });
+        }, 500);
+      }, remainingTime);
     }
   }
 
@@ -415,7 +438,8 @@ export class ContentEditor {
         console.log("Found saved content:", docSnap.data());
         const savedContent = docSnap.data().content;
         
-        this.editableElements.forEach(element => {
+        // Update all elements with saved content
+        await Promise.all(this.editableElements.forEach(async element => {
           const elementId = this.getElementPath(element);
           
           if (savedContent[elementId] && savedContent[elementId].content) {
@@ -431,14 +455,15 @@ export class ContentEditor {
           } else {
             console.log(`No saved content found for ${elementId}, keeping original content`);
           }
-        });
+        }));
       } else {
         console.log("No saved content found, keeping original content");
       }
     } catch (error) {
       console.error("Error loading saved content:", error);
     } finally {
-      // Hide loading screen after content is loaded
+      // Ensure all content updates are complete before hiding loading screen
+      await new Promise(resolve => setTimeout(resolve, 500));
       this.hideLoadingScreen();
     }
   }
