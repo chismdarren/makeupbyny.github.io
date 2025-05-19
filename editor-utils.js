@@ -8,7 +8,8 @@ export class ContentEditor {
     this.editableElements = document.querySelectorAll('.editable');
     this.editModeActive = false;
     this.originalContent = new Map();
-    this.changeHistory = []; // Store history of changes
+    this.changeHistory = [];
+    this.unsavedChanges = new Map(); // Track changes before saving
     
     console.log('Found editable elements:', this.editableElements.length);
     
@@ -22,6 +23,14 @@ export class ContentEditor {
         content: element.innerHTML,
         lastModified: new Date().toISOString(),
         version: 1
+      });
+
+      // Add input event listener to track changes
+      element.addEventListener('input', () => {
+        if (this.editModeActive) {
+          this.unsavedChanges.set(elementId, element.innerHTML);
+          console.log('Change tracked:', elementId, element.innerHTML);
+        }
       });
     });
 
@@ -167,6 +176,9 @@ export class ContentEditor {
       element.setAttribute('contenteditable', 'true');
       element.classList.add('edit-mode');
     });
+
+    // Clear unsaved changes when entering edit mode
+    this.unsavedChanges.clear();
   }
 
   async exitEditMode() {
@@ -177,6 +189,7 @@ export class ContentEditor {
     let hasChanges = false;
     
     console.log('Starting save process...');
+    console.log('Unsaved changes:', Object.fromEntries(this.unsavedChanges));
     
     // Store the previous state before making changes
     const previousState = {};
@@ -188,43 +201,42 @@ export class ContentEditor {
       }
     });
     
-    this.editableElements.forEach(element => {
-      const elementId = this.getElementPath(element);
-      const currentContent = element.innerHTML;
+    // Process all changes at once
+    this.unsavedChanges.forEach((newContent, elementId) => {
       const originalData = this.originalContent.get(elementId);
       
       console.log('\nChecking element:', elementId);
-      console.log('Current content:', currentContent);
+      console.log('Current content:', newContent);
       console.log('Original content:', originalData?.content);
       
-      // Skip if we don't have original data for this element
       if (!originalData) {
         console.warn(`No original data found for element ${elementId}`);
         return;
       }
       
-      if (currentContent !== originalData.content) {
+      if (newContent !== originalData.content) {
         console.log('Content changed!');
         console.log('Old version:', originalData.version);
         console.log('New version:', originalData.version + 1);
         
         updatedContent[elementId] = {
-          content: currentContent,
-          elementType: element.tagName.toLowerCase(),
+          content: newContent,
+          elementType: document.querySelector(elementId.split(':')[0]).tagName.toLowerCase(),
           lastModified: new Date().toISOString(),
           version: originalData.version + 1
         };
         hasChanges = true;
         
         this.originalContent.set(elementId, {
-          content: currentContent,
+          content: newContent,
           lastModified: new Date().toISOString(),
           version: originalData.version + 1
         });
-      } else {
-        console.log('No changes detected for this element');
       }
-      
+    });
+    
+    // Remove contenteditable from all elements
+    this.editableElements.forEach(element => {
       element.removeAttribute('contenteditable');
       element.classList.remove('edit-mode');
     });
@@ -254,6 +266,9 @@ export class ContentEditor {
     } else {
       console.log('No changes to save');
     }
+
+    // Clear unsaved changes after saving
+    this.unsavedChanges.clear();
   }
 
   revertChanges(updatedContent) {
@@ -297,10 +312,18 @@ export class ContentEditor {
       const docSnap = await getDoc(contentRef);
       
       if (docSnap.exists()) {
-        // For undo operations, we want to completely replace the content
-        // rather than merge with existing content
-        return await setDoc(contentRef, {
-          content: updatedContent,
+        const currentContent = docSnap.data().content || {};
+        
+        // Merge the updated content with existing content
+        const mergedContent = { ...currentContent };
+        Object.entries(updatedContent).forEach(([key, value]) => {
+          mergedContent[key] = value;
+        });
+        
+        console.log("Merging with existing content. Final content:", mergedContent);
+        
+        return await updateDoc(contentRef, {
+          content: mergedContent,
           lastUpdated: new Date().toISOString()
         });
       } else {
