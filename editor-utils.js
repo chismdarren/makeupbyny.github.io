@@ -118,7 +118,7 @@ export class ContentEditor {
         }
       });
 
-      // Save to Firebase
+      // Save to Firebase - create a complete snapshot of all content
       const revertedContent = {};
       this.editableElements.forEach(element => {
         const elementId = this.getElementPath(element);
@@ -133,7 +133,7 @@ export class ContentEditor {
         }
       });
 
-      console.log('Saving reverted content to Firebase:', revertedContent);
+      console.log('Saving complete content snapshot to Firebase:', revertedContent);
       await this.saveContentToFirebase(revertedContent);
       this.showNotification('Changes undone successfully!', 'success');
       
@@ -297,22 +297,14 @@ export class ContentEditor {
       const docSnap = await getDoc(contentRef);
       
       if (docSnap.exists()) {
-        const currentContent = docSnap.data().content || {};
-        
-        const mergedContent = { ...currentContent };
-        Object.entries(updatedContent).forEach(([key, value]) => {
-          if (!mergedContent[key] || !mergedContent[key].version || 
-              value.version > mergedContent[key].version) {
-            mergedContent[key] = value;
-          }
-        });
-        
-        return updateDoc(contentRef, {
-          content: mergedContent,
+        // For undo operations, we want to completely replace the content
+        // rather than merge with existing content
+        return await setDoc(contentRef, {
+          content: updatedContent,
           lastUpdated: new Date().toISOString()
         });
       } else {
-        return setDoc(contentRef, {
+        return await setDoc(contentRef, {
           content: updatedContent,
           lastUpdated: new Date().toISOString()
         });
