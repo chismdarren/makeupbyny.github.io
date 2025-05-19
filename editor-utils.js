@@ -439,7 +439,7 @@ export class ContentEditor {
         const savedContent = docSnap.data().content;
         
         // Update all elements with saved content
-        await Promise.all(this.editableElements.forEach(async element => {
+        const updatePromises = Array.from(this.editableElements).map(async element => {
           const elementId = this.getElementPath(element);
           
           if (savedContent[elementId] && savedContent[elementId].content) {
@@ -455,7 +455,9 @@ export class ContentEditor {
           } else {
             console.log(`No saved content found for ${elementId}, keeping original content`);
           }
-        }));
+        });
+
+        await Promise.all(updatePromises);
       } else {
         console.log("No saved content found, keeping original content");
       }
