@@ -11,6 +11,9 @@ export class ContentEditor {
     this.changeHistory = [];
     this.unsavedChanges = new Map(); // Track changes before saving
     
+    // Create loading screen
+    this.createLoadingScreen();
+    
     console.log('Found editable elements:', this.editableElements.length);
     
     // Initialize original content
@@ -40,6 +43,70 @@ export class ContentEditor {
     // Bind event listeners
     this.initializeEventListeners();
     this.loadSavedContent();
+  }
+
+  createLoadingScreen() {
+    const loadingScreen = document.createElement('div');
+    loadingScreen.id = 'loading-screen';
+    loadingScreen.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      transition: opacity 0.5s ease-out;
+    `;
+
+    // Add logo
+    const logo = document.createElement('img');
+    logo.src = 'nbvlogo.png';
+    logo.alt = "Ny's Beauty Vault Logo";
+    logo.style.cssText = `
+      width: 200px;
+      height: auto;
+      margin-bottom: 20px;
+    `;
+
+    // Add loading spinner
+    const spinner = document.createElement('div');
+    spinner.style.cssText = `
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #555;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    `;
+
+    // Add keyframe animation for spinner
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    loadingScreen.appendChild(logo);
+    loadingScreen.appendChild(spinner);
+    document.body.appendChild(loadingScreen);
+    this.loadingScreen = loadingScreen;
+  }
+
+  hideLoadingScreen() {
+    if (this.loadingScreen) {
+      this.loadingScreen.style.opacity = '0';
+      setTimeout(() => {
+        this.loadingScreen.style.display = 'none';
+      }, 500);
+    }
   }
 
   initializeEventListeners() {
@@ -370,6 +437,9 @@ export class ContentEditor {
       }
     } catch (error) {
       console.error("Error loading saved content:", error);
+    } finally {
+      // Hide loading screen after content is loaded
+      this.hideLoadingScreen();
     }
   }
 
