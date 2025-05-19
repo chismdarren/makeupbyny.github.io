@@ -14,7 +14,7 @@ export class ContentEditor {
     // Initialize original content
     this.editableElements.forEach(element => {
       const elementId = this.getElementPath(element);
-      console.log('Initializing element:', elementId);
+      console.log('Initializing element:', elementId, 'with content:', element.innerHTML);
       
       // Store the original content
       this.originalContent.set(elementId, {
@@ -23,6 +23,9 @@ export class ContentEditor {
         version: 1
       });
     });
+
+    // Log the original content map
+    console.log('Original content map:', Object.fromEntries(this.originalContent));
 
     // Bind event listeners
     this.initializeEventListeners();
@@ -76,6 +79,10 @@ export class ContentEditor {
       const currentContent = element.innerHTML;
       const originalData = this.originalContent.get(elementId);
       
+      console.log('Checking element:', elementId);
+      console.log('Current content:', currentContent);
+      console.log('Original data:', originalData);
+      
       // Skip if we don't have original data for this element
       if (!originalData) {
         console.warn(`No original data found for element ${elementId}`);
@@ -83,6 +90,7 @@ export class ContentEditor {
       }
       
       if (currentContent !== originalData.content) {
+        console.log('Content changed for element:', elementId);
         updatedContent[elementId] = {
           content: currentContent,
           elementType: element.tagName.toLowerCase(),
@@ -143,7 +151,9 @@ export class ContentEditor {
     
     const position = Array.from(parentElement.children).indexOf(element);
     
-    return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
+    const path = `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
+    console.log('Generated path for element:', path);
+    return path;
   }
 
   async saveContentToFirebase(updatedContent) {
