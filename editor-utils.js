@@ -101,7 +101,7 @@ export class ContentEditor {
       // Revert the content
       this.editableElements.forEach(element => {
         const elementId = this.getElementPath(element);
-        const previousState = lastChange.get(elementId);
+        const previousState = lastChange[elementId];
         
         if (previousState) {
           console.log(`Reverting ${elementId} to:`, previousState.content);
