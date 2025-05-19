@@ -95,7 +95,7 @@ export class ContentEditor {
     }
 
     const lastChange = this.changeHistory.pop();
-    console.log('Undoing last change:', lastChange);
+    console.log('Undoing last change. History state:', lastChange);
 
     try {
       // Revert the content
@@ -104,15 +104,17 @@ export class ContentEditor {
         const previousState = lastChange[elementId];
         
         if (previousState) {
-          console.log(`Reverting ${elementId} to:`, previousState.content);
+          console.log(`Reverting ${elementId} to:`, previousState);
           element.innerHTML = previousState.content;
           
           // Update original content map
           this.originalContent.set(elementId, {
             content: previousState.content,
-            lastModified: new Date().toISOString(),
+            lastModified: previousState.lastModified,
             version: previousState.version
           });
+        } else {
+          console.log(`No previous state found for ${elementId}`);
         }
       });
 
@@ -131,6 +133,7 @@ export class ContentEditor {
         }
       });
 
+      console.log('Saving reverted content to Firebase:', revertedContent);
       await this.saveContentToFirebase(revertedContent);
       this.showNotification('Changes undone successfully!', 'success');
       
@@ -174,7 +177,16 @@ export class ContentEditor {
     let hasChanges = false;
     
     console.log('Starting save process...');
-    console.log('Current original content map:', Object.fromEntries(this.originalContent));
+    
+    // Store the previous state before making changes
+    const previousState = {};
+    this.editableElements.forEach(element => {
+      const elementId = this.getElementPath(element);
+      const originalData = this.originalContent.get(elementId);
+      if (originalData) {
+        previousState[elementId] = { ...originalData };
+      }
+    });
     
     this.editableElements.forEach(element => {
       const elementId = this.getElementPath(element);
@@ -221,7 +233,8 @@ export class ContentEditor {
       console.log('\nSaving changes to Firebase:', updatedContent);
       try {
         // Store the previous state for undo
-        this.changeHistory.push({...this.originalContent});
+        console.log('Storing previous state for undo:', previousState);
+        this.changeHistory.push(previousState);
         
         await this.saveContentToFirebase(updatedContent);
         console.log('Changes saved successfully!');
