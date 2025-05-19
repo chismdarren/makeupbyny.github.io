@@ -141,7 +141,7 @@ export class ContentEditor {
 
   getElementPath(element) {
     const tagName = element.tagName.toLowerCase();
-    const classList = Array.from(element.classList);
+    const classList = Array.from(element.classList).filter(cls => cls !== 'edit-mode');
     const classNames = classList.join('.');
     
     const parentElement = element.parentElement;
