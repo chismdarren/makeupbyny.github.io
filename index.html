@@ -1290,250 +1290,33 @@
   </script>
 
   <!-- Edit Mode Script -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const editButton = document.getElementById('edit-mode-toggle');
-      const editableElements = document.querySelectorAll('.editable');
-      let editModeActive = false;
-      
-      // Store original content and metadata for each editable element
-      const originalContent = new Map();
-      editableElements.forEach((element, index) => {
-        const elementId = getElementPath(element);
-        originalContent.set(elementId, {
-          content: element.innerHTML,
-          lastModified: new Date().toISOString(),
-          version: 1
-        });
-      });
-
-      // Toggle edit mode when pencil icon is clicked
-      editButton.addEventListener('click', function() {
-        editModeActive = !editModeActive;
-        
-        if (editModeActive) {
-          // Enter edit mode
-          editButton.classList.add('active');
-          editButton.innerHTML = '<i class="fas fa-save"></i>';
-          
-          editableElements.forEach(element => {
-            element.setAttribute('contenteditable', 'true');
-            element.classList.add('edit-mode');
-          });
-        } else {
-          // Exit edit mode and save changes
-          editButton.classList.remove('active');
-          editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-          
-          const updatedContent = {};
-          let hasChanges = false;
-          
-          // Check which elements have been changed
-          editableElements.forEach(element => {
-            const elementId = getElementPath(element);
-            const currentContent = element.innerHTML;
-            const originalData = originalContent.get(elementId);
-            
-            if (currentContent !== originalData.content) {
-              // Store element information with versioning and timestamp
-              updatedContent[elementId] = {
-                content: currentContent,
-                elementType: element.tagName.toLowerCase(),
-                lastModified: new Date().toISOString(),
-                version: originalData.version + 1
-              };
-              hasChanges = true;
-              
-              // Update the original content with new values
-              originalContent.set(elementId, {
-                content: currentContent,
-                lastModified: new Date().toISOString(),
-                version: originalData.version + 1
-              });
-            }
-            
-            element.removeAttribute('contenteditable');
-            element.classList.remove('edit-mode');
-          });
-          
-          // If changes were made, save them to Firebase
-          if (hasChanges) {
-            saveContentToFirebase(updatedContent)
-              .then(() => {
-                showNotification('Changes saved successfully!', 'success');
-              })
-              .catch(error => {
-                showNotification('Error saving changes: ' + error.message, 'error');
-                console.error('Error saving changes:', error);
-                
-                // Revert changes on error
-                editableElements.forEach(element => {
-                  const elementId = getElementPath(element);
-                  const originalData = originalContent.get(elementId);
-                  if (updatedContent[elementId]) {
-                    element.innerHTML = originalData.content;
-                    originalContent.set(elementId, {
-                      content: originalData.content,
-                      lastModified: originalData.lastModified,
-                      version: originalData.version
-                    });
-                  }
-                });
-              });
-          }
-        }
-      });
-      
-      // Function to get a unique path for an element
-      function getElementPath(element) {
-        const tagName = element.tagName.toLowerCase();
-        
-        // Get ALL classes for the element to ensure uniqueness
-        const classList = Array.from(element.classList);
-        const classNames = classList.join('.');
-        
-        const parentElement = element.parentElement;
-        const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-        const parentClass = parentElement && parentElement.className ? 
-          Array.from(parentElement.classList)[0] : '';
-        
-        // Include position in parent for extra uniqueness
-        const position = Array.from(parentElement.children).indexOf(element);
-        
-        // Create a unique identifier that includes all classes
-        return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
-      }
-      
-      // Function to save content to Firebase
-      async function saveContentToFirebase(updatedContent) {
-        const { doc, setDoc, getDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
-        const { db } = await import("./firebase-config.js");
-        
-        console.log("Saving content to Firebase:", updatedContent);
-        
-        const contentRef = doc(db, "site_content", "editable_content");
-        
-        try {
-          const docSnap = await getDoc(contentRef);
-          
-          if (docSnap.exists()) {
-            const currentContent = docSnap.data().content || {};
-            
-            // Merge content with version checking
-            const mergedContent = { ...currentContent };
-            Object.entries(updatedContent).forEach(([key, value]) => {
-              // Only update if new version is higher than existing
-              if (!mergedContent[key] || !mergedContent[key].version || 
-                  value.version > mergedContent[key].version) {
-                mergedContent[key] = value;
-              }
-            });
-            
-            return updateDoc(contentRef, {
-              content: mergedContent,
-              lastUpdated: new Date().toISOString()
-            });
-          } else {
-            return setDoc(contentRef, {
-              content: updatedContent,
-              lastUpdated: new Date().toISOString()
-            });
-          }
-        } catch (error) {
-          console.error("Error saving content:", error);
-          throw error;
-        }
-      }
-      
-      // Function to show notification
-      function showNotification(message, type) {
-        let notification = document.getElementById('edit-notification');
-        if (!notification) {
-          notification = document.createElement('div');
-          notification.id = 'edit-notification';
-          notification.style.position = 'fixed';
-          notification.style.bottom = '20px';
-          notification.style.right = '20px';
-          notification.style.padding = '10px 20px';
-          notification.style.borderRadius = '4px';
-          notification.style.color = 'white';
-          notification.style.fontWeight = 'bold';
-          notification.style.zIndex = '10000';
-          notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-          document.body.appendChild(notification);
-        }
-        
-        if (type === 'success') {
-          notification.style.backgroundColor = '#4CAF50';
-        } else if (type === 'error') {
-          notification.style.backgroundColor = '#F44336';
-        }
-        
-        notification.textContent = message;
-        notification.style.display = 'block';
-        
-        setTimeout(() => {
-          notification.style.display = 'none';
-        }, 3000);
-      }
-    });
-  </script>
-
-  <!-- Load editable content script -->
   <script type="module">
-    // Import Firebase modules immediately
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { db } from "./firebase-config.js";
+    import { ContentEditor } from './editor-utils.js';
     
-    // Load saved content when the page loads
     document.addEventListener('DOMContentLoaded', async function() {
       try {
-        console.log("Loading saved content...");
-        // Get the content document from Firestore
-        const contentRef = doc(db, "site_content", "editable_content");
-        const docSnap = await getDoc(contentRef);
+        const { isAdminUser } = await import("./firebase-config.js");
+        const { auth } = await import("./firebase-config.js");
         
-        if (docSnap.exists() && docSnap.data().content) {
-          console.log("Found saved content:", docSnap.data());
-          const savedContent = docSnap.data().content;
-          
-          // Apply saved content to matching elements
-          const editableElements = document.querySelectorAll('.editable');
-          editableElements.forEach(element => {
-            const elementId = getElementPath(element);
-            
-            // Check if we have saved content for this element
-            if (savedContent[elementId] && savedContent[elementId].content) {
-              console.log(`Updating element with path ${elementId}`);
-              element.innerHTML = savedContent[elementId].content;
-            } else {
-              // If no saved content exists, keep the original HTML
-              console.log(`No saved content found for ${elementId}, keeping original content`);
+        // Create a single editor instance
+        const editor = new ContentEditor();
+        
+        // If user is logged in, check if they're admin
+        const user = auth.currentUser;
+        if (user) {
+          const isAdmin = await isAdminUser(user.uid);
+          if (isAdmin) {
+            // Show edit button for admin users
+            const editButton = document.getElementById('edit-mode-toggle');
+            if (editButton) {
+              editButton.style.display = 'flex';
             }
-          });
-        } else {
-          console.log("No saved content found, keeping original content");
+          }
         }
       } catch (error) {
-        console.error("Error loading saved content:", error);
+        console.error("Error initializing editor:", error);
       }
     });
-
-    // Helper function to get element path (must match the one in edit mode script)
-    function getElementPath(element) {
-      const tagName = element.tagName.toLowerCase();
-      const classList = Array.from(element.classList);
-      const classNames = classList.join('.');
-      
-      const parentElement = element.parentElement;
-      const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-      const parentClass = parentElement && parentElement.className ? 
-        Array.from(parentElement.classList)[0] : '';
-      
-      const position = Array.from(parentElement.children).indexOf(element);
-      
-      return `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
-    }
   </script>
 
 </body>
