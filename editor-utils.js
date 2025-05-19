@@ -8,6 +8,7 @@ export class ContentEditor {
     this.editableElements = document.querySelectorAll('.editable');
     this.editModeActive = false;
     this.originalContent = new Map();
+    this.changeHistory = []; // Store history of changes
     
     console.log('Found editable elements:', this.editableElements.length);
     
@@ -43,6 +44,82 @@ export class ContentEditor {
     } else {
       console.warn('Edit button not found');
     }
+
+    // Add undo button to the page
+    this.addUndoButton();
+  }
+
+  addUndoButton() {
+    // Create undo button
+    const undoButton = document.createElement('div');
+    undoButton.id = 'undo-button';
+    undoButton.style.cssText = `
+      position: fixed;
+      top: 120px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 9999;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    `;
+    undoButton.innerHTML = '<i class="fas fa-undo"></i>';
+    
+    // Add hover effect
+    undoButton.addEventListener('mouseover', () => {
+      undoButton.style.transform = 'scale(1.1)';
+    });
+    undoButton.addEventListener('mouseout', () => {
+      undoButton.style.transform = 'scale(1)';
+    });
+
+    // Add click handler
+    undoButton.addEventListener('click', () => {
+      this.undoLastChange();
+    });
+
+    document.body.appendChild(undoButton);
+    this.undoButton = undoButton;
+  }
+
+  async undoLastChange() {
+    if (this.changeHistory.length === 0) {
+      this.showNotification('No changes to undo', 'info');
+      return;
+    }
+
+    const lastChange = this.changeHistory.pop();
+    console.log('Undoing last change:', lastChange);
+
+    try {
+      // Revert the content
+      this.editableElements.forEach(element => {
+        const elementId = this.getElementPath(element);
+        if (lastChange[elementId]) {
+          element.innerHTML = lastChange[elementId].content;
+          
+          // Update original content map
+          this.originalContent.set(elementId, {
+            content: lastChange[elementId].content,
+            lastModified: new Date().toISOString(),
+            version: lastChange[elementId].version
+          });
+        }
+      });
+
+      // Save to Firebase
+      await this.saveContentToFirebase(lastChange);
+      this.showNotification('Changes undone successfully!', 'success');
+    } catch (error) {
+      console.error('Error undoing changes:', error);
+      this.showNotification('Error undoing changes: ' + error.message, 'error');
+    }
   }
 
   toggleEditMode() {
@@ -74,14 +151,17 @@ export class ContentEditor {
     const updatedContent = {};
     let hasChanges = false;
     
+    console.log('Starting save process...');
+    console.log('Current original content map:', Object.fromEntries(this.originalContent));
+    
     this.editableElements.forEach(element => {
       const elementId = this.getElementPath(element);
       const currentContent = element.innerHTML;
       const originalData = this.originalContent.get(elementId);
       
-      console.log('Checking element:', elementId);
+      console.log('\nChecking element:', elementId);
       console.log('Current content:', currentContent);
-      console.log('Original data:', originalData);
+      console.log('Original content:', originalData?.content);
       
       // Skip if we don't have original data for this element
       if (!originalData) {
@@ -90,7 +170,10 @@ export class ContentEditor {
       }
       
       if (currentContent !== originalData.content) {
-        console.log('Content changed for element:', elementId);
+        console.log('Content changed!');
+        console.log('Old version:', originalData.version);
+        console.log('New version:', originalData.version + 1);
+        
         updatedContent[elementId] = {
           content: currentContent,
           elementType: element.tagName.toLowerCase(),
@@ -104,6 +187,8 @@ export class ContentEditor {
           lastModified: new Date().toISOString(),
           version: originalData.version + 1
         });
+      } else {
+        console.log('No changes detected for this element');
       }
       
       element.removeAttribute('contenteditable');
@@ -111,16 +196,28 @@ export class ContentEditor {
     });
     
     if (hasChanges) {
+      console.log('\nSaving changes to Firebase:', updatedContent);
       try {
+        // Store the previous state for undo
+        this.changeHistory.push({...this.originalContent});
+        
         await this.saveContentToFirebase(updatedContent);
+        console.log('Changes saved successfully!');
         this.showNotification('Changes saved successfully!', 'success');
+        
+        // Show undo button
+        if (this.undoButton) {
+          this.undoButton.style.display = 'flex';
+        }
       } catch (error) {
-        this.showNotification('Error saving changes: ' + error.message, 'error');
         console.error('Error saving changes:', error);
+        this.showNotification('Error saving changes: ' + error.message, 'error');
         
         // Revert changes on error
         this.revertChanges(updatedContent);
       }
+    } else {
+      console.log('No changes to save');
     }
   }
 
