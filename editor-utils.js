@@ -9,9 +9,14 @@ export class ContentEditor {
     this.editModeActive = false;
     this.originalContent = new Map();
     
+    console.log('Found editable elements:', this.editableElements.length);
+    
     // Initialize original content
     this.editableElements.forEach(element => {
       const elementId = this.getElementPath(element);
+      console.log('Initializing element:', elementId);
+      
+      // Store the original content
       this.originalContent.set(elementId, {
         content: element.innerHTML,
         lastModified: new Date().toISOString(),
@@ -70,6 +75,12 @@ export class ContentEditor {
       const elementId = this.getElementPath(element);
       const currentContent = element.innerHTML;
       const originalData = this.originalContent.get(elementId);
+      
+      // Skip if we don't have original data for this element
+      if (!originalData) {
+        console.warn(`No original data found for element ${elementId}`);
+        return;
+      }
       
       if (currentContent !== originalData.content) {
         updatedContent[elementId] = {
