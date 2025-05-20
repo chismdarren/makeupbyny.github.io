@@ -409,9 +409,12 @@ export class ContentEditor {
           const fullPath = this.getElementPath(element);
           const classPath = this.getElementClassPath(element);
           
-          console.log(`Checking paths for element:`, {
+          console.log(`Checking element:`, {
+            element: element.outerHTML,
             fullPath,
-            classPath
+            classPath,
+            savedContentForFullPath: savedContent[fullPath],
+            savedContentForClassPath: savedContent[classPath]
           });
           
           // Check if we have content for either path
@@ -452,12 +455,13 @@ export class ContentEditor {
       .sort() // Sort to ensure consistent order
       .join('.');
     
-    // Create a path based on the element type and relevant classes
-    return `${element.tagName.toLowerCase()}.${relevantClasses}`;
+    const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
+    console.log('Generated class path:', path, 'for element:', element.outerHTML);
+    return path;
   }
 
   async saveContentToFirebase(updatedContent) {
-    console.log("Saving content to Firebase:", updatedContent);
+    console.log("Saving content to Firebase. Updated content:", updatedContent);
     
     const contentRef = doc(db, "site_content", "editable_content");
     
@@ -466,6 +470,7 @@ export class ContentEditor {
       
       if (docSnap.exists()) {
         const currentContent = docSnap.data().content || {};
+        console.log("Current content in Firebase:", currentContent);
         
         // Merge the updated content with existing content
         const mergedContent = { ...currentContent };
@@ -478,11 +483,16 @@ export class ContentEditor {
           const element = document.querySelector(fullPath.split(':')[0]);
           if (element) {
             const classPath = this.getElementClassPath(element);
+            console.log(`Saving content under both paths:`, {
+              fullPath,
+              classPath,
+              content: value
+            });
             mergedContent[classPath] = value;
           }
         });
         
-        console.log("Merging with existing content. Final content:", mergedContent);
+        console.log("Final merged content to save:", mergedContent);
         
         return await updateDoc(contentRef, {
           content: mergedContent,
