@@ -473,13 +473,6 @@ export class ContentEditor {
       .sort() // Sort to ensure consistent order
       .join('.');
     
-    // If this is a main content element, include its position to make it unique
-    if (element.classList.contains('main-content')) {
-      const parent = element.parentElement;
-      const index = Array.from(parent.querySelectorAll('.main-content')).indexOf(element);
-      return `${element.tagName.toLowerCase()}.${relevantClasses}:${index}`;
-    }
-    
     // For about section elements, use a consistent path to ensure syncing
     if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
       const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
@@ -487,15 +480,23 @@ export class ContentEditor {
       return path;
     }
     
-    // For titles (h2, h3), include the page name to make them page-specific
-    if (element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
-      const path = `${element.tagName.toLowerCase()}.${relevantClasses}.${pageName}`;
-      console.log('Generated page-specific title path:', path, 'for element:', element.outerHTML);
-      return path;
-    }
+    // For all other editable elements, make them unique to the page and their position
+    const parent = element.parentElement;
+    const sameTypeElements = Array.from(parent.children).filter(el => 
+      el.tagName === element.tagName && 
+      el.classList.contains('editable')
+    );
+    const position = sameTypeElements.indexOf(element);
     
-    const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
-    console.log('Generated class path:', path, 'for element:', element.outerHTML);
+    // Create a unique path that includes:
+    // 1. The page name
+    // 2. The parent element's tag and first class (for context)
+    // 3. The element's tag and classes
+    // 4. The element's position among similar elements
+    const parentClass = parent.classList.length > 0 ? parent.classList[0] : '';
+    const path = `${pageName}>${parent.tagName.toLowerCase()}${parentClass ? '.' + parentClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
+    
+    console.log('Generated unique element path:', path, 'for element:', element.outerHTML);
     return path;
   }
 
@@ -505,44 +506,13 @@ export class ContentEditor {
     const contentRef = doc(db, "site_content", "editable_content");
     
     try {
-      const docSnap = await getDoc(contentRef);
+      // Clear existing content and save new content
+      await setDoc(contentRef, {
+        content: updatedContent,
+        lastUpdated: new Date().toISOString()
+      });
       
-      if (docSnap.exists()) {
-        const currentContent = docSnap.data().content || {};
-        console.log("Current content in Firebase:", currentContent);
-        
-        // Merge the updated content with existing content
-        const mergedContent = { ...currentContent };
-        
-        // For each updated element, save both its full path and class path
-        Object.entries(updatedContent).forEach(([fullPath, value]) => {
-          mergedContent[fullPath] = value;
-          
-          // Also save under the class path for cross-page sync
-          const element = document.querySelector(fullPath.split(':')[0]);
-          if (element) {
-            const classPath = this.getElementClassPath(element);
-            console.log(`Saving content under both paths:`, {
-              fullPath,
-              classPath,
-              content: value
-            });
-            mergedContent[classPath] = value;
-          }
-        });
-        
-        console.log("Final merged content to save:", mergedContent);
-        
-        return await updateDoc(contentRef, {
-          content: mergedContent,
-          lastUpdated: new Date().toISOString()
-        });
-      } else {
-        return await setDoc(contentRef, {
-          content: updatedContent,
-          lastUpdated: new Date().toISOString()
-        });
-      }
+      console.log("Content saved successfully");
     } catch (error) {
       console.error("Error saving content:", error);
       throw error;
