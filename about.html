@@ -584,6 +584,14 @@
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
 
+  <!-- Load editor for editable content -->
+  <script type="module">
+    import { ContentEditor } from './editor-utils.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      new ContentEditor();
+    });
+  </script>
+
   <!-- Load about.js for page-specific functionality -->
   <script type="module" src="about.js"></script>
 
