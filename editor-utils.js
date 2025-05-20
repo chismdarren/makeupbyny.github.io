@@ -393,6 +393,69 @@ export class ContentEditor {
     return path;
   }
 
+  async loadSavedContent() {
+    try {
+      console.log("Loading saved content...");
+      const contentRef = doc(db, "site_content", "editable_content");
+      const docSnap = await getDoc(contentRef);
+      
+      if (docSnap.exists() && docSnap.data().content) {
+        console.log("Found saved content:", docSnap.data());
+        const savedContent = docSnap.data().content;
+        
+        // Update all elements with saved content
+        const updatePromises = Array.from(this.editableElements).map(async element => {
+          // Get both the full path and the class-based path
+          const fullPath = this.getElementPath(element);
+          const classPath = this.getElementClassPath(element);
+          
+          console.log(`Checking paths for element:`, {
+            fullPath,
+            classPath
+          });
+          
+          // Check if we have content for either path
+          const contentMatch = savedContent[fullPath] || savedContent[classPath];
+          
+          if (contentMatch && contentMatch.content) {
+            console.log(`Updating element with path ${fullPath} using content from:`, contentMatch);
+            element.innerHTML = contentMatch.content;
+            
+            // Update original content map with saved version
+            this.originalContent.set(fullPath, {
+              content: contentMatch.content,
+              lastModified: contentMatch.lastModified,
+              version: contentMatch.version
+            });
+          } else {
+            console.log(`No saved content found for paths ${fullPath} or ${classPath}, keeping original content`);
+          }
+        });
+
+        await Promise.all(updatePromises);
+      } else {
+        console.log("No saved content found, keeping original content");
+      }
+    } catch (error) {
+      console.error("Error loading saved content:", error);
+    } finally {
+      // Ensure all content updates are complete before hiding loading screen
+      await new Promise(resolve => setTimeout(resolve, 500));
+      this.hideLoadingScreen();
+    }
+  }
+
+  getElementClassPath(element) {
+    // Get the element's classes that we want to match across pages
+    const relevantClasses = Array.from(element.classList)
+      .filter(cls => ['editable', 'about-intro', 'about-description'].includes(cls))
+      .sort() // Sort to ensure consistent order
+      .join('.');
+    
+    // Create a path based on the element type and relevant classes
+    return `${element.tagName.toLowerCase()}.${relevantClasses}`;
+  }
+
   async saveContentToFirebase(updatedContent) {
     console.log("Saving content to Firebase:", updatedContent);
     
@@ -406,8 +469,17 @@ export class ContentEditor {
         
         // Merge the updated content with existing content
         const mergedContent = { ...currentContent };
-        Object.entries(updatedContent).forEach(([key, value]) => {
-          mergedContent[key] = value;
+        
+        // For each updated element, save both its full path and class path
+        Object.entries(updatedContent).forEach(([fullPath, value]) => {
+          mergedContent[fullPath] = value;
+          
+          // Also save under the class path for cross-page sync
+          const element = document.querySelector(fullPath.split(':')[0]);
+          if (element) {
+            const classPath = this.getElementClassPath(element);
+            mergedContent[classPath] = value;
+          }
         });
         
         console.log("Merging with existing content. Final content:", mergedContent);
@@ -425,48 +497,6 @@ export class ContentEditor {
     } catch (error) {
       console.error("Error saving content:", error);
       throw error;
-    }
-  }
-
-  async loadSavedContent() {
-    try {
-      console.log("Loading saved content...");
-      const contentRef = doc(db, "site_content", "editable_content");
-      const docSnap = await getDoc(contentRef);
-      
-      if (docSnap.exists() && docSnap.data().content) {
-        console.log("Found saved content:", docSnap.data());
-        const savedContent = docSnap.data().content;
-        
-        // Update all elements with saved content
-        const updatePromises = Array.from(this.editableElements).map(async element => {
-          const elementId = this.getElementPath(element);
-          
-          if (savedContent[elementId] && savedContent[elementId].content) {
-            console.log(`Updating element with path ${elementId}`);
-            element.innerHTML = savedContent[elementId].content;
-            
-            // Update original content map with saved version
-            this.originalContent.set(elementId, {
-              content: savedContent[elementId].content,
-              lastModified: savedContent[elementId].lastModified,
-              version: savedContent[elementId].version
-            });
-          } else {
-            console.log(`No saved content found for ${elementId}, keeping original content`);
-          }
-        });
-
-        await Promise.all(updatePromises);
-      } else {
-        console.log("No saved content found, keeping original content");
-      }
-    } catch (error) {
-      console.error("Error loading saved content:", error);
-    } finally {
-      // Ensure all content updates are complete before hiding loading screen
-      await new Promise(resolve => setTimeout(resolve, 500));
-      this.hideLoadingScreen();
     }
   }
 
