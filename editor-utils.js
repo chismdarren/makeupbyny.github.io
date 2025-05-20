@@ -455,6 +455,13 @@ export class ContentEditor {
       .sort() // Sort to ensure consistent order
       .join('.');
     
+    // If this is a main content element, include its position to make it unique
+    if (element.classList.contains('main-content')) {
+      const parent = element.parentElement;
+      const index = Array.from(parent.querySelectorAll('.main-content')).indexOf(element);
+      return `${element.tagName.toLowerCase()}.${relevantClasses}:${index}`;
+    }
+    
     const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
     console.log('Generated class path:', path, 'for element:', element.outerHTML);
     return path;
