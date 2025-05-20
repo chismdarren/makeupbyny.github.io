@@ -262,9 +262,18 @@ export class ContentEditor {
     this.editButton.classList.add('active');
     this.editButton.innerHTML = '<i class="fas fa-save"></i>';
     
+    // Get current page name
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    
     this.editableElements.forEach(element => {
-      element.setAttribute('contenteditable', 'true');
-      element.classList.add('edit-mode');
+      // Only make about section editable on home page
+      const isAboutSection = element.classList.contains('about-intro') || element.classList.contains('about-description');
+      const isHomePage = currentPage === 'index.html';
+      
+      if (!isAboutSection || isHomePage) {
+        element.setAttribute('contenteditable', 'true');
+        element.classList.add('edit-mode');
+      }
     });
 
     // Clear unsaved changes when entering edit mode
@@ -460,6 +469,13 @@ export class ContentEditor {
       const parent = element.parentElement;
       const index = Array.from(parent.querySelectorAll('.main-content')).indexOf(element);
       return `${element.tagName.toLowerCase()}.${relevantClasses}:${index}`;
+    }
+    
+    // For about section elements, use a consistent path to ensure syncing
+    if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
+      const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
+      console.log('Generated synced about section path:', path, 'for element:', element.outerHTML);
+      return path;
     }
     
     const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
