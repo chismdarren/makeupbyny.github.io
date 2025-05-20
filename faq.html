@@ -351,6 +351,45 @@
       background-color: #f9f9f9;
       color: #a07;
     }
+
+    /* Edit mode button styles */
+    #edit-mode-toggle {
+      position: fixed;
+      top: 70px;  /* Position it below the settings icon which is at top: 20px */
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 9999;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    #edit-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    #edit-mode-toggle.active {
+      background-color: #ff69b4;
+      color: white;
+    }
+
+    /* Editable content styles */
+    .editable {
+      transition: outline 0.3s ease, background-color 0.3s ease;
+      cursor: text;
+    }
+
+    .editable.edit-mode {
+      outline: 2px solid #ff69b4;
+      outline-offset: 2px;
+      background-color: rgba(255, 105, 180, 0.05);
+    }
   </style>
 </head>
 <body>
@@ -383,6 +422,11 @@
       <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
+
+  <!-- Edit Button -->
+  <div id="edit-mode-toggle">
+    <i class="fas fa-pencil-alt"></i>
+  </div>
 
   <!-- Settings Icon -->
   <a href="settings.html" class="settings-icon" id="settingsIcon" style="display:none;" title="Account Settings">
@@ -422,99 +466,54 @@
 
       <div class="about-content">
         <section class="about-section">
-          <h2>Frequently Asked Questions</h2>
+          <h2 class="editable">Frequently Asked Questions</h2>
           
           <div class="faq-item">
             <div class="faq-question">
-              How often do you post new content?
+              <h3 class="editable">What services do you offer?</h3>
               <span class="faq-toggle">▼</span>
             </div>
-            <div class="faq-answer">
-              I strive to post new content 2-3 times per week, typically on Mondays, Wednesdays, and Fridays. Content includes:
-              <ul>
-                <li>In-depth product reviews of the latest beauty releases</li>
-                <li>Step-by-step makeup tutorials for various occasions</li>
-                <li>Skincare routines and tips based on different skin types</li>
-                <li>Seasonal makeup trends and how to incorporate them</li>
-              </ul>
-              For exclusive updates and early access to new content, subscribe to my newsletter or follow me on Instagram and Facebook.
-            </div>
+            <p class="faq-answer editable">I offer a range of makeup services including bridal makeup, special occasion makeup, makeup lessons, and consultations. Each service is tailored to meet your specific needs and preferences.</p>
           </div>
 
           <div class="faq-item">
             <div class="faq-question">
-              Do you accept product reviews?
+              <h3 class="editable">How do I book an appointment?</h3>
               <span class="faq-toggle">▼</span>
             </div>
-            <div class="faq-answer">
-              Yes, I do accept products for review! My approach to reviews is:
-              <ul>
-                <li>100% honest and transparent feedback based on my personal experience</li>
-                <li>I maintain full editorial control over all content</li>
-                <li>I only accept products that align with my audience's interests</li>
-                <li>Each review includes pros, cons, and who the product would work best for</li>
-                <li>I typically test products for 2-4 weeks before reviewing</li>
-              </ul>
-              If you're interested in sending products for review, please contact me through the contact form with details about your product and brand. I respond to all inquiries within 2-3 business days.
-            </div>
+            <p class="faq-answer editable">You can book an appointment through my online booking system at glammedbyglizz.youcanbook.me. Alternatively, you can contact me directly through the contact form on this website.</p>
           </div>
 
           <div class="faq-item">
             <div class="faq-question">
-              How can I contact you?
+              <h3 class="editable">What products do you use?</h3>
               <span class="faq-toggle">▼</span>
             </div>
-            <div class="faq-answer">
-              You can reach me through several channels:
-              <ul>
-                <li><strong>Email:</strong> contact@makeupbyny.com (response within 24-48 hours)</li>
-                <li><strong>Social Media:</strong> Direct message me on <a href="https://www.instagram.com/_ryymone?igsh=N2M5azhzZ3h3ZzJl">Instagram</a> or <a href="https://www.facebook.com/nyisha.rymone.1?mibextid=wwXIfr&rdid=AnupCw1sMQ1JiIU2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AGiUj9TMu%2F%3Fmibextid%3DwwXIfr">Facebook</a></li>
-                <li><strong>Contact Form:</strong> Use the <a href="contact.html">contact form</a> on the website for general inquiries, collaboration requests, or feedback</li>
-                <li><strong>Booking:</strong> For makeup services and appointments, use my <a href="https://glammedbyglizz.youcanbook.me/" target="_blank">booking page</a></li>
-              </ul>
-              I personally read and respond to all messages, though response times may vary during busy periods or holidays.
-            </div>
+            <p class="faq-answer editable">I use a variety of high-quality, professional makeup brands that are suitable for all skin types. I'm always happy to discuss specific products and can accommodate any allergies or sensitivities.</p>
           </div>
 
           <div class="faq-item">
             <div class="faq-question">
-              Do you offer makeup tutorials?
+              <h3 class="editable">Do you travel to clients?</h3>
               <span class="faq-toggle">▼</span>
             </div>
-            <div class="faq-answer">
-              Absolutely! Tutorials are a core part of my content. My tutorial offerings include:
-              <ul>
-                <li><strong>Written Tutorials:</strong> Detailed step-by-step guides with product recommendations</li>
-                <li><strong>Video Tutorials:</strong> Available on my YouTube channel and embedded in blog posts</li>
-                <li><strong>Beginner-Friendly Guides:</strong> Perfect for those just starting their makeup journey</li>
-                <li><strong>Advanced Techniques:</strong> For makeup enthusiasts looking to expand their skills</li>
-                <li><strong>Seasonal Looks:</strong> Special occasion makeup for holidays, events, and seasons</li>
-              </ul>
-              I also offer personalized one-on-one virtual makeup lessons for those who want customized guidance. These can be booked through my <a href="https://glammedbyglizz.youcanbook.me/" target="_blank">booking page</a>.
-            </div>
+            <p class="faq-answer editable">Yes, I offer mobile services for bridal parties and special events within the local area. Travel fees may apply depending on the location.</p>
           </div>
 
           <div class="faq-item">
             <div class="faq-question">
-              Can I use your photos on my website?
+              <h3 class="editable">What is your cancellation policy?</h3>
               <span class="faq-toggle">▼</span>
             </div>
-            <div class="faq-answer">
-              All content on Makeup by NY (including photos, videos, text, and graphics) is protected by copyright. Here's my policy on using my content:
-              <ul>
-                <li><strong>Personal Use:</strong> You may save images for personal, non-commercial inspiration</li>
-                <li><strong>Social Media Sharing:</strong> You may share my content on social media platforms with proper credit (@_ryymone on Instagram)</li>
-                <li><strong>Commercial Use:</strong> Prior written permission is required for any commercial use</li>
-                <li><strong>Blogs/Websites:</strong> If you'd like to feature my work, please contact me first</li>
-              </ul>
-              When permission is granted, proper attribution must include:
-              <ol>
-                <li>Credit to "Makeup by NY" or "Nyisha Rymone"</li>
-                <li>A link back to my website (makeupbyny.com)</li>
-                <li>No alterations to the original content without approval</li>
-              </ol>
-              To request permission, please use the <a href="contact.html">contact form</a> with details about how you intend to use the content.
+            <p class="faq-answer editable">I require 24 hours notice for cancellations. Late cancellations or no-shows may be subject to a fee. Please refer to your booking confirmation for specific details.</p>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <h3 class="editable">Do you offer group bookings?</h3>
+              <span class="faq-toggle">▼</span>
             </div>
+            <p class="faq-answer editable">Yes, I welcome group bookings for special events, bridal parties, and makeup workshops. Special rates may be available for larger groups.</p>
           </div>
         </section>
       </div>
@@ -524,10 +523,10 @@
     <aside class="about-me">
       <img src="nyredhair.jpg" alt="Ny Red Hair" class="profile-pic">
 
-      <p>
+      <p class="editable about-intro">
         Hello and welcome to my Makeup and Beauty Blog! I'm Ny, an aspiring makeup artist who's absolutely head-over-heels for all things beauty.
       </p>
-      <p>
+      <p class="editable about-description">
         Dive into honest product rundowns, foolproof tutorials, and the latest beauty buzz—like a monthly magazine come to life, but with my personal spin (and the occasional cameo from my family). Enjoy!
       </p>
 
@@ -561,129 +560,78 @@
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
 
-  <!-- Load faq.js for page-specific functionality -->
-  <script type="module" src="faq.js"></script>
+  <!-- Initialize editor immediately after Firebase -->
+  <script type="module">
+    import { ContentEditor } from './editor-utils.js';
+    // Initialize editor immediately
+    const editor = new ContentEditor();
+  </script>
 
-  <!-- Admin dropdown control script -->
+  <!-- FAQ Toggle Script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-      const whiteBox = document.querySelector('.black-box');
-      const contactDropdownBtn = document.getElementById('contactDropdownBtn');
-      const contactBox = document.querySelector('.contact-black-box');
+      const faqItems = document.querySelectorAll('.faq-item');
       
-      // Function to position white box under Admin Dashboard
-      function positionWhiteBox() {
-        if (adminDropdownBtn && whiteBox) {
-          const rect = adminDropdownBtn.getBoundingClientRect();
-          whiteBox.style.top = (rect.bottom) + 'px';
-          whiteBox.style.left = rect.left + 'px';
-          whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
-        }
-      }
-      
-      // Function to position contact box under Contact button
-      function positionContactBox() {
-        if (contactDropdownBtn && contactBox) {
-          const rect = contactDropdownBtn.getBoundingClientRect();
-          contactBox.style.top = (rect.bottom) + 'px';
-          contactBox.style.left = rect.left + 'px';
-          contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
-        }
-      }
-      
-      // Position boxes initially
-      positionWhiteBox();
-      positionContactBox();
-      
-      // Reposition on window resize
-      window.addEventListener('resize', function() {
-        positionWhiteBox();
-        positionContactBox();
-      });
-      
-      // Toggle dropdown when Admin Dashboard is clicked
-      if (adminDropdownBtn && whiteBox) {
-        adminDropdownBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // Toggle white box display
-          if (whiteBox.style.display === 'block') {
-            whiteBox.style.display = 'none';
-            this.classList.remove('active');
-          } else {
-            positionWhiteBox(); // Position before showing
-            whiteBox.style.display = 'block';
-            this.classList.add('active');
-            
-            // Hide contact dropdown if it's open
-            if (contactBox) {
-              contactBox.style.display = 'none';
-              if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-            }
-          }
-        });
-      }
-      
-      // Toggle contact dropdown when Contact is clicked
-      if (contactDropdownBtn && contactBox) {
-        contactDropdownBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // Toggle contact box display
-          if (contactBox.style.display === 'block') {
-            contactBox.style.display = 'none';
-            this.classList.remove('active');
-          } else {
-            positionContactBox(); // Position before showing
-            contactBox.style.display = 'block';
-            this.classList.add('active');
-            
-            // Hide admin dropdown if it's open
-            if (whiteBox) {
-              whiteBox.style.display = 'none';
-              if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-            }
-          }
-        });
-      }
-      
-      // Hide dropdowns when clicking outside
-      document.addEventListener('click', function(e) {
-        // Close admin dropdown
-        if (whiteBox && whiteBox.style.display === 'block' && 
-            adminDropdownBtn && !adminDropdownBtn.contains(e.target) && 
-            !whiteBox.contains(e.target)) {
-          whiteBox.style.display = 'none';
-          adminDropdownBtn.classList.remove('active');
-        }
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
         
-        // Close contact dropdown
-        if (contactBox && contactBox.style.display === 'block' && 
-            contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
-            !contactBox.contains(e.target)) {
-          contactBox.style.display = 'none';
-          contactDropdownBtn.classList.remove('active');
-        }
-      });
-      
-      // Hide dropdowns when scrolling
-      window.addEventListener('scroll', function() {
-        // Close admin dropdown
-        if (whiteBox && whiteBox.style.display === 'block') {
-          whiteBox.style.display = 'none';
-          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-        }
-        
-        // Close contact dropdown
-        if (contactBox && contactBox.style.display === 'block') {
-          contactBox.style.display = 'none';
-          if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-        }
+        question.addEventListener('click', () => {
+          // Close all other items
+          faqItems.forEach(otherItem => {
+            if (otherItem !== item) {
+              otherItem.classList.remove('active');
+            }
+          });
+          
+          // Toggle current item
+          item.classList.toggle('active');
+        });
       });
     });
+  </script>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    // Import Firebase modules
+    import { auth, isAdminUser } from './firebase-config.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+
+    // DOM elements
+    const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+    const userAccountLink = document.getElementById('userAccountLink');
+    const loginLink = document.getElementById('login-link');
+    const logoutBtn = document.getElementById('logout-btn');
+    const settingsIcon = document.getElementById('settingsIcon');
+
+    // Check authentication state
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        if (loginLink) loginLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline';
+        if (userAccountLink) userAccountLink.style.display = 'inline';
+        if (settingsIcon) settingsIcon.style.display = 'flex';
+        
+        const isAdmin = await isAdminUser(user.uid);
+        if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
+      } else {
+        if (loginLink) loginLink.style.display = 'inline';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (userAccountLink) userAccountLink.style.display = 'none';
+        if (settingsIcon) settingsIcon.style.display = 'none';
+      }
+    });
+
+    // Handle logout
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+          console.log('User signed out');
+          window.location.href = 'index.html';
+        }).catch(error => {
+          console.error('Error signing out:', error);
+        });
+      });
+    }
   </script>
 </body>
 </html> 
