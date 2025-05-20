@@ -324,6 +324,18 @@
       background-color: #f9f9f9;
       color: #a07;
     }
+
+    /* Editable content styles */
+    .editable {
+      transition: outline 0.3s ease, background-color 0.3s ease;
+      cursor: text;
+    }
+
+    .editable.edit-mode {
+      outline: 2px solid #ff69b4;
+      outline-offset: 2px;
+      background-color: rgba(255, 105, 180, 0.05);
+    }
   </style>
 </head>
 <body>
@@ -356,6 +368,11 @@
       <button id="logout-btn" style="display:none;">Logout</button>
     </nav>
   </header>
+
+  <!-- Edit Button -->
+  <div id="edit-mode-toggle">
+    <i class="fas fa-pencil-alt"></i>
+  </div>
 
   <!-- Settings Icon -->
   <a href="settings.html" class="settings-icon" id="settingsIcon" style="display:none;" title="Account Settings">
@@ -395,34 +412,29 @@
 
       <div class="about-content">
         <section class="about-section">
-          <h2>Disclaimer</h2>
-          <p>
-            The information provided on Makeup by NY is for general informational purposes only. While we strive to keep the information up to date and correct, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the website or the information, products, services, or related graphics contained on the website for any purpose.
-          </p>
-
-          <h3>Product Reviews and Recommendations</h3>
-          <p>
-            Any product reviews, recommendations, or opinions expressed on this blog are based on personal experience and research. We are not affiliated with any of the brands or companies mentioned unless explicitly stated. Some posts may contain affiliate links, which means we may receive a small commission if you make a purchase through these links.
-          </p>
-
-          <h3>Medical and Health Information</h3>
-          <p>
-            The beauty and skincare advice provided on this blog is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
-          </p>
-
-          <h3>External Links</h3>
-          <p>
-            Our website may contain links to external websites that are not provided or maintained by or in any way affiliated with Makeup by NY. Please note that we do not guarantee the accuracy, relevance, timeliness, or completeness of any information on these external websites.
-          </p>
-
-          <h3>Changes to This Disclaimer</h3>
-          <p>
-            We reserve the right to update or change our disclaimer at any time. Any changes will be posted on this page with an updated revision date.
-          </p>
-
-          <p>
-            Last updated: March 2024
-          </p>
+          <h2 class="editable">Disclaimer</h2>
+          <p class="editable">Welcome to Makeup by NY! Before you explore our content, please take a moment to read this disclaimer carefully.</p>
+          
+          <h3 class="editable">Professional Advice</h3>
+          <p class="editable">The content provided on this website is for informational and educational purposes only. While I am passionate about makeup and beauty, I am not a licensed cosmetologist or medical professional. Any advice or recommendations should not be considered professional or medical advice.</p>
+          
+          <h3 class="editable">Product Reviews</h3>
+          <p class="editable">Product reviews and recommendations are based on personal experience and opinion. Results may vary for different individuals. While I strive to provide honest and accurate information, your experience with products may differ from mine.</p>
+          
+          <h3 class="editable">Affiliate Links</h3>
+          <p class="editable">Some links on this website may be affiliate links. This means I may earn a small commission if you make a purchase through these links, at no additional cost to you. All product recommendations are based on genuine personal experience and are not influenced by affiliate partnerships.</p>
+          
+          <h3 class="editable">Accuracy of Information</h3>
+          <p class="editable">While I make every effort to ensure the accuracy of the information provided, the beauty industry is constantly evolving. Products, ingredients, and best practices may change over time. Always verify current information and read product labels carefully.</p>
+          
+          <h3 class="editable">Medical Conditions</h3>
+          <p class="editable">If you have any skin conditions, allergies, or other medical concerns, please consult with a healthcare professional before trying new beauty products or following beauty advice found on this website.</p>
+          
+          <h3 class="editable">Copyright</h3>
+          <p class="editable">All content on this website, including text, images, and videos, is protected by copyright law. You may not reproduce, distribute, or use any content without explicit permission.</p>
+          
+          <h3 class="editable">Updates</h3>
+          <p class="editable">This disclaimer may be updated from time to time. Please check back regularly to stay informed of any changes.</p>
         </section>
       </div>
     </main>
@@ -468,129 +480,55 @@
   <!-- Load firebase.js first to initialize Firebase -->
   <script type="module" src="firebase.js"></script>
 
-  <!-- Load disclaimer.js for page-specific functionality -->
-  <script type="module" src="disclaimer.js"></script>
+  <!-- Initialize editor immediately after Firebase -->
+  <script type="module">
+    import { ContentEditor } from './editor-utils.js';
+    // Initialize editor immediately
+    const editor = new ContentEditor();
+  </script>
 
-  <!-- Admin dropdown control script -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const adminDropdownBtn = document.getElementById('adminDropdownBtn');
-      const whiteBox = document.querySelector('.black-box');
-      const contactDropdownBtn = document.getElementById('contactDropdownBtn');
-      const contactBox = document.querySelector('.contact-black-box');
-      
-      // Function to position white box under Admin Dashboard
-      function positionWhiteBox() {
-        if (adminDropdownBtn && whiteBox) {
-          const rect = adminDropdownBtn.getBoundingClientRect();
-          whiteBox.style.top = (rect.bottom) + 'px';
-          whiteBox.style.left = rect.left + 'px';
-          whiteBox.style.width = (rect.width < 180 ? 180 : rect.width) + 'px'; // Minimum width of 180px
-        }
-      }
-      
-      // Function to position contact box under Contact button
-      function positionContactBox() {
-        if (contactDropdownBtn && contactBox) {
-          const rect = contactDropdownBtn.getBoundingClientRect();
-          contactBox.style.top = (rect.bottom) + 'px';
-          contactBox.style.left = rect.left + 'px';
-          contactBox.style.width = (rect.width < 50 ? 50 : rect.width) + 'px !important'; // Minimum width of 50px with !important
-        }
-      }
-      
-      // Position boxes initially
-      positionWhiteBox();
-      positionContactBox();
-      
-      // Reposition on window resize
-      window.addEventListener('resize', function() {
-        positionWhiteBox();
-        positionContactBox();
-      });
-      
-      // Toggle dropdown when Admin Dashboard is clicked
-      if (adminDropdownBtn && whiteBox) {
-        adminDropdownBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // Toggle white box display
-          if (whiteBox.style.display === 'block') {
-            whiteBox.style.display = 'none';
-            this.classList.remove('active');
-          } else {
-            positionWhiteBox(); // Position before showing
-            whiteBox.style.display = 'block';
-            this.classList.add('active');
-            
-            // Hide contact dropdown if it's open
-            if (contactBox) {
-              contactBox.style.display = 'none';
-              if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-            }
-          }
-        });
-      }
-      
-      // Toggle contact dropdown when Contact is clicked
-      if (contactDropdownBtn && contactBox) {
-        contactDropdownBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // Toggle contact box display
-          if (contactBox.style.display === 'block') {
-            contactBox.style.display = 'none';
-            this.classList.remove('active');
-          } else {
-            positionContactBox(); // Position before showing
-            contactBox.style.display = 'block';
-            this.classList.add('active');
-            
-            // Hide admin dropdown if it's open
-            if (whiteBox) {
-              whiteBox.style.display = 'none';
-              if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-            }
-          }
-        });
-      }
-      
-      // Hide dropdowns when clicking outside
-      document.addEventListener('click', function(e) {
-        // Close admin dropdown
-        if (whiteBox && whiteBox.style.display === 'block' && 
-            adminDropdownBtn && !adminDropdownBtn.contains(e.target) && 
-            !whiteBox.contains(e.target)) {
-          whiteBox.style.display = 'none';
-          adminDropdownBtn.classList.remove('active');
-        }
+  <!-- Firebase Integration -->
+  <script type="module">
+    // Import Firebase modules
+    import { auth, isAdminUser } from './firebase-config.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+
+    // DOM elements
+    const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+    const userAccountLink = document.getElementById('userAccountLink');
+    const loginLink = document.getElementById('login-link');
+    const logoutBtn = document.getElementById('logout-btn');
+    const settingsIcon = document.getElementById('settingsIcon');
+
+    // Check authentication state
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        if (loginLink) loginLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline';
+        if (userAccountLink) userAccountLink.style.display = 'inline';
+        if (settingsIcon) settingsIcon.style.display = 'flex';
         
-        // Close contact dropdown
-        if (contactBox && contactBox.style.display === 'block' && 
-            contactDropdownBtn && !contactDropdownBtn.contains(e.target) && 
-            !contactBox.contains(e.target)) {
-          contactBox.style.display = 'none';
-          contactDropdownBtn.classList.remove('active');
-        }
-      });
-      
-      // Hide dropdowns when scrolling
-      window.addEventListener('scroll', function() {
-        // Close admin dropdown
-        if (whiteBox && whiteBox.style.display === 'block') {
-          whiteBox.style.display = 'none';
-          if (adminDropdownBtn) adminDropdownBtn.classList.remove('active');
-        }
-        
-        // Close contact dropdown
-        if (contactBox && contactBox.style.display === 'block') {
-          contactBox.style.display = 'none';
-          if (contactDropdownBtn) contactDropdownBtn.classList.remove('active');
-        }
-      });
+        const isAdmin = await isAdminUser(user.uid);
+        if (adminDropdownBtn) adminDropdownBtn.style.display = isAdmin ? 'inline' : 'none';
+      } else {
+        if (loginLink) loginLink.style.display = 'inline';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (userAccountLink) userAccountLink.style.display = 'none';
+        if (settingsIcon) settingsIcon.style.display = 'none';
+      }
     });
+
+    // Handle logout
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+          console.log('User signed out');
+          window.location.href = 'index.html';
+        }).catch(error => {
+          console.error('Error signing out:', error);
+        });
+      });
+    }
   </script>
 </body>
 </html> 
