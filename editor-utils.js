@@ -482,6 +482,33 @@ export class ContentEditor {
     
     // For all other editable elements, make them unique to the page and their position
     const parent = element.parentElement;
+    
+    // Special handling for titles (h2, h3)
+    if (element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
+      // Find the nearest section or article parent
+      let section = parent;
+      while (section && !['section', 'article'].includes(section.tagName.toLowerCase())) {
+        section = section.parentElement;
+      }
+      
+      // Get all titles of the same level in this section
+      const sameTypeElements = section ? 
+        Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
+        Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
+      
+      const position = sameTypeElements.indexOf(element);
+      const sectionClass = section ? section.classList[0] || '' : '';
+      
+      // Create a unique path for titles that includes:
+      // 1. The page name
+      // 2. The section context
+      // 3. The title tag and position
+      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
+      console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
+      return path;
+    }
+    
+    // For all other elements
     const sameTypeElements = Array.from(parent.children).filter(el => 
       el.tagName === element.tagName && 
       el.classList.contains('editable')
@@ -506,11 +533,44 @@ export class ContentEditor {
     const contentRef = doc(db, "site_content", "editable_content");
     
     try {
-      // Clear existing content and save new content
-      await setDoc(contentRef, {
-        content: updatedContent,
-        lastUpdated: new Date().toISOString()
-      });
+      const docSnap = await getDoc(contentRef);
+      
+      if (docSnap.exists()) {
+        const currentContent = docSnap.data().content || {};
+        console.log("Current content in Firebase:", currentContent);
+        
+        // Merge the updated content with existing content
+        const mergedContent = { ...currentContent };
+        
+        // For each updated element, save both its full path and class path
+        Object.entries(updatedContent).forEach(([fullPath, value]) => {
+          mergedContent[fullPath] = value;
+          
+          // Also save under the class path for cross-page sync
+          const element = document.querySelector(fullPath.split(':')[0]);
+          if (element) {
+            const classPath = this.getElementClassPath(element);
+            console.log(`Saving content under both paths:`, {
+              fullPath,
+              classPath,
+              content: value
+            });
+            mergedContent[classPath] = value;
+          }
+        });
+        
+        console.log("Final merged content to save:", mergedContent);
+        
+        await updateDoc(contentRef, {
+          content: mergedContent,
+          lastUpdated: new Date().toISOString()
+        });
+      } else {
+        await setDoc(contentRef, {
+          content: updatedContent,
+          lastUpdated: new Date().toISOString()
+        });
+      }
       
       console.log("Content saved successfully");
     } catch (error) {
