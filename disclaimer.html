@@ -248,6 +248,33 @@
       }
     }
     
+    /* Edit mode button styles */
+    #edit-mode-toggle {
+      position: fixed;
+      top: 70px;  /* Position it below the settings icon which is at top: 20px */
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 9999;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    #edit-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    #edit-mode-toggle.active {
+      background-color: #ff69b4;
+      color: white;
+    }
+
     /* Settings gear icon styles */
     .settings-icon {
       position: fixed;
