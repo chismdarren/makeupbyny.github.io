@@ -266,11 +266,17 @@ export class ContentEditor {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     
     this.editableElements.forEach(element => {
-      // Only make about section editable on home page
+      // Check if element is a title (h2 or h3)
+      const isTitle = element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3';
+      // Check if element is part of the about section
       const isAboutSection = element.classList.contains('about-intro') || element.classList.contains('about-description');
       const isHomePage = currentPage === 'index.html';
       
-      if (!isAboutSection || isHomePage) {
+      // Make element editable if:
+      // 1. It's a title on the about page, OR
+      // 2. It's not an about section element, OR
+      // 3. It's an about section element on the home page
+      if ((isTitle && currentPage === 'about.html') || !isAboutSection || isHomePage) {
         element.setAttribute('contenteditable', 'true');
         element.classList.add('edit-mode');
       }
@@ -458,6 +464,9 @@ export class ContentEditor {
   }
 
   getElementClassPath(element) {
+    // Get the current page name
+    const pageName = window.location.pathname.split('/').pop() || 'index.html';
+    
     // Get the element's classes that we want to match across pages
     const relevantClasses = Array.from(element.classList)
       .filter(cls => ['editable', 'about-intro', 'about-description'].includes(cls))
@@ -475,6 +484,13 @@ export class ContentEditor {
     if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
       const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
       console.log('Generated synced about section path:', path, 'for element:', element.outerHTML);
+      return path;
+    }
+    
+    // For titles (h2, h3), include the page name to make them page-specific
+    if (element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
+      const path = `${element.tagName.toLowerCase()}.${relevantClasses}.${pageName}`;
+      console.log('Generated page-specific title path:', path, 'for element:', element.outerHTML);
       return path;
     }
     

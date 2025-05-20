@@ -1298,10 +1298,10 @@
       try {
         const { isAdminUser } = await import("./firebase-config.js");
         const { auth } = await import("./firebase-config.js");
-        
+              
         // Create a single editor instance
         const editor = new ContentEditor();
-        
+              
         // If user is logged in, check if they're admin
         const user = auth.currentUser;
         if (user) {
@@ -1311,10 +1311,10 @@
             const editButton = document.getElementById('edit-mode-toggle');
             if (editButton) {
               editButton.style.display = 'flex';
-            }
+                  }
           }
-        }
-      } catch (error) {
+              }
+            } catch (error) {
         console.error("Error initializing editor:", error);
       }
     });
