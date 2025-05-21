@@ -411,20 +411,30 @@ export class ContentEditor {
   }
 
   getElementPath(element) {
-    const tagName = element.tagName.toLowerCase();
-    const classList = Array.from(element.classList).filter(cls => cls !== 'edit-mode');
-    const classNames = classList.join('.');
+    // Get base identifier from tag name
+    const baseId = element.tagName.toLowerCase();
     
-    const parentElement = element.parentElement;
-    const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-    const parentClass = parentElement && parentElement.className ? 
-      Array.from(parentElement.classList)[0] : '';
+    // Create a unique suffix based on content and position
+    let uniqueSuffix = '';
     
-    const position = Array.from(parentElement.children).indexOf(element);
+    // Use content text if available (trimmed and simplified)
+    if (element.textContent) {
+      uniqueSuffix = element.textContent
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
+        .substring(0, 30); // Limit length
+    }
     
-    const path = `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
-    console.log('Generated path for element:', path);
-    return path;
+    // If no text content or empty after processing, use position
+    if (!uniqueSuffix) {
+      // Find position among siblings of same type
+      const siblings = element.parentElement.querySelectorAll(baseId);
+      const position = Array.from(siblings).indexOf(element);
+      uniqueSuffix = `pos-${position}`;
+    }
+    
+    return `${baseId}-${uniqueSuffix}`;
   }
 
   async loadSavedContent() {
