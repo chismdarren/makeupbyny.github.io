@@ -1293,12 +1293,30 @@
   <!-- Edit Mode Script -->
   <script type="module">
     import { ContentEditor } from './editor-utils.js';
-    import { auth, isAdminUser } from './firebase-config.js';
     
-    document.addEventListener('DOMContentLoaded', function() {
-      // Create a single editor instance for all users
-      // This will load the content but only enable editing for admins
-      const editor = new ContentEditor();
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const { isAdminUser } = await import("./firebase-config.js");
+        const { auth } = await import("./firebase-config.js");
+              
+        // Create a single editor instance
+        const editor = new ContentEditor();
+              
+        // If user is logged in, check if they're admin
+        const user = auth.currentUser;
+        if (user) {
+          const isAdmin = await isAdminUser(user.uid);
+          if (isAdmin) {
+            // Show edit button for admin users
+            const editButton = document.getElementById('edit-mode-toggle');
+            if (editButton) {
+              editButton.style.display = 'flex';
+                  }
+          }
+              }
+            } catch (error) {
+        console.error("Error initializing editor:", error);
+      }
     });
   </script>
 

@@ -604,13 +604,8 @@
   <!-- Initialize editor immediately after Firebase -->
   <script type="module">
     import { ContentEditor } from './editor-utils.js';
-    
     // Initialize editor immediately
-    document.addEventListener('DOMContentLoaded', function() {
-      // Create a single editor instance for all users
-      // This will load the content but only enable editing for admins
-      const editor = new ContentEditor();
-    });
+    const editor = new ContentEditor();
   </script>
 
   <!-- Load about.js for page-specific functionality -->

@@ -22,50 +22,22 @@ export class ContentEditor {
     
     console.log('Found editable elements:', this.editableElements.length);
     
-    // Hide all editable elements initially
+    // Initialize original content
     this.editableElements.forEach(element => {
+      // Hide all editable elements initially
       element.style.opacity = '0';
-    });
-
-    // Initialize based on user role
-    this.initializeBasedOnRole();
-  }
-
-  async initializeBasedOnRole() {
-    // First load content for all users
-    await this.loadSavedContent();
-
-    // Then check if user is admin and initialize editor features if they are
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const isAdmin = await isAdminUser(user.uid);
-        if (isAdmin) {
-          // Initialize editor features only for admin
-          this.initializeEditorFeatures();
-        }
-      }
-      // For non-admin users, we've already loaded the content
-      // so they can view it but not edit
-    });
-  }
-
-  initializeEditorFeatures() {
-    // Set up edit button visibility
-    if (this.editButton) {
-      this.editButton.style.display = 'flex';
-      console.log('Edit button found, setting up click handler');
-      this.editButton.addEventListener('click', () => {
-        console.log('Edit button clicked');
-        this.toggleEditMode();
-      });
-    }
-
-    // Add undo button
-    this.addUndoButton();
-
-    // Set up edit listeners
-    this.editableElements.forEach(element => {
+      
       const elementId = this.getElementPath(element);
+      console.log('Initializing element:', elementId, 'with content:', element.innerHTML);
+      
+      // Store the original content
+      this.originalContent.set(elementId, {
+        content: element.innerHTML,
+        lastModified: new Date().toISOString(),
+        version: 1
+      });
+
+      // Add input event listener to track changes
       element.addEventListener('input', () => {
         if (this.editModeActive) {
           this.unsavedChanges.set(elementId, element.innerHTML);
@@ -73,6 +45,31 @@ export class ContentEditor {
         }
       });
     });
+
+    // Log the original content map
+    console.log('Original content map:', Object.fromEntries(this.originalContent));
+
+    // Set up auth state listener for edit button visibility
+    this.setupAuthListener();
+
+    // Bind event listeners
+    this.initializeEventListeners();
+    this.loadSavedContent();
+  }
+
+  setupAuthListener() {
+    if (this.editButton) {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          // User is logged in, check if they're an admin
+          const isAdmin = await isAdminUser(user.uid);
+          this.editButton.style.display = isAdmin ? 'flex' : 'none';
+        } else {
+          // User is logged out, hide edit button
+          this.editButton.style.display = 'none';
+        }
+      });
+    }
   }
 
   createLoadingScreen() {
@@ -152,6 +149,22 @@ export class ContentEditor {
         }, 500);
       }, remainingTime);
     }
+  }
+
+  initializeEventListeners() {
+    // Only set up edit button if it exists
+    if (this.editButton) {
+      console.log('Edit button found, setting up click handler');
+      this.editButton.addEventListener('click', () => {
+        console.log('Edit button clicked');
+        this.toggleEditMode();
+      });
+    } else {
+      console.warn('Edit button not found');
+    }
+
+    // Add undo button to the page
+    this.addUndoButton();
   }
 
   addUndoButton() {
@@ -438,74 +451,28 @@ export class ContentEditor {
             savedContentForClassPath: savedContent[classPath]
           });
           
-          // Special handling for about section elements
-          if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
-            // For about section, prioritize the class path content
-            const contentMatch = savedContent[classPath] || savedContent[fullPath];
-            
-            if (contentMatch && contentMatch.content) {
-              console.log(`Updating about section element with content from:`, contentMatch);
-              element.innerHTML = contentMatch.content;
-              
-              // Update original content map
-              this.originalContent.set(fullPath, {
-                content: contentMatch.content,
-                lastModified: contentMatch.lastModified,
-                version: contentMatch.version
-              });
-              
-              // Also update any other elements with the same class
-              document.querySelectorAll(`.${element.classList[0]}`).forEach(matchingElement => {
-                if (matchingElement !== element) {
-                  matchingElement.innerHTML = contentMatch.content;
-                }
-              });
-            }
-          } else {
-            // For non-about section elements, check both paths
-            const contentMatch = savedContent[fullPath] || savedContent[classPath];
-            
-            if (contentMatch && contentMatch.content) {
-              console.log(`Updating element with content from:`, contentMatch);
-              element.innerHTML = contentMatch.content;
-              
-              // Update original content map
-              this.originalContent.set(fullPath, {
-                content: contentMatch.content,
-                lastModified: contentMatch.lastModified,
-                version: contentMatch.version
-              });
-            }
-          }
+          // Check if we have content for either path
+          const contentMatch = savedContent[fullPath] || savedContent[classPath];
           
-          // If no saved content exists, store the initial content
-          if (!this.originalContent.has(fullPath)) {
+          if (contentMatch && contentMatch.content) {
+            console.log(`Updating element with path ${fullPath} using content from:`, contentMatch);
+            element.innerHTML = contentMatch.content;
+            
+            // Update original content map with saved version
             this.originalContent.set(fullPath, {
-              content: element.innerHTML,
-              lastModified: new Date().toISOString(),
-              version: 1
+              content: contentMatch.content,
+              lastModified: contentMatch.lastModified,
+              version: contentMatch.version
             });
-            console.log(`No saved content found, storing original content for ${fullPath}`);
+          } else {
+            console.log(`No saved content found for paths ${fullPath} or ${classPath}, keeping original content`);
           }
         });
 
         await Promise.all(updatePromises);
       } else {
-        console.log("No saved content found, storing original content");
-        // Store original content for all elements
-        this.editableElements.forEach(element => {
-          const elementId = this.getElementPath(element);
-          this.originalContent.set(elementId, {
-            content: element.innerHTML,
-            lastModified: new Date().toISOString(),
-            version: 1
-          });
-        });
+        console.log("No saved content found, keeping original content");
       }
-      
-      // Log the final content map
-      console.log('Content map after loading:', Object.fromEntries(this.originalContent));
-      
     } catch (error) {
       console.error("Error loading saved content:", error);
     } finally {
@@ -598,36 +565,16 @@ export class ContentEditor {
         Object.entries(updatedContent).forEach(([fullPath, value]) => {
           mergedContent[fullPath] = value;
           
-          // Get the element using the full path
+          // Also save under the class path for cross-page sync
           const element = document.querySelector(fullPath.split(':')[0]);
           if (element) {
-            // Get the class path for syncing
             const classPath = this.getElementClassPath(element);
-            
-            // Special handling for about section elements
-            if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
-              // Save under the class path for cross-page sync
-              console.log(`Saving about section content under class path:`, {
-                classPath,
-                content: value
-              });
-              mergedContent[classPath] = value;
-              
-              // Also update any matching elements on the current page
-              document.querySelectorAll(`.${element.classList[0]}`).forEach(matchingElement => {
-                if (matchingElement !== element) {
-                  matchingElement.innerHTML = value.content;
-                }
-              });
-            } else {
-              // For non-about section elements, just save under both paths
-              console.log(`Saving content under both paths:`, {
-                fullPath,
-                classPath,
-                content: value
-              });
-              mergedContent[classPath] = value;
-            }
+            console.log(`Saving content under both paths:`, {
+              fullPath,
+              classPath,
+              content: value
+            });
+            mergedContent[classPath] = value;
           }
         });
         
