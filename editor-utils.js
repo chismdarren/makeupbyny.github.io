@@ -529,27 +529,23 @@ export class ContentEditor {
     // For all other editable elements, make them unique to the page and their position
     const parent = element.parentElement;
     
-    // Special handling for titles (h1, h2, h3)
-    if (element.tagName.toLowerCase() === 'h1' || element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
+    // Special handling for titles (h2, h3)
+    if (element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
       // Find the nearest section or article parent
       let section = parent;
       while (section && !['section', 'article'].includes(section.tagName.toLowerCase())) {
         section = section.parentElement;
       }
       
-      // Get all titles of the same level in this section
-      const sameTypeElements = section ? 
-        Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
-        Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
-      
-      const position = sameTypeElements.indexOf(element);
-      const sectionClass = section ? section.classList[0] || '' : '';
+      // Get section identifier
+      const sectionClass = section ? section.classList[0] || '';
+      const sectionId = section ? section.id || '';
       
       // Create a unique path for titles that includes:
       // 1. The page name
-      // 2. The section context
-      // 3. The title tag and position
-      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
+      // 2. The section ID or class (for uniqueness)
+      // 3. The title tag
+      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionId ? '#' + sectionId : sectionClass ? '.' + sectionClass : ''}>h2.${relevantClasses}`;
       console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
       return path;
     }
