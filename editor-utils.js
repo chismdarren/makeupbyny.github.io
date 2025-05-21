@@ -1,6 +1,7 @@
 // Import Firebase modules
 import { doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { db } from "./firebase-config.js";
+import { db, auth, isAdminUser } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 export class ContentEditor {
   constructor() {
@@ -48,9 +49,27 @@ export class ContentEditor {
     // Log the original content map
     console.log('Original content map:', Object.fromEntries(this.originalContent));
 
+    // Set up auth state listener for edit button visibility
+    this.setupAuthListener();
+
     // Bind event listeners
     this.initializeEventListeners();
     this.loadSavedContent();
+  }
+
+  setupAuthListener() {
+    if (this.editButton) {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          // User is logged in, check if they're an admin
+          const isAdmin = await isAdminUser(user.uid);
+          this.editButton.style.display = isAdmin ? 'flex' : 'none';
+        } else {
+          // User is logged out, hide edit button
+          this.editButton.style.display = 'none';
+        }
+      });
+    }
   }
 
   createLoadingScreen() {

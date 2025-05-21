@@ -454,7 +454,7 @@
   </a>
 
   <!-- Edit Button -->
-  <div id="edit-mode-toggle" style="position: fixed; top: 70px; right: 20px; width: 40px; height: 40px; background-color: #fff; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 9999; transition: transform 0.3s ease, background-color 0.3s ease;">
+  <div id="edit-mode-toggle" style="position: fixed; top: 70px; right: 20px; width: 40px; height: 40px; background-color: #fff; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: none; justify-content: center; align-items: center; cursor: pointer; z-index: 9999; transition: transform 0.3s ease, background-color 0.3s ease;">
     <i class="fas fa-pencil-alt"></i>
   </div>
 
@@ -764,8 +764,6 @@
         if (loginLink) loginLink.style.display = 'inline';
         if (logoutBtn) logoutBtn.style.display = 'none';
         if (userAccountLink) userAccountLink.style.display = 'none';
-        
-        // Hide settings icon
         if (settingsIcon) settingsIcon.style.display = 'none';
       }
     });
