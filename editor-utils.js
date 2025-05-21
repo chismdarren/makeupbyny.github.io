@@ -22,36 +22,31 @@ export class ContentEditor {
     
     console.log('Found editable elements:', this.editableElements.length);
     
-    // Initialize original content and add unique IDs
+    // Assign unique IDs to all editable elements that don't have one
     this.editableElements.forEach((element, index) => {
-      // Add unique identifier
-      const uniqueId = `editable-${Date.now()}-${index}`;
-      element.setAttribute('data-editor-id', uniqueId);
+      if (!element.id) {
+        const timestamp = Date.now();
+        element.id = `editable-${timestamp}-${index}`;
+      }
       
-      // Hide all editable elements initially
+      // Hide element initially
       element.style.opacity = '0';
       
-      const elementId = uniqueId;
-      console.log('Initializing element:', elementId, 'with content:', element.innerHTML);
-      
-      // Store the original content
-      this.originalContent.set(elementId, {
+      // Store original content using element ID
+      this.originalContent.set(element.id, {
         content: element.innerHTML,
         lastModified: new Date().toISOString(),
         version: 1
       });
 
-      // Add input event listener to track changes
+      // Add input event listener
       element.addEventListener('input', () => {
         if (this.editModeActive) {
-          this.unsavedChanges.set(elementId, element.innerHTML);
-          console.log('Change tracked:', elementId, element.innerHTML);
+          this.unsavedChanges.set(element.id, element.innerHTML);
+          console.log('Change tracked for element:', element.id);
         }
       });
     });
-
-    // Log the original content map
-    console.log('Original content map:', Object.fromEntries(this.originalContent));
 
     // Set up auth state listener for edit button visibility
     this.setupAuthListener();
@@ -222,7 +217,7 @@ export class ContentEditor {
     try {
       // Revert the content
       this.editableElements.forEach(element => {
-        const elementId = this.getElementPath(element);
+        const elementId = element.id;
         const previousState = lastChange[elementId];
         
         if (previousState) {
@@ -243,7 +238,7 @@ export class ContentEditor {
       // Save to Firebase - create a complete snapshot of all content
       const revertedContent = {};
       this.editableElements.forEach(element => {
-        const elementId = this.getElementPath(element);
+        const elementId = element.id;
         const currentData = this.originalContent.get(elementId);
         if (currentData) {
           revertedContent[elementId] = {
@@ -316,40 +311,28 @@ export class ContentEditor {
     const updatedContent = {};
     let hasChanges = false;
     
-    console.log('Starting save process...');
-    console.log('Unsaved changes:', Object.fromEntries(this.unsavedChanges));
-    
-    // Store the previous state before making changes
+    // Store previous state
     const previousState = {};
     this.editableElements.forEach(element => {
-      const elementId = this.getElementPath(element);
-      const originalData = this.originalContent.get(elementId);
+      const originalData = this.originalContent.get(element.id);
       if (originalData) {
-        previousState[elementId] = { ...originalData };
+        previousState[element.id] = { ...originalData };
       }
     });
     
-    // Process all changes at once
+    // Process changes
     this.unsavedChanges.forEach((newContent, elementId) => {
       const originalData = this.originalContent.get(elementId);
       
-      console.log('\nChecking element:', elementId);
-      console.log('Current content:', newContent);
-      console.log('Original content:', originalData?.content);
-      
-      if (!originalData) {
-        console.warn(`No original data found for element ${elementId}`);
-        return;
-      }
+      if (!originalData) return;
       
       if (newContent !== originalData.content) {
-        console.log('Content changed!');
-        console.log('Old version:', originalData.version);
-        console.log('New version:', originalData.version + 1);
+        const element = document.getElementById(elementId);
+        if (!element) return;
         
         updatedContent[elementId] = {
           content: newContent,
-          elementType: document.querySelector(elementId.split(':')[0]).tagName.toLowerCase(),
+          elementType: element.tagName.toLowerCase(),
           lastModified: new Date().toISOString(),
           version: originalData.version + 1
         };
@@ -363,59 +346,42 @@ export class ContentEditor {
       }
     });
     
-    // Remove contenteditable from all elements
+    // Remove contenteditable
     this.editableElements.forEach(element => {
       element.removeAttribute('contenteditable');
       element.classList.remove('edit-mode');
     });
     
     if (hasChanges) {
-      console.log('\nSaving changes to Firebase:', updatedContent);
       try {
-        // Store the previous state for undo
-        console.log('Storing previous state for undo:', previousState);
         this.changeHistory.push(previousState);
-        
         await this.saveContentToFirebase(updatedContent);
-        console.log('Changes saved successfully!');
         this.showNotification('Changes saved successfully!', 'success');
-        
-        // Show undo button
         if (this.undoButton) {
           this.undoButton.style.display = 'flex';
         }
       } catch (error) {
         console.error('Error saving changes:', error);
         this.showNotification('Error saving changes: ' + error.message, 'error');
-        
-        // Revert changes on error
         this.revertChanges(updatedContent);
       }
-    } else {
-      console.log('No changes to save');
     }
 
-    // Clear unsaved changes after saving
     this.unsavedChanges.clear();
   }
 
   revertChanges(updatedContent) {
     this.editableElements.forEach(element => {
-      const elementId = this.getElementPath(element);
-      const originalData = this.originalContent.get(elementId);
-      if (updatedContent[elementId]) {
+      const originalData = this.originalContent.get(element.id);
+      if (updatedContent[element.id]) {
         element.innerHTML = originalData.content;
-        this.originalContent.set(elementId, {
+        this.originalContent.set(element.id, {
           content: originalData.content,
           lastModified: originalData.lastModified,
           version: originalData.version
         });
       }
     });
-  }
-
-  getElementPath(element) {
-    return element.getAttribute('data-editor-id');
   }
 
   async loadSavedContent() {
@@ -445,108 +411,36 @@ export class ContentEditor {
         console.log("Found saved content:", docSnap.data());
         const savedContent = docSnap.data().content;
         
+        // Cache content
         try {
           localStorage.setItem('site_content', JSON.stringify(docSnap.data()));
-          console.log("Content cached in localStorage");
         } catch (error) {
-          console.warn("Could not cache content in localStorage:", error);
+          console.warn("Could not cache content:", error);
         }
         
-        // Update elements using their unique IDs
+        // Update elements that have matching IDs
         this.editableElements.forEach(element => {
-          const uniqueId = element.getAttribute('data-editor-id');
-          const savedData = savedContent[uniqueId];
-          
-          if (savedData && savedData.content) {
-            console.log(`Updating element ${uniqueId} with saved content:`, savedData);
-            element.innerHTML = savedData.content;
-            
-            this.originalContent.set(uniqueId, {
-              content: savedData.content,
-              lastModified: savedData.lastModified,
-              version: savedData.version
+          const elementContent = savedContent[element.id];
+          if (elementContent && elementContent.content) {
+            element.innerHTML = elementContent.content;
+            this.originalContent.set(element.id, {
+              content: elementContent.content,
+              lastModified: elementContent.lastModified,
+              version: elementContent.version
             });
-          } else {
-            console.log(`No saved content found for element ${uniqueId}`);
           }
         });
-      } else {
-        console.log("No saved content found, keeping original content");
       }
     } catch (error) {
-      console.error("Error loading saved content:", error);
+      console.error("Error loading content:", error);
     } finally {
       await new Promise(resolve => setTimeout(resolve, 500));
       this.hideLoadingScreen();
     }
   }
 
-  getElementClassPath(element) {
-    // Get the current page name
-    const pageName = window.location.pathname.split('/').pop() || 'index.html';
-    
-    // Get the element's classes that we want to match across pages
-    const relevantClasses = Array.from(element.classList)
-      .filter(cls => ['editable', 'about-intro', 'about-description'].includes(cls))
-      .sort() // Sort to ensure consistent order
-      .join('.');
-    
-    // For about section elements, use a consistent path to ensure syncing
-    if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
-      const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
-      console.log('Generated synced about section path:', path, 'for element:', element.outerHTML);
-      return path;
-    }
-    
-    // For all other editable elements, make them unique to the page and their position
-    const parent = element.parentElement;
-    
-    // Special handling for titles (h2, h3)
-    if (element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
-      // Find the nearest section or article parent
-      let section = parent;
-      while (section && !['section', 'article'].includes(section.tagName.toLowerCase())) {
-        section = section.parentElement;
-      }
-      
-      // Get all titles of the same level in this section
-      const sameTypeElements = section ? 
-        Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
-        Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
-      
-      const position = sameTypeElements.indexOf(element);
-      const sectionClass = section ? section.classList[0] || '' : '';
-      
-      // Create a unique path for titles that includes:
-      // 1. The page name
-      // 2. The section context
-      // 3. The title tag and position
-      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
-      console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
-      return path;
-    }
-    
-    // For all other elements
-    const sameTypeElements = Array.from(parent.children).filter(el => 
-      el.tagName === element.tagName && 
-      el.classList.contains('editable')
-    );
-    const position = sameTypeElements.indexOf(element);
-    
-    // Create a unique path that includes:
-    // 1. The page name
-    // 2. The parent element's tag and first class (for context)
-    // 3. The element's tag and classes
-    // 4. The element's position among similar elements
-    const parentClass = parent.classList.length > 0 ? parent.classList[0] : '';
-    const path = `${pageName}>${parent.tagName.toLowerCase()}${parentClass ? '.' + parentClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
-    
-    console.log('Generated unique element path:', path, 'for element:', element.outerHTML);
-    return path;
-  }
-
   async saveContentToFirebase(updatedContent) {
-    console.log("Saving content to Firebase. Updated content:", updatedContent);
+    console.log("Saving content to Firebase:", updatedContent);
     
     const contentRef = doc(db, "site_content", "editable_content");
     
@@ -555,39 +449,27 @@ export class ContentEditor {
       
       if (docSnap.exists()) {
         const currentContent = docSnap.data().content || {};
-        console.log("Current content in Firebase:", currentContent);
-        
-        // Merge the updated content with existing content
         const mergedContent = { ...currentContent };
         
-        // For each updated element, save with its unique ID
-        Object.entries(updatedContent).forEach(([uniqueId, value]) => {
-          mergedContent[uniqueId] = value;
-          
-          // Also save the element type and page info for reference
-          const element = document.querySelector(`[data-editor-id="${uniqueId}"]`);
-          if (element) {
-            value.elementType = element.tagName.toLowerCase();
-            value.pageUrl = window.location.pathname;
-          }
+        // Update only the changed elements by their IDs
+        Object.entries(updatedContent).forEach(([elementId, value]) => {
+          mergedContent[elementId] = value;
         });
         
-        console.log("Final merged content to save:", mergedContent);
-        
+        // Save to Firebase
         await updateDoc(contentRef, {
           content: mergedContent,
           lastUpdated: new Date().toISOString()
         });
         
-        // Update localStorage cache
+        // Update cache
         try {
           localStorage.setItem('site_content', JSON.stringify({
             content: mergedContent,
             lastUpdated: new Date().toISOString()
           }));
-          console.log("Content cached in localStorage");
         } catch (error) {
-          console.warn("Could not cache content in localStorage:", error);
+          console.warn("Could not cache content:", error);
         }
       } else {
         const newContent = {
@@ -597,16 +479,12 @@ export class ContentEditor {
         
         await setDoc(contentRef, newContent);
         
-        // Update localStorage cache
         try {
           localStorage.setItem('site_content', JSON.stringify(newContent));
-          console.log("Content cached in localStorage");
         } catch (error) {
-          console.warn("Could not cache content in localStorage:", error);
+          console.warn("Could not cache content:", error);
         }
       }
-      
-      console.log("Content saved successfully");
     } catch (error) {
       console.error("Error saving content:", error);
       throw error;
