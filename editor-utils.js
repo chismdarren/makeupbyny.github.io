@@ -438,27 +438,54 @@ export class ContentEditor {
             savedContentForClassPath: savedContent[classPath]
           });
           
-          // Check if we have content for either path
-          const contentMatch = savedContent[fullPath] || savedContent[classPath];
-          
-          if (contentMatch && contentMatch.content) {
-            console.log(`Updating element with path ${fullPath} using content from:`, contentMatch);
-            element.innerHTML = contentMatch.content;
+          // Special handling for about section elements
+          if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
+            // For about section, prioritize the class path content
+            const contentMatch = savedContent[classPath] || savedContent[fullPath];
             
-            // Update original content map with saved version
-            this.originalContent.set(fullPath, {
-              content: contentMatch.content,
-              lastModified: contentMatch.lastModified,
-              version: contentMatch.version
-            });
+            if (contentMatch && contentMatch.content) {
+              console.log(`Updating about section element with content from:`, contentMatch);
+              element.innerHTML = contentMatch.content;
+              
+              // Update original content map
+              this.originalContent.set(fullPath, {
+                content: contentMatch.content,
+                lastModified: contentMatch.lastModified,
+                version: contentMatch.version
+              });
+              
+              // Also update any other elements with the same class
+              document.querySelectorAll(`.${element.classList[0]}`).forEach(matchingElement => {
+                if (matchingElement !== element) {
+                  matchingElement.innerHTML = contentMatch.content;
+                }
+              });
+            }
           } else {
-            // Store the initial content if no saved content exists
+            // For non-about section elements, check both paths
+            const contentMatch = savedContent[fullPath] || savedContent[classPath];
+            
+            if (contentMatch && contentMatch.content) {
+              console.log(`Updating element with content from:`, contentMatch);
+              element.innerHTML = contentMatch.content;
+              
+              // Update original content map
+              this.originalContent.set(fullPath, {
+                content: contentMatch.content,
+                lastModified: contentMatch.lastModified,
+                version: contentMatch.version
+              });
+            }
+          }
+          
+          // If no saved content exists, store the initial content
+          if (!this.originalContent.has(fullPath)) {
             this.originalContent.set(fullPath, {
               content: element.innerHTML,
               lastModified: new Date().toISOString(),
               version: 1
             });
-            console.log(`No saved content found for paths ${fullPath} or ${classPath}, storing original content`);
+            console.log(`No saved content found, storing original content for ${fullPath}`);
           }
         });
 
@@ -571,16 +598,36 @@ export class ContentEditor {
         Object.entries(updatedContent).forEach(([fullPath, value]) => {
           mergedContent[fullPath] = value;
           
-          // Also save under the class path for cross-page sync
+          // Get the element using the full path
           const element = document.querySelector(fullPath.split(':')[0]);
           if (element) {
+            // Get the class path for syncing
             const classPath = this.getElementClassPath(element);
-            console.log(`Saving content under both paths:`, {
-              fullPath,
-              classPath,
-              content: value
-            });
-            mergedContent[classPath] = value;
+            
+            // Special handling for about section elements
+            if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
+              // Save under the class path for cross-page sync
+              console.log(`Saving about section content under class path:`, {
+                classPath,
+                content: value
+              });
+              mergedContent[classPath] = value;
+              
+              // Also update any matching elements on the current page
+              document.querySelectorAll(`.${element.classList[0]}`).forEach(matchingElement => {
+                if (matchingElement !== element) {
+                  matchingElement.innerHTML = value.content;
+                }
+              });
+            } else {
+              // For non-about section elements, just save under both paths
+              console.log(`Saving content under both paths:`, {
+                fullPath,
+                classPath,
+                content: value
+              });
+              mergedContent[classPath] = value;
+            }
           }
         });
         
