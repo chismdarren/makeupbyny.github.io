@@ -22,6 +22,9 @@ export class ContentEditor {
     
     console.log('Found editable elements:', this.editableElements.length);
     
+    // Clear any existing content cache
+    this.clearContentCache();
+    
     // Initialize original content
     this.editableElements.forEach(element => {
       // Hide all editable elements initially
@@ -55,6 +58,24 @@ export class ContentEditor {
     // Bind event listeners
     this.initializeEventListeners();
     this.loadSavedContent();
+  }
+
+  async clearContentCache() {
+    try {
+      // Clear localStorage cache
+      localStorage.removeItem('site_content');
+      console.log('Cleared localStorage cache');
+
+      // Clear Firebase content
+      const contentRef = doc(db, "site_content", "editable_content");
+      await setDoc(contentRef, {
+        content: {},
+        lastUpdated: new Date().toISOString()
+      });
+      console.log('Cleared Firebase content');
+    } catch (error) {
+      console.error('Error clearing content cache:', error);
+    }
   }
 
   setupAuthListener() {
@@ -529,15 +550,15 @@ export class ContentEditor {
     // For all other editable elements, make them unique to the page and their position
     const parent = element.parentElement;
     
-    // Special handling for titles (h2, h3)
-    if (element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
+    // Special handling for all headers (h1, h2, h3)
+    if (element.tagName.toLowerCase().match(/^h[1-3]$/)) {
       // Find the nearest section or article parent
       let section = parent;
       while (section && !['section', 'article'].includes(section.tagName.toLowerCase())) {
         section = section.parentElement;
       }
       
-      // Get all titles of the same level in this section
+      // Get all headers of the same level in this section
       const sameTypeElements = section ? 
         Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
         Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
@@ -545,12 +566,12 @@ export class ContentEditor {
       const position = sameTypeElements.indexOf(element);
       const sectionClass = section ? section.classList[0] || '' : '';
       
-      // Create a unique path for titles that includes:
+      // Create a unique path for headers that includes:
       // 1. The page name
       // 2. The section context
-      // 3. The title tag and position
+      // 3. The header tag and position
       const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
-      console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
+      console.log('Generated unique header path:', path, 'for element:', element.outerHTML);
       return path;
     }
     
