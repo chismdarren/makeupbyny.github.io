@@ -537,15 +537,19 @@ export class ContentEditor {
         section = section.parentElement;
       }
       
-      // Get section identifier
-      const sectionClass = section ? section.classList[0] || '';
-      const sectionId = section ? section.id || '';
+      // Get all titles of the same level in this section
+      const sameTypeElements = section ? 
+        Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
+        Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
+      
+      const position = sameTypeElements.indexOf(element);
+      const sectionClass = section ? section.classList[0] || '' : '';
       
       // Create a unique path for titles that includes:
       // 1. The page name
-      // 2. The section ID or class (for uniqueness)
-      // 3. The title tag
-      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionId ? '#' + sectionId : sectionClass ? '.' + sectionClass : ''}>h2.${relevantClasses}`;
+      // 2. The section context
+      // 3. The title tag and position
+      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
       console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
       return path;
     }
