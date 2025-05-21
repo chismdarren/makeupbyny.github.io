@@ -431,11 +431,38 @@ export class ContentEditor {
     try {
       console.log("Loading saved content...");
       const contentRef = doc(db, "site_content", "editable_content");
-      const docSnap = await getDoc(contentRef);
+      
+      // Add error handling for permission issues
+      let docSnap;
+      try {
+        docSnap = await getDoc(contentRef);
+      } catch (error) {
+        console.error("Error accessing content:", error);
+        // If there's a permission error, try to get content from localStorage
+        const cachedContent = localStorage.getItem('site_content');
+        if (cachedContent) {
+          docSnap = { 
+            exists: () => true, 
+            data: () => JSON.parse(cachedContent)
+          };
+          console.log("Using cached content from localStorage");
+        } else {
+          console.log("No cached content available");
+          return;
+        }
+      }
       
       if (docSnap.exists() && docSnap.data().content) {
         console.log("Found saved content:", docSnap.data());
         const savedContent = docSnap.data().content;
+        
+        // Cache the content in localStorage for offline/non-authenticated access
+        try {
+          localStorage.setItem('site_content', JSON.stringify(docSnap.data()));
+          console.log("Content cached in localStorage");
+        } catch (error) {
+          console.warn("Could not cache content in localStorage:", error);
+        }
         
         // Update all elements with saved content
         const updatePromises = Array.from(this.editableElements).map(async element => {
@@ -580,15 +607,38 @@ export class ContentEditor {
         
         console.log("Final merged content to save:", mergedContent);
         
+        // Save to Firebase
         await updateDoc(contentRef, {
           content: mergedContent,
           lastUpdated: new Date().toISOString()
         });
+        
+        // Update localStorage cache
+        try {
+          localStorage.setItem('site_content', JSON.stringify({
+            content: mergedContent,
+            lastUpdated: new Date().toISOString()
+          }));
+          console.log("Content cached in localStorage");
+        } catch (error) {
+          console.warn("Could not cache content in localStorage:", error);
+        }
       } else {
-        await setDoc(contentRef, {
+        const newContent = {
           content: updatedContent,
           lastUpdated: new Date().toISOString()
-        });
+        };
+        
+        // Save to Firebase
+        await setDoc(contentRef, newContent);
+        
+        // Update localStorage cache
+        try {
+          localStorage.setItem('site_content', JSON.stringify(newContent));
+          console.log("Content cached in localStorage");
+        } catch (error) {
+          console.warn("Could not cache content in localStorage:", error);
+        }
       }
       
       console.log("Content saved successfully");
