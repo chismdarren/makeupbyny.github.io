@@ -539,38 +539,83 @@ export class ContentEditor {
       
       // Get all titles of the same level in this section
       const sameTypeElements = section ? 
-        Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
-        Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
+        Array.from(section.querySelectorAll(element.tagName)) :
+        Array.from(parent.querySelectorAll(element.tagName));
       
+      // Find position among ALL headers of this type, not just editable ones
       const position = sameTypeElements.indexOf(element);
-      const sectionClass = section ? section.classList[0] || '' : '';
+      
+      // Get unique identifier for the section
+      const sectionIdentifier = section ? this.getSectionIdentifier(section) : this.getParentIdentifier(parent);
       
       // Create a unique path for titles that includes:
       // 1. The page name
-      // 2. The section context
-      // 3. The title tag and position
-      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
+      // 2. The section's unique identifier
+      // 3. The title's tag name and exact position
+      const path = `${pageName}>${sectionIdentifier}>${element.tagName.toLowerCase()}:${position}`;
       console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
       return path;
     }
     
     // For all other elements
     const sameTypeElements = Array.from(parent.children).filter(el => 
-      el.tagName === element.tagName && 
-      el.classList.contains('editable')
+      el.tagName === element.tagName
     );
     const position = sameTypeElements.indexOf(element);
     
     // Create a unique path that includes:
     // 1. The page name
-    // 2. The parent element's tag and first class (for context)
-    // 3. The element's tag and classes
-    // 4. The element's position among similar elements
-    const parentClass = parent.classList.length > 0 ? parent.classList[0] : '';
-    const path = `${pageName}>${parent.tagName.toLowerCase()}${parentClass ? '.' + parentClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
+    // 2. The parent element's unique identifier
+    // 3. The element's tag and position
+    const parentIdentifier = this.getParentIdentifier(parent);
+    const path = `${pageName}>${parentIdentifier}>${element.tagName.toLowerCase()}:${position}`;
     
     console.log('Generated unique element path:', path, 'for element:', element.outerHTML);
     return path;
+  }
+
+  // Helper method to generate a unique identifier for a section
+  getSectionIdentifier(section) {
+    // Try to get a unique identifier from:
+    // 1. ID
+    // 2. First class
+    // 3. Content of first header
+    // 4. Position among sections
+    if (section.id) {
+      return `section#${section.id}`;
+    }
+    
+    if (section.classList.length > 0) {
+      return `section.${section.classList[0]}`;
+    }
+    
+    const header = section.querySelector('h1, h2, h3, h4, h5, h6');
+    if (header) {
+      // Use first 20 chars of header text as identifier
+      const headerText = header.textContent.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
+      return `section[${headerText.slice(0, 20)}]`;
+    }
+    
+    // Fallback to position
+    const allSections = Array.from(document.querySelectorAll('section'));
+    const position = allSections.indexOf(section);
+    return `section:${position}`;
+  }
+
+  // Helper method to generate a unique identifier for any parent element
+  getParentIdentifier(parent) {
+    if (parent.id) {
+      return `${parent.tagName.toLowerCase()}#${parent.id}`;
+    }
+    
+    if (parent.classList.length > 0) {
+      return `${parent.tagName.toLowerCase()}.${parent.classList[0]}`;
+    }
+    
+    // Get all similar elements
+    const similarElements = Array.from(document.querySelectorAll(parent.tagName));
+    const position = similarElements.indexOf(parent);
+    return `${parent.tagName.toLowerCase()}:${position}`;
   }
 
   async saveContentToFirebase(updatedContent) {
