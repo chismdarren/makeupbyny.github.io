@@ -22,12 +22,16 @@ export class ContentEditor {
     
     console.log('Found editable elements:', this.editableElements.length);
     
-    // Initialize original content
-    this.editableElements.forEach(element => {
+    // Initialize original content and add unique IDs
+    this.editableElements.forEach((element, index) => {
+      // Add unique identifier
+      const uniqueId = `editable-${Date.now()}-${index}`;
+      element.setAttribute('data-editor-id', uniqueId);
+      
       // Hide all editable elements initially
       element.style.opacity = '0';
       
-      const elementId = this.getElementPath(element);
+      const elementId = uniqueId;
       console.log('Initializing element:', elementId, 'with content:', element.innerHTML);
       
       // Store the original content
@@ -411,20 +415,7 @@ export class ContentEditor {
   }
 
   getElementPath(element) {
-    const tagName = element.tagName.toLowerCase();
-    const classList = Array.from(element.classList).filter(cls => cls !== 'edit-mode');
-    const classNames = classList.join('.');
-    
-    const parentElement = element.parentElement;
-    const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-    const parentClass = parentElement && parentElement.className ? 
-      Array.from(parentElement.classList)[0] : '';
-    
-    const position = Array.from(parentElement.children).indexOf(element);
-    
-    const path = `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
-    console.log('Generated path for element:', path);
-    return path;
+    return element.getAttribute('data-editor-id');
   }
 
   async loadSavedContent() {
@@ -432,13 +423,11 @@ export class ContentEditor {
       console.log("Loading saved content...");
       const contentRef = doc(db, "site_content", "editable_content");
       
-      // Add error handling for permission issues
       let docSnap;
       try {
         docSnap = await getDoc(contentRef);
       } catch (error) {
         console.error("Error accessing content:", error);
-        // If there's a permission error, try to get content from localStorage
         const cachedContent = localStorage.getItem('site_content');
         if (cachedContent) {
           docSnap = { 
@@ -456,7 +445,6 @@ export class ContentEditor {
         console.log("Found saved content:", docSnap.data());
         const savedContent = docSnap.data().content;
         
-        // Cache the content in localStorage for offline/non-authenticated access
         try {
           localStorage.setItem('site_content', JSON.stringify(docSnap.data()));
           console.log("Content cached in localStorage");
@@ -464,46 +452,30 @@ export class ContentEditor {
           console.warn("Could not cache content in localStorage:", error);
         }
         
-        // Update all elements with saved content
-        const updatePromises = Array.from(this.editableElements).map(async element => {
-          // Get both the full path and the class-based path
-          const fullPath = this.getElementPath(element);
-          const classPath = this.getElementClassPath(element);
+        // Update elements using their unique IDs
+        this.editableElements.forEach(element => {
+          const uniqueId = element.getAttribute('data-editor-id');
+          const savedData = savedContent[uniqueId];
           
-          console.log(`Checking element:`, {
-            element: element.outerHTML,
-            fullPath,
-            classPath,
-            savedContentForFullPath: savedContent[fullPath],
-            savedContentForClassPath: savedContent[classPath]
-          });
-          
-          // Check if we have content for either path
-          const contentMatch = savedContent[fullPath] || savedContent[classPath];
-          
-          if (contentMatch && contentMatch.content) {
-            console.log(`Updating element with path ${fullPath} using content from:`, contentMatch);
-            element.innerHTML = contentMatch.content;
+          if (savedData && savedData.content) {
+            console.log(`Updating element ${uniqueId} with saved content:`, savedData);
+            element.innerHTML = savedData.content;
             
-            // Update original content map with saved version
-            this.originalContent.set(fullPath, {
-              content: contentMatch.content,
-              lastModified: contentMatch.lastModified,
-              version: contentMatch.version
+            this.originalContent.set(uniqueId, {
+              content: savedData.content,
+              lastModified: savedData.lastModified,
+              version: savedData.version
             });
           } else {
-            console.log(`No saved content found for paths ${fullPath} or ${classPath}, keeping original content`);
+            console.log(`No saved content found for element ${uniqueId}`);
           }
         });
-
-        await Promise.all(updatePromises);
       } else {
         console.log("No saved content found, keeping original content");
       }
     } catch (error) {
       console.error("Error loading saved content:", error);
     } finally {
-      // Ensure all content updates are complete before hiding loading screen
       await new Promise(resolve => setTimeout(resolve, 500));
       this.hideLoadingScreen();
     }
@@ -539,83 +511,38 @@ export class ContentEditor {
       
       // Get all titles of the same level in this section
       const sameTypeElements = section ? 
-        Array.from(section.querySelectorAll(element.tagName)) :
-        Array.from(parent.querySelectorAll(element.tagName));
+        Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
+        Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
       
-      // Find position among ALL headers of this type, not just editable ones
       const position = sameTypeElements.indexOf(element);
-      
-      // Get unique identifier for the section
-      const sectionIdentifier = section ? this.getSectionIdentifier(section) : this.getParentIdentifier(parent);
+      const sectionClass = section ? section.classList[0] || '' : '';
       
       // Create a unique path for titles that includes:
       // 1. The page name
-      // 2. The section's unique identifier
-      // 3. The title's tag name and exact position
-      const path = `${pageName}>${sectionIdentifier}>${element.tagName.toLowerCase()}:${position}`;
+      // 2. The section context
+      // 3. The title tag and position
+      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
       console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
       return path;
     }
     
     // For all other elements
     const sameTypeElements = Array.from(parent.children).filter(el => 
-      el.tagName === element.tagName
+      el.tagName === element.tagName && 
+      el.classList.contains('editable')
     );
     const position = sameTypeElements.indexOf(element);
     
     // Create a unique path that includes:
     // 1. The page name
-    // 2. The parent element's unique identifier
-    // 3. The element's tag and position
-    const parentIdentifier = this.getParentIdentifier(parent);
-    const path = `${pageName}>${parentIdentifier}>${element.tagName.toLowerCase()}:${position}`;
+    // 2. The parent element's tag and first class (for context)
+    // 3. The element's tag and classes
+    // 4. The element's position among similar elements
+    const parentClass = parent.classList.length > 0 ? parent.classList[0] : '';
+    const path = `${pageName}>${parent.tagName.toLowerCase()}${parentClass ? '.' + parentClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
     
     console.log('Generated unique element path:', path, 'for element:', element.outerHTML);
     return path;
-  }
-
-  // Helper method to generate a unique identifier for a section
-  getSectionIdentifier(section) {
-    // Try to get a unique identifier from:
-    // 1. ID
-    // 2. First class
-    // 3. Content of first header
-    // 4. Position among sections
-    if (section.id) {
-      return `section#${section.id}`;
-    }
-    
-    if (section.classList.length > 0) {
-      return `section.${section.classList[0]}`;
-    }
-    
-    const header = section.querySelector('h1, h2, h3, h4, h5, h6');
-    if (header) {
-      // Use first 20 chars of header text as identifier
-      const headerText = header.textContent.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
-      return `section[${headerText.slice(0, 20)}]`;
-    }
-    
-    // Fallback to position
-    const allSections = Array.from(document.querySelectorAll('section'));
-    const position = allSections.indexOf(section);
-    return `section:${position}`;
-  }
-
-  // Helper method to generate a unique identifier for any parent element
-  getParentIdentifier(parent) {
-    if (parent.id) {
-      return `${parent.tagName.toLowerCase()}#${parent.id}`;
-    }
-    
-    if (parent.classList.length > 0) {
-      return `${parent.tagName.toLowerCase()}.${parent.classList[0]}`;
-    }
-    
-    // Get all similar elements
-    const similarElements = Array.from(document.querySelectorAll(parent.tagName));
-    const position = similarElements.indexOf(parent);
-    return `${parent.tagName.toLowerCase()}:${position}`;
   }
 
   async saveContentToFirebase(updatedContent) {
@@ -633,26 +560,20 @@ export class ContentEditor {
         // Merge the updated content with existing content
         const mergedContent = { ...currentContent };
         
-        // For each updated element, save both its full path and class path
-        Object.entries(updatedContent).forEach(([fullPath, value]) => {
-          mergedContent[fullPath] = value;
+        // For each updated element, save with its unique ID
+        Object.entries(updatedContent).forEach(([uniqueId, value]) => {
+          mergedContent[uniqueId] = value;
           
-          // Also save under the class path for cross-page sync
-          const element = document.querySelector(fullPath.split(':')[0]);
+          // Also save the element type and page info for reference
+          const element = document.querySelector(`[data-editor-id="${uniqueId}"]`);
           if (element) {
-            const classPath = this.getElementClassPath(element);
-            console.log(`Saving content under both paths:`, {
-              fullPath,
-              classPath,
-              content: value
-            });
-            mergedContent[classPath] = value;
+            value.elementType = element.tagName.toLowerCase();
+            value.pageUrl = window.location.pathname;
           }
         });
         
         console.log("Final merged content to save:", mergedContent);
         
-        // Save to Firebase
         await updateDoc(contentRef, {
           content: mergedContent,
           lastUpdated: new Date().toISOString()
@@ -674,7 +595,6 @@ export class ContentEditor {
           lastUpdated: new Date().toISOString()
         };
         
-        // Save to Firebase
         await setDoc(contentRef, newContent);
         
         // Update localStorage cache
