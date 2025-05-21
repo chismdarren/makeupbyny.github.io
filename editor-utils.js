@@ -22,11 +22,25 @@ export class ContentEditor {
     
     console.log('Found editable elements:', this.editableElements.length);
     
-    // Assign unique IDs to all editable elements that don't have one
+    // Generate consistent IDs for elements
     this.editableElements.forEach((element, index) => {
       if (!element.id) {
-        const timestamp = Date.now();
-        element.id = `editable-${timestamp}-${index}`;
+        // Create a consistent ID based on:
+        // 1. The page name
+        // 2. The element's tag
+        // 3. The element's position in the document
+        const pageName = window.location.pathname.split('/').pop() || 'index.html';
+        const elementTag = element.tagName.toLowerCase();
+        const parentTag = element.parentElement.tagName.toLowerCase();
+        const parentClass = element.parentElement.classList[0] || '';
+        
+        // Find position among similar elements in the same parent
+        const siblings = Array.from(element.parentElement.children)
+          .filter(el => el.tagName === element.tagName && el.classList.contains('editable'));
+        const position = siblings.indexOf(element);
+        
+        // Create a consistent ID that will be the same on page reload
+        element.id = `${pageName}-${parentTag}${parentClass ? '-' + parentClass : ''}-${elementTag}-${position}`;
       }
       
       // Hide element initially
@@ -36,7 +50,16 @@ export class ContentEditor {
       this.originalContent.set(element.id, {
         content: element.innerHTML,
         lastModified: new Date().toISOString(),
-        version: 1
+        version: 1,
+        // Store element position info for verification
+        position: {
+          tag: element.tagName.toLowerCase(),
+          parentTag: element.parentElement.tagName.toLowerCase(),
+          parentClass: element.parentElement.classList[0] || '',
+          index: Array.from(element.parentElement.children)
+            .filter(el => el.tagName === element.tagName && el.classList.contains('editable'))
+            .indexOf(element)
+        }
       });
 
       // Add input event listener
@@ -422,12 +445,26 @@ export class ContentEditor {
         this.editableElements.forEach(element => {
           const elementContent = savedContent[element.id];
           if (elementContent && elementContent.content) {
-            element.innerHTML = elementContent.content;
-            this.originalContent.set(element.id, {
-              content: elementContent.content,
-              lastModified: elementContent.lastModified,
-              version: elementContent.version
-            });
+            // Verify element position matches saved position
+            const currentPosition = {
+              tag: element.tagName.toLowerCase(),
+              parentTag: element.parentElement.tagName.toLowerCase(),
+              parentClass: element.parentElement.classList[0] || '',
+              index: Array.from(element.parentElement.children)
+                .filter(el => el.tagName === element.tagName && el.classList.contains('editable'))
+                .indexOf(element)
+            };
+            
+            // Only update if position matches
+            if (JSON.stringify(currentPosition) === JSON.stringify(elementContent.position)) {
+              element.innerHTML = elementContent.content;
+              this.originalContent.set(element.id, {
+                content: elementContent.content,
+                lastModified: elementContent.lastModified,
+                version: elementContent.version,
+                position: elementContent.position
+              });
+            }
           }
         });
       }
@@ -453,7 +490,21 @@ export class ContentEditor {
         
         // Update only the changed elements by their IDs
         Object.entries(updatedContent).forEach(([elementId, value]) => {
-          mergedContent[elementId] = value;
+          const element = document.getElementById(elementId);
+          if (element) {
+            // Include position information in saved content
+            mergedContent[elementId] = {
+              ...value,
+              position: {
+                tag: element.tagName.toLowerCase(),
+                parentTag: element.parentElement.tagName.toLowerCase(),
+                parentClass: element.parentElement.classList[0] || '',
+                index: Array.from(element.parentElement.children)
+                  .filter(el => el.tagName === element.tagName && el.classList.contains('editable'))
+                  .indexOf(element)
+              }
+            };
+          }
         });
         
         // Save to Firebase
@@ -472,8 +523,27 @@ export class ContentEditor {
           console.warn("Could not cache content:", error);
         }
       } else {
+        // Similar changes for new content
+        const newContentWithPosition = {};
+        Object.entries(updatedContent).forEach(([elementId, value]) => {
+          const element = document.getElementById(elementId);
+          if (element) {
+            newContentWithPosition[elementId] = {
+              ...value,
+              position: {
+                tag: element.tagName.toLowerCase(),
+                parentTag: element.parentElement.tagName.toLowerCase(),
+                parentClass: element.parentElement.classList[0] || '',
+                index: Array.from(element.parentElement.children)
+                  .filter(el => el.tagName === element.tagName && el.classList.contains('editable'))
+                  .indexOf(element)
+              }
+            };
+          }
+        });
+        
         const newContent = {
-          content: updatedContent,
+          content: newContentWithPosition,
           lastUpdated: new Date().toISOString()
         };
         
