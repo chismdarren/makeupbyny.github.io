@@ -22,22 +22,50 @@ export class ContentEditor {
     
     console.log('Found editable elements:', this.editableElements.length);
     
-    // Initialize original content
+    // Hide all editable elements initially
     this.editableElements.forEach(element => {
-      // Hide all editable elements initially
       element.style.opacity = '0';
-      
-      const elementId = this.getElementPath(element);
-      console.log('Initializing element:', elementId, 'with content:', element.innerHTML);
-      
-      // Store the original content
-      this.originalContent.set(elementId, {
-        content: element.innerHTML,
-        lastModified: new Date().toISOString(),
-        version: 1
-      });
+    });
 
-      // Add input event listener to track changes
+    // Initialize based on user role
+    this.initializeBasedOnRole();
+  }
+
+  async initializeBasedOnRole() {
+    // First load content for all users
+    await this.loadSavedContent();
+
+    // Then check if user is admin and initialize editor features if they are
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const isAdmin = await isAdminUser(user.uid);
+        if (isAdmin) {
+          // Initialize editor features only for admin
+          this.initializeEditorFeatures();
+        }
+      }
+      // For non-admin users, we've already loaded the content
+      // so they can view it but not edit
+    });
+  }
+
+  initializeEditorFeatures() {
+    // Set up edit button visibility
+    if (this.editButton) {
+      this.editButton.style.display = 'flex';
+      console.log('Edit button found, setting up click handler');
+      this.editButton.addEventListener('click', () => {
+        console.log('Edit button clicked');
+        this.toggleEditMode();
+      });
+    }
+
+    // Add undo button
+    this.addUndoButton();
+
+    // Set up edit listeners
+    this.editableElements.forEach(element => {
+      const elementId = this.getElementPath(element);
       element.addEventListener('input', () => {
         if (this.editModeActive) {
           this.unsavedChanges.set(elementId, element.innerHTML);
@@ -45,31 +73,6 @@ export class ContentEditor {
         }
       });
     });
-
-    // Log the original content map
-    console.log('Original content map:', Object.fromEntries(this.originalContent));
-
-    // Set up auth state listener for edit button visibility
-    this.setupAuthListener();
-
-    // Bind event listeners
-    this.initializeEventListeners();
-    this.loadSavedContent();
-  }
-
-  setupAuthListener() {
-    if (this.editButton) {
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          // User is logged in, check if they're an admin
-          const isAdmin = await isAdminUser(user.uid);
-          this.editButton.style.display = isAdmin ? 'flex' : 'none';
-        } else {
-          // User is logged out, hide edit button
-          this.editButton.style.display = 'none';
-        }
-      });
-    }
   }
 
   createLoadingScreen() {
@@ -149,22 +152,6 @@ export class ContentEditor {
         }, 500);
       }, remainingTime);
     }
-  }
-
-  initializeEventListeners() {
-    // Only set up edit button if it exists
-    if (this.editButton) {
-      console.log('Edit button found, setting up click handler');
-      this.editButton.addEventListener('click', () => {
-        console.log('Edit button clicked');
-        this.toggleEditMode();
-      });
-    } else {
-      console.warn('Edit button not found');
-    }
-
-    // Add undo button to the page
-    this.addUndoButton();
   }
 
   addUndoButton() {
@@ -465,14 +452,33 @@ export class ContentEditor {
               version: contentMatch.version
             });
           } else {
-            console.log(`No saved content found for paths ${fullPath} or ${classPath}, keeping original content`);
+            // Store the initial content if no saved content exists
+            this.originalContent.set(fullPath, {
+              content: element.innerHTML,
+              lastModified: new Date().toISOString(),
+              version: 1
+            });
+            console.log(`No saved content found for paths ${fullPath} or ${classPath}, storing original content`);
           }
         });
 
         await Promise.all(updatePromises);
       } else {
-        console.log("No saved content found, keeping original content");
+        console.log("No saved content found, storing original content");
+        // Store original content for all elements
+        this.editableElements.forEach(element => {
+          const elementId = this.getElementPath(element);
+          this.originalContent.set(elementId, {
+            content: element.innerHTML,
+            lastModified: new Date().toISOString(),
+            version: 1
+          });
+        });
       }
+      
+      // Log the final content map
+      console.log('Content map after loading:', Object.fromEntries(this.originalContent));
+      
     } catch (error) {
       console.error("Error loading saved content:", error);
     } finally {
