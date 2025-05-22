@@ -428,71 +428,50 @@ export class ContentEditor {
   }
 
   async loadSavedContent() {
+    console.log("Loading saved content...");
+    
     try {
-      console.log("Loading saved content...");
-      const contentRef = doc(db, "site_content", "editable_content");
-      
-      // Add error handling for permission issues
-      let docSnap;
+      // Try to get content from localStorage first
+      let savedContent;
       try {
-        docSnap = await getDoc(contentRef);
+        const cachedData = localStorage.getItem('site_content');
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          savedContent = parsed.content;
+          console.log("Found cached content:", savedContent);
+        }
       } catch (error) {
-        console.error("Error accessing content:", error);
-        // If there's a permission error, try to get content from localStorage
-        const cachedContent = localStorage.getItem('site_content');
-        if (cachedContent) {
-          docSnap = { 
-            exists: () => true, 
-            data: () => JSON.parse(cachedContent)
-          };
-          console.log("Using cached content from localStorage");
-        } else {
-          console.log("No cached content available");
-          return;
+        console.warn("Could not load cached content:", error);
+      }
+      
+      // If no cached content, load from Firebase
+      if (!savedContent) {
+        const contentRef = doc(db, "site_content", "editable_content");
+        const docSnap = await getDoc(contentRef);
+        
+        if (docSnap.exists()) {
+          savedContent = docSnap.data().content;
+          console.log("Loaded content from Firebase:", savedContent);
         }
       }
       
-      if (docSnap.exists() && docSnap.data().content) {
-        console.log("Found saved content:", docSnap.data());
-        const savedContent = docSnap.data().content;
-        
-        // Cache the content in localStorage for offline/non-authenticated access
-        try {
-          localStorage.setItem('site_content', JSON.stringify(docSnap.data()));
-          console.log("Content cached in localStorage");
-        } catch (error) {
-          console.warn("Could not cache content in localStorage:", error);
-        }
-        
-        // Update all elements with saved content
+      if (savedContent) {
         const updatePromises = Array.from(this.editableElements).map(async element => {
-          // Get both the full path and the class-based path
           const fullPath = this.getElementPath(element);
-          const classPath = this.getElementClassPath(element);
+          console.log(`Checking content for element with path ${fullPath}`);
           
-          console.log(`Checking element:`, {
-            element: element.outerHTML,
-            fullPath,
-            classPath,
-            savedContentForFullPath: savedContent[fullPath],
-            savedContentForClassPath: savedContent[classPath]
-          });
-          
-          // Check if we have content for either path
-          const contentMatch = savedContent[fullPath] || savedContent[classPath];
-          
-          if (contentMatch && contentMatch.content) {
-            console.log(`Updating element with path ${fullPath} using content from:`, contentMatch);
-            element.innerHTML = contentMatch.content;
+          if (savedContent[fullPath]) {
+            console.log(`Updating element with path ${fullPath} using content:`, savedContent[fullPath]);
+            element.innerHTML = savedContent[fullPath].content;
             
             // Update original content map with saved version
             this.originalContent.set(fullPath, {
-              content: contentMatch.content,
-              lastModified: contentMatch.lastModified,
-              version: contentMatch.version
+              content: savedContent[fullPath].content,
+              lastModified: savedContent[fullPath].lastModified,
+              version: savedContent[fullPath].version
             });
           } else {
-            console.log(`No saved content found for paths ${fullPath} or ${classPath}, keeping original content`);
+            console.log(`No saved content found for path ${fullPath}, keeping original content`);
           }
         });
 
@@ -586,24 +565,7 @@ export class ContentEditor {
         console.log("Current content in Firebase:", currentContent);
         
         // Merge the updated content with existing content
-        const mergedContent = { ...currentContent };
-        
-        // For each updated element, save both its full path and class path
-        Object.entries(updatedContent).forEach(([fullPath, value]) => {
-          mergedContent[fullPath] = value;
-          
-          // Also save under the class path for cross-page sync
-          const element = document.querySelector(fullPath.split(':')[0]);
-          if (element) {
-            const classPath = this.getElementClassPath(element);
-            console.log(`Saving content under both paths:`, {
-              fullPath,
-              classPath,
-              content: value
-            });
-            mergedContent[classPath] = value;
-          }
-        });
+        const mergedContent = { ...currentContent, ...updatedContent };
         
         console.log("Final merged content to save:", mergedContent);
         
