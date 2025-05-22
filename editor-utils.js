@@ -411,20 +411,13 @@ export class ContentEditor {
   }
 
   getElementPath(element) {
-    const tagName = element.tagName.toLowerCase();
-    const classList = Array.from(element.classList).filter(cls => cls !== 'edit-mode');
-    const classNames = classList.join('.');
-    
-    const parentElement = element.parentElement;
-    const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-    const parentClass = parentElement && parentElement.className ? 
-      Array.from(parentElement.classList)[0] : '';
-    
-    const position = Array.from(parentElement.children).indexOf(element);
-    
-    const path = `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
-    console.log('Generated path for element:', path);
-    return path;
+    // If element has a data-section attribute, use it for unique identification
+    const section = element.getAttribute('data-section');
+    if (section) {
+      return `${element.tagName.toLowerCase()}-${section}`;
+    }
+    // Fallback to original behavior if no data-section attribute
+    return element.tagName.toLowerCase();
   }
 
   async loadSavedContent() {
