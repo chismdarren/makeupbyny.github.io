@@ -458,21 +458,43 @@ export class ContentEditor {
       if (savedContent) {
         const updatePromises = Array.from(this.editableElements).map(async element => {
           const fullPath = this.getElementPath(element);
-          console.log(`Checking content for element with path ${fullPath}`);
+          const classPath = this.getElementClassPath(element);
+          
+          console.log('\n=== Element Update Debug Info ===');
+          console.log('Element HTML:', element.outerHTML);
+          console.log('Full Path:', fullPath);
+          console.log('Class Path:', classPath);
+          console.log('Saved content for fullPath:', savedContent[fullPath]);
+          console.log('Saved content for classPath:', savedContent[classPath]);
+          
+          let contentToUse;
+          let pathUsed;
           
           if (savedContent[fullPath]) {
-            console.log(`Updating element with path ${fullPath} using content:`, savedContent[fullPath]);
-            element.innerHTML = savedContent[fullPath].content;
+            contentToUse = savedContent[fullPath];
+            pathUsed = 'fullPath';
+          } else if (savedContent[classPath]) {
+            contentToUse = savedContent[classPath];
+            pathUsed = 'classPath';
+          }
+          
+          if (contentToUse) {
+            console.log(`Using ${pathUsed} to update element`);
+            console.log('Old innerHTML:', element.innerHTML);
+            console.log('New innerHTML:', contentToUse.content);
+            
+            element.innerHTML = contentToUse.content;
             
             // Update original content map with saved version
             this.originalContent.set(fullPath, {
-              content: savedContent[fullPath].content,
-              lastModified: savedContent[fullPath].lastModified,
-              version: savedContent[fullPath].version
+              content: contentToUse.content,
+              lastModified: contentToUse.lastModified,
+              version: contentToUse.version
             });
           } else {
-            console.log(`No saved content found for path ${fullPath}, keeping original content`);
+            console.log('No saved content found for either path, keeping original content');
           }
+          console.log('=== End Debug Info ===\n');
         });
 
         await Promise.all(updatePromises);
