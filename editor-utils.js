@@ -411,13 +411,17 @@ export class ContentEditor {
   }
 
   getElementPath(element) {
-    // If element has a data-section attribute, use it for unique identification
-    const section = element.getAttribute('data-section');
-    if (section) {
-      return `${element.tagName.toLowerCase()}-${section}`;
+    // For headers (h1, h2, h3, etc), use their text content to create a unique identifier
+    if (element.tagName.toLowerCase().startsWith('h')) {
+      const headerText = element.textContent.trim();
+      return `${element.tagName.toLowerCase()}-${headerText}`;
     }
-    // Fallback to original behavior if no data-section attribute
-    return element.tagName.toLowerCase();
+    
+    // For other elements, use their position in the document
+    const position = Array.from(document.getElementsByTagName(element.tagName))
+      .filter(el => el.classList.contains('editable'))
+      .indexOf(element);
+    return `${element.tagName.toLowerCase()}-${position}`;
   }
 
   async loadSavedContent() {
