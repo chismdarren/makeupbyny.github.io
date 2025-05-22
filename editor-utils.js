@@ -109,7 +109,7 @@ export class ContentEditor {
       if (!originalData) return;
 
       const elementId = originalData.elementId;
-      const contentRef = doc(db, 'content', 'page-content');
+      const contentRef = doc(db, 'site_content', 'editable_content');
       
       // Get existing content first
       const docSnap = await getDoc(contentRef);
@@ -117,13 +117,16 @@ export class ContentEditor {
       
       // Update only the specific element's content
       const updatedContent = {
-        ...existingContent,
-        [elementId]: {
-          content: updatedElement.innerHTML,
-          elementType: updatedElement.tagName.toLowerCase(),
-          lastModified: new Date().toISOString(),
-          version: (originalData.version || 0) + 1
-        }
+        content: {
+          ...existingContent.content,
+          [elementId]: {
+            content: updatedElement.innerHTML,
+            elementType: updatedElement.tagName.toLowerCase(),
+            lastModified: new Date().toISOString(),
+            version: (originalData.version || 0) + 1
+          }
+        },
+        lastUpdated: new Date().toISOString()
       };
 
       await setDoc(contentRef, updatedContent);
@@ -149,7 +152,7 @@ export class ContentEditor {
 
   async loadSavedContent() {
     try {
-      const contentRef = doc(db, 'content', 'page-content');
+      const contentRef = doc(db, 'site_content', 'editable_content');
       const docSnap = await getDoc(contentRef);
       
       if (!docSnap.exists()) {
@@ -158,7 +161,7 @@ export class ContentEditor {
         return;
       }
 
-      const savedContent = docSnap.data();
+      const savedContent = docSnap.data().content || {};
       
       // Update each element if it has saved content
       this.editableElements.forEach(element => {
@@ -183,6 +186,33 @@ export class ContentEditor {
     } catch (error) {
       console.error('Error loading content:', error);
       this.hideLoadingScreen();
+      
+      // Add fallback to localStorage if Firebase fails
+      try {
+        const cachedContent = localStorage.getItem('site_content');
+        if (cachedContent) {
+          const savedContent = JSON.parse(cachedContent).content || {};
+          this.editableElements.forEach(element => {
+            const originalData = this.originalContent.get(element);
+            if (!originalData) return;
+
+            const elementId = originalData.elementId;
+            const savedElementContent = savedContent[elementId];
+            
+            if (savedElementContent) {
+              element.innerHTML = savedElementContent.content;
+              this.originalContent.set(element, {
+                ...originalData,
+                content: savedElementContent.content,
+                lastModified: savedElementContent.lastModified,
+                version: savedElementContent.version
+              });
+            }
+          });
+        }
+      } catch (localError) {
+        console.error('Error loading from localStorage:', localError);
+      }
     }
   }
 
