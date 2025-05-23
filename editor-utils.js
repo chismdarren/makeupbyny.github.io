@@ -411,20 +411,13 @@ export class ContentEditor {
   }
 
   getElementPath(element) {
-    const tagName = element.tagName.toLowerCase();
-    const classList = Array.from(element.classList).filter(cls => cls !== 'edit-mode');
-    const classNames = classList.join('.');
-    
-    const parentElement = element.parentElement;
-    const parentTagName = parentElement ? parentElement.tagName.toLowerCase() : '';
-    const parentClass = parentElement && parentElement.className ? 
-      Array.from(parentElement.classList)[0] : '';
-    
-    const position = Array.from(parentElement.children).indexOf(element);
-    
-    const path = `${parentTagName}${parentClass ? '.' + parentClass : ''}>${tagName}.${classNames}:${position}`;
-    console.log('Generated path for element:', path);
-    return path;
+    // Get the numbered class if it exists (h2-1, h2-2, etc.)
+    const numberedClass = Array.from(element.classList).find(cls => cls.match(/h2-\d+/));
+    if (numberedClass) {
+      return `${element.tagName.toLowerCase()}-${numberedClass}`;
+    }
+    // Fallback to original behavior
+    return element.tagName.toLowerCase();
   }
 
   async loadSavedContent() {
