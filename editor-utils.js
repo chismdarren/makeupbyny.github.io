@@ -21,6 +21,7 @@ export class ContentEditor {
     this.createLoadingScreen();
     
     console.log('Found editable elements:', this.editableElements.length);
+    console.log('Details of found editable elements:', Array.from(this.editableElements).map(el => el.outerHTML));
     
     // Initialize original content
     this.editableElements.forEach(element => {
@@ -55,6 +56,7 @@ export class ContentEditor {
     // Bind event listeners
     this.initializeEventListeners();
     this.loadSavedContent();
+    console.log('loadSavedContent has been initiated.');
   }
 
   setupAuthListener() {
@@ -452,6 +454,8 @@ export class ContentEditor {
         if (docSnap.exists()) {
           savedContent = docSnap.data().content;
           console.log("Loaded content from Firebase:", savedContent);
+        } else {
+          console.log("No saved content found, keeping original content. DocSnap exists:", docSnap.exists(), "DocSnap data content:", docSnap.data()?.content);
         }
       }
       
