@@ -425,14 +425,12 @@ export class ContentEditor {
       console.log("Starting loadSavedContent...");
       const contentRef = doc(db, "site_content", "editable_content");
       
-      // Add error handling for permission issues
       let docSnap;
       try {
         console.log("Attempting to fetch content from Firebase...");
         docSnap = await getDoc(contentRef);
       } catch (error) {
         console.error("Error accessing Firebase content:", error);
-        // If there's a permission error, try to get content from localStorage
         const cachedContent = localStorage.getItem('site_content');
         if (cachedContent) {
           docSnap = { 
@@ -450,7 +448,6 @@ export class ContentEditor {
         console.log("Found saved content in database:", docSnap.data());
         const savedContent = docSnap.data().content;
         
-        // Cache the content in localStorage for offline/non-authenticated access
         try {
           localStorage.setItem('site_content', JSON.stringify(docSnap.data()));
           console.log("Successfully cached content in localStorage");
@@ -458,30 +455,24 @@ export class ContentEditor {
           console.warn("Could not cache content in localStorage:", error);
         }
         
-        // Update all elements with saved content
         console.log("Starting to update elements with saved content...");
         console.log("Total editable elements found:", this.editableElements.length);
         
         const updatePromises = Array.from(this.editableElements).map(async (element, index) => {
-          // Get both the full path and the class-based path
-          const fullPath = this.getElementPath(element);
-          const classPath = this.getElementClassPath(element);
+          const elementPath = this.getElementPath(element);
           
           console.log(`\nProcessing element ${index + 1}/${this.editableElements.length}:`, {
             elementTag: element.tagName,
             elementClasses: element.className,
             elementContent: element.innerHTML.substring(0, 50) + '...',
-            fullPath,
-            classPath
+            elementPath
           });
           
-          // Check if we have content for either path
-          const contentMatch = savedContent[fullPath] || savedContent[classPath];
+          const contentMatch = savedContent[elementPath];
           
           if (contentMatch && contentMatch.content) {
             console.log(`Found matching content for element:`, {
-              path: savedContent[fullPath] ? 'fullPath' : 'classPath',
-              matchedPath: savedContent[fullPath] ? fullPath : classPath,
+              path: elementPath,
               oldContent: element.innerHTML.substring(0, 50) + '...',
               newContent: contentMatch.content.substring(0, 50) + '...',
               version: contentMatch.version,
@@ -490,8 +481,7 @@ export class ContentEditor {
             
             element.innerHTML = contentMatch.content;
             
-            // Update original content map with saved version
-            this.originalContent.set(fullPath, {
+            this.originalContent.set(elementPath, {
               content: contentMatch.content,
               lastModified: contentMatch.lastModified,
               version: contentMatch.version
@@ -500,8 +490,7 @@ export class ContentEditor {
             console.log(`Successfully updated element content and originalContent map`);
           } else {
             console.log(`No saved content found for element:`, {
-              fullPath,
-              classPath,
+              path: elementPath,
               currentContent: element.innerHTML.substring(0, 50) + '...',
               keepingOriginal: true
             });
@@ -518,75 +507,10 @@ export class ContentEditor {
       console.error("Error in loadSavedContent:", error);
     } finally {
       console.log("LoadSavedContent complete, preparing to hide loading screen...");
-      // Ensure all content updates are complete before hiding loading screen
       await new Promise(resolve => setTimeout(resolve, 500));
       this.hideLoadingScreen();
       console.log("Loading screen hidden");
     }
-  }
-
-  getElementClassPath(element) {
-    // Get the current page name
-    const pageName = window.location.pathname.split('/').pop() || 'index.html';
-    
-    // Get the element's classes that we want to match across pages
-    const relevantClasses = Array.from(element.classList)
-      .filter(cls => ['editable', 'about-intro', 'about-description'].includes(cls))
-      .sort() // Sort to ensure consistent order
-      .join('.');
-    
-    // For about section elements, use a consistent path to ensure syncing
-    if (element.classList.contains('about-intro') || element.classList.contains('about-description')) {
-      const path = `${element.tagName.toLowerCase()}.${relevantClasses}`;
-      console.log('Generated synced about section path:', path, 'for element:', element.outerHTML);
-      return path;
-    }
-    
-    // For all other editable elements, make them unique to the page and their position
-    const parent = element.parentElement;
-    
-    // Special handling for titles (h2, h3)
-    if (element.tagName.toLowerCase() === 'h2' || element.tagName.toLowerCase() === 'h3') {
-      // Find the nearest section or article parent
-      let section = parent;
-      while (section && !['section', 'article'].includes(section.tagName.toLowerCase())) {
-        section = section.parentElement;
-      }
-      
-      // Get all titles of the same level in this section
-      const sameTypeElements = section ? 
-        Array.from(section.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable')) :
-        Array.from(parent.querySelectorAll(element.tagName)).filter(el => el.classList.contains('editable'));
-      
-      const position = sameTypeElements.indexOf(element);
-      const sectionClass = section ? section.classList[0] || '' : '';
-      
-      // Create a unique path for titles that includes:
-      // 1. The page name
-      // 2. The section context
-      // 3. The title tag and position
-      const path = `${pageName}>${section ? section.tagName.toLowerCase() : parent.tagName.toLowerCase()}${sectionClass ? '.' + sectionClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
-      console.log('Generated unique title path:', path, 'for element:', element.outerHTML);
-      return path;
-    }
-    
-    // For all other elements
-    const sameTypeElements = Array.from(parent.children).filter(el => 
-      el.tagName === element.tagName && 
-      el.classList.contains('editable')
-    );
-    const position = sameTypeElements.indexOf(element);
-    
-    // Create a unique path that includes:
-    // 1. The page name
-    // 2. The parent element's tag and first class (for context)
-    // 3. The element's tag and classes
-    // 4. The element's position among similar elements
-    const parentClass = parent.classList.length > 0 ? parent.classList[0] : '';
-    const path = `${pageName}>${parent.tagName.toLowerCase()}${parentClass ? '.' + parentClass : ''}>${element.tagName.toLowerCase()}.${relevantClasses}:${position}`;
-    
-    console.log('Generated unique element path:', path, 'for element:', element.outerHTML);
-    return path;
   }
 
   async saveContentToFirebase(updatedContent) {
@@ -601,27 +525,10 @@ export class ContentEditor {
         const currentContent = docSnap.data().content || {};
         console.log("Current content in Firebase:", currentContent);
         
-        // Merge the updated content with existing content
-        const mergedContent = { ...currentContent };
+        // Simply merge the updated content
+        const mergedContent = { ...currentContent, ...updatedContent };
         
-        // For each updated element, save both its full path and class path
-        Object.entries(updatedContent).forEach(([fullPath, value]) => {
-          mergedContent[fullPath] = value;
-          
-          // Also save under the class path for cross-page sync
-          const element = document.querySelector(fullPath.split(':')[0]);
-          if (element) {
-            const classPath = this.getElementClassPath(element);
-            console.log(`Saving content under both paths:`, {
-              fullPath,
-              classPath,
-              content: value
-            });
-            mergedContent[classPath] = value;
-          }
-        });
-        
-        console.log("Final merged content to save:", mergedContent);
+        console.log("Final content to save:", mergedContent);
         
         // Save to Firebase
         await updateDoc(contentRef, {
@@ -645,10 +552,8 @@ export class ContentEditor {
           lastUpdated: new Date().toISOString()
         };
         
-        // Save to Firebase
         await setDoc(contentRef, newContent);
         
-        // Update localStorage cache
         try {
           localStorage.setItem('site_content', JSON.stringify(newContent));
           console.log("Content cached in localStorage");
