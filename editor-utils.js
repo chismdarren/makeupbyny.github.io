@@ -345,7 +345,7 @@ export class ContentEditor {
         
         updatedContent[elementId] = {
           content: newContent,
-          elementType: document.querySelector(elementId.split(':')[0]).tagName.toLowerCase(),
+          elementType: element.tagName.toLowerCase(),
           lastModified: new Date().toISOString(),
           version: originalData.version + 1
         };
@@ -411,13 +411,39 @@ export class ContentEditor {
   }
 
   getElementPath(element) {
-    // Get the numbered class if it exists (h2-1, h2-2, etc.)
-    const numberedClass = Array.from(element.classList).find(cls => cls.match(/h2-\d+/));
-    if (numberedClass) {
-      return `${element.tagName.toLowerCase()}-${numberedClass}`;
+    const pageName = window.location.pathname.split('/').pop() || 'index.html';
+    let uniqueSelector = '';
+
+    // Prioritize element ID
+    if (element.id) {
+      uniqueSelector = `#${element.id}`;
+    } else {
+      // Use a numbered class (like h2-h2-1) if present
+      const uniqueClass = Array.from(element.classList).find(cls => cls.match(/^(h2|h3)-\S+$/));
+      if (uniqueClass) {
+        uniqueSelector = `.${uniqueClass}`;
+      } else {
+        // Fallback: Combine tag, other classes, and nth-child for uniqueness
+        let selectorParts = [element.tagName.toLowerCase()];
+        const classes = Array.from(element.classList).filter(cls => cls !== 'editable' && cls !== 'edit-mode').sort();
+        if (classes.length > 0) {
+          selectorParts.push(classes.map(cls => `.${cls}`).join(''));
+        }
+        const parent = element.parentElement;
+        if (parent) {
+          const siblings = Array.from(parent.children).filter(child =>
+            child.tagName === element.tagName &&
+            Array.from(child.classList).every(cls => element.classList.contains(cls))
+          );
+          const index = siblings.indexOf(element);
+          if (index > 0) {
+            selectorParts.push(`:nth-child(${index + 1})`);
+          }
+        }
+        uniqueSelector = selectorParts.join('');
+      }
     }
-    // Fallback to original behavior
-    return element.tagName.toLowerCase();
+    return `${pageName}>${uniqueSelector}`;
   }
 
   async loadSavedContent() {
