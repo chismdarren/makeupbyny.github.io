@@ -356,6 +356,21 @@ export class ContentEditor {
           lastModified: new Date().toISOString(),
           version: originalData.version + 1
         });
+
+        // Sync sidebar content if this is the main content being changed
+        if (elementId.includes('p-1')) {
+          const sidebarIntro = document.querySelector('.about-intro');
+          if (sidebarIntro) {
+            sidebarIntro.innerHTML = newContent;
+            const sidebarId = this.getElementPath(sidebarIntro);
+            updatedContent[sidebarId] = {
+              content: newContent,
+              elementType: 'p',
+              lastModified: new Date().toISOString(),
+              version: originalData.version + 1
+            };
+          }
+        }
       }
     });
     
@@ -506,6 +521,14 @@ export class ContentEditor {
             });
             
             element.innerHTML = contentMatch.content;
+            
+            // If this is the main content (p-1), sync it with the sidebar (p-12)
+            if (elementPath.includes('p-1')) {
+              const sidebarIntro = document.querySelector('.about-intro');
+              if (sidebarIntro) {
+                sidebarIntro.innerHTML = contentMatch.content;
+              }
+            }
             
             this.originalContent.set(elementPath, {
               content: contentMatch.content,
