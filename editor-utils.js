@@ -21,7 +21,6 @@ export class ContentEditor {
     this.createLoadingScreen();
     
     console.log('Found editable elements:', this.editableElements.length);
-    console.log('Details of found editable elements:', Array.from(this.editableElements).map(el => el.outerHTML));
     
     // Initialize original content
     this.editableElements.forEach(element => {
@@ -56,7 +55,6 @@ export class ContentEditor {
     // Bind event listeners
     this.initializeEventListeners();
     this.loadSavedContent();
-    console.log('loadSavedContent has been initiated.');
   }
 
   setupAuthListener() {
@@ -430,75 +428,72 @@ export class ContentEditor {
   }
 
   async loadSavedContent() {
-    console.log("Loading saved content...");
-    
     try {
-      // Try to get content from localStorage first
-      let savedContent;
+      console.log("Loading saved content...");
+      const contentRef = doc(db, "site_content", "editable_content");
+      
+      // Add error handling for permission issues
+      let docSnap;
       try {
-        const cachedData = localStorage.getItem('site_content');
-        if (cachedData) {
-          const parsed = JSON.parse(cachedData);
-          savedContent = parsed.content;
-          console.log("Found cached content:", savedContent);
-        }
+        docSnap = await getDoc(contentRef);
       } catch (error) {
-        console.warn("Could not load cached content:", error);
-      }
-      
-      // If no cached content, load from Firebase
-      if (!savedContent) {
-        const contentRef = doc(db, "site_content", "editable_content");
-        const docSnap = await getDoc(contentRef);
-        
-        if (docSnap.exists()) {
-          savedContent = docSnap.data().content;
-          console.log("Loaded content from Firebase:", savedContent);
+        console.error("Error accessing content:", error);
+        // If there's a permission error, try to get content from localStorage
+        const cachedContent = localStorage.getItem('site_content');
+        if (cachedContent) {
+          docSnap = { 
+            exists: () => true, 
+            data: () => JSON.parse(cachedContent)
+          };
+          console.log("Using cached content from localStorage");
         } else {
-          console.log("No saved content found, keeping original content. DocSnap exists:", docSnap.exists(), "DocSnap data content:", docSnap.data()?.content);
+          console.log("No cached content available");
+          return;
         }
       }
       
-      if (savedContent) {
+      if (docSnap.exists() && docSnap.data().content) {
+        console.log("Found saved content:", docSnap.data());
+        const savedContent = docSnap.data().content;
+        
+        // Cache the content in localStorage for offline/non-authenticated access
+        try {
+          localStorage.setItem('site_content', JSON.stringify(docSnap.data()));
+          console.log("Content cached in localStorage");
+        } catch (error) {
+          console.warn("Could not cache content in localStorage:", error);
+        }
+        
+        // Update all elements with saved content
         const updatePromises = Array.from(this.editableElements).map(async element => {
+          // Get both the full path and the class-based path
           const fullPath = this.getElementPath(element);
           const classPath = this.getElementClassPath(element);
           
-          console.log('\n=== Element Update Debug Info ===');
-          console.log('Element HTML:', element.outerHTML);
-          console.log('Full Path:', fullPath);
-          console.log('Class Path:', classPath);
-          console.log('Saved content for fullPath:', savedContent[fullPath]);
-          console.log('Saved content for classPath:', savedContent[classPath]);
+          console.log(`Checking element:`, {
+            element: element.outerHTML,
+            fullPath,
+            classPath,
+            savedContentForFullPath: savedContent[fullPath],
+            savedContentForClassPath: savedContent[classPath]
+          });
           
-          let contentToUse;
-          let pathUsed;
+          // Check if we have content for either path
+          const contentMatch = savedContent[fullPath] || savedContent[classPath];
           
-          if (savedContent[fullPath]) {
-            contentToUse = savedContent[fullPath];
-            pathUsed = 'fullPath';
-          } else if (savedContent[classPath]) {
-            contentToUse = savedContent[classPath];
-            pathUsed = 'classPath';
-          }
-          
-          if (contentToUse) {
-            console.log(`Using ${pathUsed} to update element`);
-            console.log('Old innerHTML:', element.innerHTML);
-            console.log('New innerHTML:', contentToUse.content);
-            
-            element.innerHTML = contentToUse.content;
+          if (contentMatch && contentMatch.content) {
+            console.log(`Updating element with path ${fullPath} using content from:`, contentMatch);
+            element.innerHTML = contentMatch.content;
             
             // Update original content map with saved version
             this.originalContent.set(fullPath, {
-              content: contentToUse.content,
-              lastModified: contentToUse.lastModified,
-              version: contentToUse.version
+              content: contentMatch.content,
+              lastModified: contentMatch.lastModified,
+              version: contentMatch.version
             });
           } else {
-            console.log('No saved content found for either path, keeping original content');
+            console.log(`No saved content found for paths ${fullPath} or ${classPath}, keeping original content`);
           }
-          console.log('=== End Debug Info ===\n');
         });
 
         await Promise.all(updatePromises);
@@ -591,7 +586,24 @@ export class ContentEditor {
         console.log("Current content in Firebase:", currentContent);
         
         // Merge the updated content with existing content
-        const mergedContent = { ...currentContent, ...updatedContent };
+        const mergedContent = { ...currentContent };
+        
+        // For each updated element, save both its full path and class path
+        Object.entries(updatedContent).forEach(([fullPath, value]) => {
+          mergedContent[fullPath] = value;
+          
+          // Also save under the class path for cross-page sync
+          const element = document.querySelector(fullPath.split(':')[0]);
+          if (element) {
+            const classPath = this.getElementClassPath(element);
+            console.log(`Saving content under both paths:`, {
+              fullPath,
+              classPath,
+              content: value
+            });
+            mergedContent[classPath] = value;
+          }
+        });
         
         console.log("Final merged content to save:", mergedContent);
         
