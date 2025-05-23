@@ -345,7 +345,7 @@ export class ContentEditor {
         
         updatedContent[elementId] = {
           content: newContent,
-          elementType: element.tagName.toLowerCase(),
+          elementType: (document.querySelector(elementId.split('>')[1])?.tagName || '').toLowerCase(),
           lastModified: new Date().toISOString(),
           version: originalData.version + 1
         };
