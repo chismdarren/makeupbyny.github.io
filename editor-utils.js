@@ -418,8 +418,8 @@ export class ContentEditor {
     if (element.id) {
       uniqueSelector = `#${element.id}`;
     } else {
-      // Use a numbered class (like h2-h2-1) if present
-      const uniqueClass = Array.from(element.classList).find(cls => cls.match(/^(h2|h3)-\S+$/));
+      // Use a numbered class (like h2-1, h3-1, p-1) if present
+      const uniqueClass = Array.from(element.classList).find(cls => cls.match(/^(h2|h3|p)-\d+$/));
       if (uniqueClass) {
         uniqueSelector = `.${uniqueClass}`;
       } else {
