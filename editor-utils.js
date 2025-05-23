@@ -422,15 +422,16 @@ export class ContentEditor {
 
   async loadSavedContent() {
     try {
-      console.log("Loading saved content...");
+      console.log("Starting loadSavedContent...");
       const contentRef = doc(db, "site_content", "editable_content");
       
       // Add error handling for permission issues
       let docSnap;
       try {
+        console.log("Attempting to fetch content from Firebase...");
         docSnap = await getDoc(contentRef);
       } catch (error) {
-        console.error("Error accessing content:", error);
+        console.error("Error accessing Firebase content:", error);
         // If there's a permission error, try to get content from localStorage
         const cachedContent = localStorage.getItem('site_content');
         if (cachedContent) {
@@ -438,44 +439,55 @@ export class ContentEditor {
             exists: () => true, 
             data: () => JSON.parse(cachedContent)
           };
-          console.log("Using cached content from localStorage");
+          console.log("Using cached content from localStorage:", cachedContent);
         } else {
-          console.log("No cached content available");
+          console.log("No cached content available, exiting loadSavedContent");
           return;
         }
       }
       
       if (docSnap.exists() && docSnap.data().content) {
-        console.log("Found saved content:", docSnap.data());
+        console.log("Found saved content in database:", docSnap.data());
         const savedContent = docSnap.data().content;
         
         // Cache the content in localStorage for offline/non-authenticated access
         try {
           localStorage.setItem('site_content', JSON.stringify(docSnap.data()));
-          console.log("Content cached in localStorage");
+          console.log("Successfully cached content in localStorage");
         } catch (error) {
           console.warn("Could not cache content in localStorage:", error);
         }
         
         // Update all elements with saved content
-        const updatePromises = Array.from(this.editableElements).map(async element => {
+        console.log("Starting to update elements with saved content...");
+        console.log("Total editable elements found:", this.editableElements.length);
+        
+        const updatePromises = Array.from(this.editableElements).map(async (element, index) => {
           // Get both the full path and the class-based path
           const fullPath = this.getElementPath(element);
           const classPath = this.getElementClassPath(element);
           
-          console.log(`Checking element:`, {
-            element: element.outerHTML,
+          console.log(`\nProcessing element ${index + 1}/${this.editableElements.length}:`, {
+            elementTag: element.tagName,
+            elementClasses: element.className,
+            elementContent: element.innerHTML.substring(0, 50) + '...',
             fullPath,
-            classPath,
-            savedContentForFullPath: savedContent[fullPath],
-            savedContentForClassPath: savedContent[classPath]
+            classPath
           });
           
           // Check if we have content for either path
           const contentMatch = savedContent[fullPath] || savedContent[classPath];
           
           if (contentMatch && contentMatch.content) {
-            console.log(`Updating element with path ${fullPath} using content from:`, contentMatch);
+            console.log(`Found matching content for element:`, {
+              path: savedContent[fullPath] ? 'fullPath' : 'classPath',
+              matchedPath: savedContent[fullPath] ? fullPath : classPath,
+              oldContent: element.innerHTML.substring(0, 50) + '...',
+              newContent: contentMatch.content.substring(0, 50) + '...',
+              version: contentMatch.version,
+              lastModified: contentMatch.lastModified
+            });
+            
             element.innerHTML = contentMatch.content;
             
             // Update original content map with saved version
@@ -484,21 +496,32 @@ export class ContentEditor {
               lastModified: contentMatch.lastModified,
               version: contentMatch.version
             });
+            
+            console.log(`Successfully updated element content and originalContent map`);
           } else {
-            console.log(`No saved content found for paths ${fullPath} or ${classPath}, keeping original content`);
+            console.log(`No saved content found for element:`, {
+              fullPath,
+              classPath,
+              currentContent: element.innerHTML.substring(0, 50) + '...',
+              keepingOriginal: true
+            });
           }
         });
 
+        console.log("Waiting for all element updates to complete...");
         await Promise.all(updatePromises);
+        console.log("All element updates completed successfully");
       } else {
-        console.log("No saved content found, keeping original content");
+        console.log("No saved content found in database, keeping original content");
       }
     } catch (error) {
-      console.error("Error loading saved content:", error);
+      console.error("Error in loadSavedContent:", error);
     } finally {
+      console.log("LoadSavedContent complete, preparing to hide loading screen...");
       // Ensure all content updates are complete before hiding loading screen
       await new Promise(resolve => setTimeout(resolve, 500));
       this.hideLoadingScreen();
+      console.log("Loading screen hidden");
     }
   }
 
